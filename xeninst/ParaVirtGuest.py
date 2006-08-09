@@ -38,6 +38,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
         self._location = None
         self._boot = None
         self._extraargs = ""
+        self.disknode = "xvd"
 
     # install location for the PV guest
     # this is a string pointing to an NFS, HTTP or FTP install source 
@@ -110,20 +111,6 @@ class ParaVirtGuest(XenGuest.XenGuest):
 
         return (kfn, ifn)
 
-    def _get_disk_xml(self):
-        ret = ""
-        count = 0
-        for d in self.disks:
-            ret += "<disk type='%(disktype)s'><source file='%(disk)s'/><target dev='xvd%(dev)c'/></disk>" %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count}
-            count += 1
-        return ret
-
-    def _get_network_xml(self):
-        ret = ""
-        for n in self.nics:
-            ret += "<interface type='bridge'><source bridge='%(bridge)s'/><mac address='%(mac)s'/><script path='/etc/xen/scripts/vif-bridge'/></interface>" % { "bridge": n.bridge, "mac": n.macaddr }
-        return ret
-
     def _get_config_xml(self, kernel, initrd):
         if self.location:
             metharg="method=%s " %(self.location,)
@@ -145,29 +132,11 @@ class ParaVirtGuest(XenGuest.XenGuest):
   <on_poweroff>destroy</on_poweroff>
   <on_crash>destroy</on_crash>
   <devices>
-    '%(disks)s'
-    '%(networks)s'
+    %(disks)s
+    %(networks)s
   </devices>
 </domain>
 """ % { "kernel": kernel, "initrd": initrd, "name": self.name, "metharg": metharg, "extra": self.extraargs, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml() }
-
-    def _get_disk_xen(self):
-        if len(self.disks) == 0: return ""
-        ret = "disk = [ "
-        count = 0
-        for d in self.disks:
-            ret += "'%(disktype)s:%(disk)s,xvd%(dev)c,w', " %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count}
-            count += 1
-        ret += "]"
-        return ret
-
-    def _get_network_xen(self):
-        if len(self.nics) == 0: return ""
-        ret = "vif = [ "
-        for n in self.nics:
-            ret += "'mac=%(mac)s, bridge=%(bridge)s', " % { "bridge": n.bridge, "mac": n.macaddr }
-        ret += "]"
-        return ret
 
     def _get_config_xen(self):
         return """# Automatically generated xen config file
