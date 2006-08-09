@@ -79,6 +79,8 @@ class XenGuest(object):
 
         self.domain = None
 
+        self.disknode = None # this needs to be set in the subclass
+
     # Domain name of the guest
     def get_name(self):
         return self._name
@@ -128,6 +130,43 @@ class XenGuest(object):
             disk.setup()
         for nic in self.nics:
             nic.setup()
+
+    def _get_disk_xml(self):
+        """Get the disk config in the libvirt XML format"""
+        ret = ""
+        count = 0
+        for d in self.disks:
+            ret += "<disk type='%(disktype)s'><source file='%(disk)s'/><target dev='%(disknode)s%(dev)c'/></disk>\n" %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count, "disknode": self.disknode}
+            count += 1
+        return ret
+
+    def _get_disk_xen(self):
+        """Get the disk config in the xend python format"""        
+        if len(self.disks) == 0: return ""
+        ret = "disk = [ "
+        count = 0
+        for d in self.disks:
+            ret += "'%(disktype)s:%(disk)s,xvd%(dev)c,w', " %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count}
+            count += 1
+        ret += "]"
+        return ret
+
+    def _get_network_xml(self):
+        """Get the network config in the libvirt XML format"""
+        ret = ""
+        for n in self.nics:
+            ret += "<interface type='bridge'><source bridge='%(bridge)s'/><mac address='%(mac)s'/><script path='/etc/xen/scripts/vif-bridge'/></interface>\n" % { "bridge": n.bridge, "mac": n.macaddr }
+        return ret
+
+    def _get_network_xen(self):
+        """Get the network config in the xend python format"""        
+        if len(self.nics) == 0: return ""
+        ret = "vif = [ "
+        for n in self.nics:
+            ret += "'mac=%(mac)s, bridge=%(bridge)s', " % { "bridge": n.bridge, "mac": n.macaddr }
+        ret += "]"
+        return ret
+
 
     def start_install(self):
         """Do the startup of the guest installation.  Note that the majority
