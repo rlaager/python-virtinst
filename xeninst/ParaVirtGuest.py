@@ -53,10 +53,15 @@ class ParaVirtGuest(XenGuest.XenGuest):
     # kernel + initrd pair to use for installing as opposed to using a location
     def get_boot(self):
         return self._boot
-    def set_boot(self, *args):
-        if len(args) != 2:
-            raise ValueError, "Must pass both a kernel and initrd"
-        (k, i) = args
+    def set_boot(self, val):
+        if type(val) == tuple:
+            if len(val) != 2:
+                raise ValueError, "Must pass both a kernel and initrd"
+            (k, i) = val
+        elif type(val) == dict:
+            if not val.has_key("kernel") or not val.has_key("initrd"):
+                raise ValueError, "Must pass both a kernel and initrd"
+            k, i = val["kernel"], val["initrd"]
         self._boot = {"kernel": k, "initrd": i}
     boot = property(get_boot, set_boot)
 
