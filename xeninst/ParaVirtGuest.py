@@ -36,6 +36,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
     def __init__(self):
         XenGuest.XenGuest.__init__(self)
         self._location = None
+        self._boot = None
         self._extraargs = ""
 
     # install location for the PV guest
@@ -49,6 +50,15 @@ class ParaVirtGuest(XenGuest.XenGuest):
         self._location = val
     location = property(get_install_location, set_install_location)
 
+    # kernel + initrd pair to use for installing as opposed to using a location
+    def get_boot(self):
+        return self._boot
+    def set_boot(self, *args):
+        if len(args) != 2:
+            raise ValueError, "Must pass both a kernel and initrd"
+        (k, i) = args
+        self._boot = {"kernel": k, "initrd": i}
+    boot = property(get_boot, set_boot)
 
     # extra arguments to pass to the guest installer
     def get_extra_args(self):
@@ -57,7 +67,9 @@ class ParaVirtGuest(XenGuest.XenGuest):
         self._extraargs = val
     extraargs = property(get_extra_args, set_extra_args)
 
-    def _get_paravirt_install_image(self):
+    def _get_paravirt_install_images(self):
+        if self.boot is not None:
+            return (self.boot["kernel"], self.boot["initrd"])
         if self.location.startswith("http://") or \
                self.location.startswith("ftp://"):
             try:
@@ -108,13 +120,18 @@ class ParaVirtGuest(XenGuest.XenGuest):
         return ret
 
     def _get_config_xml(self, kernel, initrd):
+        if self.location:
+            metharg="method=%s " %(self.location,)
+        else:
+            metharg = ""
+            
         return """<domain type='xen'>
   <name>%(name)s</name>
   <os>
     <type>linux</type>
     <kernel>%(kernel)s</kernel>
     <initrd>%(initrd)s</initrd>
-    <cmdline> method=%(location)s %(extra)s</cmdline>
+    <cmdline> %(metharg)s %(extra)s</cmdline>
   </os>
   <memory>%(ramkb)s</memory>
   <vcpu>%(vcpus)d</vcpu>
@@ -127,7 +144,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
     '%(networks)s'
   </devices>
 </domain>
-""" % { "kernel": kernel, "initrd": initrd, "name": self.name, "location": self.location, "extra": self.extraargs, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml() }
+""" % { "kernel": kernel, "initrd": initrd, "name": self.name, "metharg": metharg, "extra": self.extraargs, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml() }
 
     def _get_disk_xen(self):
         if len(self.disks) == 0: return ""
@@ -172,7 +189,7 @@ on_crash    = 'restart'
         return child
 
     def start_install(self, connectConsole = False):
-        if not self.location:
+        if not self.location and not self.boot:
             raise RuntimeError, "A location must be specified to install from"
         XenGuest.XenGuest.validateParms(self)
         
@@ -185,7 +202,7 @@ on_crash    = 'restart'
         except libvirt.libvirtError:
             pass
 
-        (kfn, ifn) = self._get_paravirt_install_image()
+        (kfn, ifn) = self._get_paravirt_install_images()
         self._createDevices()
         cxml = self._get_config_xml(kfn, ifn)
         
