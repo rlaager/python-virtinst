@@ -125,9 +125,22 @@ def get_paravirt_install(src, guest):
             break
         except ValueError, e:
             print "ERROR: ", e
+            src = None
 
 def get_paravirt_extraargs(extra, guest):
     guest.extra = extra
+
+
+### fullvirt input gathering functions
+def get_fullvirt_cdrom(cdpath, guest):
+    while 1:
+    	cdpath = prompt_for_input("What would you like to use for the virtual CD image?", cdpath)
+        try:
+            guest.cdrom = cdpath
+            break
+        except ValueError, e:
+            print "ERROR: ", e
+            cdpath = None
 
 
 ### Option parsing
@@ -203,13 +216,12 @@ def main():
     # set up network information
     get_network(options.mac, options.bridge, guest)
 
-
     # and now for the full-virt vs paravirt specific questions
     if not hvm: # paravirt
         get_paravirt_install(options.location, guest)
         get_paravirt_extraargs(options.extra, guest)
     else:
-        pass # FIXME: need to re-implement the hvm case
+        get_fullvirt_cdrom(options.cdrom, guest)
 
     # we've got everything -- try to start the install
     try:
