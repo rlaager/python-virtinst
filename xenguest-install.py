@@ -128,7 +128,7 @@ def get_paravirt_install(src, guest):
             src = None
 
 def get_paravirt_extraargs(extra, guest):
-    guest.extra = extra
+    guest.extraargs = extra
 
 
 ### fullvirt input gathering functions
