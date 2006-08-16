@@ -146,7 +146,7 @@ class XenGuest(object):
         ret = "disk = [ "
         count = 0
         for d in self.disks:
-            ret += "'%(disktype)s:%(disk)s,xvd%(dev)c,w', " %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count}
+            ret += "'%(disktype)s:%(disk)s,%(disknode)s%(dev)c,w', " %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count, "disknode": self.disknode}
             count += 1
         ret += "]"
         return ret
