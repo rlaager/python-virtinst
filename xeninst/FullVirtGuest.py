@@ -49,7 +49,7 @@ class FullVirtGuest(XenGuest.XenGuest):
             t = "block"
         else:
             t = "file"
-        lines.append("<disk type='%(disktype)s'><source file='%(disk)s'/><target dev='hdd:cdrom'/></disk>\n" %{"disktype": t, "disk": self.cdrom})
+        lines.append("<disk type='%(disktype)s' device='cdrom'><source file='%(disk)s'/><target dev='hdc'/><readonly/></disk>\n" %{"disktype": t, "disk": self.cdrom})
         return string.join(lines, "")
 
     def _get_config_xml(self):
@@ -59,8 +59,11 @@ class FullVirtGuest(XenGuest.XenGuest):
   <os>
     <type>hvm</type>
     <loader>/usr/lib/xen/boot/hvmloader</loader>
-    <boot dev='hdd'/>
+    <boot dev='cdrom'/>
   </os>
+  <features>
+    <acpi/>
+  </features>
   <memory>%(ramkb)s</memory>
   <vcpu>%(vcpus)d</vcpu>
   <uuid>%(uuid)s</uuid>
@@ -87,6 +90,7 @@ uuid = "%(uuid)s"
 device_model = "%(qemu)s"
 kernel = "/usr/lib/xen/boot/hvmloader"
 vnc = 1
+acpi = 1
 serial = "pty" # enable serial console
 on_reboot   = 'restart'
 on_crash    = 'restart'
@@ -98,7 +102,7 @@ on_crash    = 'restart'
             raise RuntimeError, "A CD must be specified to boot from"
         XenGuest.XenGuest.validateParms(self)
         
-        conn = libvirt.openReadOnly(None)
+        conn = libvirt.open(None)
         if conn == None:
             raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
         try:

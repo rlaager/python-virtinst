@@ -167,7 +167,7 @@ on_crash    = 'restart'
             raise RuntimeError, "A location must be specified to install from"
         XenGuest.XenGuest.validateParms(self)
         
-        conn = libvirt.openReadOnly(None)
+        conn = libvirt.open(None)
         if conn == None:
             raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
         try:
