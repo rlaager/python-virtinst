@@ -111,7 +111,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
 
         return (kfn, ifn)
 
-    def _get_config_xml(self, kernel, initrd):
+    def _get_config_xml(self):
         if self.location:
             metharg="method=%s " %(self.location,)
         else:
@@ -136,7 +136,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
     %(networks)s
   </devices>
 </domain>
-""" % { "kernel": kernel, "initrd": initrd, "name": self.name, "metharg": metharg, "extra": self.extraargs, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml() }
+""" % { "kernel": self.kernel, "initrd": self.initrd, "name": self.name, "metharg": metharg, "extra": self.extraargs, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml() }
 
     def _get_config_xen(self):
         return """# Automatically generated xen config file
@@ -162,62 +162,17 @@ on_crash    = 'restart'
             os._exit(1)
         return child
 
-    def start_install(self, connectConsole = False):
+    def validate_parms(self):
         if not self.location and not self.boot:
             raise RuntimeError, "A location must be specified to install from"
-        XenGuest.XenGuest.validateParms(self)
-        
-        conn = libvirt.open(None)
-        if conn == None:
-            raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
+        XenGuest.XenGuest.validate_parms(self)
+
+    def start_install(self, consolecb = None):
+        self.validate_parms()
+        (self.kernel, self.initrd) = self._get_paravirt_install_images()
+
         try:
-            if conn.lookupByName(self.name) is not None:
-                raise RuntimeError, "Domain named %s already exists!" %(self.name,)
-        except libvirt.libvirtError:
-            pass
-
-        (kfn, ifn) = self._get_paravirt_install_images()
-        self._createDevices()
-        cxml = self._get_config_xml(kfn, ifn)
-        
-        self.domain = conn.createLinux(cxml, 0)
-        if self.domain is None:
-            raise RuntimeError, "Unable to create domain for guest, aborting installation!"
-        if connectConsole:
-            child = self._connectSerialConsole()
-
-        time.sleep(5)
-        os.unlink(kfn)
-        os.unlink(ifn)
-
-        # FIXME: if the domain doesn't exist now, it almost certainly crashed.
-        # it'd be nice to know that for certain...
-        try:
-            d = conn.lookupByID(self.domain.ID())
-        except libvirt.libvirtError:
-            raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the xen logs"
-
-
-        cf = "/etc/xen/%s" %(self.name,)
-        f = open(cf, "w+")
-        f.write(self._get_config_xen())
-        f.close()
-
-        if connectConsole: # if we connected the console, wait for it to finish
-            try:
-                (pid, status) = os.waitpid(child, 0)
-            except OSError, (errno, msg):
-                print __name__, "waitpid:", msg
-
-            # ensure there's time for the domain to finish destroying if the
-            # install has finished or the guest crashed
-            time.sleep(1)
-            try:
-                d = conn.lookupByID(self.domain.ID())
-            except libvirt.libvirtError:
-                return "If your install completed successfully, you can restart your guest by running 'xm create -c %s'." %(self.name,)
-            else:
-                return "You can reconnect to the console of your guest by running 'xm console %s'" %(self.name,)
-
-        return 
-        
+            XenGuest.XenGuest.start_install(self)
+        finally:
+            os.unlink(self.kernel)
+            os.unlink(self.initrd)

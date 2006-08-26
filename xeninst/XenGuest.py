@@ -13,7 +13,9 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import os
-import stat
+import stat, time
+
+import libvirt
 
 import util
 
@@ -124,7 +126,7 @@ class XenGuest(object):
     vcpus = property(get_vcpus, set_vcpus)
 
 
-    def _createDevices(self):
+    def _create_devices(self):
         """Ensure that devices are setup"""
         for disk in self.disks:
             disk.setup()
@@ -168,12 +170,63 @@ class XenGuest(object):
         return ret
 
 
-    def start_install(self):
-        """Do the startup of the guest installation.  Note that the majority
-        of the grunt work for this is in the specific PV and FV methods."""
-        raise RuntimeError, "Guest type doesn't implement guest install!"
+    def start_install(self, consolecb = None):
+        """Do the startup of the guest installation."""
+        self.validate_parms()
 
-    def validateParms(self):
+        conn = libvirt.open(None)
+        if conn == None:
+            raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
+        try:
+            if conn.lookupByName(self.name) is not None:
+                raise RuntimeError, "Domain named %s already exists!" %(self.name,)
+        except libvirt.libvirtError:
+            pass
+
+        self._create_devices()
+        cxml = self._get_config_xml()
+        self.domain = conn.createLinux(cxml, 0)
+        if self.domain is None:
+            raise RuntimeError, "Unable to create domain for guest, aborting installation!"
+
+        child = None
+        if consolecb:
+            child = consolecb(self.domain)
+
+        time.sleep(2)
+        # FIXME: if the domain doesn't exist now, it almost certainly crashed.
+        # it'd be nice to know that for certain...
+        try:
+            d = conn.lookupByID(self.domain.ID())
+        except libvirt.libvirtError:
+            raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the xen logs"
+
+
+        cf = "/etc/xen/%s" %(self.name,)
+        f = open(cf, "w+")
+        f.write(self._get_config_xen())
+        f.close()
+
+        if child: # if we connected the console, wait for it to finish
+            try:
+                (pid, status) = os.waitpid(child, 0)
+            except OSError, (errno, msg):
+                print __name__, "waitpid:", msg
+
+            # ensure there's time for the domain to finish destroying if the
+            # install has finished or the guest crashed
+            time.sleep(1)
+            try:
+                d = conn.lookupByID(self.domain.ID())
+            except libvirt.libvirtError:
+                return "Domain creation completed.  If your guest installed successfully, you can restart it by running 'xm create -c %s'." %(self.name,)
+            else:
+                return "You can reconnect to the console of your guest by running 'xm console %s'" %(self.name,)
+
+        return
+        
+
+    def validate_parms(self):
         if self.domain is not None:
             raise RuntimeError, "Domain already started!"
         if self.uuid is None:

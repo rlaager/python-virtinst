@@ -96,39 +96,7 @@ on_reboot   = 'restart'
 on_crash    = 'restart'
 """ % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid, "qemu": qemu }
 
-    
-    def start_install(self, connectConsole = False):
+    def validate_parms(self):
         if not self.cdrom:
             raise RuntimeError, "A CD must be specified to boot from"
         XenGuest.XenGuest.validateParms(self)
-        
-        conn = libvirt.open(None)
-        if conn == None:
-            raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
-        try:
-            if conn.lookupByName(self.name) is not None:
-                raise RuntimeError, "Domain named %s already exists!" %(self.name,)
-        except libvirt.libvirtError:
-            pass
-
-        self._createDevices()
-        cxml = self._get_config_xml()
-        print cxml
-        self.domain = conn.createLinux(cxml, 0)
-        if self.domain is None:
-            raise RuntimeError, "Unable to create domain for guest, aborting installation!"
-
-        time.sleep(5)
-        # FIXME: if the domain doesn't exist now, it almost certainly crashed.
-        # it'd be nice to know that for certain...
-        try:
-            d = conn.lookupByID(self.domain.ID())
-        except libvirt.libvirtError:
-            raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the xen logs"
-
-
-        cf = "/etc/xen/%s" %(self.name,)
-        f = open(cf, "w+")
-        f.write(self._get_config_xen())
-        f.close()
-        return 

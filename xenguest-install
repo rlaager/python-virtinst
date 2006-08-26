@@ -227,7 +227,7 @@ def main():
     # we've got everything -- try to start the install
     try:
         print "\n\nStarting install..."
-        r = guest.start_install(True)
+        r = guest.start_install()
         print r
     except RuntimeError, e:
         print >> sys.stderr, "ERROR: ", e
