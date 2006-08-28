@@ -116,6 +116,28 @@ def get_network(mac, bridge, guest):
         n = xeninst.XenNetworkInterface(mac)
     guest.nics.append(n)
 
+def get_graphics(vnc, vncport, nographics, guest):
+    if vnc and nographics:
+        raise ValueError, "Can't do both VNC graphics and nographics"
+    if nographics:
+        guest.graphics = False
+        return
+    if vnc is not None:
+        guest.graphics = (True, "vnc", vncport)
+        return
+    while 1:
+        res = prompt_for_input("Would you like to enable graphics support? (yes or not)")
+        try:
+            vnc = yes_or_no(res)
+        except ValueError, e:
+            print "ERROR", e
+            continue
+        if vnc:
+            guest.graphics = "vnc"
+        else:
+            guest.graphics = False
+        
+
 
 ### Paravirt input gathering functions
 def get_paravirt_install(src, guest):
@@ -165,6 +187,14 @@ def parse_args():
                       help="Fixed MAC address for the guest; if none is given a random address will be used")
     parser.add_option("-b", "--bridge", type="string", dest="bridge",
                       help="Bridge to connect guest NIC to, if none specified, the default (xenbr0) is used")
+
+    # graphics options
+    parser.add_option("", "--vnc", action="store_true", dest="vnc", 
+                      help="Use VNC for graphics support")
+    parser.add_option("", "--vncport", type="int", dest="vncport",
+                      help="Port to use for VNC")
+    parser.add_option("", "--nographics", action="store_true",
+                      help="Don't set up a graphical console for the guest.")
     
     
     # vmx/svm options
@@ -216,6 +246,9 @@ def main():
 
     # set up network information
     get_network(options.mac, options.bridge, guest)
+
+    # set up graphics information
+    get_graphics(options.vnc, options.vncport, options.nographics, guest)
 
     # and now for the full-virt vs paravirt specific questions
     if not hvm: # paravirt

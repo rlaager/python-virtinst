@@ -29,6 +29,7 @@ class FullVirtGuest(XenGuest.XenGuest):
         XenGuest.XenGuest.__init__(self)
         self._cdrom = None
         self.disknode = "ioemu:hd"
+        self.features = { "acpi": True, "pae": False, "apic": True }
 
     def get_cdrom(self):
         return self._cdrom
@@ -52,6 +53,20 @@ class FullVirtGuest(XenGuest.XenGuest):
         lines.append("<disk type='%(disktype)s' device='cdrom'><source file='%(disk)s'/><target dev='hdc'/><readonly/></disk>\n" %{"disktype": t, "disk": self.cdrom})
         return string.join(lines, "")
 
+    def _get_features_xml(self):
+        ret = ""
+        for (k, v) in self.features.items():
+            if v:
+                ret += "<%s/>" %(k,)
+        return ret
+
+    def _get_features_xen(self):
+        ret = ""
+        for (k, v) in self.features.items():
+            if v:
+                ret += "%s=1\n" %(k,)
+        return ret
+
     def _get_config_xml(self):
         # FIXME: hard-codes that we're booting from CD as hdd
         return """<domain type='xen'>
@@ -62,7 +77,7 @@ class FullVirtGuest(XenGuest.XenGuest):
     <boot dev='cdrom'/>
   </os>
   <features>
-    <acpi/>
+    %(features)s
   </features>
   <memory>%(ramkb)s</memory>
   <vcpu>%(vcpus)d</vcpu>
@@ -74,10 +89,10 @@ class FullVirtGuest(XenGuest.XenGuest):
     <emulator>%(qemu)s</emulator>
     %(disks)s
     %(networks)s
-    <graphics type='vnc'/>
+    %(graphics)s
   </devices>
 </domain>
-""" % { "qemu": qemu, "name": self.name, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml() }
+""" % { "qemu": qemu, "name": self.name, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml(), "graphics": self._get_graphics_xml(), "features": self._get_features_xml() }
 
     def _get_config_xen(self):
         return """# Automatically generated xen config file
@@ -89,12 +104,12 @@ memory = "%(ram)s"
 uuid = "%(uuid)s"
 device_model = "%(qemu)s"
 kernel = "/usr/lib/xen/boot/hvmloader"
-vnc = 1
-acpi = 1
+%(graphics)s
+%(features)s
 serial = "pty" # enable serial console
 on_reboot   = 'restart'
 on_crash    = 'restart'
-""" % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid, "qemu": qemu }
+""" % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid, "qemu": qemu, "graphics": self._get_graphics_xen(), "features": self._get_features_xen() }
 
     def validate_parms(self):
         if not self.cdrom:

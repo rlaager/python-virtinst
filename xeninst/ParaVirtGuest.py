@@ -134,9 +134,10 @@ class ParaVirtGuest(XenGuest.XenGuest):
   <devices>
     %(disks)s
     %(networks)s
+    %(graphics)s
   </devices>
 </domain>
-""" % { "kernel": self.kernel, "initrd": self.initrd, "name": self.name, "metharg": metharg, "extra": self.extraargs, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml() }
+""" % { "kernel": self.kernel, "initrd": self.initrd, "name": self.name, "metharg": metharg, "extra": self.extraargs, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml(), "graphics": self._get_graphics_xml() }
 
     def _get_config_xen(self):
         return """# Automatically generated xen config file
@@ -144,12 +145,13 @@ name = "%(name)s"
 memory = "%(ram)s"
 %(disks)s
 %(networks)s
+%(graphics)s
 uuid = "%(uuid)s"
 bootloader="/usr/bin/pygrub"
 
 on_reboot   = 'restart'
 on_crash    = 'restart'
-""" % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid }
+""" % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid, "graphics": self._get_graphics_xen() }
 
     def _connectSerialConsole(self):
         # *sigh*  would be nice to have a python version of xmconsole

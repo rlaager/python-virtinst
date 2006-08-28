@@ -68,7 +68,23 @@ class XenNetworkInterface:
     def setup(self):
         if self.macaddr is None:
             self.macaddr = util.randomMAC()
+
+class XenGraphics:
+    def __init__(self, *args):
+        self.name = ""
         
+class XenVNCGraphics(XenGraphics):
+    def __init__(self, *args):
+        self.name = "vnc"
+        if len(args) >= 1 and args[0]:
+            self.port = args[0]
+        else:
+            self.port = None
+
+class XenSDLGraphics(XenGraphics):
+    def __init__(self, *args):
+        self.name = "sdl"
+    
 
 class XenGuest(object):
     def __init__(self):
@@ -78,6 +94,7 @@ class XenGuest(object):
         self._uuid = None
         self._memory = None
         self._vcpus = None
+        self._graphics = { "enabled": None }
 
         self.domain = None
 
@@ -126,6 +143,46 @@ class XenGuest(object):
     vcpus = property(get_vcpus, set_vcpus)
 
 
+    # graphics setup
+    def get_graphics(self):
+        return self._graphics
+    def set_graphics(self, val):
+        opts = None
+        t = None
+        if type(val) == dict:
+            if not val.has_key("enabled"):
+                raise ValueError, "Must specify whether graphics are enabled"
+            self._graphics["enabled"] = val["enabled"]
+            if val.has_key("type"):
+                t = val["type"]
+                if val.has_key("opts"):
+                    opts = val["opts"]
+        elif type(val) == tuple:
+            if len(val) >= 1: self._graphics["enabled"] = val[0]
+            if len(val) >= 2: t = val[1]
+            if len(val) >= 3: opts = val[2]
+        else:
+            if val in ("vnc", "sdl"):
+                t = val
+                self._graphics["enabled"] = True
+            else:
+                self._graphics["enabled"] = val
+
+        if self._graphics["enabled"] not in (True, False):
+            raise ValueError, "Graphics enabled must be True or False"
+
+        if self._graphics["enabled"] == True:
+            if t == "vnc":
+                gt = XenVNCGraphics(opts)
+            elif t == "sdl":
+                gt = XenSDLGraphics(opts)
+            else:
+                raise ValueError, "Unknown graphics type"
+            self._graphics["type"] = gt
+                
+    graphics = property(get_graphics, set_graphics)
+
+
     def _create_devices(self):
         """Ensure that devices are setup"""
         for disk in self.disks:
@@ -169,6 +226,36 @@ class XenGuest(object):
         ret += "]"
         return ret
 
+    def _get_graphics_xml(self):
+        """Get the graphics config in the libvirt XML format."""
+        ret = ""
+        if self.graphics["enabled"] == False:
+            return ret
+        gt = self.graphics["type"]
+        if gt.name == "vnc":
+            ret += "<graphics type='vnc'"
+            if gt.port is not None:
+                print "gt.port is ", gt.port
+                ret += " port='%d'" %(gt.port,)
+            ret += "/>"
+        elif gt.name == "sdl":
+            ret += "<graphics type='sdl'/>"
+        return ret
+
+    def _get_graphics_xen(self):
+        """Get the graphics config in the xend python format"""
+        if self.graphics["enabled"] == False:
+            return "nographic=1"
+        ret = ""
+        gt = self.graphics["type"]
+        if gt.name == "vnc":
+            ret += "vnc=1"
+            if gt.port:
+                ret += "\nvncdisplay=%d" %(gt.port - 5900,)
+        elif gt.name == "sdl":
+            ret += "sdl=1"
+        return ret
+        
 
     def start_install(self, consolecb = None):
         """Do the startup of the guest installation."""
