@@ -94,7 +94,7 @@ class XenGuest(object):
         self._uuid = None
         self._memory = None
         self._vcpus = None
-        self._graphics = { "enabled": None }
+        self._graphics = { "enabled": False }
 
         self.domain = None
 

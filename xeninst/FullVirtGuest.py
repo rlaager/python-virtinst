@@ -114,4 +114,4 @@ on_crash    = 'restart'
     def validate_parms(self):
         if not self.cdrom:
             raise RuntimeError, "A CD must be specified to boot from"
-        XenGuest.XenGuest.validateParms(self)
+        XenGuest.XenGuest.validate_parms(self)
