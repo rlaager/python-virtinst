@@ -304,11 +304,11 @@ class XenGuest(object):
             # install has finished or the guest crashed
             time.sleep(1)
             try:
-                d = conn.lookupByID(self.domain.ID())
+                d = conn.lookupByID(self.domain.ID())                
             except libvirt.libvirtError:
-                return "Domain creation completed.  If your guest installed successfully, you can restart it by running 'xm create -c %s'." %(self.name,)
+                return None
             else:
-                return "You can reconnect to the console of your guest by running 'xm console %s'" %(self.name,)
+                return d
 
         return
         

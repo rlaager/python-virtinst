@@ -16,6 +16,10 @@
 
 import os, sys, string
 from optparse import OptionParser
+import subprocess
+
+import libxml2
+
 import xeninst
 
 MIN_RAM = 256
@@ -218,6 +222,70 @@ def parse_args():
     return options
 
 
+### console callback methods
+def get_xml_string(dom, path):
+    xml = dom.XMLDesc(0)
+    try:
+        doc = libxml2.parseDoc(xml)
+    except:
+        return None
+
+    ctx = doc.xpathNewContext()
+    try:
+        ret = ctx.xpathEval(path)
+        tty = None
+        if len(ret) == 1:
+            tty = ret[0].content
+        ctx.xpathFreeContext()
+        doc.freeDoc()
+        return tty
+    except Exception, e:
+        ctx.xpathFreeContext()
+        doc.freeDoc()
+        return None
+
+def vnc_console(dom):
+    import time; time.sleep(2) # FIXME: ugh. 
+    vncport = get_xml_string(dom,
+                             "/domain/devices/graphics[@type='vnc']/@port")
+    if vncport == None:
+        vncport = 5900 + dom.ID()
+    vncport = int(vncport)
+    vnchost = "localhost"
+    if not os.path.exists("/usr/bin/vncviewer"):
+        print >> sys.stderr, "Unable to connect to graphical console; vncviewer not installed.  Please connect to %s:%d" %(vnchost, vncport)
+        return None
+    if not os.environ.has_key("DISPLAY"):
+        print >> sys.stderr, "Unable to connect to graphical console; DISPLAY is not set.  Please connect to %s:%d" %(vnchost, vncport)
+        return None
+
+    child = os.fork()
+    if not child:
+        os.execvp("/usr/bin/vncviewer", ["/usr/bin/vncviewer",
+                                         "%s:%d" %(vnchost, vncport) ])
+        os._exit(1)
+
+    return child
+
+def txt_console(dom):
+    tty = get_xml_string(dom, "/domain/devices/console/@tty")
+    if tty is None or not os.access(tty, os.R_OK | os.W_OK):
+        return None
+    child = os.fork()
+    if not child:
+        os.execvp("/usr/sbin/xm",
+                  ["/usr/sbin/xm", "console", "%s" %(dom.ID(),)])
+        os._exit(1)
+
+    return child
+
+def show_console(dom):
+    gfxtype = get_xml_string(dom, "/domain/devices/graphics/@type")
+    if gfxtype == "vnc":
+        return vnc_console(dom)
+    return txt_console(dom)
+
+
 ### Let's do it!
 def main():
     options = parse_args()
@@ -260,8 +328,14 @@ def main():
     # we've got everything -- try to start the install
     try:
         print "\n\nStarting install..."
-        r = guest.start_install()
-        print r
+        dom = guest.start_install(show_console)
+        print dom
+        if dom is None: # domain isn't running anymore, assume success
+            print "Domain creation completed.  You can restart your domain "
+            print "by running 'xm create -c %s'" %(guest.name,)
+        else:
+            print "Domain installation still in progress.  You can reconnect "
+            print "to the console to complete the installation process."
     except RuntimeError, e:
         print >> sys.stderr, "ERROR: ", e
         sys.exit(1)
