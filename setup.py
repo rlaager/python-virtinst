@@ -2,7 +2,7 @@ from distutils.core import setup
 
 pkgs = ['xeninst']
 setup(name='xeninst',
-      version='0.91.0',
+      version='0.92.0',
       description='Xen guest installation',
       author='Jeremy Katz',
       author_email='katzj@redhat.com',
