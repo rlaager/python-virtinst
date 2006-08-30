@@ -140,7 +140,7 @@ def get_graphics(vnc, vncport, nographics, guest):
             guest.graphics = "vnc"
         else:
             guest.graphics = False
-        
+        break
 
 
 ### Paravirt input gathering functions
