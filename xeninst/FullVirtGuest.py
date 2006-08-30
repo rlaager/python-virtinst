@@ -44,13 +44,14 @@ class FullVirtGuest(XenGuest.XenGuest):
         # ugh, this is disgusting, but the HVM disk stuff isn't nice :/
         x = XenGuest.XenGuest._get_disk_xml(self)
         lines = x.split("\n")
-        if len(lines) > 3:
-            lines = lines[:3]
-        if stat.S_ISBLK(os.stat(self.cdrom)[stat.ST_MODE]):
-            t = "block"
-        else:
-            t = "file"
-        lines.append("<disk type='%(disktype)s' device='cdrom'><source file='%(disk)s'/><target dev='hdc'/><readonly/></disk>\n" %{"disktype": t, "disk": self.cdrom})
+        if self.cdrom:
+            if len(lines) > 3:
+                lines = lines[:3]
+            if stat.S_ISBLK(os.stat(self.cdrom)[stat.ST_MODE]):
+                t = "block"
+            else:
+                t = "file"
+            lines.append("<disk type='%(disktype)s' device='cdrom'><source file='%(disk)s'/><target dev='hdc'/><readonly/></disk>\n" %{"disktype": t, "disk": self.cdrom})
         return string.join(lines, "")
 
     def _get_features_xml(self):
@@ -67,14 +68,21 @@ class FullVirtGuest(XenGuest.XenGuest):
                 ret += "%s=1\n" %(k,)
         return ret
 
-    def _get_config_xml(self):
+    def _get_config_xml(self, install = True):
         # FIXME: hard-codes that we're booting from CD as hdd
+        if install:
+            action = "destroy"
+            bootdev = "cdrom"
+        else:
+            action = "restart"
+            bootdev = "hd"
+            
         return """<domain type='xen'>
   <name>%(name)s</name>
   <os>
     <type>hvm</type>
     <loader>/usr/lib/xen/boot/hvmloader</loader>
-    <boot dev='cdrom'/>
+    <boot dev='%(bootdev)s'/>
   </os>
   <features>
     %(features)s
@@ -82,9 +90,9 @@ class FullVirtGuest(XenGuest.XenGuest):
   <memory>%(ramkb)s</memory>
   <vcpu>%(vcpus)d</vcpu>
   <uuid>%(uuid)s</uuid>
-  <on_reboot>destroy</on_reboot>
+  <on_reboot>%(action)s</on_reboot>
+  <on_crash>%(action)s</on_crash>
   <on_poweroff>destroy</on_poweroff>
-  <on_crash>destroy</on_crash>
   <devices>
     <emulator>%(qemu)s</emulator>
     %(disks)s
@@ -92,7 +100,7 @@ class FullVirtGuest(XenGuest.XenGuest):
     %(graphics)s
   </devices>
 </domain>
-""" % { "qemu": qemu, "name": self.name, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml(), "graphics": self._get_graphics_xml(), "features": self._get_features_xml() }
+""" % { "qemu": qemu, "name": self.name, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml(), "graphics": self._get_graphics_xml(), "features": self._get_features_xml(), "action": action, "bootdev": bootdev }
 
     def _get_config_xen(self):
         return """# Automatically generated xen config file

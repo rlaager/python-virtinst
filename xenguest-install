@@ -17,6 +17,7 @@
 import os, sys, string
 from optparse import OptionParser
 import subprocess
+import struct
 
 import libxml2
 
@@ -199,6 +200,9 @@ def parse_args():
                       help="Port to use for VNC")
     parser.add_option("", "--nographics", action="store_true",
                       help="Don't set up a graphical console for the guest.")
+    parser.add_option("", "--noautoconsole",
+                      action="store_false", dest="autoconsole",
+                      help="Don't automatically try to connect to the guest console")
     
     
     # vmx/svm options
@@ -285,7 +289,6 @@ def show_console(dom):
         return vnc_console(dom)
     return txt_console(dom)
 
-
 ### Let's do it!
 def main():
     options = parse_args()
@@ -325,19 +328,47 @@ def main():
     else:
         get_fullvirt_cdrom(options.cdrom, guest)
 
+    if options.autoconsole is False:
+        conscb = None
+    else:
+        conscb = show_console
+
     # we've got everything -- try to start the install
     try:
         print "\n\nStarting install..."
-        dom = guest.start_install(show_console)
-        if dom is None: # domain isn't running anymore, assume success
-            print "Domain creation completed.  You can restart your domain "
-            print "by running 'xm create -c %s'" %(guest.name,)
-        else:
+        dom = guest.start_install(conscb)
+        if dom is not None and guest.domain.info()[0] != 0:
+            # domain seems to be running
             print "Domain installation still in progress.  You can reconnect "
             print "to the console to complete the installation process."
+            sys.exit(0)
     except RuntimeError, e:
         print >> sys.stderr, "ERROR: ", e
         sys.exit(1)
+
+    # the domain is no longer running
+    # FIXME: this is just a hacky heuristic, but I'll take what I can get
+    try:
+        fd = os.open(guest.disks[0].path, os.O_RDONLY)
+        buf = os.read(fd, 512)
+        os.close(fd)
+        if len(buf) == 512 and \
+               struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,):
+            # things installed enough that we should be able to restart
+            # the domain
+            print "Guest installation complete... restarting guest."
+            guest.start_from_disk(conscb)
+        else:
+            print ("Domain installation does not appear to have been\n"
+                   "successful.  If it was, you can restart your domain\n"
+                   "by running 'xm create -c %s'; otherwise, please\n"
+                   "restart your installation.") %(guest.name,)
+    except Exception, e:
+        print "exception was:", e
+        print ("Domain installation may not have been\n"
+               "successful.  If it was, you can restart your domain\n"
+               "by running 'xm create -c %s'; otherwise, please\n"
+               "restart your installation.") %(guest.name,)
 
 
 if __name__ == "__main__":

@@ -111,33 +111,50 @@ class ParaVirtGuest(XenGuest.XenGuest):
 
         return (kfn, ifn)
 
-    def _get_config_xml(self):
+    def _get_install_xml(self):
         if self.location:
             metharg="method=%s " %(self.location,)
         else:
             metharg = ""
             
-        return """<domain type='xen'>
-  <name>%(name)s</name>
+        return """
   <os>
     <type>linux</type>
     <kernel>%(kernel)s</kernel>
     <initrd>%(initrd)s</initrd>
     <cmdline> %(metharg)s %(extra)s</cmdline>
   </os>
+"""  % { "kernel": self.kernel, "initrd": self.initrd, "metharg": metharg, "extra": self.extraargs }
+
+    def _get_runtime_xml(self):
+        return """
+  <bootloader>/usr/bin/pygrub</bootloader>
+"""
+
+    def _get_config_xml(self, install = True):
+        if install:
+            osblob = self._get_install_xml()
+            action = "destroy"
+        else:
+            osblob = self._get_runtime_xml()
+            action = "restart"
+
+        return """<domain type='xen'>
+  <name>%(name)s</name>
   <memory>%(ramkb)s</memory>
-  <vcpu>%(vcpus)d</vcpu>
   <uuid>%(uuid)s</uuid>
-  <on_reboot>destroy</on_reboot>
+  %(osblob)s
   <on_poweroff>destroy</on_poweroff>
-  <on_crash>destroy</on_crash>
+  <on_reboot>%(action)s</on_reboot>
+  <on_crash>%(action)s</on_crash>
+  <vcpu>%(vcpus)d</vcpu>
   <devices>
     %(disks)s
     %(networks)s
     %(graphics)s
   </devices>
 </domain>
-""" % { "kernel": self.kernel, "initrd": self.initrd, "name": self.name, "metharg": metharg, "extra": self.extraargs, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml(), "graphics": self._get_graphics_xml() }
+""" % { "name": self.name, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml(), "graphics": self._get_graphics_xml(), "osblob": osblob, "action": action }
 
     def _get_config_xen(self):
         return """# Automatically generated xen config file

@@ -98,6 +98,8 @@ class XenGuest(object):
 
         self.domain = None
         self.conn = libvirt.open(None)
+        if self.conn == None:
+            raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
 
         self.disknode = None # this needs to be set in the subclass
 
@@ -262,8 +264,6 @@ class XenGuest(object):
         """Do the startup of the guest installation."""
         self.validate_parms()
 
-        if self.conn == None:
-            raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
         try:
             if self.conn.lookupByName(self.name) is not None:
                 raise RuntimeError, "Domain named %s already exists!" %(self.name,)
@@ -312,9 +312,46 @@ class XenGuest(object):
         # domain isn't running anymore
         return None
 
+    def start_from_disk(self, consolecb = None):
+        """Restart the guest from its disks."""
+        try:
+            if self.conn.lookupByName(self.name) is not None:
+                raise RuntimeError, "Domain named %s already exists!" %(self.name,)
+        except libvirt.libvirtError:
+            pass
+
+        self._set_defaults()
+        self._create_devices()
+        cxml = self._get_config_xml(install = False)
+        self.domain = self.conn.createLinux(cxml, 0)
+        if self.domain is None:
+            raise RuntimeError, "Unable to create domain for guest, aborting installation!"
+
+        child = None
+        if consolecb:
+            child = consolecb(self.domain)
+
+        time.sleep(2)
+        # FIXME: if the domain doesn't exist now, it almost certainly crashed.
+        # it'd be nice to know that for certain...
+        try:
+            d = self.conn.lookupByName(self.name)
+        except libvirt.libvirtError:
+            raise RuntimeError, "It appears that your domain has crashed.  You should be able to find more information in the xen logs"
+        
+
+        if child: # if we connected the console, wait for it to finish
+            try:
+                (pid, status) = os.waitpid(child, 0)
+            except OSError, (errno, msg):
+                print __name__, "waitpid:", msg
+
     def validate_parms(self):
         if self.domain is not None:
             raise RuntimeError, "Domain already started!"
+        self._set_defaults()
+
+    def _set_defaults(self):
         if self.uuid is None:
             self.uuid = util.uuidToString(util.randomUUID())
         if self.vcpus is None:
