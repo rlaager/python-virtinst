@@ -62,7 +62,7 @@ class XenDisk:
 
 class XenNetworkInterface:
     def __init__(self, macaddr = None, bridge = "xenbr0"):
-        self.macaddr = None
+        self.macaddr = macaddr
         self.bridge = bridge
 
     def setup(self):
