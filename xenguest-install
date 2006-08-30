@@ -329,7 +329,6 @@ def main():
     try:
         print "\n\nStarting install..."
         dom = guest.start_install(show_console)
-        print dom
         if dom is None: # domain isn't running anymore, assume success
             print "Domain creation completed.  You can restart your domain "
             print "by running 'xm create -c %s'" %(guest.name,)

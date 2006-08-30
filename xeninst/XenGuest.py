@@ -97,6 +97,7 @@ class XenGuest(object):
         self._graphics = { "enabled": False }
 
         self.domain = None
+        self.conn = libvirt.open(None)
 
         self.disknode = None # this needs to be set in the subclass
 
@@ -261,18 +262,17 @@ class XenGuest(object):
         """Do the startup of the guest installation."""
         self.validate_parms()
 
-        conn = libvirt.open(None)
-        if conn == None:
+        if self.conn == None:
             raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
         try:
-            if conn.lookupByName(self.name) is not None:
+            if self.conn.lookupByName(self.name) is not None:
                 raise RuntimeError, "Domain named %s already exists!" %(self.name,)
         except libvirt.libvirtError:
             pass
 
         self._create_devices()
         cxml = self._get_config_xml()
-        self.domain = conn.createLinux(cxml, 0)
+        self.domain = self.conn.createLinux(cxml, 0)
         if self.domain is None:
             raise RuntimeError, "Unable to create domain for guest, aborting installation!"
 
@@ -284,10 +284,10 @@ class XenGuest(object):
         # FIXME: if the domain doesn't exist now, it almost certainly crashed.
         # it'd be nice to know that for certain...
         try:
-            d = conn.lookupByID(self.domain.ID())
+            d = self.conn.lookupByName(self.name)
         except libvirt.libvirtError:
             raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the xen logs"
-
+        
 
         cf = "/etc/xen/%s" %(self.name,)
         f = open(cf, "w+")
@@ -300,18 +300,17 @@ class XenGuest(object):
             except OSError, (errno, msg):
                 print __name__, "waitpid:", msg
 
-            # ensure there's time for the domain to finish destroying if the
-            # install has finished or the guest crashed
-            time.sleep(1)
-            try:
-                d = conn.lookupByID(self.domain.ID())                
-            except libvirt.libvirtError:
-                return None
-            else:
-                return d
+        # ensure there's time for the domain to finish destroying if the
+        # install has finished or the guest crashed
+        time.sleep(1)
+        try:
+            d = self.conn.lookupByName(self.name)
+            return d
+        except libvirt.libvirtError, e:
+            pass
 
-        return
-        
+        # domain isn't running anymore
+        return None
 
     def validate_parms(self):
         if self.domain is not None:

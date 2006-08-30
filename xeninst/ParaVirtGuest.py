@@ -174,7 +174,7 @@ on_crash    = 'restart'
         (self.kernel, self.initrd) = self._get_paravirt_install_images()
 
         try:
-            XenGuest.XenGuest.start_install(self, consolecb)
+            return XenGuest.XenGuest.start_install(self, consolecb)
         finally:
             os.unlink(self.kernel)
             os.unlink(self.initrd)
