@@ -238,7 +238,6 @@ class XenGuest(object):
         if gt.name == "vnc":
             ret += "<graphics type='vnc'"
             if gt.port is not None:
-                print "gt.port is ", gt.port
                 ret += " port='%d'" %(gt.port,)
             ret += "/>"
         elif gt.name == "sdl":
@@ -253,8 +252,10 @@ class XenGuest(object):
         gt = self.graphics["type"]
         if gt.name == "vnc":
             ret += "vnc=1"
-            if gt.port:
+            if gt.port and gt.port >= 5900:
                 ret += "\nvncdisplay=%d" %(gt.port - 5900,)
+            elif gt.port and gt.port == -1:
+                ret += "\nvncunused=1"
         elif gt.name == "sdl":
             ret += "sdl=1"
         return ret
