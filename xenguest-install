@@ -75,7 +75,7 @@ def get_memory(memory, guest):
             memory = None
             continue
         try:
-            guest.memory = memory
+            guest.memory = int(memory)
             break
         except ValueError:
             print "ERROR: ", e
@@ -131,7 +131,7 @@ def get_graphics(vnc, vncport, nographics, guest):
         guest.graphics = (True, "vnc", vncport)
         return
     while 1:
-        res = prompt_for_input("Would you like to enable graphics support? (yes or not)")
+        res = prompt_for_input("Would you like to enable graphics support? (yes or no)")
         try:
             vnc = yes_or_no(res)
         except ValueError, e:
