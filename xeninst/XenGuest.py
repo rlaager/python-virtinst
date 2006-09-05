@@ -79,7 +79,7 @@ class XenVNCGraphics(XenGraphics):
         if len(args) >= 1 and args[0]:
             self.port = args[0]
         else:
-            self.port = None
+            self.port = -1
 
 class XenSDLGraphics(XenGraphics):
     def __init__(self, *args):
