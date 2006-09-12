@@ -42,7 +42,7 @@ def prompt_for_input(prompt = "", val = None):
 
 
 def check_xen():
-    if not os.path.isdir("/proc/xen") and 0:
+    if not os.path.isdir("/proc/xen"):
         print >> sys.stderr, "Can only install guests if running under a Xen kernel!"
         sys.exit(1)
 
@@ -121,7 +121,7 @@ def get_network(mac, bridge, guest):
         n = xeninst.XenNetworkInterface(mac)
     guest.nics.append(n)
 
-def get_graphics(vnc, vncport, nographics, guest):
+def get_graphics(vnc, vncport, nographics, sdl, guest):
     if vnc and nographics:
         raise ValueError, "Can't do both VNC graphics and nographics"
     if nographics:
@@ -129,6 +129,9 @@ def get_graphics(vnc, vncport, nographics, guest):
         return
     if vnc is not None:
         guest.graphics = (True, "vnc", vncport)
+        return
+    if sdl is not None:
+        guest.graphics = (True, "sdl")
         return
     while 1:
         res = prompt_for_input("Would you like to enable graphics support? (yes or no)")
@@ -198,6 +201,8 @@ def parse_args():
                       help="Use VNC for graphics support")
     parser.add_option("", "--vncport", type="int", dest="vncport",
                       help="Port to use for VNC")
+    parser.add_option("", "--sdl", action="store_true", dest="sdl", 
+                      help="Use SDL for graphics support")
     parser.add_option("", "--nographics", action="store_true",
                       help="Don't set up a graphical console for the guest.")
     parser.add_option("", "--noautoconsole",
@@ -319,7 +324,7 @@ def main():
     get_network(options.mac, options.bridge, guest)
 
     # set up graphics information
-    get_graphics(options.vnc, options.vncport, options.nographics, guest)
+    get_graphics(options.vnc, options.vncport, options.nographics, options.sdl, guest)
 
     # and now for the full-virt vs paravirt specific questions
     if not hvm: # paravirt
