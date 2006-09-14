@@ -257,6 +257,7 @@ class XenGuest(object):
             ret += "vnc=1"
             if gt.port and gt.port >= 5900:
                 ret += "\nvncdisplay=%d" %(gt.port - 5900,)
+                ret += "\nvncunused=0"
             elif gt.port and gt.port == -1:
                 ret += "\nvncunused=1"
         elif gt.name == "sdl":
