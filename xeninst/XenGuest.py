@@ -43,7 +43,7 @@ class XenDisk:
 
     def get_typestr(self):
         if self._type == TYPE_PHY:
-            return "phy"
+            return "block"
         else:
             return "file"
     type = property(get_typestr)
@@ -198,7 +198,10 @@ class XenGuest(object):
         ret = ""
         count = 0
         for d in self.disks:
-            ret += "<disk type='%(disktype)s'><source file='%(disk)s'/><target dev='%(disknode)s%(dev)c'/></disk>\n" %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count, "disknode": self.disknode}
+            if d.type == "block":
+                ret += "<disk type='%(disktype)s'><source dev='%(disk)s'/><target dev='%(disknode)s%(dev)c'/></disk>\n" %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count, "disknode": self.disknode}
+            else:
+                ret += "<disk type='%(disktype)s'><source file='%(disk)s'/><target dev='%(disknode)s%(dev)c'/></disk>\n" %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count, "disknode": self.disknode}
             count += 1
         return ret
 
