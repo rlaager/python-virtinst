@@ -28,7 +28,7 @@ class FullVirtGuest(XenGuest.XenGuest):
     def __init__(self):
         XenGuest.XenGuest.__init__(self)
         self._cdrom = None
-        self.disknode = "ioemu:hd"
+        self.disknode = "hd"
         self.features = { "acpi": True, "pae": False, "apic": True }
 
     def get_cdrom(self):
@@ -49,9 +49,11 @@ class FullVirtGuest(XenGuest.XenGuest):
                 lines = lines[:3]
             if stat.S_ISBLK(os.stat(self.cdrom)[stat.ST_MODE]):
                 t = "block"
+                d = "dev"
             else:
                 t = "file"
-            lines.append("<disk type='%(disktype)s' device='cdrom'><source file='%(disk)s'/><target dev='hdc'/><readonly/></disk>\n" %{"disktype": t, "disk": self.cdrom})
+                d = "file"
+            lines.append("<disk type='%(disktype)s' device='cdrom'><source %(devtype)s='%(disk)s'/><target dev='hdc'/><readonly/></disk>\n" %{"devtype": d, "disktype": t, "disk": self.cdrom})
         return string.join(lines, "")
 
     def _get_features_xml(self):
