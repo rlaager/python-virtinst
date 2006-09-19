@@ -18,6 +18,7 @@ import string
 import libvirt
 
 import XenGuest
+import util
 
 if os.uname()[4] in ("x86_64"):
     qemu = "/usr/lib64/xen/bin/qemu-dm"
@@ -29,7 +30,7 @@ class FullVirtGuest(XenGuest.XenGuest):
         XenGuest.XenGuest.__init__(self)
         self._cdrom = None
         self.disknode = "hd"
-        self.features = { "acpi": True, "pae": False, "apic": True }
+        self.features = { "acpi": True, "pae": util.is_pae_capable(), "apic": True }
 
     def get_cdrom(self):
         return self._cdrom

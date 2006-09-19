@@ -15,24 +15,32 @@
 import random
 
 
+def get_cpu_flags():
+    f = open("/proc/cpuinfo")
+    lines = f.readlines()
+    f.close()
+    for line in lines:
+        if not line.startswith("flags"):
+            continue
+        # get the actual flags
+        flags = line[:-1].split(":", 1)[1]
+        # and split them
+        flst = flags.split(" ")
+        return flst
+    return []
+
+def is_pae_capable():
+    """Determine if a machine is PAE capable or not."""
+    flags = get_cpu_flags()
+    if "pae" in flags:
+        return True
+    return False
+
 def is_hvm_capable():
-    """Determine if a machine is HVM capable or not."""
     # FIXME: should this check msrs or use something exported by Xen
     # to see if we actually have FV support
-    def get_cpu_flags():
-        f = open("/proc/cpuinfo")
-        lines = f.readlines()
-        f.close()
-        for line in lines:
-            if not line.startswith("flags"):
-                continue
-            # get the actual flags
-            flags = line[:-1].split(":", 1)[1]
-            # and split them
-            flst = flags.split(" ")
-            return flst
-        return []
-    
+    """Determine if a machine is HVM capable or not."""
+
     flags = get_cpu_flags()
     if "vmx" in flags:
         return True
