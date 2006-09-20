@@ -71,6 +71,19 @@ class FullVirtGuest(XenGuest.XenGuest):
                 ret += "%s=1\n" %(k,)
         return ret
 
+    def _get_network_xen(self):
+        # Sick copying this from XenGuest.py, but ultimately all
+        # XM config stuff will be moved to xend/libvirt and so this
+        # will go away.
+        """Get the network config in the xend python format"""
+        if len(self.nics) == 0: return ""
+        ret = "vif = [ "
+        for n in self.nics:
+            ret += "'type=ioemu, mac=%(mac)s, bridge=%(bridge)s', " % { "bridge": n.bridge, "mac": n.macaddr }
+        ret += "]"
+        return ret
+
+
     def _get_config_xml(self, install = True):
         # FIXME: hard-codes that we're booting from CD as hdd
         if install:
