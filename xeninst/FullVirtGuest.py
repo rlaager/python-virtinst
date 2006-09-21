@@ -130,10 +130,11 @@ device_model = "%(qemu)s"
 kernel = "/usr/lib/xen/boot/hvmloader"
 %(graphics)s
 %(features)s
+vcpus=%(vcpus)s
 serial = "pty" # enable serial console
 on_reboot   = 'restart'
 on_crash    = 'restart'
-""" % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid, "qemu": qemu, "graphics": self._get_graphics_xen(), "features": self._get_features_xen() }
+""" % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid, "qemu": qemu, "graphics": self._get_graphics_xen(), "vcpus": self.vcpus, "features": self._get_features_xen() }
 
     def validate_parms(self):
         if not self.cdrom:

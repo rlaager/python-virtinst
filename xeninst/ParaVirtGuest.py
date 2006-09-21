@@ -165,10 +165,10 @@ memory = "%(ram)s"
 %(graphics)s
 uuid = "%(uuid)s"
 bootloader="/usr/bin/pygrub"
-
+vcpus=%(vcpus)s
 on_reboot   = 'restart'
 on_crash    = 'restart'
-""" % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid, "graphics": self._get_graphics_xen() }
+""" % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid, "graphics": self._get_graphics_xen(), "vcpus" : self.vcpus }
 
     def _connectSerialConsole(self):
         # *sigh*  would be nice to have a python version of xmconsole
