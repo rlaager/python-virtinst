@@ -84,7 +84,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
                 initrd = grabber.urlopen("%s/images/xen/initrd.img"
                                          %(self.location,))
             except IOError, e:
-                raise RuntimeError, "Invalid URL location given: ", e
+                raise RuntimeError, "Invalid URL location given: " + str(e)
         elif self.location.startswith("nfs:"):
             nfsmntdir = tempfile.mkdtemp(prefix="xennfs.", dir="/var/lib/xen")
             cmd = ["mount", "-o", "ro", self.location[4:], nfsmntdir]
@@ -95,7 +95,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
                 kernel = open("%s/images/xen/vmlinuz" %(nfsmntdir,), "r")
                 initrd = open("%s/images/xen/initrd.img" %(nfsmntdir,), "r")
             except IOError, e:
-                raise RuntimeError, "Invalid NFS location given: ", e
+                raise RuntimeError, "Invalid NFS location given: " + str(e)
 
         kfn = _copy_temp(kernel, prefix="vmlinuz.")
         kernel.close()
