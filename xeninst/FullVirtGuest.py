@@ -26,8 +26,8 @@ else:
     qemu = "/usr/lib/xen/bin/qemu-dm"
 
 class FullVirtGuest(XenGuest.XenGuest):
-    def __init__(self):
-        XenGuest.XenGuest.__init__(self)
+    def __init__(self, hypervisorURI=None):
+        XenGuest.XenGuest.__init__(self, hypervisorURI=hypervisorURI)
         self._cdrom = None
         self.disknode = "hd"
         self.features = { "acpi": True, "pae": util.is_pae_capable(), "apic": True }
@@ -43,19 +43,12 @@ class FullVirtGuest(XenGuest.XenGuest):
 
     def _get_disk_xml(self):
         # ugh, this is disgusting, but the HVM disk stuff isn't nice :/
-        x = XenGuest.XenGuest._get_disk_xml(self)
-        lines = x.split("\n")
+        xml = XenGuest.XenGuest._get_disk_xml(self)
         if self.cdrom:
-            if len(lines) > 3:
-                lines = lines[:3]
-            if stat.S_ISBLK(os.stat(self.cdrom)[stat.ST_MODE]):
-                t = "block"
-                d = "dev"
-            else:
-                t = "file"
-                d = "file"
-            lines.append("<disk type='%(disktype)s' device='cdrom'><source %(devtype)s='%(disk)s'/><target dev='hdc'/><readonly/></disk>\n" %{"devtype": d, "disktype": t, "disk": self.cdrom})
-        return string.join(lines, "")
+            disk = XenGuest.XenDisk(self.cdrom, readOnly = True, device=XenGuest.XenDisk.DEVICE_CDROM)
+            # XXX no need to hardcode hdc in newer xen
+            xml += disk.get_xml_config("hdc")
+        return xml
 
     def _get_features_xml(self):
         ret = ""
@@ -111,7 +104,7 @@ class FullVirtGuest(XenGuest.XenGuest):
   <on_poweroff>destroy</on_poweroff>
   <devices>
     <emulator>%(qemu)s</emulator>
-    %(disks)s
+%(disks)s
     %(networks)s
     %(graphics)s
   </devices>

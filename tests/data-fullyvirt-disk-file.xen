@@ -1,0 +1,18 @@
+# Automatically generated xen config file
+name = "TestGuest"
+builder = "hvm"
+memory = "200"
+disk = [ 'file:/xen/test.img,hda,w', ]
+
+uuid = "123456-1234-1234-1234-123456"
+device_model = "/usr/lib64/xen/bin/qemu-dm"
+kernel = "/usr/lib/xen/boot/hvmloader"
+nographic=1
+apic=1
+acpi=1
+pae=1
+
+vcpus=5
+serial = "pty" # enable serial console
+on_reboot   = 'restart'
+on_crash    = 'restart'

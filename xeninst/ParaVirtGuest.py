@@ -33,8 +33,8 @@ def _copy_temp(fileobj, prefix):
     return fn
 
 class ParaVirtGuest(XenGuest.XenGuest):
-    def __init__(self):
-        XenGuest.XenGuest.__init__(self)
+    def __init__(self, hypervisorURI=None):
+        XenGuest.XenGuest.__init__(self, hypervisorURI=hypervisorURI)
         self._location = None
         self._boot = None
         self._extraargs = ""
@@ -149,7 +149,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
   <on_crash>%(action)s</on_crash>
   <vcpu>%(vcpus)d</vcpu>
   <devices>
-    %(disks)s
+%(disks)s
     %(networks)s
     %(graphics)s
   </devices>

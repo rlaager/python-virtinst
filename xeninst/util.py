@@ -13,7 +13,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import random
-
+import os.path
 
 def get_cpu_flags():
     f = open("/proc/cpuinfo")
@@ -46,6 +46,16 @@ def is_hvm_capable():
         return True
     if "svm" in flags:
         return True
+    return False
+
+def is_blktap_capable():
+    #return os.path.exists("/dev/xen/blktapctrl")
+    f = open("/proc/modules")
+    lines = f.readlines()
+    f.close()
+    for line in lines:
+        if line.startswith("blktap "):
+            return True
     return False
 
 

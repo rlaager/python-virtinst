@@ -1,0 +1,27 @@
+<domain type='xen'>
+  <name>TestGuest</name>
+  <memory>204800</memory>
+  <uuid>123456-1234-1234-1234-123456</uuid>
+  
+  <os>
+    <type>linux</type>
+    <kernel>/boot/vmlinuz</kernel>
+    <initrd>/boot/initrd</initrd>
+    <cmdline>  </cmdline>
+  </os>
+
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>destroy</on_reboot>
+  <on_crash>destroy</on_crash>
+  <vcpu>5</vcpu>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='tap'/>
+      <source file='/xen/test.img'/>
+      <target dev='xvda'/>
+    </disk>
+
+    
+    
+  </devices>
+</domain>

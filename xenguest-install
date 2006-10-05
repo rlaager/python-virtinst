@@ -18,7 +18,7 @@ import os, sys, string
 from optparse import OptionParser
 import subprocess
 import struct
-
+import logging
 import libxml2
 
 import xeninst
@@ -45,7 +45,6 @@ def check_xen():
     if not os.path.isdir("/proc/xen"):
         print >> sys.stderr, "Can only install guests if running under a Xen kernel!"
         sys.exit(1)
-
 
 ### General input gathering functions
 def get_full_virt():
@@ -88,7 +87,7 @@ def get_uuid(uuid, guest):
         except ValueError, e:
             print "ERROR: ", e
 
-def get_disks(disk, size, guest):
+def get_disks(disk, size, guest, hvm):
     # FIXME: need to handle a list of disks at some point
     while 1:
         disk = prompt_for_input("What would you like to use as the disk (path)?", disk)
@@ -105,6 +104,8 @@ def get_disks(disk, size, guest):
 
         try:
             d = xeninst.XenDisk(disk, size)
+            if d.type == xeninst.XenDisk.TYPE_FILE and not(hvm) and xeninst.util.is_blktap_capable():
+                d.driver_name = xeninst.XenDisk.DRIVER_TAP
         except ValueError, e:
             print "ERROR: ", e
             disk = size = None
@@ -226,6 +227,10 @@ def parse_args():
                       dest="extra", default="",
                       help="Additional arguments to pass to the installer with paravirt guests")
 
+    # Misc options
+    parser.add_option("-d", "--debug", action="store_true", dest="debug", 
+                      help="Print debugging information")
+
 
     (options,args) = parser.parse_args()
     return options
@@ -298,6 +303,17 @@ def show_console(dom):
 def main():
     options = parse_args()
 
+    if options.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format="%(asctime)s %(levelname)-8s %(message)s",
+                            datefmt="%a, %d %b %Y %H:%M:%S",
+                            stream=sys.stderr)
+    else:
+        logging.basicConfig(level=logging.ERROR,
+                            format="%(asctime)s %(levelname)-8s %(message)s",
+                            datefmt="%a, %d %b %Y %H:%M:%S",
+                            stream=sys.stderr)
+
     # check to ensure we're really on a xen kernel
     check_xen()
 
@@ -318,7 +334,7 @@ def main():
     get_uuid(options.uuid, guest)
 
     # set up disks
-    get_disks(options.diskfile, options.disksize, guest)
+    get_disks(options.diskfile, options.disksize, guest, hvm)
 
     # set up network information
     get_network(options.mac, options.bridge, guest)

@@ -19,10 +19,26 @@ import libvirt
 
 import util
 
-TYPE_PHY = 1
-TYPE_FILE = 2
+import logging
+
+
 class XenDisk:
-    def __init__(self, path, size = None):
+    DRIVER_FILE = "file"
+    DRIVER_PHY = "phy"
+    DRIVER_TAP = "tap"
+
+    DRIVER_TAP_RAW = "aio"
+    DRIVER_TAP_QCOW = "qcow"
+    DRIVER_TAP_VMDK = "vmdk"
+
+    DEVICE_DISK = "disk"
+    DEVICE_CDROM = "cdrom"
+    DEVICE_FLOPPY = "floppy"
+
+    TYPE_FILE = "file"
+    TYPE_BLOCK = "block"
+
+    def __init__(self, path, size = None, type=None, device=DEVICE_DISK, driverName=None, driverType=None, readOnly=False):
         """@path is the path to the disk image.
            @size is the size of the disk image in gigabytes."""
         self.size = size
@@ -30,32 +46,90 @@ class XenDisk:
 
         if os.path.isdir(self.path):
             raise ValueError, "Must provide a file, not a directory for the disk"
-        
-        if not os.path.exists(self.path):
-            if size is None:
-                raise ValueError, "Must provide a size for non-existent disks"
-            self._type = TYPE_FILE
-        else:
-            if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                self._type = TYPE_PHY
-            else:
-                self._type = TYPE_FILE
 
-    def get_typestr(self):
-        if self._type == TYPE_PHY:
-            return "phy"
+        if type is None:
+            if not os.path.exists(self.path):
+                if size is None:
+                    raise ValueError, "Must provide a size for non-existent disks"
+                self._type = XenDisk.TYPE_FILE
+            else:
+                if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                    self._type = XenDisk.TYPE_BLOCK
+                else:
+                    self._type = XenDisk.TYPE_FILE
         else:
-            return "file"
-    type = property(get_typestr)
+            self._type = type
+
+        self._readOnly = readOnly
+        self._device = device
+        self._driverName = driverName
+        self._driverType = driverType
+
+    def get_type(self):
+        return self._type
+    type = property(get_type)
+
+    def get_device(self):
+        return self._device
+    device = property(get_device)
+
+    def get_driver_name(self):
+        return self._driverName
+    driver_name = property(get_driver_name)
+
+    def get_driver_type(self):
+        return self._driverType
+    driver_type = property(get_driver_type)
+
+    def get_read_only(self):
+        return self._readOnly
+    read_only = property(get_read_only)
 
     def setup(self):
-        if self._type == TYPE_FILE and not os.path.exists(self.path):
+        if self._type == XenDisk.TYPE_FILE and not os.path.exists(self.path):
             fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
             off = long(self.size * 1024L * 1024L * 1024L)
             os.lseek(fd, off, 0)
             os.write(fd, '\x00')
             os.close(fd)
         # FIXME: set selinux context?
+
+    def get_xml_config(self, disknode):
+        typeattr = 'file'
+        if self.type == XenDisk.TYPE_BLOCK:
+            typeattr = 'dev'
+
+        ret = "    <disk type='%(type)s' device='%(device)s'>\n" % { "type": self.type, "device": self.device }
+        if not(self.driver_name is None):
+            if self.driver_type is None:
+                ret += "      <driver name='%(name)s'/>\n" % { "name": self.driver_name }
+            else:
+                ret += "      <driver name='%(name)s' type='%(type)s'/>\n" % { "name": self.driver_name, "type": self.driver_type }
+        ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": self.path }
+        ret += "      <target dev='%(disknode)s'/>\n" % { "disknode": disknode }
+        if self.read_only:
+            ret += "      <readonly/>\n"
+        ret += "    </disk>\n"
+        return ret
+
+    def get_xen_config(self, disknode):
+        disktype = "file"
+        if self.driver_name is None:
+            if self.type == XenDisk.TYPE_BLOCK:
+                disktype = "phy"
+        elif self.driver_name == XenDisk.DRIVER_TAP:
+            if self.driver_type is None:
+                disktype = self.driver_name + ":aio"
+            else:
+                disktype = self.driver_name + ":" + self.driver_type
+        else:
+            disktype = self.driver_name
+
+        mode = "w"
+        if self.read_only:
+            mode = "r"
+        return "'%(disktype)s:%(disk)s,%(disknode)s,%(mode)s'" \
+               % {"disktype": disktype, "disk": self.path, "disknode": disknode, "mode": mode}
 
     def __repr__(self):
         return "%s:%s" %(self.type, self.path)
@@ -87,7 +161,7 @@ class XenSDLGraphics(XenGraphics):
     
 
 class XenGuest(object):
-    def __init__(self):
+    def __init__(self, hypervisorURI=None):
         self.disks = []
         self.nics = []
         self._name = None
@@ -97,7 +171,7 @@ class XenGuest(object):
         self._graphics = { "enabled": False }
 
         self.domain = None
-        self.conn = libvirt.open(None)
+        self.conn = libvirt.open(hypervisorURI)
         if self.conn == None:
             raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
 
@@ -198,10 +272,8 @@ class XenGuest(object):
         ret = ""
         count = 0
         for d in self.disks:
-            if d.type == "phy":
-                ret += "<disk type='%(disktype)s'><source dev='%(disk)s'/><target dev='%(disknode)s%(dev)c'/></disk>\n" %{"disktype": "block", "disk": d.path, "dev": ord('a') + count, "disknode": self.disknode}
-            else:
-                ret += "<disk type='%(disktype)s'><source file='%(disk)s'/><target dev='%(disknode)s%(dev)c'/></disk>\n" %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count, "disknode": self.disknode}
+            disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
+            ret += d.get_xml_config(disknode)
             count += 1
         return ret
 
@@ -211,7 +283,9 @@ class XenGuest(object):
         ret = "disk = [ "
         count = 0
         for d in self.disks:
-            ret += "'%(disktype)s:%(disk)s,%(disknode)s%(dev)c,w', " %{"disktype": d.type, "disk": d.path, "dev": ord('a') + count, "disknode": self.disknode}
+            disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
+            ret += d.get_xen_config(disknode)
+            ret += ", "
             count += 1
         ret += "]"
         return ret
@@ -277,6 +351,7 @@ class XenGuest(object):
 
         self._create_devices()
         cxml = self._get_config_xml()
+        logging.debug("Creating guest from '%s'" % ( cxml ))
         self.domain = self.conn.createLinux(cxml, 0)
         if self.domain is None:
             raise RuntimeError, "Unable to create domain for guest, aborting installation!"
@@ -296,7 +371,9 @@ class XenGuest(object):
 
         cf = "/etc/xen/%s" %(self.name,)
         f = open(cf, "w+")
-        f.write(self._get_config_xen())
+        xmc = self._get_config_xen()
+        logging.debug("Saving XM config file '%s'" % ( xmc ))
+        f.write(xmc)
         f.close()
 
         if child: # if we connected the console, wait for it to finish
@@ -328,6 +405,7 @@ class XenGuest(object):
         self._set_defaults()
         self._create_devices()
         cxml = self._get_config_xml(install = False)
+        logging.debug("Starting guest from '%s'" % ( cxml ))
         self.domain = self.conn.createLinux(cxml, 0)
         if self.domain is None:
             raise RuntimeError, "Unable to create domain for guest, aborting installation!"
