@@ -1,6 +1,6 @@
 import string
 import unittest
-import xeninst
+import virtinst
 import os
 
 class TestXMLConfig(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestXMLConfig(unittest.TestCase):
         self.assertEqual(actualXML, expectXML)
 
     def _get_basic_paravirt_guest(self):
-        g = xeninst.ParaVirtGuest(hypervisorURI="test:///default")
+        g = virtinst.ParaVirtGuest(hypervisorURI="test:///default")
         g.name = "TestGuest"
         g.memory = int(200)
         g.uuid = "123456-1234-1234-1234-123456"
@@ -29,7 +29,7 @@ class TestXMLConfig(unittest.TestCase):
         return g
 
     def _get_basic_fullyvirt_guest(self):
-        g = xeninst.FullVirtGuest(hypervisorURI="test:///default")
+        g = virtinst.FullVirtGuest(hypervisorURI="test:///default")
         g.name = "TestGuest"
         g.memory = int(200)
         g.uuid = "123456-1234-1234-1234-123456"
@@ -39,56 +39,56 @@ class TestXMLConfig(unittest.TestCase):
 
     def testParavirtDiskFile(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(xeninst.XenDisk("/xen/test.img", type=xeninst.XenDisk.TYPE_FILE))
+        g.disks.append(virtinst.XenDisk("/xen/test.img", type=virtinst.XenDisk.TYPE_FILE))
         self._compare(g, "data-paravirt-disk-file")
 
     def testParavirtDiskBlock(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(xeninst.XenDisk("/dev/hdb1", type=xeninst.XenDisk.TYPE_BLOCK))
+        g.disks.append(virtinst.XenDisk("/dev/hdb1", type=virtinst.XenDisk.TYPE_BLOCK))
         self._compare(g, "data-paravirt-disk-block")
 
     def testParavirtDiskDrvPhy(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(xeninst.XenDisk("/dev/hdb1", type=xeninst.XenDisk.TYPE_BLOCK, \
-                                       driverName = xeninst.XenDisk.DRIVER_PHY))
+        g.disks.append(virtinst.XenDisk("/dev/hdb1", type=virtinst.XenDisk.TYPE_BLOCK, \
+                                       driverName = virtinst.XenDisk.DRIVER_PHY))
         self._compare(g, "data-paravirt-disk-drv-phy")
 
     def testParavirtDiskDrvFile(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(xeninst.XenDisk("/xen/test.img", type=xeninst.XenDisk.TYPE_FILE, \
-                                       driverName = xeninst.XenDisk.DRIVER_FILE))
+        g.disks.append(virtinst.XenDisk("/xen/test.img", type=virtinst.XenDisk.TYPE_FILE, \
+                                       driverName = virtinst.XenDisk.DRIVER_FILE))
         self._compare(g, "data-paravirt-disk-drv-file")
 
     def testParavirtDiskDrvTap(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(xeninst.XenDisk("/xen/test.img", type=xeninst.XenDisk.TYPE_FILE, \
-                                       driverName = xeninst.XenDisk.DRIVER_TAP))
+        g.disks.append(virtinst.XenDisk("/xen/test.img", type=virtinst.XenDisk.TYPE_FILE, \
+                                       driverName = virtinst.XenDisk.DRIVER_TAP))
         self._compare(g, "data-paravirt-disk-drv-tap")
 
     def testParavirtDiskDrvTapQCow(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(xeninst.XenDisk("/xen/test.img", type=xeninst.XenDisk.TYPE_FILE, \
-                                       driverName = xeninst.XenDisk.DRIVER_TAP, \
-                                       driverType = xeninst.XenDisk.DRIVER_TAP_QCOW))
+        g.disks.append(virtinst.XenDisk("/xen/test.img", type=virtinst.XenDisk.TYPE_FILE, \
+                                       driverName = virtinst.XenDisk.DRIVER_TAP, \
+                                       driverType = virtinst.XenDisk.DRIVER_TAP_QCOW))
         self._compare(g, "data-paravirt-disk-drv-tap-qcow")
 
     def testParavirtManyDisks(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(xeninst.XenDisk("/xen/test1.img", type=xeninst.XenDisk.TYPE_FILE))
-        g.disks.append(xeninst.XenDisk("/xen/test2.img", type=xeninst.XenDisk.TYPE_FILE, \
-                                       driverName = xeninst.XenDisk.DRIVER_TAP, \
-                                       driverType = xeninst.XenDisk.DRIVER_TAP_QCOW))
-        g.disks.append(xeninst.XenDisk("/dev/hdb1", type=xeninst.XenDisk.TYPE_BLOCK))
+        g.disks.append(virtinst.XenDisk("/xen/test1.img", type=virtinst.XenDisk.TYPE_FILE))
+        g.disks.append(virtinst.XenDisk("/xen/test2.img", type=virtinst.XenDisk.TYPE_FILE, \
+                                       driverName = virtinst.XenDisk.DRIVER_TAP, \
+                                       driverType = virtinst.XenDisk.DRIVER_TAP_QCOW))
+        g.disks.append(virtinst.XenDisk("/dev/hdb1", type=virtinst.XenDisk.TYPE_BLOCK))
         self._compare(g, "data-paravirt-many-disks")
 
     def testFullyvirtDiskFile(self):
         g = self._get_basic_fullyvirt_guest()
-        g.disks.append(xeninst.XenDisk("/xen/test.img", type=xeninst.XenDisk.TYPE_FILE))
+        g.disks.append(virtinst.XenDisk("/xen/test.img", type=virtinst.XenDisk.TYPE_FILE))
         self._compare(g, "data-fullyvirt-disk-file")
 
     def testFullyvirtDiskBlock(self):
         g = self._get_basic_fullyvirt_guest()
-        g.disks.append(xeninst.XenDisk("/dev/hdb1", type=xeninst.XenDisk.TYPE_BLOCK))
+        g.disks.append(virtinst.XenDisk("/dev/hdb1", type=virtinst.XenDisk.TYPE_BLOCK))
         self._compare(g, "data-fullyvirt-disk-block")
 
 

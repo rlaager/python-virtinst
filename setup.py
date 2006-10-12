@@ -1,14 +1,14 @@
 from distutils.core import setup
 
-pkgs = ['xeninst']
-setup(name='xeninst',
-      version='0.93.0',
-      description='Xen guest installation',
+pkgs = ['virtinst']
+setup(name='virtinst',
+      version='0.95.0',
+      description='Virtual machine installation',
       author='Jeremy Katz',
       author_email='katzj@redhat.com',
       license='GPL',
-      package_dir={'xeninst': 'xeninst'},
-      scripts = ["xenguest-install"],
+      package_dir={'virtinst': 'virtinst'},
+      scripts = ["virt-install"],
       packages=pkgs,
       )
                
