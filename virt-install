@@ -87,6 +87,13 @@ def get_uuid(uuid, guest):
         except ValueError, e:
             print "ERROR: ", e
 
+def get_vcpus(vcpus, guest):
+    if vcpus: 
+        try:
+            guest.vcpus = vcpus
+        except ValueError, e:
+            print "ERROR: ", e
+
 def get_disks(disk, size, guest, hvm):
     # FIXME: need to handle a list of disks at some point
     while 1:
@@ -184,6 +191,8 @@ def parse_args():
                       help="Memory to allocate for guest instance in megabytes")
     parser.add_option("-u", "--uuid", type="string", dest="uuid",
                       help="UUID for the guest; if none is given a random UUID will be generated")
+    parser.add_option("", "--vcpus", type="int", dest="vcpus",
+                      help="Number of vcpus to configure for your guest")
 
     # disk options
     parser.add_option("-f", "--file", type="string", dest="diskfile",
