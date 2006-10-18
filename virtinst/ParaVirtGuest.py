@@ -74,6 +74,14 @@ class ParaVirtGuest(XenGuest.XenGuest):
     extraargs = property(get_extra_args, set_extra_args)
 
     def _get_paravirt_install_images(self):
+        def cleanup_nfs(nfsmntdir):
+            cmd = ["umount", nfsmntdir]
+            ret = subprocess.call(cmd)
+            try:
+                os.rmdir(nfsmntdir)
+            except:
+                pass
+            
         if self.boot is not None:
             return (self.boot["kernel"], self.boot["initrd"])
         if self.location.startswith("http://") or \
@@ -90,11 +98,13 @@ class ParaVirtGuest(XenGuest.XenGuest):
             cmd = ["mount", "-o", "ro", self.location[4:], nfsmntdir]
             ret = subprocess.call(cmd)
             if ret != 0:
+                cleanup_nfs(nfsmntdir)
                 raise RuntimeError, "Unable to mount NFS location!"
             try:
                 kernel = open("%s/images/xen/vmlinuz" %(nfsmntdir,), "r")
                 initrd = open("%s/images/xen/initrd.img" %(nfsmntdir,), "r")
             except IOError, e:
+                cleanup_nfs(nfsmntdir)                
                 raise RuntimeError, "Invalid NFS location given: " + str(e)
 
         kfn = _copy_temp(kernel, prefix="vmlinuz.")
@@ -105,9 +115,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
 
         # and unmount
         if self.location.startswith("nfs"):
-            cmd = ["umount", nfsmntdir]
-            ret = subprocess.call(cmd)
-            os.rmdir(nfsmntdir)
+            cleanup_nfs(nfsmntdir)            
 
         return (kfn, ifn)
 
