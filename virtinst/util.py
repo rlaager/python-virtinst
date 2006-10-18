@@ -37,14 +37,12 @@ def is_pae_capable():
     return False
 
 def is_hvm_capable():
-    # FIXME: should this check msrs or use something exported by Xen
-    # to see if we actually have FV support
     """Determine if a machine is HVM capable or not."""
 
-    flags = get_cpu_flags()
-    if "vmx" in flags:
-        return True
-    if "svm" in flags:
+    caps = ""
+    if os.path.exists("/sys/hypervisor/properties/capabilities"):
+        caps = open("/sys/hypervisor/properties/capabilities").read()
+    if caps.find("hvm") != -1:
         return True
     return False
 
