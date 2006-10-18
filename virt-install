@@ -341,6 +341,7 @@ def main():
     get_name(options.name, guest)
     get_memory(options.memory, guest)
     get_uuid(options.uuid, guest)
+    get_vcpus(options.vcpus, guest)
 
     # set up disks
     get_disks(options.diskfile, options.disksize, guest, hvm)
