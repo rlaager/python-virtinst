@@ -14,6 +14,28 @@
 
 import random
 import os.path
+from sys import stderr
+
+def default_bridge():
+    route_file = "/proc/net/route"
+    d = file(route_file)
+
+    defn = 0
+    for line in d.xreadlines():
+        info = line.split()
+        if (len(info) != 11): # 11 = typlical num of fields in the file
+            print >> stderr, "Invalid line lenght while parsing %s."%(route_file)
+            print >> stderr, " Defaulting bridge to xenbr%d"%(defn)
+            break
+        try:
+            route = int(info[1],16)
+            if route == 0:
+                defn = int(info[0][-1])
+                break 
+        except ValueError:
+            continue
+
+    return "xenbr%d"%(defn)
 
 def get_cpu_flags():
     f = open("/proc/cpuinfo")

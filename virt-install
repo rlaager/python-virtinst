@@ -122,7 +122,6 @@ def get_disks(disk, size, guest, hvm):
         break
 
 def get_network(mac, bridge, guest):
-    # FIXME: need to handle multiple network interfaces at some point
     if bridge is not None: 
         n = virtinst.XenNetworkInterface(mac, bridge)
     else:

@@ -135,8 +135,10 @@ class XenDisk:
         return "%s:%s" %(self.type, self.path)
 
 class XenNetworkInterface:
-    def __init__(self, macaddr = None, bridge = "xenbr0"):
+    def __init__(self, macaddr = None, bridge = None):
         self.macaddr = macaddr
+        if not bridge:
+            bridge = util.default_bridge()
         self.bridge = bridge
 
     def setup(self):
