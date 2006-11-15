@@ -14,6 +14,7 @@
 
 import os
 import stat, time
+import re
 
 import libvirt
 
@@ -184,8 +185,10 @@ class XenGuest(object):
         return self._name
     def set_name(self, val):
         # FIXME: need some validation here
-        if val.find(" ") != -1:
-            raise ValueError, "Domain name cannot contain spaces"
+        if re.match("^[a-zA-Z0-9_]*$", val) == None: 
+            raise ValueError, "Domain name must be alphanumeric or _"
+        if len(val) > 50:
+            raise ValueError, "Domain name must be less than 50 characters"
         if type(val) != type("string"):
             raise ValueError, "Domain name must be a string"
         self._name = val
