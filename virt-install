@@ -94,14 +94,14 @@ def get_vcpus(vcpus, guest):
         except ValueError, e:
             print "ERROR: ", e
 
-def get_disks(disk, size, guest, hvm):
+def get_disk(disk, size, guest, hvm):
     # FIXME: need to handle a list of disks at some point
     while 1:
         disk = prompt_for_input("What would you like to use as the disk (path)?", disk)
         while 1:
             if os.path.exists(disk):
                 break
-            size = prompt_for_input("How large would you like the disk to be (in gigabytes)?", size)
+            size = prompt_for_input("How large would you like the disk (%s) to be (in gigabytes)?" %(disk,), size)
             try:
                 size = float(size)
                 break
@@ -121,12 +121,42 @@ def get_disks(disk, size, guest, hvm):
         guest.disks.append(d)
         break
 
-def get_network(mac, bridge, guest):
-    if bridge is not None: 
-        n = virtinst.XenNetworkInterface(mac, bridge)
+def get_disks(disk, size, guest, hvm):
+    # ensure we have equal length lists 
+    if (type(disk) == type(size) == list):
+        if len(disk) != len(size):
+            print >> sys.stderr, "Need to pass size for each disk"
+            sys.exit(1)
+    elif type(disk) == list:
+        size = [ None ] * len(disk)
+
+    if (type(disk) == list):
+        map(lambda d, s: get_disk(d, s, guest, hvm),
+            disk, size)
     else:
-        n = virtinst.XenNetworkInterface(mac)
+        get_disk(disk, size, guest, hvm)
+
+def get_network(mac, bridge, guest):
+    if mac == "RANDOM":
+        mac = None
+    n = virtinst.XenNetworkInterface(mac, bridge)
     guest.nics.append(n)
+
+def get_networks(macs, bridges, guest):
+    # ensure we have equal length lists 
+    if (type(macs) == type(bridges) == list):
+        if len(macs) != len(bridges):
+            print >> sys.stderr, "Need to pass bridge for each network device"
+            sys.exit(1)
+    elif type(macs) == list:
+        bridges = [ None ] * len(macs)
+    elif type(bridges) == list:
+        macs = [ None ] * len(bridges)
+
+    if (type(macs) == list):
+        map(lambda m, b: get_network(m, b, guest), macs, bridges)
+    else:
+        get_network(macs, bridges, guest)
 
 def get_graphics(vnc, vncport, nographics, sdl, guest):
     if vnc and nographics:
@@ -194,16 +224,20 @@ def parse_args():
                       help="Number of vcpus to configure for your guest")
 
     # disk options
-    parser.add_option("-f", "--file", type="string", dest="diskfile",
+    parser.add_option("-f", "--file", type="string",
+                      dest="diskfile", action="append",
                       help="File to use as the disk image")
-    parser.add_option("-s", "--file-size", type="float", dest="disksize",
+    parser.add_option("-s", "--file-size", type="float",
+                      action="append", dest="disksize",
                       help="Size of the disk image (if it doesn't exist) in gigabytes")
     
     # network options
-    parser.add_option("-m", "--mac", type="string", dest="mac",
-                      help="Fixed MAC address for the guest; if none is given a random address will be used")
-    parser.add_option("-b", "--bridge", type="string", dest="bridge",
-                      help="Bridge to connect guest NIC to, if none specified, the default (xenbr0) is used")
+    parser.add_option("-m", "--mac", type="string",
+                      dest="mac", action="append",
+                      help="Fixed MAC address for the guest; if none or RANDOM is given a random address will be used")
+    parser.add_option("-b", "--bridge", type="string",
+                      dest="bridge", action="append",
+                      help="Bridge to connect guest NIC to; if none given, will try to determine the default")
 
     # graphics options
     parser.add_option("", "--vnc", action="store_true", dest="vnc", 
@@ -350,7 +384,7 @@ def main():
     get_disks(options.diskfile, options.disksize, guest, hvm)
 
     # set up network information
-    get_network(options.mac, options.bridge, guest)
+    get_networks(options.mac, options.bridge, guest)
 
     # set up graphics information
     get_graphics(options.vnc, options.vncport, options.nographics, options.sdl, guest)
