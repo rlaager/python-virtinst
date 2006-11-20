@@ -138,13 +138,13 @@ class XenDisk:
 class XenNetworkInterface:
     def __init__(self, macaddr = None, bridge = None):
         self.macaddr = macaddr
-        if not bridge:
-            bridge = util.default_bridge()
         self.bridge = bridge
 
     def setup(self):
         if self.macaddr is None:
             self.macaddr = util.randomMAC()
+        if not self.bridge:
+            self.bridge = util.default_bridge()
 
 class XenGraphics:
     def __init__(self, *args):
