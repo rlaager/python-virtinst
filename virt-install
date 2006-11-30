@@ -94,7 +94,7 @@ def get_vcpus(vcpus, guest):
         except ValueError, e:
             print "ERROR: ", e
 
-def get_disk(disk, size, guest, hvm):
+def get_disk(disk, size, sparse, guest, hvm):
     # FIXME: need to handle a list of disks at some point
     while 1:
         disk = prompt_for_input("What would you like to use as the disk (path)?", disk)
@@ -110,7 +110,7 @@ def get_disk(disk, size, guest, hvm):
                 size = None
 
         try:
-            d = virtinst.XenDisk(disk, size)
+            d = virtinst.XenDisk(disk, size, sparse = sparse)
             if d.type == virtinst.XenDisk.TYPE_FILE and not(hvm) and virtinst.util.is_blktap_capable():
                 d.driver_name = virtinst.XenDisk.DRIVER_TAP
         except ValueError, e:
@@ -121,7 +121,7 @@ def get_disk(disk, size, guest, hvm):
         guest.disks.append(d)
         break
 
-def get_disks(disk, size, guest, hvm):
+def get_disks(disk, size, sparse, guest, hvm):
     # ensure we have equal length lists 
     if (type(disk) == type(size) == list):
         if len(disk) != len(size):
@@ -131,10 +131,10 @@ def get_disks(disk, size, guest, hvm):
         size = [ None ] * len(disk)
 
     if (type(disk) == list):
-        map(lambda d, s: get_disk(d, s, guest, hvm),
+        map(lambda d, s: get_disk(d, s, sparse, guest, hvm),
             disk, size)
     else:
-        get_disk(disk, size, guest, hvm)
+        get_disk(disk, size, sparse, guest, hvm)
 
 def get_network(mac, bridge, guest):
     if mac == "RANDOM":
@@ -230,6 +230,9 @@ def parse_args():
     parser.add_option("-s", "--file-size", type="float",
                       action="append", dest="disksize",
                       help="Size of the disk image (if it doesn't exist) in gigabytes")
+    parser.add_option("", "--nonsparse", action="store_false",
+                      default=True, dest="sparse",
+                      help="Don't use sparse files for disks.  Note that this will be significantly slower for guest creation")
     
     # network options
     parser.add_option("-m", "--mac", type="string",
@@ -381,7 +384,8 @@ def main():
     get_vcpus(options.vcpus, guest)
 
     # set up disks
-    get_disks(options.diskfile, options.disksize, guest, hvm)
+    get_disks(options.diskfile, options.disksize, options.sparse,
+              guest, hvm)
 
     # set up network information
     get_networks(options.mac, options.bridge, guest)

@@ -39,10 +39,11 @@ class XenDisk:
     TYPE_FILE = "file"
     TYPE_BLOCK = "block"
 
-    def __init__(self, path, size = None, type=None, device=DEVICE_DISK, driverName=None, driverType=None, readOnly=False):
+    def __init__(self, path, size = None, type=None, device=DEVICE_DISK, driverName=None, driverType=None, readOnly=False, sparse=True):
         """@path is the path to the disk image.
            @size is the size of the disk image in gigabytes."""
         self.size = size
+        self.sparse = sparse
         self.path = os.path.abspath(path)
 
         if os.path.isdir(self.path):
@@ -89,9 +90,14 @@ class XenDisk:
     def setup(self):
         if self._type == XenDisk.TYPE_FILE and not os.path.exists(self.path):
             fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
-            off = long(self.size * 1024L * 1024L * 1024L)
-            os.lseek(fd, off, 0)
-            os.write(fd, '\x00')
+            if self.sparse:
+                off = long(self.size * 1024L * 1024L * 1024L)
+                os.lseek(fd, off, 0)
+                os.write(fd, '\x00')
+            else:
+                buf = '\x00' * 1024 * 1024 # 1 meg of nulls
+                for i in range(0, long(self.size * 1024L)):
+                    os.write(fd, buf)
             os.close(fd)
         # FIXME: set selinux context?
 
