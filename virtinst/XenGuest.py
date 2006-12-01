@@ -371,15 +371,22 @@ class XenGuest(object):
         if consolecb:
             child = consolecb(self.domain)
 
-        time.sleep(2)
-        # FIXME: if the domain doesn't exist now, it almost certainly crashed.
-        # it'd be nice to know that for certain...
-        try:
-            d = self.conn.lookupByName(self.name)
-        except libvirt.libvirtError:
+        # sleep in .25 second increments until either a) we find
+        # our domain or b) it's been 5 seconds.  this is so that
+        # we can try to gracefully handle domain creation failures
+        num = 0
+        d = None
+        while num < (5 / .25): # 5 seconds, .25 second sleeps
+            try:
+                d = self.conn.lookupByName(self.name)
+                break
+            except libvirt.libvirtError:
+                pass
+            time.sleep(0.25)
+
+        if d is None:
             raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the xen logs"
         
-
         cf = "/etc/xen/%s" %(self.name,)
         f = open(cf, "w+")
         xmc = self._get_config_xen()
@@ -395,7 +402,8 @@ class XenGuest(object):
 
         # ensure there's time for the domain to finish destroying if the
         # install has finished or the guest crashed
-        time.sleep(1)
+        if consolecb:
+            time.sleep(1)
         try:
             d = self.conn.lookupByName(self.name)
             return d
