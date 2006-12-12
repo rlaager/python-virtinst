@@ -76,7 +76,7 @@ def get_memory(memory, guest):
         try:
             guest.memory = int(memory)
             break
-        except ValueError:
+        except ValueError, e:
             print "ERROR: ", e
             memory = None
 
