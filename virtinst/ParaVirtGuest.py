@@ -139,6 +139,24 @@ class ParaVirtGuest(XenGuest.XenGuest):
   <bootloader>/usr/bin/pygrub</bootloader>
 """
 
+    def _get_graphics_xen(self):
+        """Get the graphics config in the xend python format"""
+        if self.graphics["enabled"] == False:
+            return ""
+        ret = "vfb = [\""
+        gt = self.graphics["type"]
+        if gt.name == "vnc":
+            ret += "type=vnc"
+            if gt.port and gt.port >= 5900:
+                ret += ",vncdisplay=%d" %(gt.port - 5900,)
+                ret += ",vncunused=0"
+            elif gt.port and gt.port == -1:
+                ret += ",vncunused=1"
+        elif gt.name == "sdl":
+            ret += "type=sdl"
+        ret += "\"]"
+        return ret
+
     def _get_config_xml(self, install = True):
         if install:
             osblob = self._get_install_xml()
