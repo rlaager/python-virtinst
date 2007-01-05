@@ -15,6 +15,7 @@
 import os
 import stat, time
 import re
+import urlgrabber.progress as progress
 
 import libvirt
 
@@ -87,18 +88,25 @@ class XenDisk:
         return self._readOnly
     read_only = property(get_read_only)
 
-    def setup(self):
+    def setup(self, progresscb):
         if self._type == XenDisk.TYPE_FILE and not os.path.exists(self.path):
-            fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
-            if self.sparse:
-                off = long(self.size * 1024L * 1024L * 1024L)
-                os.lseek(fd, off, 0)
-                os.write(fd, '\x00')
-            else:
-                buf = '\x00' * 1024 * 1024 # 1 meg of nulls
-                for i in range(0, long(self.size * 1024L)):
-                    os.write(fd, buf)
-            os.close(fd)
+            size_bytes = long(self.size * 1024L * 1024L * 1024L)
+            progresscb.start(filename=self.path,size=long(size_bytes), \
+                             text="Creating storage file...")
+            try: 
+                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+                if self.sparse:
+                    os.lseek(fd, size_bytes, 0)
+                    os.write(fd, '\x00')
+                    progresscb.update(self.size)
+                else:
+                    buf = '\x00' * 1024 * 1024 # 1 meg of nulls
+                    for i in range(0, long(self.size * 1024L)):
+                        os.write(fd, buf)
+                        progresscb.update(long(i * 1024L * 1024L))
+            finally:
+                os.close(fd)
+                progresscb.end(size_bytes)
         # FIXME: set selinux context?
 
     def get_xml_config(self, disknode):
@@ -271,10 +279,10 @@ class XenGuest(object):
     graphics = property(get_graphics, set_graphics)
 
 
-    def _create_devices(self):
+    def _create_devices(self,progresscb):
         """Ensure that devices are setup"""
         for disk in self.disks:
-            disk.setup()
+            disk.setup(progresscb)
         for nic in self.nics:
             nic.setup()
 
@@ -350,17 +358,22 @@ class XenGuest(object):
         return ret
         
 
-    def start_install(self, consolecb = None):
+    def start_install(self, consolecb = None, meter = None):
         """Do the startup of the guest installation."""
         self.validate_parms()
 
+        if meter:
+            progresscb = meter
+        else:
+            # BaseMeter does nothing, but saves a lot of null checking
+            progresscb = progress.BaseMeter()
         try:
             if self.conn.lookupByName(self.name) is not None:
                 raise RuntimeError, "Domain named %s already exists!" %(self.name,)
         except libvirt.libvirtError:
             pass
 
-        self._create_devices()
+        self._create_devices(progresscb)
         cxml = self._get_config_xml()
         logging.debug("Creating guest from '%s'" % ( cxml ))
         self.domain = self.conn.createLinux(cxml, 0)

@@ -15,6 +15,7 @@
 import os, sys, time
 import subprocess
 import urlgrabber.grabber as grabber
+import urlgrabber.progress as progress
 import tempfile
 
 import libvirt
@@ -24,12 +25,14 @@ import XenGuest
 def _copy_temp(fileobj, prefix):
     (fd, fn) = tempfile.mkstemp(prefix=prefix, dir="/var/lib/xen")
     block_size = 16384
-    while 1:
-        buff = fileobj.read(block_size)
-        if not buff:
-            break
-        os.write(fd, buff)
-    os.close(fd)
+    try:
+        while 1:
+            buff = fileobj.read(block_size)
+            if not buff:
+                break
+            os.write(fd, buff)
+    finally:
+        os.close(fd)
     return fn
 
 class ParaVirtGuest(XenGuest.XenGuest):
@@ -73,7 +76,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
         self._extraargs = val
     extraargs = property(get_extra_args, set_extra_args)
 
-    def _get_paravirt_install_images(self):
+    def _get_paravirt_install_images(self, progresscb):
         def cleanup_nfs(nfsmntdir):
             cmd = ["umount", nfsmntdir]
             ret = subprocess.call(cmd)
@@ -84,15 +87,35 @@ class ParaVirtGuest(XenGuest.XenGuest):
             
         if self.boot is not None:
             return (self.boot["kernel"], self.boot["initrd"])
+        kfn = None
+        ifn = None
         if self.location.startswith("http://") or \
                self.location.startswith("ftp://"):
+            kernel = None
+            initrd = None
             try:
-                kernel = grabber.urlopen("%s/images/xen/vmlinuz"
-                                         %(self.location,))
-                initrd = grabber.urlopen("%s/images/xen/initrd.img"
-                                         %(self.location,))
-            except IOError, e:
-                raise RuntimeError, "Invalid URL location given: " + str(e)
+                try:
+                    kernel = grabber.urlopen("%s/images/xen/vmlinuz" %(self.location,), \
+                                             progress_obj = progresscb, \
+                                             text = "Retrieving vmlinuz...")
+                except IOError, e:
+                    raise RuntimeError, "Invalid URL location given: " + str(e)
+                kfn = _copy_temp(kernel, prefix="vmlinuz.")
+            finally:
+                if kernel:
+                    kernel.close()
+            try:
+                try:
+                    initrd = grabber.urlopen("%s/images/xen/initrd.img" %(self.location,), \
+                                             progress_obj=progresscb, \
+                                             text = "Retrieving initrd.img...")
+                except IOError, e:
+                    raise RuntimeError, "Invalid URL location given: " + str(e)
+                ifn = _copy_temp(initrd, prefix="initrd.img.")
+            finally:
+                if initrd:
+                    initrd.close()
+
         elif self.location.startswith("nfs:"):
             nfsmntdir = tempfile.mkdtemp(prefix="xennfs.", dir="/var/lib/xen")
             cmd = ["mount", "-o", "ro", self.location[4:], nfsmntdir]
@@ -100,22 +123,25 @@ class ParaVirtGuest(XenGuest.XenGuest):
             if ret != 0:
                 cleanup_nfs(nfsmntdir)
                 raise RuntimeError, "Unable to mount NFS location!"
+            kernel = None
+            initrd = None
             try:
-                kernel = open("%s/images/xen/vmlinuz" %(nfsmntdir,), "r")
-                initrd = open("%s/images/xen/initrd.img" %(nfsmntdir,), "r")
-            except IOError, e:
-                cleanup_nfs(nfsmntdir)                
-                raise RuntimeError, "Invalid NFS location given: " + str(e)
-
-        kfn = _copy_temp(kernel, prefix="vmlinuz.")
-        kernel.close()
-
-        ifn = _copy_temp(initrd, prefix="initrd.img.")
-        initrd.close()
-
-        # and unmount
-        if self.location.startswith("nfs"):
-            cleanup_nfs(nfsmntdir)            
+                try:
+                    kernel = open("%s/images/xen/vmlinuz" %(nfsmntdir,), "r")
+                except IOError, e:
+                    raise RuntimeError, "Invalid NFS location given: " + str(e)
+                kfn = _copy_temp(kernel, prefix="vmlinuz.")
+                try:
+                    initrd = open("%s/images/xen/initrd.img" %(nfsmntdir,), "r")
+                except IOError, e:
+                    raise RuntimeError, "Invalid NFS location given: " + str(e)
+                ifn = _copy_temp(initrd, prefix="initrd.img.")
+            finally:
+                if kernel:
+                    kernel.close()
+                if initrd:
+                    initrd.close()
+                cleanup_nfs(nfsmntdir)            
 
         return (kfn, ifn)
 
@@ -212,12 +238,17 @@ on_crash    = 'restart'
             raise RuntimeError, "A location must be specified to install from"
         XenGuest.XenGuest.validate_parms(self)
 
-    def start_install(self, consolecb = None):
+    def start_install(self, consolecb = None, meter = None):
         self.validate_parms()
-        (self.kernel, self.initrd) = self._get_paravirt_install_images()
+        if meter:
+            progresscb = meter
+        else:
+            progresscb = progress.BaseMeter()
+        
+        (self.kernel, self.initrd) = self._get_paravirt_install_images(progresscb)
 
         try:
-            return XenGuest.XenGuest.start_install(self, consolecb)
+            return XenGuest.XenGuest.start_install(self, consolecb, progresscb)
         finally:
             os.unlink(self.kernel)
             os.unlink(self.initrd)

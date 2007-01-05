@@ -20,6 +20,7 @@ import subprocess
 import struct
 import logging
 import libxml2
+import urlgrabber.progress as progress
 
 import virtinst
 
@@ -405,10 +406,12 @@ def main():
     else:
         conscb = show_console
 
+    progresscb = progress.TextMeter()
+
     # we've got everything -- try to start the install
     try:
         print "\n\nStarting install..."
-        dom = guest.start_install(conscb)
+        dom = guest.start_install(conscb,progresscb)
         if dom is not None and guest.domain.info()[0] != 0:
             # domain seems to be running
             print "Domain installation still in progress.  You can reconnect "
