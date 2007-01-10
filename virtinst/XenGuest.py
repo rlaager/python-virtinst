@@ -16,7 +16,6 @@ import os
 import stat, time
 import re
 import urlgrabber.progress as progress
-
 import libvirt
 
 import util
@@ -376,10 +375,11 @@ class XenGuest(object):
         self._create_devices(progresscb)
         cxml = self._get_config_xml()
         logging.debug("Creating guest from '%s'" % ( cxml ))
+        progresscb.start(size=None, text="Creating domain...")
         self.domain = self.conn.createLinux(cxml, 0)
         if self.domain is None:
             raise RuntimeError, "Unable to create domain for guest, aborting installation!"
-
+        progresscb.end(0)
         child = None
         if consolecb:
             child = consolecb(self.domain)
