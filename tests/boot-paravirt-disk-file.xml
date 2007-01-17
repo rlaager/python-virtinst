@@ -1,0 +1,19 @@
+<domain type='xen'>
+  <name>TestGuest</name>
+  <memory>204800</memory>
+  <uuid>123456-1234-1234-1234-123456</uuid>
+  <bootloader>/usr/bin/pygrub</bootloader>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <vcpu>5</vcpu>
+  <devices>
+    <disk type='file' device='disk'>
+      <source file='/xen/test.img'/>
+      <target dev='xvda'/>
+    </disk>
+
+
+
+  </devices>
+</domain>

@@ -1,8 +1,8 @@
 #!/usr/bin/python -tt
 #
-# Common code for all Xen guests
+# Common code for all guests
 #
-# Copyright 2006  Red Hat, Inc.
+# Copyright 2006-2007  Red Hat, Inc.
 # Jeremy Katz <katzj@redhat.com>
 #
 # This software may be freely redistributed under the terms of the GNU
@@ -23,7 +23,7 @@ import util
 import logging
 
 
-class XenDisk:
+class VirtualDisk:
     DRIVER_FILE = "file"
     DRIVER_PHY = "phy"
     DRIVER_TAP = "tap"
@@ -53,12 +53,12 @@ class XenDisk:
             if not os.path.exists(self.path):
                 if size is None:
                     raise ValueError, "Must provide a size for non-existent disks"
-                self._type = XenDisk.TYPE_FILE
+                self._type = VirtualDisk.TYPE_FILE
             else:
                 if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                    self._type = XenDisk.TYPE_BLOCK
+                    self._type = VirtualDisk.TYPE_BLOCK
                 else:
-                    self._type = XenDisk.TYPE_FILE
+                    self._type = VirtualDisk.TYPE_FILE
         else:
             self._type = type
 
@@ -88,7 +88,7 @@ class XenDisk:
     read_only = property(get_read_only)
 
     def setup(self, progresscb):
-        if self._type == XenDisk.TYPE_FILE and not os.path.exists(self.path):
+        if self._type == VirtualDisk.TYPE_FILE and not os.path.exists(self.path):
             size_bytes = long(self.size * 1024L * 1024L * 1024L)
             progresscb.start(filename=self.path,size=long(size_bytes), \
                              text="Creating storage file...")
@@ -110,7 +110,7 @@ class XenDisk:
 
     def get_xml_config(self, disknode):
         typeattr = 'file'
-        if self.type == XenDisk.TYPE_BLOCK:
+        if self.type == VirtualDisk.TYPE_BLOCK:
             typeattr = 'dev'
 
         ret = "    <disk type='%(type)s' device='%(device)s'>\n" % { "type": self.type, "device": self.device }
@@ -126,29 +126,10 @@ class XenDisk:
         ret += "    </disk>\n"
         return ret
 
-    def get_xen_config(self, disknode):
-        disktype = "file"
-        if self.driver_name is None:
-            if self.type == XenDisk.TYPE_BLOCK:
-                disktype = "phy"
-        elif self.driver_name == XenDisk.DRIVER_TAP:
-            if self.driver_type is None:
-                disktype = self.driver_name + ":aio"
-            else:
-                disktype = self.driver_name + ":" + self.driver_type
-        else:
-            disktype = self.driver_name
-
-        mode = "w"
-        if self.read_only:
-            mode = "r"
-        return "'%(disktype)s:%(disk)s,%(disknode)s,%(mode)s'" \
-               % {"disktype": disktype, "disk": self.path, "disknode": disknode, "mode": mode}
-
     def __repr__(self):
         return "%s:%s" %(self.type, self.path)
 
-class XenNetworkInterface:
+class VirtualNetworkInterface:
     def __init__(self, macaddr = None, bridge = None):
         self.macaddr = macaddr
         self.bridge = bridge
@@ -159,11 +140,21 @@ class XenNetworkInterface:
         if not self.bridge:
             self.bridge = util.default_bridge()
 
-class XenGraphics:
+    def get_xml_config(self):
+        return ("    <interface type='bridge'>\n" + \
+                "      <source bridge='%(bridge)s'/>\n" + \
+                "      <mac address='%(mac)s'/>\n" + \
+                "    </interface>\n") % \
+                { "bridge": self.bridge, "mac": self.macaddr }
+
+class VirtualGraphics:
     def __init__(self, *args):
         self.name = ""
-        
-class XenVNCGraphics(XenGraphics):
+
+    def get_xml_config(self):
+        return ""
+
+class VNCVirtualGraphics(VirtualGraphics):
     def __init__(self, *args):
         self.name = "vnc"
         if len(args) >= 1 and args[0]:
@@ -171,13 +162,21 @@ class XenVNCGraphics(XenGraphics):
         else:
             self.port = -1
 
-class XenSDLGraphics(XenGraphics):
+    def get_xml_config(self):
+        return "    <graphics type='vnc' port='%d'/>" % (self.port)
+
+class SDLVirtualGraphics(VirtualGraphics):
     def __init__(self, *args):
         self.name = "sdl"
-    
 
-class XenGuest(object):
-    def __init__(self, hypervisorURI=None):
+    def get_xml_config(self):
+        return "    <graphics type='sdl'/>"
+
+class Guest(object):
+    def __init__(self, type=None, hypervisorURI=None):
+        if type is None:
+            type = "xen"
+        self._type = type
         self.disks = []
         self.nics = []
         self._name = None
@@ -192,6 +191,13 @@ class XenGuest(object):
             raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
 
         self.disknode = None # this needs to be set in the subclass
+
+    def get_type(self):
+        return self._type
+    def set_type(self, val):
+        self._type = type
+    type = property(get_type, set_type)
+
 
     # Domain name of the guest
     def get_name(self):
@@ -268,13 +274,13 @@ class XenGuest(object):
 
         if self._graphics["enabled"] == True:
             if t == "vnc":
-                gt = XenVNCGraphics(opts)
+                gt = VNCVirtualGraphics(opts)
             elif t == "sdl":
-                gt = XenSDLGraphics(opts)
+                gt = SDLVirtualGraphics(opts)
             else:
                 raise ValueError, "Unknown graphics type"
             self._graphics["type"] = gt
-                
+
     graphics = property(get_graphics, set_graphics)
 
 
@@ -295,33 +301,11 @@ class XenGuest(object):
             count += 1
         return ret
 
-    def _get_disk_xen(self):
-        """Get the disk config in the xend python format"""        
-        if len(self.disks) == 0: return ""
-        ret = "disk = [ "
-        count = 0
-        for d in self.disks:
-            disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
-            ret += d.get_xen_config(disknode)
-            ret += ", "
-            count += 1
-        ret += "]"
-        return ret
-
     def _get_network_xml(self):
         """Get the network config in the libvirt XML format"""
         ret = ""
         for n in self.nics:
-            ret += "<interface type='bridge'><source bridge='%(bridge)s'/><mac address='%(mac)s'/><script path='/etc/xen/scripts/vif-bridge'/></interface>\n" % { "bridge": n.bridge, "mac": n.macaddr }
-        return ret
-
-    def _get_network_xen(self):
-        """Get the network config in the xend python format"""        
-        if len(self.nics) == 0: return ""
-        ret = "vif = [ "
-        for n in self.nics:
-            ret += "'mac=%(mac)s, bridge=%(bridge)s', " % { "bridge": n.bridge, "mac": n.macaddr }
-        ret += "]"
+            ret += n.get_xml_config()
         return ret
 
     def _get_graphics_xml(self):
@@ -330,32 +314,45 @@ class XenGuest(object):
         if self.graphics["enabled"] == False:
             return ret
         gt = self.graphics["type"]
-        if gt.name == "vnc":
-            ret += "<graphics type='vnc'"
-            if gt.port is not None:
-                ret += " port='%d'" %(gt.port,)
-            ret += "/>"
-        elif gt.name == "sdl":
-            ret += "<graphics type='sdl'/>"
-        return ret
+        return gt.get_xml_config()
 
-    def _get_graphics_xen(self):
-        """Get the graphics config in the xend python format"""
-        if self.graphics["enabled"] == False:
-            return "nographic=1"
-        ret = ""
-        gt = self.graphics["type"]
-        if gt.name == "vnc":
-            ret += "vnc=1"
-            if gt.port and gt.port >= 5900:
-                ret += "\nvncdisplay=%d" %(gt.port - 5900,)
-                ret += "\nvncunused=0"
-            elif gt.port and gt.port == -1:
-                ret += "\nvncunused=1"
-        elif gt.name == "sdl":
-            ret += "sdl=1"
-        return ret
-        
+    def _get_device_xml(self):
+        return """%(disks)s
+%(networks)s
+%(graphics)s""" % { "disks": self._get_disk_xml(), \
+        "networks": self._get_network_xml(), \
+        "graphics": self._get_graphics_xml() }
+
+    def get_config_xml(self, install = True):
+        if install:
+            osblob = self._get_install_xml()
+            action = "destroy"
+        else:
+            osblob = self._get_runtime_xml()
+            action = "restart"
+
+        return """<domain type='%(type)s'>
+  <name>%(name)s</name>
+  <memory>%(ramkb)s</memory>
+  <uuid>%(uuid)s</uuid>
+  %(osblob)s
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>%(action)s</on_reboot>
+  <on_crash>%(action)s</on_crash>
+  <vcpu>%(vcpus)d</vcpu>
+  <devices>
+%(devices)s
+  </devices>
+</domain>
+""" % { "type": self.type,
+        "name": self.name, \
+        "vcpus": self.vcpus, \
+        "uuid": self.uuid, \
+        "ramkb": self.memory * 1024, \
+        "devices": self._get_device_xml(), \
+        "osblob": osblob, \
+        "action": action }
+
 
     def start_install(self, consolecb = None, meter = None):
         """Do the startup of the guest installation."""
@@ -373,10 +370,10 @@ class XenGuest(object):
             pass
 
         self._create_devices(progresscb)
-        cxml = self._get_config_xml()
-        logging.debug("Creating guest from '%s'" % ( cxml ))
+        install_xml = self.get_config_xml()
+        logging.debug("Creating guest from '%s'" % ( install_xml ))
         progresscb.start(size=None, text="Creating domain...")
-        self.domain = self.conn.createLinux(cxml, 0)
+        self.domain = self.conn.createLinux(install_xml, 0)
         if self.domain is None:
             raise RuntimeError, "Unable to create domain for guest, aborting installation!"
         progresscb.end(0)
@@ -398,14 +395,11 @@ class XenGuest(object):
             time.sleep(0.25)
 
         if d is None:
-            raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the xen logs"
-        
-        cf = "/etc/xen/%s" %(self.name,)
-        f = open(cf, "w+")
-        xmc = self._get_config_xen()
-        logging.debug("Saving XM config file '%s'" % ( xmc ))
-        f.write(xmc)
-        f.close()
+            raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the logs"
+
+        boot_xml = self.get_config_xml(install = False)
+        logging.debug("Saving XML boot config '%s'" % ( boot_xml ))
+        self.conn.defineXML(boot_xml)
 
         if child: # if we connected the console, wait for it to finish
             try:
@@ -417,49 +411,10 @@ class XenGuest(object):
         # install has finished or the guest crashed
         if consolecb:
             time.sleep(1)
-        try:
-            d = self.conn.lookupByName(self.name)
-            return d
-        except libvirt.libvirtError, e:
-            pass
 
-        # domain isn't running anymore
-        return None
-
-    def start_from_disk(self, consolecb = None):
-        """Restart the guest from its disks."""
-        try:
-            if self.conn.lookupByName(self.name) is not None:
-                raise RuntimeError, "Domain named %s already exists!" %(self.name,)
-        except libvirt.libvirtError:
-            pass
-
-        self._set_defaults()
-        self._create_devices()
-        cxml = self._get_config_xml(install = False)
-        logging.debug("Starting guest from '%s'" % ( cxml ))
-        self.domain = self.conn.createLinux(cxml, 0)
-        if self.domain is None:
-            raise RuntimeError, "Unable to create domain for guest, aborting installation!"
-
-        child = None
-        if consolecb:
-            child = consolecb(self.domain)
-
-        time.sleep(2)
-        # FIXME: if the domain doesn't exist now, it almost certainly crashed.
-        # it'd be nice to know that for certain...
-        try:
-            d = self.conn.lookupByName(self.name)
-        except libvirt.libvirtError:
-            raise RuntimeError, "It appears that your domain has crashed.  You should be able to find more information in the xen logs"
-        
-
-        if child: # if we connected the console, wait for it to finish
-            try:
-                (pid, status) = os.waitpid(child, 0)
-            except OSError, (errno, msg):
-                print __name__, "waitpid:", msg
+        # This should always work, because it'll lookup a config file
+        # for inactive guest, or get the still running install..
+        return self.conn.lookupByName(self.name)
 
     def validate_parms(self):
         if self.domain is not None:

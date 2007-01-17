@@ -2,7 +2,7 @@
 #
 # Paravirtualized guest support
 #
-# Copyright 2006  Red Hat, Inc.
+# Copyright 2006-2007  Red Hat, Inc.
 # Jeremy Katz <katzj@redhat.com>
 #
 # This software may be freely redistributed under the terms of the GNU
@@ -20,10 +20,12 @@ import tempfile
 
 import libvirt
 
-import XenGuest
+import logging
 
-def _copy_temp(fileobj, prefix):
-    (fd, fn) = tempfile.mkstemp(prefix=prefix, dir="/var/lib/xen")
+import Guest
+
+def _copy_temp(fileobj, prefix, scratchdir):
+    (fd, fn) = tempfile.mkstemp(prefix="virtinst-" + prefix, dir=scratchdir)
     block_size = 16384
     try:
         while 1:
@@ -35,9 +37,9 @@ def _copy_temp(fileobj, prefix):
         os.close(fd)
     return fn
 
-class ParaVirtGuest(XenGuest.XenGuest):
-    def __init__(self, hypervisorURI=None):
-        XenGuest.XenGuest.__init__(self, hypervisorURI=hypervisorURI)
+class ParaVirtGuest(Guest.Guest):
+    def __init__(self, type=None, hypervisorURI=None):
+        Guest.Guest.__init__(self, type=type, hypervisorURI=hypervisorURI)
         self._location = None
         self._boot = None
         self._extraargs = ""
@@ -84,7 +86,13 @@ class ParaVirtGuest(XenGuest.XenGuest):
                 os.rmdir(nfsmntdir)
             except:
                 pass
-            
+
+        scratchdir = "/var/tmp"
+        if self.type == "xen":
+            # Xen needs kernel/initrd here to comply with
+            # selinux policy
+            scratchdir = "/var/lib/xen/"
+
         if self.boot is not None:
             return (self.boot["kernel"], self.boot["initrd"])
         kfn = None
@@ -95,29 +103,31 @@ class ParaVirtGuest(XenGuest.XenGuest):
             initrd = None
             try:
                 try:
-                    kernel = grabber.urlopen("%s/images/xen/vmlinuz" %(self.location,), \
+                    kernel = grabber.urlopen(self.location + "/images/" + self.type + "/vmlinuz",
                                              progress_obj = progresscb, \
                                              text = "Retrieving vmlinuz...")
                 except IOError, e:
                     raise RuntimeError, "Invalid URL location given: " + str(e)
-                kfn = _copy_temp(kernel, prefix="vmlinuz.")
+                kfn = _copy_temp(kernel, prefix="vmlinuz.", scratchdir=scratchdir)
+                logging.debug("Copied kernel to " + kfn)
             finally:
                 if kernel:
                     kernel.close()
             try:
                 try:
-                    initrd = grabber.urlopen("%s/images/xen/initrd.img" %(self.location,), \
+                    initrd = grabber.urlopen(self.location + "/images/" + self.type + "/initrd.img",
                                              progress_obj=progresscb, \
                                              text = "Retrieving initrd.img...")
                 except IOError, e:
                     raise RuntimeError, "Invalid URL location given: " + str(e)
-                ifn = _copy_temp(initrd, prefix="initrd.img.")
+                ifn = _copy_temp(initrd, prefix="initrd.img.", scratchdir=scratchdir)
+                logging.debug("Copied initrd to " + kfn)
             finally:
                 if initrd:
                     initrd.close()
 
         elif self.location.startswith("nfs:"):
-            nfsmntdir = tempfile.mkdtemp(prefix="xennfs.", dir="/var/lib/xen")
+            nfsmntdir = tempfile.mkdtemp(prefix="nfs.", dir="/var/lib/virtinst")
             cmd = ["mount", "-o", "ro", self.location[4:], nfsmntdir]
             ret = subprocess.call(cmd)
             if ret != 0:
@@ -127,12 +137,12 @@ class ParaVirtGuest(XenGuest.XenGuest):
             initrd = None
             try:
                 try:
-                    kernel = open("%s/images/xen/vmlinuz" %(nfsmntdir,), "r")
+                    kernel = open(nfsmntdir + "/images/" + self.type + "/vmlinuz", "r")
                 except IOError, e:
                     raise RuntimeError, "Invalid NFS location given: " + str(e)
                 kfn = _copy_temp(kernel, prefix="vmlinuz.")
                 try:
-                    initrd = open("%s/images/xen/initrd.img" %(nfsmntdir,), "r")
+                    initrd = open(nfsmntdir + "/images/" + self.type + "/initrd.img", "r")
                 except IOError, e:
                     raise RuntimeError, "Invalid NFS location given: " + str(e)
                 ifn = _copy_temp(initrd, prefix="initrd.img.")
@@ -141,7 +151,7 @@ class ParaVirtGuest(XenGuest.XenGuest):
                     kernel.close()
                 if initrd:
                     initrd.close()
-                cleanup_nfs(nfsmntdir)            
+                cleanup_nfs(nfsmntdir)
 
         return (kfn, ifn)
 
@@ -150,77 +160,21 @@ class ParaVirtGuest(XenGuest.XenGuest):
             metharg="method=%s " %(self.location,)
         else:
             metharg = ""
-            
-        return """
-  <os>
+
+        return """<os>
     <type>linux</type>
     <kernel>%(kernel)s</kernel>
     <initrd>%(initrd)s</initrd>
     <cmdline> %(metharg)s %(extra)s</cmdline>
-  </os>
-"""  % { "kernel": self.kernel, "initrd": self.initrd, "metharg": metharg, "extra": self.extraargs }
+  </os>""" % \
+    { "kernel": self.kernel, \
+      "initrd": self.initrd, \
+      "metharg": metharg, \
+      "extra": self.extraargs }
+
 
     def _get_runtime_xml(self):
-        return """
-  <bootloader>/usr/bin/pygrub</bootloader>
-"""
-
-    def _get_graphics_xen(self):
-        """Get the graphics config in the xend python format"""
-        if self.graphics["enabled"] == False:
-            return ""
-        ret = "vfb = [\""
-        gt = self.graphics["type"]
-        if gt.name == "vnc":
-            ret += "type=vnc"
-            if gt.port and gt.port >= 5900:
-                ret += ",vncdisplay=%d" %(gt.port - 5900,)
-                ret += ",vncunused=0"
-            elif gt.port and gt.port == -1:
-                ret += ",vncunused=1"
-        elif gt.name == "sdl":
-            ret += "type=sdl"
-        ret += "\"]"
-        return ret
-
-    def _get_config_xml(self, install = True):
-        if install:
-            osblob = self._get_install_xml()
-            action = "destroy"
-        else:
-            osblob = self._get_runtime_xml()
-            action = "restart"
-
-        return """<domain type='xen'>
-  <name>%(name)s</name>
-  <memory>%(ramkb)s</memory>
-  <uuid>%(uuid)s</uuid>
-  %(osblob)s
-  <on_poweroff>destroy</on_poweroff>
-  <on_reboot>%(action)s</on_reboot>
-  <on_crash>%(action)s</on_crash>
-  <vcpu>%(vcpus)d</vcpu>
-  <devices>
-%(disks)s
-    %(networks)s
-    %(graphics)s
-  </devices>
-</domain>
-""" % { "name": self.name, "vcpus": self.vcpus, "uuid": self.uuid, "ramkb": self.memory * 1024, "disks": self._get_disk_xml(), "networks": self._get_network_xml(), "graphics": self._get_graphics_xml(), "osblob": osblob, "action": action }
-
-    def _get_config_xen(self):
-        return """# Automatically generated xen config file
-name = "%(name)s"
-memory = "%(ram)s"
-%(disks)s
-%(networks)s
-%(graphics)s
-uuid = "%(uuid)s"
-bootloader="/usr/bin/pygrub"
-vcpus=%(vcpus)s
-on_reboot   = 'restart'
-on_crash    = 'restart'
-""" % { "name": self.name, "ram": self.memory, "disks": self._get_disk_xen(), "networks": self._get_network_xen(), "uuid": self.uuid, "graphics": self._get_graphics_xen(), "vcpus" : self.vcpus }
+        return """<bootloader>/usr/bin/pygrub</bootloader>"""
 
     def _connectSerialConsole(self):
         # *sigh*  would be nice to have a python version of xmconsole
@@ -236,7 +190,7 @@ on_crash    = 'restart'
     def validate_parms(self):
         if not self.location and not self.boot:
             raise RuntimeError, "A location must be specified to install from"
-        XenGuest.XenGuest.validate_parms(self)
+        Guest.Guest.validate_parms(self)
 
     def start_install(self, consolecb = None, meter = None):
         self.validate_parms()
@@ -244,11 +198,11 @@ on_crash    = 'restart'
             progresscb = meter
         else:
             progresscb = progress.BaseMeter()
-        
+
         (self.kernel, self.initrd) = self._get_paravirt_install_images(progresscb)
 
         try:
-            return XenGuest.XenGuest.start_install(self, consolecb, progresscb)
+            return Guest.Guest.start_install(self, consolecb, progresscb)
         finally:
             os.unlink(self.kernel)
             os.unlink(self.initrd)

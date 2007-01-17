@@ -1,21 +1,21 @@
 <domain type='xen'>
   <name>TestGuest</name>
+  <memory>204800</memory>
+  <uuid>123456-1234-1234-1234-123456</uuid>
   <os>
     <type>hvm</type>
     <loader>/usr/lib/xen/boot/hvmloader</loader>
-    <boot dev='cdrom'/>
+    <boot dev='hd'/>
   </os>
   <features>
     <apic/><acpi/><pae/>
   </features>
-  <memory>204800</memory>
-  <vcpu>5</vcpu>
-  <uuid>123456-1234-1234-1234-123456</uuid>
-  <on_reboot>destroy</on_reboot>
-  <on_crash>destroy</on_crash>
   <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <vcpu>5</vcpu>
   <devices>
-    <emulator>/usr/lib64/xen/bin/qemu-dm</emulator>
+    <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <disk type='block' device='disk'>
       <source dev='/dev/hdb1'/>
       <target dev='hda'/>
@@ -26,7 +26,7 @@
       <readonly/>
     </disk>
 
-    
-    
+
+
   </devices>
 </domain>

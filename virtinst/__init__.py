@@ -1,4 +1,4 @@
 import util
-from XenGuest import XenGuest, XenDisk, XenNetworkInterface
+from Guest import Guest, VirtualDisk, VirtualNetworkInterface
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
