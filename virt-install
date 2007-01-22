@@ -22,6 +22,7 @@ import logging
 import libxml2
 import urlgrabber.progress as progress
 
+import libvirt
 import virtinst
 
 MIN_RAM = 256
@@ -415,7 +416,7 @@ def main():
         if dom is None:
             print "Guest installation failed"
             sys.exit(0)
-        elif dom.info()[0] != VIR_DOMAIN_SHUTOFF:
+        elif dom.info()[0] != libvirt.VIR_DOMAIN_SHUTOFF:
             # domain seems to be running
             print "Domain installation still in progress.  You can reconnect "
             print "to the console to complete the installation process."
