@@ -2,7 +2,7 @@ from distutils.core import setup
 
 pkgs = ['virtinst']
 setup(name='virtinst',
-      version='0.99.0',
+      version='0.100.0',
       description='Virtual machine installation',
       author='Jeremy Katz',
       author_email='katzj@redhat.com',
