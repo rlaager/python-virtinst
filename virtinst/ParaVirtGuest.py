@@ -127,7 +127,7 @@ class ParaVirtGuest(Guest.Guest):
                     initrd.close()
 
         elif self.location.startswith("nfs:"):
-            nfsmntdir = tempfile.mkdtemp(prefix="nfs.", dir="/var/lib/virtinst")
+            nfsmntdir = tempfile.mkdtemp(prefix="nfs.", dir=scratchdir)
             cmd = ["mount", "-o", "ro", self.location[4:], nfsmntdir]
             ret = subprocess.call(cmd)
             if ret != 0:
@@ -140,12 +140,12 @@ class ParaVirtGuest(Guest.Guest):
                     kernel = open(nfsmntdir + "/images/" + self.type + "/vmlinuz", "r")
                 except IOError, e:
                     raise RuntimeError, "Invalid NFS location given: " + str(e)
-                kfn = _copy_temp(kernel, prefix="vmlinuz.")
+                kfn = _copy_temp(kernel, prefix="vmlinuz.", scratchdir=scratchdir)
                 try:
                     initrd = open(nfsmntdir + "/images/" + self.type + "/initrd.img", "r")
                 except IOError, e:
                     raise RuntimeError, "Invalid NFS location given: " + str(e)
-                ifn = _copy_temp(initrd, prefix="initrd.img.")
+                ifn = _copy_temp(initrd, prefix="initrd.img.", scratchdir=scratchdir)
             finally:
                 if kernel:
                     kernel.close()
