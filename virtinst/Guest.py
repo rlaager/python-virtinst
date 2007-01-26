@@ -22,7 +22,6 @@ import util
 
 import logging
 
-
 class VirtualDisk:
     DRIVER_FILE = "file"
     DRIVER_PHY = "phy"
@@ -129,6 +128,10 @@ class VirtualDisk:
     def __repr__(self):
         return "%s:%s" %(self.type, self.path)
 
+# Back compat class to avoid ABI break
+class XenDisk(VirtualDisk):
+    pass
+
 class VirtualNetworkInterface:
     def __init__(self, macaddr = None, bridge = None):
         self.macaddr = macaddr
@@ -147,6 +150,10 @@ class VirtualNetworkInterface:
                 "    </interface>\n") % \
                 { "bridge": self.bridge, "mac": self.macaddr }
 
+# Back compat class to avoid ABI break
+class XenNetworkInterface(VirtualNetworkInterface):
+    pass
+
 class VirtualGraphics:
     def __init__(self, *args):
         self.name = ""
@@ -154,7 +161,11 @@ class VirtualGraphics:
     def get_xml_config(self):
         return ""
 
-class VNCVirtualGraphics(VirtualGraphics):
+# Back compat class to avoid ABI break
+class XenGraphics(VirtualGraphics):
+    pass
+
+class VNCVirtualGraphics(XenGraphics):
     def __init__(self, *args):
         self.name = "vnc"
         if len(args) >= 1 and args[0]:
@@ -165,12 +176,20 @@ class VNCVirtualGraphics(VirtualGraphics):
     def get_xml_config(self):
         return "    <graphics type='vnc' port='%d'/>" % (self.port)
 
-class SDLVirtualGraphics(VirtualGraphics):
+# Back compat class to avoid ABI break
+class XenVNCGraphics(VNCVirtualGraphics):
+    pass
+
+class SDLVirtualGraphics(XenGraphics):
     def __init__(self, *args):
         self.name = "sdl"
 
     def get_xml_config(self):
         return "    <graphics type='sdl'/>"
+
+# Back compat class to avoid ABI break
+class XenSDLGraphics(SDLVirtualGraphics):
+    pass
 
 class Guest(object):
     def __init__(self, type=None, hypervisorURI=None):
@@ -428,3 +447,7 @@ class Guest(object):
             self.vcpus = 1
         if self.name is None or self.memory is None:
             raise RuntimeError, "Name and memory must be specified for all guests!"
+
+# Back compat class to avoid ABI break
+class XenGuest(Guest):
+	pass

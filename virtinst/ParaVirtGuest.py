@@ -37,7 +37,7 @@ def _copy_temp(fileobj, prefix, scratchdir):
         os.close(fd)
     return fn
 
-class ParaVirtGuest(Guest.Guest):
+class ParaVirtGuest(Guest.XenGuest):
     def __init__(self, type=None, hypervisorURI=None):
         Guest.Guest.__init__(self, type=type, hypervisorURI=hypervisorURI)
         self._location = None

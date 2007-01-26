@@ -21,7 +21,7 @@ import Guest
 import util
 
 
-class FullVirtGuest(Guest.Guest):
+class FullVirtGuest(Guest.XenGuest):
     def __init__(self, type=None, hypervisorURI=None, emulator=None):
         Guest.Guest.__init__(self, type=type, hypervisorURI=hypervisorURI)
         self._cdrom = None
