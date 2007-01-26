@@ -16,6 +16,7 @@
   <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
+    <console device='pty'/>
     <disk type='block' device='disk'>
       <source dev='/dev/hdb1'/>
       <target dev='hda'/>

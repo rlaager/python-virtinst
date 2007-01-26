@@ -89,7 +89,9 @@ class FullVirtGuest(Guest.XenGuest):
         return self._get_os_xml("hd")
 
     def _get_device_xml(self):
-        return ("    <emulator>%(emulator)s</emulator>\n" % { "emulator": self.emulator }) + \
+        return ("""    <emulator>%(emulator)s</emulator>
+    <console device='pty'/>
+""" % { "emulator": self.emulator }) + \
                Guest.Guest._get_device_xml(self)
 
     def validate_parms(self):
