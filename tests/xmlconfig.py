@@ -6,7 +6,7 @@ import os
 class TestXMLConfig(unittest.TestCase):
 
     def _compare(self, xenguest, filebase, install):
-        f = open(filebase + ".xml", "r")
+        f = open("tests/" + filebase + ".xml", "r")
         expectXML = string.join(f.readlines(), "")
         f.close()
 
