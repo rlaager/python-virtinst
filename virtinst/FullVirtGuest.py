@@ -12,11 +12,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import os,stat,time,sys
-import string
-
+import os
 import libvirt
-
 import Guest
 import util
 
@@ -24,7 +21,6 @@ import util
 class FullVirtGuest(Guest.XenGuest):
     def __init__(self, type=None, hypervisorURI=None, emulator=None):
         Guest.Guest.__init__(self, type=type, hypervisorURI=hypervisorURI)
-        self._cdrom = None
         self.disknode = "hd"
         self.features = { "acpi": True, "pae": util.is_pae_capable(), "apic": True }
         if emulator is None:
@@ -38,23 +34,6 @@ class FullVirtGuest(Guest.XenGuest):
         else:
             self.loader = None
 
-    def get_cdrom(self):
-        return self._cdrom
-    def set_cdrom(self, val):
-        val = os.path.abspath(val)
-        if not os.path.exists(val):
-            raise ValueError, "CD device must exist!"
-        self._cdrom = val
-    cdrom = property(get_cdrom, set_cdrom)
-
-    def _get_disk_xml(self):
-        # ugh, this is disgusting, but the HVM disk stuff isn't nice :/
-        xml = Guest.Guest._get_disk_xml(self)
-        if self.cdrom:
-            disk = Guest.VirtualDisk(self.cdrom, readOnly = True, device=Guest.VirtualDisk.DEVICE_CDROM)
-            # XXX no need to hardcode hdc in newer xen
-            xml += disk.get_xml_config("hdc")
-        return xml
 
     def _get_features_xml(self):
         ret = ""
@@ -95,6 +74,21 @@ class FullVirtGuest(Guest.XenGuest):
                Guest.Guest._get_device_xml(self)
 
     def validate_parms(self):
-        if not self.cdrom:
+        if not self.location:
             raise RuntimeError, "A CD must be specified to boot from"
         Guest.Guest.validate_parms(self)
+
+    def _prepare_install_location(self, meter):
+        cdrom = None
+        tmpfiles = []
+        if self.location.startswith("/"):
+            # Huzzah, a local file/device
+            cdrom = self.location
+        else:
+            # If its a http://, ftp://, or nfs:/ we need to fetch boot.iso
+            filenames = self._get_install_files(["images/boot.iso"], meter)
+            cdrom = filenames[0]
+            tmpfiles.append(cdrom)
+        self.disks.append(Guest.VirtualDisk(cdrom, device=Guest.VirtualDisk.DEVICE_CDROM, readOnly=True))
+
+        return tmpfiles

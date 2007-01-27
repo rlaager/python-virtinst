@@ -206,7 +206,7 @@ def get_fullvirt_cdrom(cdpath, guest):
     while 1:
         cdpath = prompt_for_input("What would you like to use for the virtual CD image?", cdpath)
         try:
-            guest.cdrom = cdpath
+            guest.location = cdpath
             break
         except ValueError, e:
             print "ERROR: ", e

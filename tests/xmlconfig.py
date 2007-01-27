@@ -2,6 +2,7 @@ import string
 import unittest
 import virtinst
 import os
+import urlgrabber.progress as progress
 
 class TestXMLConfig(unittest.TestCase):
 
@@ -10,21 +11,25 @@ class TestXMLConfig(unittest.TestCase):
         expectXML = string.join(f.readlines(), "")
         f.close()
 
-        actualXML = xenguest.get_config_xml(install=install)
+        tmpfiles = xenguest._prepare_install_location(progress.BaseMeter())
+        try:
+            actualXML = xenguest.get_config_xml(install=install)
 
-        if os.environ.has_key("DEBUG_TESTS") and os.environ["DEBUG_TESTS"] == "xml":
-            print "Actual: %d bytes '%s'" % (len(actualXML),  actualXML)
-            print "Expect: %d bytes '%s'" % (len(expectXML),  expectXML)
+            if os.environ.has_key("DEBUG_TESTS") and os.environ["DEBUG_TESTS"] == "1":
+                print "Expect: %d bytes '%s'" % (len(expectXML),  expectXML)
+                print "Actual: %d bytes '%s'" % (len(actualXML),  actualXML)
 
-        self.assertEqual(actualXML, expectXML)
+            self.assertEqual(actualXML, expectXML)
+        finally:
+            for file in tmpfiles:
+                os.unlink(file)
 
     def _get_basic_paravirt_guest(self):
         g = virtinst.ParaVirtGuest(hypervisorURI="test:///default", type="xen")
         g.name = "TestGuest"
         g.memory = int(200)
         g.uuid = "123456-1234-1234-1234-123456"
-        g.kernel = "/boot/vmlinuz"
-        g.initrd = "/boot/initrd"
+        g.boot = ["/boot/vmlinuz","/boot/initrd"]
         g.vcpus = 5
         return g
 

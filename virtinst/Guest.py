@@ -12,10 +12,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import os
-import stat, time
+import os, os.path
+import stat, sys, time
 import re
+import subprocess
+import urlgrabber.grabber as grabber
 import urlgrabber.progress as progress
+import tempfile
+
 import libvirt
 
 import util
@@ -198,6 +202,7 @@ class Guest(object):
         self._type = type
         self.disks = []
         self.nics = []
+        self._location = None
         self._name = None
         self._uuid = None
         self._memory = None
@@ -263,6 +268,111 @@ class Guest(object):
     vcpus = property(get_vcpus, set_vcpus)
 
 
+    # install location for the PV guest
+    # this is a string pointing to an NFS, HTTP or FTP install source 
+    def get_install_location(self):
+        return self._location
+    def set_install_location(self, val):
+        if not (val.startswith("http://") or val.startswith("ftp://") or
+                val.startswith("nfs:") or val.startswith("/")):
+            raise ValueError, "Install location must be an NFS, HTTP or FTP network install source, or local file/device"
+        self._location = val
+    location = property(get_install_location, set_install_location)
+
+
+    # Legacy, deprecated
+    def get_cdrom(self):
+        if self._location is not None and self._location.startswith("/"):
+            return self._location
+        return None
+    def set_cdrom(self, val):
+        val = os.path.abspath(val)
+        if not os.path.exists(val):
+            raise ValueError, "CD device must exist!"
+        self.set_install_location(val)
+    cdrom = property(get_cdrom, set_cdrom)
+
+    def _get_install_files(self, fileset, progresscb):
+        def cleanup_mnt(mntdir):
+            cmd = ["umount", mntdir]
+            ret = subprocess.call(cmd)
+            try:
+                os.rmdir(mntdir)
+            except:
+                pass
+
+        def _copy_temp(fileobj, prefix, scratchdir):
+            (fd, fn) = tempfile.mkstemp(prefix="virtinst-" + prefix, dir=scratchdir)
+            block_size = 16384
+            try:
+                while 1:
+                    buff = fileobj.read(block_size)
+                    if not buff:
+                        break
+                    os.write(fd, buff)
+            finally:
+                os.close(fd)
+            return fn
+
+        scratchdir = "/var/tmp"
+        if self.type == "xen":
+            # Xen needs kernel/initrd here to comply with
+            # selinux policy
+            scratchdir = "/var/lib/xen/"
+
+        filenames = []
+        if self.location.startswith("http://") or \
+               self.location.startswith("ftp://"):
+            for filename in fileset:
+                file = None
+                try:
+                    base = os.path.basename(filename)
+                    try:
+                        file = grabber.urlopen(self.location + "/" + filename,
+                                               progress_obj = progresscb, \
+                                               text = "Retrieving %s..." % base)
+                    except IOError, e:
+                        raise RuntimeError, "Invalid URL location given: " + str(e)
+                    tmpname =_copy_temp(file, prefix=base + ".", scratchdir=scratchdir)
+                    logging.debug("Copied " + filename + " to " + tmpname)
+                    filenames.append(tmpname)
+                finally:
+                    if file:
+                        file.close()
+        elif self.location.startswith("nfs:") or self.location.startswith("/"):
+            mntdir = tempfile.mkdtemp(prefix="virtinstmnt.", dir=scratchdir)
+            if self.location.startswith("nfs:"):
+                cmd = ["mount", "-o", "ro", self.location[4:], mntdir]
+            else:
+                if stat.S_ISBLK(os.stat(self.location)[stat.ST_MODE]):
+                    cmd = ["mount", "-o", "ro", self.location, mntdir]
+                else:
+                    cmd = ["mount", "-o", "ro,loop", self.location, mntdir]
+            ret = subprocess.call(cmd)
+            if ret != 0:
+                cleanup_mnt(mntdir)
+                raise RuntimeError, "Unable to mount NFS location/disk image!"
+
+            try:
+                for filename in fileset:
+                    file = None
+                    try:
+                        base = os.path.basename(filename)
+                        try:
+                            file = open(mntdir + "/" + filename, "r")
+                        except IOError, e:
+                            raise RuntimeError, "Invalid NFS location given: " + str(e)
+                        tmpname = _copy_temp(file, prefix=base + ".", scratchdir=scratchdir)
+                        logging.debug("Copied " + filename + " to " + tmpname)
+                        filenames.append(tmpname)
+                    finally:
+                        if file:
+                            file.close()
+            finally:
+                cleanup_mnt(mntdir)
+        return filenames
+
+
     # graphics setup
     def get_graphics(self):
         return self._graphics
@@ -315,6 +425,8 @@ class Guest(object):
         ret = ""
         count = 0
         for d in self.disks:
+            if d.device == VirtualDisk.DEVICE_CDROM and count != 2:
+                count = 2
             disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
             ret += d.get_xml_config(disknode)
             count += 1
@@ -377,25 +489,32 @@ class Guest(object):
         """Do the startup of the guest installation."""
         self.validate_parms()
 
-        if meter:
-            progresscb = meter
-        else:
+        if meter is None:
             # BaseMeter does nothing, but saves a lot of null checking
-            progresscb = progress.BaseMeter()
+            meter = progress.BaseMeter()
+
+        tmpfiles = self._prepare_install_location(meter)
+        try:
+            return self._do_install(consolecb, meter)
+        finally:
+            for file in tmpfiles:
+                os.unlink(file)
+
+    def _do_install(self, consolecb, meter):
         try:
             if self.conn.lookupByName(self.name) is not None:
                 raise RuntimeError, "Domain named %s already exists!" %(self.name,)
         except libvirt.libvirtError:
             pass
 
-        self._create_devices(progresscb)
+        self._create_devices(meter)
         install_xml = self.get_config_xml()
         logging.debug("Creating guest from '%s'" % ( install_xml ))
-        progresscb.start(size=None, text="Creating domain...")
+        meter.start(size=None, text="Creating domain...")
         self.domain = self.conn.createLinux(install_xml, 0)
         if self.domain is None:
             raise RuntimeError, "Unable to create domain for guest, aborting installation!"
-        progresscb.end(0)
+        meter.end(0)
         child = None
         if consolecb:
             child = consolecb(self.domain)

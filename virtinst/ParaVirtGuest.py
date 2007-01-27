@@ -12,49 +12,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import os, sys, time
-import subprocess
-import urlgrabber.grabber as grabber
-import urlgrabber.progress as progress
-import tempfile
-
+import os
 import libvirt
-
-import logging
-
 import Guest
 
-def _copy_temp(fileobj, prefix, scratchdir):
-    (fd, fn) = tempfile.mkstemp(prefix="virtinst-" + prefix, dir=scratchdir)
-    block_size = 16384
-    try:
-        while 1:
-            buff = fileobj.read(block_size)
-            if not buff:
-                break
-            os.write(fd, buff)
-    finally:
-        os.close(fd)
-    return fn
 
 class ParaVirtGuest(Guest.XenGuest):
     def __init__(self, type=None, hypervisorURI=None):
         Guest.Guest.__init__(self, type=type, hypervisorURI=hypervisorURI)
-        self._location = None
         self._boot = None
         self._extraargs = ""
         self.disknode = "xvd"
-
-    # install location for the PV guest
-    # this is a string pointing to an NFS, HTTP or FTP install source 
-    def get_install_location(self):
-        return self._location
-    def set_install_location(self, val):
-        if not (val.startswith("http://") or val.startswith("ftp://") or
-                val.startswith("nfs:")):
-            raise ValueError, "Install location must be an NFS, HTTP or FTP install source"
-        self._location = val
-    location = property(get_install_location, set_install_location)
 
     # kernel + initrd pair to use for installing as opposed to using a location
     def get_boot(self):
@@ -64,11 +32,15 @@ class ParaVirtGuest(Guest.XenGuest):
             if len(val) != 2:
                 raise ValueError, "Must pass both a kernel and initrd"
             (k, i) = val
+            self._boot = {"kernel": k, "initrd": i}
         elif type(val) == dict:
             if not val.has_key("kernel") or not val.has_key("initrd"):
                 raise ValueError, "Must pass both a kernel and initrd"
-            k, i = val["kernel"], val["initrd"]
-        self._boot = {"kernel": k, "initrd": i}
+            self._boot = val
+        elif type(val) == list:
+            if len(val) != 2:
+                raise ValueError, "Must pass both a kernel and initrd"
+            self._boot = {"kernel": val[0], "initrd": val[1]}
     boot = property(get_boot, set_boot)
 
     # extra arguments to pass to the guest installer
@@ -78,86 +50,12 @@ class ParaVirtGuest(Guest.XenGuest):
         self._extraargs = val
     extraargs = property(get_extra_args, set_extra_args)
 
-    def _get_paravirt_install_images(self, progresscb):
-        def cleanup_nfs(nfsmntdir):
-            cmd = ["umount", nfsmntdir]
-            ret = subprocess.call(cmd)
-            try:
-                os.rmdir(nfsmntdir)
-            except:
-                pass
-
-        scratchdir = "/var/tmp"
-        if self.type == "xen":
-            # Xen needs kernel/initrd here to comply with
-            # selinux policy
-            scratchdir = "/var/lib/xen/"
-
-        if self.boot is not None:
-            return (self.boot["kernel"], self.boot["initrd"])
-        kfn = None
-        ifn = None
-        if self.location.startswith("http://") or \
-               self.location.startswith("ftp://"):
-            kernel = None
-            initrd = None
-            try:
-                try:
-                    kernel = grabber.urlopen(self.location + "/images/" + self.type + "/vmlinuz",
-                                             progress_obj = progresscb, \
-                                             text = "Retrieving vmlinuz...")
-                except IOError, e:
-                    raise RuntimeError, "Invalid URL location given: " + str(e)
-                kfn = _copy_temp(kernel, prefix="vmlinuz.", scratchdir=scratchdir)
-                logging.debug("Copied kernel to " + kfn)
-            finally:
-                if kernel:
-                    kernel.close()
-            try:
-                try:
-                    initrd = grabber.urlopen(self.location + "/images/" + self.type + "/initrd.img",
-                                             progress_obj=progresscb, \
-                                             text = "Retrieving initrd.img...")
-                except IOError, e:
-                    raise RuntimeError, "Invalid URL location given: " + str(e)
-                ifn = _copy_temp(initrd, prefix="initrd.img.", scratchdir=scratchdir)
-                logging.debug("Copied initrd to " + kfn)
-            finally:
-                if initrd:
-                    initrd.close()
-
-        elif self.location.startswith("nfs:"):
-            nfsmntdir = tempfile.mkdtemp(prefix="nfs.", dir=scratchdir)
-            cmd = ["mount", "-o", "ro", self.location[4:], nfsmntdir]
-            ret = subprocess.call(cmd)
-            if ret != 0:
-                cleanup_nfs(nfsmntdir)
-                raise RuntimeError, "Unable to mount NFS location!"
-            kernel = None
-            initrd = None
-            try:
-                try:
-                    kernel = open(nfsmntdir + "/images/" + self.type + "/vmlinuz", "r")
-                except IOError, e:
-                    raise RuntimeError, "Invalid NFS location given: " + str(e)
-                kfn = _copy_temp(kernel, prefix="vmlinuz.", scratchdir=scratchdir)
-                try:
-                    initrd = open(nfsmntdir + "/images/" + self.type + "/initrd.img", "r")
-                except IOError, e:
-                    raise RuntimeError, "Invalid NFS location given: " + str(e)
-                ifn = _copy_temp(initrd, prefix="initrd.img.", scratchdir=scratchdir)
-            finally:
-                if kernel:
-                    kernel.close()
-                if initrd:
-                    initrd.close()
-                cleanup_nfs(nfsmntdir)
-
-        return (kfn, ifn)
-
     def _get_install_xml(self):
         if self.location:
-            metharg="method=%s " %(self.location,)
+            if self.location.startswith("/"):
+                metharg="method=hd://"
+            else:
+                metharg="method=%s " %(self.location,)
         else:
             metharg = ""
 
@@ -192,17 +90,24 @@ class ParaVirtGuest(Guest.XenGuest):
             raise RuntimeError, "A location must be specified to install from"
         Guest.Guest.validate_parms(self)
 
-    def start_install(self, consolecb = None, meter = None):
-        self.validate_parms()
-        if meter:
-            progresscb = meter
+    def _prepare_install_location(self, meter):
+        tmpfiles = []
+        if self.boot is not None:
+            # Got a local kernel/initrd already
+            self.kernel = self.boot["kernel"]
+            self.initrd = self.boot["initrd"]
         else:
-            progresscb = progress.BaseMeter()
+            # Need to fetch the kernel & initrd from a remote site, or
+            # out of a loopback mounted disk image/device
+            filenames = self._get_install_files(["images/" + self.type + "/vmlinuz", "images/" + self.type + "/initrd.img"], meter)
+            self.kernel = filenames[0]
+            self.initrd = filenames[1]
+            tmpfiles.append(self.kernel)
+            tmpfiles.append(self.initrd)
 
-        (self.kernel, self.initrd) = self._get_paravirt_install_images(progresscb)
+        # If they're installing off a local file/device, we map it
+        # through to a virtual harddisk
+        if self.location is not None and self.location.startswith("/"):
+            self.disks.append(Guest.VirtualDisk(self.location, readOnly=True))
 
-        try:
-            return Guest.Guest.start_install(self, consolecb, progresscb)
-        finally:
-            os.unlink(self.kernel)
-            os.unlink(self.initrd)
+        return tmpfiles
