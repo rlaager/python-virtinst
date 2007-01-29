@@ -1,0 +1,61 @@
+# -*- rpm-spec -*-
+
+%{!?python_sitelib: %define python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+
+# This macro is used for the continuous automated builds. It just
+# allows an extra fragment based on the timestamp to be appended
+# to the release. This distinguishes automated builds, from formal
+# Fedora RPM builds
+%define _extra_release %{?dist:%{dist}}%{!?dist:%{?extra_release:%{extra_release}}}
+%define appname virtinst
+
+Summary: Python modules for starting Xen guest installations
+Name: python-%{appname}
+Version: ::VERSION::
+Release: 1%{_extra_release}
+Source0: http://virt-manager.et.redhat.com/download/sources/%{appname}/%{appname}-%{version}.tar.gz
+License: GPL
+Group: Development/Libraries
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildArch: noarch
+Url: http://virt-manager.et.redhat.com
+Requires: libvirt-python >= 0.1.11
+Requires: urlgrabber
+BuildRequires: python-devel
+
+%description
+virtinst is a module to help in starting installations of Fedora/Red
+Hat Enterprise Linux related distributions inside of virtual machines.  It
+supports both paravirt guests (for which only FC and RHEL guests are
+currently supported) as well as fully virtualized guests.  It uses
+libvirt (http://www.libvirt.org) for starting things.
+
+Also contained is a simple script virt-install which uses
+virtinst in a command line mode.
+
+%prep
+%setup -q -n %{appname}-%{version}
+
+%build
+python setup.py build
+
+%install
+rm -rf $RPM_BUILD_ROOT
+python setup.py install -O1 --root=$RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/%{_sbindir}
+mv $RPM_BUILD_ROOT/%{_bindir}/virt-install $RPM_BUILD_ROOT/%{_sbindir}/virt-install
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+%doc README AUTHORS
+%dir %{python_sitelib}/%{appname}
+%{python_sitelib}/%{appname}/*
+%{_sbindir}/virt-install
+
+%changelog
+* Mon Jan 29 2007 Daniel P. Berrange <berrange@redhat.com> - 0.100.1-1
+- Initial generic spec file
+

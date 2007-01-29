@@ -1,0 +1,7 @@
+include README AUTHORS
+include *.py
+include virtinst/*.py
+include tests/*.xml
+include tests/*.py
+include virt-install
+include autobuild.sh

@@ -5,3 +5,4 @@
 .*\.bak
 .*\#$
 .*\.pyc$
+^python-virtinst\.spec$
