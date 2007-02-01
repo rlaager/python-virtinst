@@ -206,6 +206,7 @@ class Guest(object):
         self._name = None
         self._uuid = None
         self._memory = None
+        self._maxmemory = None
         self._vcpus = None
         self._graphics = { "enabled": False }
 
@@ -243,7 +244,16 @@ class Guest(object):
         return self._memory
     def set_memory(self, val):
         self._memory = val
+        if self._maxmemory is None or self._maxmemory < val:
+            self._maxmemory = val
     memory = property(get_memory, set_memory)
+
+    # Memory allocated to the guest.  Should be given in MB
+    def get_maxmemory(self):
+        return self._maxmemory
+    def set_maxmemory(self, val):
+        self._maxmemory = val
+    maxmemory = property(get_maxmemory, set_maxmemory)
 
 
     # UUID for the guest
@@ -464,7 +474,8 @@ class Guest(object):
 
         return """<domain type='%(type)s'>
   <name>%(name)s</name>
-  <memory>%(ramkb)s</memory>
+  <currentMemory>%(ramkb)s</currentMemory>
+  <memory>%(maxramkb)s</memory>
   <uuid>%(uuid)s</uuid>
   %(osblob)s
   <on_poweroff>destroy</on_poweroff>
@@ -480,6 +491,7 @@ class Guest(object):
         "vcpus": self.vcpus, \
         "uuid": self.uuid, \
         "ramkb": self.memory * 1024, \
+        "maxramkb": self.maxmemory * 1024, \
         "devices": self._get_device_xml(), \
         "osblob": osblob, \
         "action": action }

@@ -1,6 +1,7 @@
 <domain type='xen'>
   <name>TestGuest</name>
-  <memory>204800</memory>
+  <currentMemory>204800</currentMemory>
+  <memory>409600</memory>
   <uuid>123456-1234-1234-1234-123456</uuid>
   <bootloader>/usr/bin/pygrub</bootloader>
   <on_poweroff>destroy</on_poweroff>

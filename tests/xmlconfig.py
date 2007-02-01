@@ -28,6 +28,7 @@ class TestXMLConfig(unittest.TestCase):
         g = virtinst.ParaVirtGuest(hypervisorURI="test:///default", type="xen")
         g.name = "TestGuest"
         g.memory = int(200)
+        g.maxmemory = int(400)
         g.uuid = "123456-1234-1234-1234-123456"
         g.boot = ["/boot/vmlinuz","/boot/initrd"]
         g.vcpus = 5
@@ -38,6 +39,7 @@ class TestXMLConfig(unittest.TestCase):
                                    emulator="/usr/lib/xen/bin/qemu-dm")
         g.name = "TestGuest"
         g.memory = int(200)
+        g.maxmemory = int(400)
         g.uuid = "123456-1234-1234-1234-123456"
         g.cdrom = "/dev/cdrom"
         g.vcpus = 5
