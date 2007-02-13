@@ -17,12 +17,30 @@ import libvirt
 import Guest
 import util
 
-
 class FullVirtGuest(Guest.XenGuest):
+    OS_TYPES = { "Linux" : { "Red Hat Enterprise Linux AS 2.1/3" : { "acpi" : True, "apic": True }, \
+                             "Red Hat Enterprise Linux 4" : { "acpi" : True, "apic": True }, \
+                             "Red Hat Enterprise Linux 5" : { "acpi" : True, "apic": True }, \
+                             "Fedora Core 4-6" : { "acpi" : True, "apic": True }, \
+                             "Suse Linux Enterprise Server" : { "acpi" : True, "apic": True }, \
+                             "Other Linux 2.6 kernel" : { "acpi" : True, "apic": True } }, \
+                 "Microsoft Windows" : { "Windows 2000" : { "acpi": False, "apic" : False }, \
+                                         "Windows XP" : { "acpi": True, "apic" : True }, \
+                                         "Windows Server 2003" : { "acpi": True, "apic" : True }, \
+                                         "Windows Vista" : { "acpi": True, "apic" : True } }, \
+                 "Novell Netware" : { "Netware 4" : { "acpi": True, "apic": True }, \
+                                      "Netware 5" : { "acpi": True, "apic": True }, \
+                                      "Netware 6" : { "acpi": True, "apic": True } }, \
+                 "Sun Solaris" : { "Solaris 10" : { "acpi": True, "apic": True }, \
+                                   "Solaris 9" : { "acpi": True, "apic": True } }, \
+                 "Other" : { "MS-DOS" : { "acpi": False, "apic" : False }, \
+                             "Free BSD" : { "acpi": True, "apic" : True }, \
+                             "Other" : { "acpi": True, "apic" : True } } }
+
     def __init__(self, type=None, hypervisorURI=None, emulator=None):
         Guest.Guest.__init__(self, type=type, hypervisorURI=hypervisorURI)
         self.disknode = "hd"
-        self.features = { "acpi": True, "pae": util.is_pae_capable(), "apic": True }
+        self.features = { "acpi": None, "pae": util.is_pae_capable(), "apic": None }
         if emulator is None:
             if os.uname()[4] in ("x86_64"):
                 emulator = "/usr/lib64/xen/bin/qemu-dm"
@@ -33,7 +51,35 @@ class FullVirtGuest(Guest.XenGuest):
             self.loader = "/usr/lib/xen/boot/hvmloader"
         else:
             self.loader = None
+        self._os_type = None
+        self._os_variant = None
 
+    def get_os_type(self):
+        return self._os_type
+    def set_os_type(self, val):
+        if FullVirtGuest.OS_TYPES.has_key(val):
+            self._os_type = val
+        else:
+            raise RuntimeError, "OS type %s does not exist in our dictionary" % val
+    os_type = property(get_os_type, set_os_type)
+
+    def get_os_variant(self):
+        return self._os_variant
+    def set_os_variant(self, val):
+        if FullVirtGuest.OS_TYPES[self._os_type].has_key(val):
+            self._os_variant = val
+        else:
+            raise RuntimeError, "OS variant %s does not exist in our dictionary for OS type %s" % (val, os_type)
+    os_variant = property(get_os_variant, set_os_variant)
+
+    def set_os_type_parameters(self, os_type, os_variant):
+        # explicitly disabling apic and acpi will override OS_TYPES values
+        acpi = FullVirtGuest.OS_TYPES[os_type][os_variant]["acpi"]
+        apic = FullVirtGuest.OS_TYPES[os_type][os_variant]["apic"]
+        if self.features["acpi"] == None:
+            self.features["acpi"] = acpi
+        if self.features["apic"] == None:
+            self.features["apic"] = apic
 
     def _get_features_xml(self):
         ret = ""
@@ -76,6 +122,7 @@ class FullVirtGuest(Guest.XenGuest):
     def validate_parms(self):
         if not self.location:
             raise RuntimeError, "A CD must be specified to boot from"
+        self.set_os_type_parameters(self.os_type, self.os_variant)
         Guest.Guest.validate_parms(self)
 
     def _prepare_install_location(self, meter):
