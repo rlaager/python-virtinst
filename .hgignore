@@ -6,3 +6,4 @@
 .*\#$
 .*\.pyc$
 ^python-virtinst\.spec$
+^\.coverage$
