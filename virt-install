@@ -212,7 +212,6 @@ def get_fullvirt_cdrom(cdpath, guest):
             print "ERROR: ", e
             cdpath = None
 
-
 ### Option parsing
 def parse_args():
     parser = OptionParser()
@@ -264,7 +263,11 @@ def parse_args():
                           help="This guest should be a fully virtualized guest")
         parser.add_option("-c", "--cdrom", type="string", dest="cdrom",
                           help="File to use a virtual CD-ROM device for fully virtualized guests")
-
+        parser.add_option("", "--os-type", type="string", dest="os_type", help="The OS type for fully virtualized guests, e.g. Linux, Solaris, Windows", default="Other")
+        parser.add_option("", "--os-variant", type="string", dest="os_variant", help="The OS variant for fully virtualized guests, e.g. Fedora, Solaris 8, Windows XP", default="Other")
+        parser.add_option("", "--noapic", action="store_true", dest="noapic", help="Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
+        parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help="Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
+    
     # paravirt options
     parser.add_option("-p", "--paravirt", action="store_false", dest="fullvirt",
                       help="This guest should be a paravirtualized guest")
@@ -401,7 +404,13 @@ def main():
         get_paravirt_extraargs(options.extra, guest)
     else:
         get_fullvirt_cdrom(options.cdrom, guest)
-
+        guest.set_os_type(options.os_type)
+        guest.set_os_variant(options.os_variant)
+        if options.noacpi:
+            guest.features["acpi"] = False
+        if options.noapic:
+            guest.features["apic"] = False
+        
     if options.autoconsole is False:
         conscb = None
     else:
