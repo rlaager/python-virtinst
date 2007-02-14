@@ -68,6 +68,12 @@ def is_hvm_capable():
         return True
     return False
 
+def is_kqemu_capable():
+    return os.path.exists("/dev/kqemu")
+
+def is_kvm_capable():
+    return os.path.exists("/dev/kvm")
+
 def is_blktap_capable():
     #return os.path.exists("/dev/xen/blktapctrl")
     f = open("/proc/modules")

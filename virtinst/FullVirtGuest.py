@@ -38,15 +38,16 @@ class FullVirtGuest(Guest.XenGuest):
                              "Free BSD" : { "acpi": True, "apic" : True }, \
                              "Other" : { "acpi": True, "apic" : True } } }
 
-    def __init__(self, type=None, hypervisorURI=None, emulator=None):
-        Guest.Guest.__init__(self, type=type, hypervisorURI=hypervisorURI)
+    def __init__(self, type=None, connection=None, hypervisorURI=None, emulator=None):
+        Guest.Guest.__init__(self, type=type, connection=connection, hypervisorURI=hypervisorURI)
         self.disknode = "hd"
         self.features = { "acpi": None, "pae": util.is_pae_capable(), "apic": None }
         if emulator is None:
-            if os.uname()[4] in ("x86_64"):
-                emulator = "/usr/lib64/xen/bin/qemu-dm"
-            else:
-                emulator = "/usr/lib/xen/bin/qemu-dm"
+            if self.type == "xen":
+                if os.uname()[4] in ("x86_64"):
+                    emulator = "/usr/lib64/xen/bin/qemu-dm"
+                else:
+                    emulator = "/usr/lib/xen/bin/qemu-dm"
         self.emulator = emulator
         if self.type == "xen":
             self.loader = "/usr/lib/xen/boot/hvmloader"
@@ -115,10 +116,14 @@ class FullVirtGuest(Guest.XenGuest):
         return self._get_os_xml("hd")
 
     def _get_device_xml(self):
-        return ("""    <emulator>%(emulator)s</emulator>
+        if self.emulator is None:
+            return """    <console device='pty'/>""" + \
+                   Guest.Guest._get_device_xml(self)
+        else:
+            return ("""    <emulator>%(emulator)s</emulator>
     <console device='pty'/>
 """ % { "emulator": self.emulator }) + \
-               Guest.Guest._get_device_xml(self)
+        Guest.Guest._get_device_xml(self)
 
     def validate_parms(self):
         if not self.location:

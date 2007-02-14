@@ -192,7 +192,7 @@ class XenSDLGraphics(SDLVirtualGraphics):
     pass
 
 class Guest(object):
-    def __init__(self, type=None, hypervisorURI=None):
+    def __init__(self, type=None, connection=None, hypervisorURI=None):
         if type is None:
             type = "xen"
         self._type = type
@@ -207,7 +207,9 @@ class Guest(object):
         self._graphics = { "enabled": False }
 
         self.domain = None
-        self.conn = libvirt.open(hypervisorURI)
+        self.conn = connection
+        if self.conn == None:
+            self.conn = libvirt.open(hypervisorURI)
         if self.conn == None:
             raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
 

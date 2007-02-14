@@ -18,8 +18,8 @@ import Guest
 import DistroManager
 
 class ParaVirtGuest(Guest.XenGuest):
-    def __init__(self, type=None, hypervisorURI=None):
-        Guest.Guest.__init__(self, type=type, hypervisorURI=hypervisorURI)
+    def __init__(self, type=None, connection=None, hypervisorURI=None):
+        Guest.Guest.__init__(self, type=type, connection=connection, hypervisorURI=hypervisorURI)
         self._boot = None
         self._extraargs = ""
         self.disknode = "xvd"

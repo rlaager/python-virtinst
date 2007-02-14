@@ -255,7 +255,11 @@ def parse_args():
     parser.add_option("", "--noautoconsole",
                       action="store_false", dest="autoconsole",
                       help="Don't automatically try to connect to the guest console")
-    
+
+    parser.add_option("", "--accelerate", action="store_true", dest="accelerate",
+                      help="Use kernel acceleration capabilities")
+    parser.add_option("", "--connect", type="string", dest="connect",
+                      help="Connect to hypervisor with URI")
     
     # vmx/svm options
     if virtinst.util.is_hvm_capable():
@@ -364,23 +368,37 @@ def main():
                             datefmt="%a, %d %b %Y %H:%M:%S",
                             stream=sys.stderr)
 
+    conn = libvirt.open(options.connect)
+    type = None
     # check to ensure we're really on a xen kernel
-    check_xen()
+    if conn.getType() == "xen":
+        type = "xen"
+        check_xen()
 
-    if os.geteuid() != 0:
-        print >> sys.stderr, "Must be root to install guests"
-        sys.exit(1)
+        if os.geteuid() != 0:
+            print >> sys.stderr, "Must be root to install guests"
+            sys.exit(1)
 
     # first things first, are we trying to create a fully virt guest?
     hvm = False
-    if virtinst.util.is_hvm_capable():
-        hvm = options.fullvirt
-    if hvm is None:
-        hvm = get_full_virt()
-    if hvm:
-        guest = virtinst.FullVirtGuest()
+    if conn.getType() == "xen":
+        if virtinst.util.is_hvm_capable():
+            hvm = options.fullvirt
+        if hvm is None:
+            hvm = get_full_virt()
     else:
-        guest = virtinst.ParaVirtGuest()
+        hvm = True
+        type = "qemu"
+        if options.accelerate:
+            if util.is_kvm_capable():
+                type = "kvm"
+            elif util.is_kqemu_capable():
+                type = "kqemu"
+
+    if hvm:
+        guest = virtinst.FullVirtGuest(connection=conn, type=type)
+    else:
+        guest = virtinst.ParaVirtGuest(connection=conn, type=type)
 
     # now let's get some of the common questions out of the way
     get_name(options.name, guest)
