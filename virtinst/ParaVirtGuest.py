@@ -15,7 +15,7 @@
 import os
 import libvirt
 import Guest
-
+import DistroManager
 
 class ParaVirtGuest(Guest.XenGuest):
     def __init__(self, type=None, hypervisorURI=None):
@@ -51,23 +51,14 @@ class ParaVirtGuest(Guest.XenGuest):
     extraargs = property(get_extra_args, set_extra_args)
 
     def _get_install_xml(self):
-        if self.location:
-            if self.location.startswith("/"):
-                metharg="method=hd://"
-            else:
-                metharg="method=%s " %(self.location,)
-        else:
-            metharg = ""
-
         return """<os>
     <type>linux</type>
     <kernel>%(kernel)s</kernel>
     <initrd>%(initrd)s</initrd>
-    <cmdline> %(metharg)s %(extra)s</cmdline>
+    <cmdline>%(extra)s</cmdline>
   </os>""" % \
     { "kernel": self.kernel, \
       "initrd": self.initrd, \
-      "metharg": metharg, \
       "extra": self.extraargs }
 
 
@@ -99,11 +90,15 @@ class ParaVirtGuest(Guest.XenGuest):
         else:
             # Need to fetch the kernel & initrd from a remote site, or
             # out of a loopback mounted disk image/device
-            filenames = self._get_install_files(["images/" + self.type + "/vmlinuz", "images/" + self.type + "/initrd.img"], meter)
-            self.kernel = filenames[0]
-            self.initrd = filenames[1]
-            tmpfiles.append(self.kernel)
-            tmpfiles.append(self.initrd)
+            (kernelfn,initrdfn,args) = DistroManager.acquireKernel(self.location, meter, scratchdir=self.scratchdir, type=self.type)
+            self.kernel = kernelfn
+            self.initrd = initrdfn
+            if self.extraargs is not None:
+                self.extraargs = self.extraargs + " " + args
+            else:
+                self.extraargs = args
+            tmpfiles.append(kernelfn)
+            tmpfiles.append(initrdfn)
 
         # If they're installing off a local file/device, we map it
         # through to a virtual harddisk

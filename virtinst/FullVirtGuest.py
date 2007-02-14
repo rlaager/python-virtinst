@@ -16,7 +16,7 @@ import os
 import libvirt
 import Guest
 import util
-
+import DistroManager
 
 class FullVirtGuest(Guest.XenGuest):
     def __init__(self, type=None, hypervisorURI=None, emulator=None):
@@ -86,8 +86,7 @@ class FullVirtGuest(Guest.XenGuest):
             cdrom = self.location
         else:
             # If its a http://, ftp://, or nfs:/ we need to fetch boot.iso
-            filenames = self._get_install_files(["images/boot.iso"], meter)
-            cdrom = filenames[0]
+            cdrom = DistroManager.acquireBootDisk(self.location, meter, scratchdir=self.scratchdir)
             tmpfiles.append(cdrom)
         self.disks.append(Guest.VirtualDisk(cdrom, device=Guest.VirtualDisk.DEVICE_CDROM, readOnly=True))
 

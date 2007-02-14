@@ -15,10 +15,6 @@
 import os, os.path
 import stat, sys, time
 import re
-import subprocess
-import urlgrabber.grabber as grabber
-import urlgrabber.progress as progress
-import tempfile
 
 import libvirt
 
@@ -224,6 +220,14 @@ class Guest(object):
     type = property(get_type, set_type)
 
 
+    def get_scratchdir(self):
+        if self.type == "xen":
+            return "/var/lib/xen"
+        return "/var/tmp"
+    scratchdir = property(get_scratchdir)
+
+
+
     # Domain name of the guest
     def get_name(self):
         return self._name
@@ -302,85 +306,6 @@ class Guest(object):
         self.set_install_location(val)
     cdrom = property(get_cdrom, set_cdrom)
 
-    def _get_install_files(self, fileset, progresscb):
-        def cleanup_mnt(mntdir):
-            cmd = ["umount", mntdir]
-            ret = subprocess.call(cmd)
-            try:
-                os.rmdir(mntdir)
-            except:
-                pass
-
-        def _copy_temp(fileobj, prefix, scratchdir):
-            (fd, fn) = tempfile.mkstemp(prefix="virtinst-" + prefix, dir=scratchdir)
-            block_size = 16384
-            try:
-                while 1:
-                    buff = fileobj.read(block_size)
-                    if not buff:
-                        break
-                    os.write(fd, buff)
-            finally:
-                os.close(fd)
-            return fn
-
-        scratchdir = "/var/tmp"
-        if self.type == "xen":
-            # Xen needs kernel/initrd here to comply with
-            # selinux policy
-            scratchdir = "/var/lib/xen/"
-
-        filenames = []
-        if self.location.startswith("http://") or \
-               self.location.startswith("ftp://"):
-            for filename in fileset:
-                file = None
-                try:
-                    base = os.path.basename(filename)
-                    try:
-                        file = grabber.urlopen(self.location + "/" + filename,
-                                               progress_obj = progresscb, \
-                                               text = "Retrieving %s..." % base)
-                    except IOError, e:
-                        raise RuntimeError, "Invalid URL location given: " + str(e)
-                    tmpname =_copy_temp(file, prefix=base + ".", scratchdir=scratchdir)
-                    logging.debug("Copied " + filename + " to " + tmpname)
-                    filenames.append(tmpname)
-                finally:
-                    if file:
-                        file.close()
-        elif self.location.startswith("nfs:") or self.location.startswith("/"):
-            mntdir = tempfile.mkdtemp(prefix="virtinstmnt.", dir=scratchdir)
-            if self.location.startswith("nfs:"):
-                cmd = ["mount", "-o", "ro", self.location[4:], mntdir]
-            else:
-                if stat.S_ISBLK(os.stat(self.location)[stat.ST_MODE]):
-                    cmd = ["mount", "-o", "ro", self.location, mntdir]
-                else:
-                    cmd = ["mount", "-o", "ro,loop", self.location, mntdir]
-            ret = subprocess.call(cmd)
-            if ret != 0:
-                cleanup_mnt(mntdir)
-                raise RuntimeError, "Unable to mount NFS location/disk image!"
-
-            try:
-                for filename in fileset:
-                    file = None
-                    try:
-                        base = os.path.basename(filename)
-                        try:
-                            file = open(mntdir + "/" + filename, "r")
-                        except IOError, e:
-                            raise RuntimeError, "Invalid NFS location given: " + str(e)
-                        tmpname = _copy_temp(file, prefix=base + ".", scratchdir=scratchdir)
-                        logging.debug("Copied " + filename + " to " + tmpname)
-                        filenames.append(tmpname)
-                    finally:
-                        if file:
-                            file.close()
-            finally:
-                cleanup_mnt(mntdir)
-        return filenames
 
 
     # graphics setup
