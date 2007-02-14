@@ -42,6 +42,7 @@ class TestXMLConfig(unittest.TestCase):
         g.maxmemory = int(400)
         g.uuid = "123456-1234-1234-1234-123456"
         g.cdrom = "/dev/cdrom"
+        g.set_os_type_parameters("Other", "Other")
         g.vcpus = 5
         return g
 
