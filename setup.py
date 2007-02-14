@@ -3,6 +3,7 @@ from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin, walk
 import os
+import tests.coverage as coverage
 
 
 pkgs = ['virtinst']
@@ -28,7 +29,10 @@ class TestCommand(Command):
                 )
         tests = TestLoader().loadTestsFromNames(testfiles)
         t = TextTestRunner(verbosity = 1)
+        coverage.erase()
+        coverage.start()
         t.run(tests)
+        coverage.stop()
 
 setup(name='virtinst',
       version='0.100.0',

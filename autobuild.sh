@@ -3,7 +3,12 @@
 rm -rf build dist python-virtinst.spec
 
 python setup.py build
+python tests/coverage.py -e
+rm -rf build/coverage
+mkdir build/coverage
 python setup.py test
+python tests/coverage.py -r virtinst/*.py > build/coverage/summary.txt
+python tests/coverage.py -d build/coverage/ -a virtinst/*.py
 python setup.py install --prefix=$AUTOBUILD_INSTALL_ROOT
 
 VERSION=`python setup.py --version`
