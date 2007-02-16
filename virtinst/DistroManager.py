@@ -160,9 +160,10 @@ class ImageStore:
 class FedoraImageStore(ImageStore):
 
     def acquireKernel(self, fetcher, progresscb):
-        kernelpath = "images/vmlinuz"
-        initrdpath = "images/initrd.img"
-        if self.type is not None:
+        if self.type is None:
+            kernelpath = "images/pxeboot/vmlinuz"
+            initrdpath = "images/pxeboot/initrd.img"
+        else:
             kernelpath = "images/%s/vmlinuz" % (self.type)
             initrdpath = "images/%s/initrd.img" % (self.type)
 
