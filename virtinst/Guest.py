@@ -91,6 +91,7 @@ class VirtualDisk:
             size_bytes = long(self.size * 1024L * 1024L * 1024L)
             progresscb.start(filename=self.path,size=long(size_bytes), \
                              text="Creating storage file...")
+            fd = None
             try: 
                 fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
                 if self.sparse:
@@ -103,7 +104,8 @@ class VirtualDisk:
                         os.write(fd, buf)
                         progresscb.update(long(i * 1024L * 1024L))
             finally:
-                os.close(fd)
+                if fd is not None:
+                    os.close(fd)
                 progresscb.end(size_bytes)
         # FIXME: set selinux context?
 
@@ -292,6 +294,8 @@ class Guest(object):
         if not (val.startswith("http://") or val.startswith("ftp://") or
                 val.startswith("nfs:") or val.startswith("/")):
             raise ValueError, "Install location must be an NFS, HTTP or FTP network install source, or local file/device"
+        if os.geteuid() != 0 and val.startswith("nfs:"):
+            raise ValueError, "NFS installations are only supported as root"
         self._location = val
     location = property(get_install_location, set_install_location)
 
@@ -437,6 +441,7 @@ class Guest(object):
             return self._do_install(consolecb, meter)
         finally:
             for file in tmpfiles:
+                logging.debug("Removing " + file)
                 os.unlink(file)
 
     def _do_install(self, consolecb, meter):
@@ -454,10 +459,8 @@ class Guest(object):
         if self.domain is None:
             raise RuntimeError, "Unable to create domain for guest, aborting installation!"
         meter.end(0)
-        child = None
-        if consolecb:
-            child = consolecb(self.domain)
 
+        logging.debug("Created guest, looking to see if it is running")
         # sleep in .25 second increments until either a) we find
         # our domain or b) it's been 5 seconds.  this is so that
         # we can try to gracefully handle domain creation failures
@@ -467,12 +470,19 @@ class Guest(object):
             try:
                 d = self.conn.lookupByName(self.name)
                 break
-            except libvirt.libvirtError:
+            except libvirt.libvirtError, e:
+                logging.debug("No guest running yet " + str(e))
                 pass
+            num += 1
             time.sleep(0.25)
 
         if d is None:
             raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the logs"
+
+        child = None
+        if consolecb:
+            logging.debug("Launching console callback")
+            child = consolecb(self.domain)
 
         boot_xml = self.get_config_xml(install = False)
         logging.debug("Saving XML boot config '%s'" % ( boot_xml ))
