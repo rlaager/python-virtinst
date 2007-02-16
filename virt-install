@@ -261,16 +261,16 @@ def parse_args():
     parser.add_option("", "--connect", type="string", dest="connect",
                       help="Connect to hypervisor with URI")
     
-    # vmx/svm options
-    if virtinst.util.is_hvm_capable():
-        parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
-                          help="This guest should be a fully virtualized guest")
-        parser.add_option("-c", "--cdrom", type="string", dest="cdrom",
-                          help="File to use a virtual CD-ROM device for fully virtualized guests")
-        parser.add_option("", "--os-type", type="string", dest="os_type", help="The OS type for fully virtualized guests, e.g. Linux, Solaris, Windows", default="Other")
-        parser.add_option("", "--os-variant", type="string", dest="os_variant", help="The OS variant for fully virtualized guests, e.g. Fedora, Solaris 8, Windows XP", default="Other")
-        parser.add_option("", "--noapic", action="store_true", dest="noapic", help="Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
-        parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help="Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
+    # fullvirt options
+    parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
+                      help="This guest should be a fully virtualized guest")
+    parser.add_option("-c", "--cdrom", type="string", dest="cdrom",
+                      help="File to use a virtual CD-ROM device for fully virtualized guests")
+    parser.add_option("", "--os-type", type="string", dest="os_type", help="The OS type for fully virtualized guests, e.g. Linux, Solaris, Windows", default="Other")
+    parser.add_option("", "--os-variant", type="string", dest="os_variant", help="The OS variant for fully virtualized guests, e.g. Fedora, Solaris 8, Windows XP", default="Other")
+    parser.add_option("", "--noapic", action="store_true", dest="noapic", help="Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
+    parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help="Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
+    parser.add_option("", "--arch", type="string", dest="arch", help="The CPU architecture to simulate")
     
     # paravirt options
     parser.add_option("-p", "--paravirt", action="store_false", dest="fullvirt",
@@ -396,7 +396,10 @@ def main():
                 type = "kqemu"
 
     if hvm:
-        guest = virtinst.FullVirtGuest(connection=conn, type=type)
+        if options.arch is None:
+            guest = virtinst.FullVirtGuest(connection=conn, type=type)
+        else:
+            guest = virtinst.FullVirtGuest(connection=conn, type=type, arch=options.arch)
     else:
         guest = virtinst.ParaVirtGuest(connection=conn, type=type)
 

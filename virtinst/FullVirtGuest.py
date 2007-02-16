@@ -38,10 +38,11 @@ class FullVirtGuest(Guest.XenGuest):
                              "Free BSD" : { "acpi": True, "apic" : True }, \
                              "Other" : { "acpi": True, "apic" : True } } }
 
-    def __init__(self, type=None, connection=None, hypervisorURI=None, emulator=None):
+    def __init__(self, type=None, arch=None, connection=None, hypervisorURI=None, emulator=None):
         Guest.Guest.__init__(self, type=type, connection=connection, hypervisorURI=hypervisorURI)
         self.disknode = "hd"
         self.features = { "acpi": None, "pae": util.is_pae_capable(), "apic": None }
+        self.arch = arch
         if emulator is None:
             if self.type == "xen":
                 if os.uname()[4] in ("x86_64"):
@@ -96,9 +97,15 @@ class FullVirtGuest(Guest.XenGuest):
 
         return """    <loader>%(loader)s</loader>""" % { "loader": self.loader }
 
-    def _get_os_xml(self, bootdev):
-        return """<os>
-    <type>hvm</type>
+    def _get_os_xml(self, bootdev, install=True):
+        if self.arch is None:
+            arch = ""
+        else:
+            arch = " arch='" + self.arch + "'"
+
+        if self.kernel is None or install == False:
+            return """<os>
+    <type%(arch)s>hvm</type>
 %(loader)s
     <boot dev='%(bootdev)s'/>
   </os>
@@ -106,14 +113,30 @@ class FullVirtGuest(Guest.XenGuest):
     %(features)s
   </features>""" % \
     { "bootdev": bootdev, \
+      "arch": arch, \
       "loader": self._get_loader_xml(), \
+      "features": self._get_features_xml() }
+        else:
+            return """<os>
+    <type%(arch)s>hvm</type>
+    <kernel>%(kernel)s</kernel>
+    <initrd>%(initrd)s</initrd>
+    <cmdline>%(extra)s</cmdline>
+    <features>
+      %(features)s
+    </features>
+  </os>""" % \
+    { "kernel": self.kernel, \
+      "initrd": self.initrd, \
+      "extra": self.extraargs, \
+      "arch": arch, \
       "features": self._get_features_xml() }
 
     def _get_install_xml(self):
-        return self._get_os_xml("cdrom")
+        return self._get_os_xml("cdrom", True)
 
     def _get_runtime_xml(self):
-        return self._get_os_xml("hd")
+        return self._get_os_xml("hd", False)
 
     def _get_device_xml(self, install = True):
         if self.emulator is None:
@@ -134,13 +157,36 @@ class FullVirtGuest(Guest.XenGuest):
     def _prepare_install_location(self, meter):
         cdrom = None
         tmpfiles = []
+        self.kernel = None
+        self.initrd = None
         if self.location.startswith("/"):
             # Huzzah, a local file/device
             cdrom = self.location
         else:
-            # If its a http://, ftp://, or nfs:/ we need to fetch boot.iso
-            cdrom = DistroManager.acquireBootDisk(self.location, meter, scratchdir=self.scratchdir)
-            tmpfiles.append(cdrom)
-        self.disks.append(Guest.VirtualDisk(cdrom, device=Guest.VirtualDisk.DEVICE_CDROM, readOnly=True, transient=True))
+            # Hmm, qemu ought to be able to boot off a kernel/initrd but
+            # for some reason it often fails, hence disabled here..
+            if self.type == "qemuXXX":
+                # QEMU can go straight off a kernel/initrd
+                if self.boot is not None:
+                    # Got a local kernel/initrd already
+                    self.kernel = self.boot["kernel"]
+                    self.initrd = self.boot["initrd"]
+                else:
+                    (kernelfn,initrdfn,args) = DistroManager.acquireKernel(self.location, meter, scratchdir=self.scratchdir)
+                    self.kernel = kernelfn
+                    self.initrd = initrdfn
+                    if self.extraargs is not None:
+                        self.extraargs = self.extraargs + " " + args
+                    else:
+                        self.extraargs = args
+                    tmpfiles.append(kernelfn)
+                    tmpfiles.append(initrdfn)
+            else:
+                # Xen needs a boot.iso if its a http://, ftp://, or nfs:/ url
+                cdrom = DistroManager.acquireBootDisk(self.location, meter, scratchdir=self.scratchdir)
+                tmpfiles.append(cdrom)
+
+        if cdrom is not None:
+            self.disks.append(Guest.VirtualDisk(cdrom, device=Guest.VirtualDisk.DEVICE_CDROM, readOnly=True, transient=True))
 
         return tmpfiles

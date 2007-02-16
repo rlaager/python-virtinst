@@ -20,35 +20,7 @@ import DistroManager
 class ParaVirtGuest(Guest.XenGuest):
     def __init__(self, type=None, connection=None, hypervisorURI=None):
         Guest.Guest.__init__(self, type=type, connection=connection, hypervisorURI=hypervisorURI)
-        self._boot = None
-        self._extraargs = ""
         self.disknode = "xvd"
-
-    # kernel + initrd pair to use for installing as opposed to using a location
-    def get_boot(self):
-        return self._boot
-    def set_boot(self, val):
-        if type(val) == tuple:
-            if len(val) != 2:
-                raise ValueError, "Must pass both a kernel and initrd"
-            (k, i) = val
-            self._boot = {"kernel": k, "initrd": i}
-        elif type(val) == dict:
-            if not val.has_key("kernel") or not val.has_key("initrd"):
-                raise ValueError, "Must pass both a kernel and initrd"
-            self._boot = val
-        elif type(val) == list:
-            if len(val) != 2:
-                raise ValueError, "Must pass both a kernel and initrd"
-            self._boot = {"kernel": val[0], "initrd": val[1]}
-    boot = property(get_boot, set_boot)
-
-    # extra arguments to pass to the guest installer
-    def get_extra_args(self):
-        return self._extraargs
-    def set_extra_args(self, val):
-        self._extraargs = val
-    extraargs = property(get_extra_args, set_extra_args)
 
     def _get_install_xml(self):
         return """<os>
