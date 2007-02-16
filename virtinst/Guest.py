@@ -38,11 +38,12 @@ class VirtualDisk:
     TYPE_FILE = "file"
     TYPE_BLOCK = "block"
 
-    def __init__(self, path, size = None, type=None, device=DEVICE_DISK, driverName=None, driverType=None, readOnly=False, sparse=True):
+    def __init__(self, path, size = None, transient=False, type=None, device=DEVICE_DISK, driverName=None, driverType=None, readOnly=False, sparse=True):
         """@path is the path to the disk image.
            @size is the size of the disk image in gigabytes."""
         self.size = size
         self.sparse = sparse
+        self.transient = transient
         self.path = os.path.abspath(path)
 
         if os.path.isdir(self.path):
@@ -69,6 +70,10 @@ class VirtualDisk:
     def get_type(self):
         return self._type
     type = property(get_type)
+
+    def get_transient(self):
+        return self._transient
+    transient = property(get_transient)
 
     def get_device(self):
         return self._device
@@ -361,11 +366,13 @@ class Guest(object):
         for nic in self.nics:
             nic.setup()
 
-    def _get_disk_xml(self):
+    def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
         ret = ""
         count = 0
         for d in self.disks:
+            if d.transient and not install:
+                continue
             if d.device == VirtualDisk.DEVICE_CDROM and count != 2:
                 count = 2
             disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
@@ -373,14 +380,14 @@ class Guest(object):
             count += 1
         return ret
 
-    def _get_network_xml(self):
+    def _get_network_xml(self, install = True):
         """Get the network config in the libvirt XML format"""
         ret = ""
         for n in self.nics:
             ret += n.get_xml_config()
         return ret
 
-    def _get_graphics_xml(self):
+    def _get_graphics_xml(self, install = True):
         """Get the graphics config in the libvirt XML format."""
         ret = ""
         if self.graphics["enabled"] == False:
@@ -388,12 +395,12 @@ class Guest(object):
         gt = self.graphics["type"]
         return gt.get_xml_config()
 
-    def _get_device_xml(self):
+    def _get_device_xml(self, install = True):
         return """%(disks)s
 %(networks)s
-%(graphics)s""" % { "disks": self._get_disk_xml(), \
-        "networks": self._get_network_xml(), \
-        "graphics": self._get_graphics_xml() }
+%(graphics)s""" % { "disks": self._get_disk_xml(install), \
+        "networks": self._get_network_xml(install), \
+        "graphics": self._get_graphics_xml(install) }
 
     def get_config_xml(self, install = True):
         if install:
@@ -423,7 +430,7 @@ class Guest(object):
         "uuid": self.uuid, \
         "ramkb": self.memory * 1024, \
         "maxramkb": self.maxmemory * 1024, \
-        "devices": self._get_device_xml(), \
+        "devices": self._get_device_xml(install), \
         "osblob": osblob, \
         "action": action }
 

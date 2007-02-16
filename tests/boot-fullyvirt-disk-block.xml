@@ -22,11 +22,6 @@
       <source dev='/dev/hdb1'/>
       <target dev='hda'/>
     </disk>
-    <disk type='block' device='cdrom'>
-      <source dev='/dev/cdrom'/>
-      <target dev='hdc'/>
-      <readonly/>
-    </disk>
 
 
 

@@ -115,15 +115,15 @@ class FullVirtGuest(Guest.XenGuest):
     def _get_runtime_xml(self):
         return self._get_os_xml("hd")
 
-    def _get_device_xml(self):
+    def _get_device_xml(self, install = True):
         if self.emulator is None:
-            return """    <console device='pty'/>""" + \
-                   Guest.Guest._get_device_xml(self)
+            return """    <console device='pty'/>
+""" + Guest.Guest._get_device_xml(self, install)
         else:
             return ("""    <emulator>%(emulator)s</emulator>
     <console device='pty'/>
 """ % { "emulator": self.emulator }) + \
-        Guest.Guest._get_device_xml(self)
+        Guest.Guest._get_device_xml(self, install)
 
     def validate_parms(self):
         if not self.location:
@@ -141,6 +141,6 @@ class FullVirtGuest(Guest.XenGuest):
             # If its a http://, ftp://, or nfs:/ we need to fetch boot.iso
             cdrom = DistroManager.acquireBootDisk(self.location, meter, scratchdir=self.scratchdir)
             tmpfiles.append(cdrom)
-        self.disks.append(Guest.VirtualDisk(cdrom, device=Guest.VirtualDisk.DEVICE_CDROM, readOnly=True))
+        self.disks.append(Guest.VirtualDisk(cdrom, device=Guest.VirtualDisk.DEVICE_CDROM, readOnly=True, transient=True))
 
         return tmpfiles

@@ -103,6 +103,6 @@ class ParaVirtGuest(Guest.XenGuest):
         # If they're installing off a local file/device, we map it
         # through to a virtual harddisk
         if self.location is not None and self.location.startswith("/"):
-            self.disks.append(Guest.VirtualDisk(self.location, readOnly=True))
+            self.disks.append(Guest.VirtualDisk(self.location, readOnly=True, transient=True))
 
         return tmpfiles
