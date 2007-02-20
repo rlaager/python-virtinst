@@ -19,7 +19,7 @@ Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 Url: http://virt-manager.et.redhat.com
-Requires: libvirt-python >= 0.1.11
+Requires: libvirt-python >= 0.2.0
 Requires: urlgrabber
 BuildRequires: python-devel
 
@@ -50,12 +50,15 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc README AUTHORS
+%doc README AUTHORS ChangeLog NEWS
 %dir %{python_sitelib}/%{appname}
 %{python_sitelib}/%{appname}/*
 %{_sbindir}/virt-install
 
 %changelog
+* Tue Feb 20 2007 Daniel P. Berrange <berrange@redhat.com> - 0.101.1-1
+- Introduce QEMU support & refactored kerne/initrd fetching
+
 * Mon Jan 29 2007 Daniel P. Berrange <berrange@redhat.com> - 0.100.1-1
 - Initial generic spec file
 
