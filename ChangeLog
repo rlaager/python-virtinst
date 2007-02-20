@@ -1,0 +1,618 @@
+2007-02-20  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* Merge heads
+	[f9a7ddd9e814] [tip]
+
+2007-02-16  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install, virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Allow architecture to be set. Added code to install QEMU via
+	kernel/initrd instead of ISO. Disabled for now
+	[a983726c8379]
+
+	* virtinst/DistroManager.py:
+	Baremetal images should come from images/pxeboot for Fedora
+	[f95ac65e6de7]
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Add idea of 'transient' disk which is only used for install, not the
+	persistent config file
+	[0440eade27e7]
+
+	* virtinst/Guest.py:
+	Moved console callback after check for guest startup. Don't allow
+	NFS installs for non-root. Fixed close of filedescriptor in error
+	conditions
+	[488532c4fd01]
+
+2007-02-20  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* setup.py:
+	Bump version
+	[367e527d66cc]
+
+2007-02-14  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install, virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py, virtinst/util.py:
+	Enable QEMU/KVM support via args --connect qemu:///session
+	[4c8b15960d05]
+
+	* tests/xmlconfig.py:
+	Set os parameters
+	[0fde951a4706]
+
+	* virtinst/FullVirtGuest.py:
+	Merge heads
+	[ff1eb3052399]
+
+	* .hgignore:
+	Ignore coverage data files
+	[510eab13dfb1]
+
+	* tests/install-paravirt-disk-block.xml, tests/install-paravirt-disk-
+	drv-file.xml, tests/install-paravirt-disk-drv-phy.xml, tests
+	/install-paravirt-disk-drv-tap-qcow.xml, tests/install-paravirt-
+	disk-drv-tap.xml, tests/install-paravirt-disk-file.xml, tests
+	/install-paravirt-many-disks.xml, virtinst/DistroManager.py,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Refactor the kernel/image fetching to deal with different distros &
+	more flexibility for equivalence between full & para virt
+	capabilities
+	[e728d35db9bf]
+
+	* autobuild.sh, setup.py, tests/coverage.py:
+	Enable code coverage for unit tests
+	[882e19f29564]
+
+2007-02-01  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/boot-paravirt-disk-block.xml, tests/boot-paravirt-
+	disk-drv-file.xml, tests/boot-paravirt-disk-drv-phy.xml, tests/boot-
+	paravirt-disk-drv-tap-qcow.xml, tests/boot-paravirt-disk-drv-
+	tap.xml, tests/boot-paravirt-disk-file.xml, tests/boot-paravirt-
+	many-disks.xml, tests/install-fullyvirt-disk-block.xml, tests
+	/install-fullyvirt-disk-file.xml, tests/install-paravirt-disk-
+	block.xml, tests/install-paravirt-disk-drv-file.xml, tests/install-
+	paravirt-disk-drv-phy.xml, tests/install-paravirt-disk-drv-tap-
+	qcow.xml, tests/install-paravirt-disk-drv-tap.xml, tests/install-
+	paravirt-disk-file.xml, tests/install-paravirt-many-disks.xml,
+	tests/xmlconfig.py, virtinst/Guest.py:
+	Added support for setting maximum memory for boot
+	[c0fb121cdf62]
+
+2007-02-13  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install, virtinst/FullVirtGuest.py:
+	Add an OS dictionary for full-virt guests so callers can specify an
+	os-type and os-variant, which will in turn correctly set apic and
+	acpi for the guest. Also allow callers to set --noapic and --noacpi
+	directly
+	[23382c1d1495]
+
+2007-01-29  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* .hgignore, MANIFEST.in, autobuild.sh, python-virtinst.spec.in:
+	Added autobuild control file for build/test automation purposes
+	[774d4b9b629d]
+
+2007-01-26  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* setup.py, tests/__init__.py, tests/xmlconfig.py, virt-install,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Allow both PV & FV installs to be done from device,file,http,nfs,ftp
+	sources, thus pulling all setup into Guest.py
+	[5742b7ccb6be]
+
+	* setup.py, tests/xmlconfig.py:
+	Added a 'test' command to setup.py to run unit tests
+	[6d6390ea98e8]
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/install-fullyvirt-disk-block.xml, tests/install-
+	fullyvirt-disk-file.xml, virtinst/FullVirtGuest.py:
+	Add a serial port for all HVM guests
+	[cd75bbb588e4]
+
+2007-01-25  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py, virtinst/__init__.py:
+	Added in back-compat classes
+	[18ce957e8193]
+
+	* virtinst/ParaVirtGuest.py:
+	Fixed errors in NFS installs
+	[2ab5cde6f741]
+
+2007-01-22  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_100_0 for changeset
+	a7820501d7ec143efcbf3dbb7e1e71d1d4e415e6
+	[2c7176fccb80]
+
+	* setup.py:
+	Bump version to 0.100.0
+	[a7820501d7ec] [virtinst-0_100_0]
+
+	* virt-install:
+	Fixed missing import of libvirt
+	[0be22987a185]
+
+2007-01-17  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/boot-paravirt-disk-block.xml, tests/boot-paravirt-
+	disk-drv-file.xml, tests/boot-paravirt-disk-drv-phy.xml, tests/boot-
+	paravirt-disk-drv-tap-qcow.xml, tests/boot-paravirt-disk-drv-
+	tap.xml, tests/boot-paravirt-disk-file.xml, tests/boot-paravirt-
+	many-disks.xml, tests/data-fullyvirt-disk-block.xen, tests/data-
+	fullyvirt-disk-block.xml, tests/data-fullyvirt-disk-file.xen, tests
+	/data-fullyvirt-disk-file.xml, tests/data-paravirt-disk-block.xen,
+	tests/data-paravirt-disk-block.xml, tests/data-paravirt-disk-drv-
+	file.xen, tests/data-paravirt-disk-drv-file.xml, tests/data-
+	paravirt-disk-drv-phy.xen, tests/data-paravirt-disk-drv-phy.xml,
+	tests/data-paravirt-disk-drv-tap-qcow.xen, tests/data-paravirt-disk-
+	drv-tap-qcow.xml, tests/data-paravirt-disk-drv-tap.xen, tests/data-
+	paravirt-disk-drv-tap.xml, tests/data-paravirt-disk-file.xen, tests
+	/data-paravirt-disk-file.xml, tests/data-paravirt-many-disks.xen,
+	tests/data-paravirt-many-disks.xml, tests/install-fullyvirt-disk-
+	block.xml, tests/install-fullyvirt-disk-file.xml, tests/install-
+	paravirt-disk-block.xml, tests/install-paravirt-disk-drv-file.xml,
+	tests/install-paravirt-disk-drv-phy.xml, tests/install-paravirt-
+	disk-drv-tap-qcow.xml, tests/install-paravirt-disk-drv-tap.xml,
+	tests/install-paravirt-disk-file.xml, tests/install-paravirt-many-
+	disks.xml, tests/xenconfig.py, tests/xmlconfig.py, virt-install,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py, virtinst/XenGuest.py,
+	virtinst/__init__.py:
+	Update to use libvirt inactive domain support for creating configs.
+	Removed Xen specific bits
+	[ffed74b54779]
+
+2007-01-10  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/XenGuest.py:
+	Finish command-line progress bar fixes
+	[1f5a3fc541fa]
+
+2007-01-05  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install, virtinst/ParaVirtGuest.py, virtinst/XenGuest.py:
+	Add progress bar hooks to virtinst. It will now automatically
+	display a progress bar on the command line for paravirt guests
+	(full-virt bits coming soon).
+	[25dd626a3f96]
+
+2006-12-15  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_99_0 for changeset b40441df89e9
+	[ebc0da7a356d]
+
+	* setup.py:
+	bump version
+	[b40441df89e9] [virtinst-0_99_0]
+
+	* virtinst/ParaVirtGuest.py:
+	support new pvfb xen config (patch from berrange)
+	[76060fa00654]
+
+2006-12-12  gcosta  <gcosta@redhat.com>
+
+	* virt-install:
+	Added exception instance to get_memory() exception
+
+	stoping virt-install to crash when a wrong parameter is passed.
+	[1e5769665e58]
+
+2006-12-01  "Jeremy Katz  <katzj@redhat.com>
+
+	* virtinst/XenGuest.py:
+	don't sleep for 2 seconds unconditionally; just wait for the domain
+	to be up (#212024)
+	[9e34ad1488a1]
+
+2006-11-30  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_98_0 for changeset
+	f75f4efc41ead6b3ec4b111cbaef062393bfe183
+	[263d871aae53]
+
+	* setup.py:
+	bump version
+	[f75f4efc41ea] [virtinst-0_98_0]
+
+	* virt-install, virtinst/XenGuest.py:
+	allow nonsparse disk files (#217764)
+	[51466ec666a7]
+
+2006-11-20  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_97_0 for changeset
+	f8f6d44cbcaf04e0906b14ec46265fd665081bda
+	[acf7dca2ea7e]
+
+	* setup.py:
+	0.97
+	[f8f6d44cbcaf] [virtinst-0_97_0]
+
+	* virt-install:
+	shenanigans to handle specifying multiple disks or nics (#215726)
+	[fc5fef92cb7d]
+
+	* virtinst/XenGuest.py:
+	figure out default bridge at setup() time
+	[43eda001e77a]
+
+2006-11-15  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/XenGuest.py:
+	Add validation to vm name
+	[e8b312c53362]
+
+2006-11-15  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* AUTHORS, virt-install, virtinst/XenGuest.py, virtinst/util.py:
+	Added patch from Glauber to auto-detect primary bridge based on
+	default network route (bz#201626 & #207210)[D
+	[411b1cdfe183]
+
+2006-10-20  "Jeremy Katz  <katzj@redhat.com>
+
+	* virt-install:
+	require uid == 0 (#211537)
+	[24affa40e859]
+
+2006-10-18  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_96_0 for changeset
+	9ee6fa56dd127a829f1a0373b61687440f95e8d9
+	[67ed9a0512a0]
+
+	* setup.py:
+	bump version
+	[9ee6fa56dd12] [virtinst-0_96_0]
+
+	* virtinst/util.py:
+	better way to check for hvm capable (#211276)
+	[787d07346aaf]
+
+	* virtinst/ParaVirtGuest.py:
+	cleanup on nfs failure (#206196)
+	[663a49221c9c]
+
+	* virt-install:
+	actually helps to use the vcpu option
+	[80513d48316b]
+
+2006-10-13  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_95_1 for changeset
+	7a0f39f731dbd0d5aa21e9d3d97fb64fcb4441b8
+	[6077694e7d2e]
+
+	* setup.py:
+	bump version
+	[7a0f39f731db] [virtinst-0_95_1]
+
+	* virt-install:
+	add support for setting vcpus
+	[c1a2ab6c62d5]
+
+2006-10-12  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_95_0 for changeset
+	560b7e3b790b1e25cf8d0e7109c9dd5b2b0ff9be
+	[128ab2bd8985]
+
+	* README, setup.py, tests/xenconfig.py, tests/xmlconfig.py, virt-
+	install, virtinst/FullVirtGuest.py, virtinst/ParaVirtGuest.py,
+	virtinst/XenGuest.py, virtinst/__init__.py, virtinst/util.py,
+	xenguest-install, xeninst/FullVirtGuest.py,
+	xeninst/ParaVirtGuest.py, xeninst/XenGuest.py, xeninst/__init__.py,
+	xeninst/util.py:
+	rename to virtinst
+	[560b7e3b790b] [virtinst-0_95_0]
+
+2006-10-05  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* .hgignore, tests/data-fullyvirt-disk-block.xen, tests/data-
+	fullyvirt-disk-block.xml, tests/data-fullyvirt-disk-file.xen, tests
+	/data-fullyvirt-disk-file.xml, tests/data-paravirt-disk-block.xen,
+	tests/data-paravirt-disk-block.xml, tests/data-paravirt-disk-drv-
+	file.xen, tests/data-paravirt-disk-drv-file.xml, tests/data-
+	paravirt-disk-drv-phy.xen, tests/data-paravirt-disk-drv-phy.xml,
+	tests/data-paravirt-disk-drv-tap-qcow.xen, tests/data-paravirt-disk-
+	drv-tap-qcow.xml, tests/data-paravirt-disk-drv-tap.xen, tests/data-
+	paravirt-disk-drv-tap.xml, tests/data-paravirt-disk-file.xen, tests
+	/data-paravirt-disk-file.xml, tests/data-paravirt-many-disks.xen,
+	tests/data-paravirt-many-disks.xml, tests/xenconfig.py,
+	tests/xmlconfig.py, xenguest-install, xeninst/FullVirtGuest.py,
+	xeninst/ParaVirtGuest.py, xeninst/XenGuest.py, xeninst/util.py:
+	Added support for setting individual disk drivers & made blktap
+	default. Added test suite, added logging
+	[27e33caef8c9]
+
+2006-10-03  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag xeninst-0_94_0 for changeset
+	7a2586529ba1a869cfb0b7d1d5f6729da987e464
+	[7b81f0fcb161]
+
+	* xeninst/XenGuest.py:
+	fix handling of block based devs (#209138)
+	[7a2586529ba1] [xeninst-0_94_0]
+
+2006-09-26  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* xeninst/ParaVirtGuest.py:
+	Fix raising of errors for invalid http & nfs install locations
+	[7e1236740f3f]
+
+2006-09-21  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* xeninst/FullVirtGuest.py, xeninst/ParaVirtGuest.py:
+	Write out vcpu setting to XM config
+	[d595d0330c59]
+
+	* .hgignore:
+	Ignore generated files
+	[7763b1aa9bd4]
+
+2006-09-20  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag xeninst-0_93_0 for changeset
+	5c72121900824d7c8e0552e6596fc0e148ce5b40
+	[f67aed467932]
+
+	* setup.py:
+	0.93
+	[5c7212190082] [xeninst-0_93_0]
+
+2006-09-20  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* xeninst/FullVirtGuest.py:
+	Ensure type=ioemu is set for HVM network XM config
+	[3de16d4d36a3]
+
+2006-09-19  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* xeninst/FullVirtGuest.py, xeninst/util.py:
+	Enable PAE for fully virt if host system supports PAE
+	[343a07e54fea]
+
+	* xeninst/FullVirtGuest.py:
+	Fixed source element for fully virt CDROM backed to host Cdrom
+	device. Remove ioemu: prefix which is bogus
+	[1c7edbaf1445]
+
+2006-09-14  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* xeninst/XenGuest.py:
+	Explicitly turn off vncunsed otherwise our requested port is ignored
+	[5ce044228c12]
+
+	* xeninst/XenGuest.py:
+	Fix handling of virtual disks backed by block devices rather than
+	files
+	[3966ca5d6d91]
+
+2006-09-12  "Jeremy Katz  <katzj@redhat.com>
+
+	* xenguest-install:
+	actually check if we're on a xen kernel (#205889) add some sdl
+	support (untested)
+	[0ead02fd9ab4]
+
+2006-09-05  "Jeremy Katz  <katzj@redhat.com>
+
+	* xeninst/XenGuest.py:
+	default to vncunused
+	[a7ee7399bf81]
+
+	* xenguest-install:
+	fix tyop, make memory an int
+	[0ec8dbfd35d6]
+
+2006-08-31  "Jeremy Katz  <katzj@redhat.com>
+
+	* xeninst/XenGuest.py:
+	allow --vncport=-1 ==> vncunused.
+	[806fa934fb56]
+
+2006-08-30  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag xeninst-0_92_0 for changeset
+	2e8629eba0863ce5dc1d4afd5258c9828a47d2bb
+	[533a0ffc35f3]
+
+	* setup.py:
+	bump version
+	[2e8629eba086] [xeninst-0_92_0]
+
+	* xenguest-install, xeninst/FullVirtGuest.py,
+	xeninst/ParaVirtGuest.py, xeninst/XenGuest.py:
+	support for rebooting the domain when the installation is thought to
+	be finished. there's a bit of heuristic present (we look for the
+	disk to be bootable) but it seems better than nothing
+	[ba3057941853]
+
+	* xenguest-install, xeninst/ParaVirtGuest.py, xeninst/XenGuest.py:
+	fix what we display to be right about whether or not the domain is
+	really still running or not
+	[4fff5d229ffa]
+
+	* xeninst/XenGuest.py:
+	fix passing mac addr
+	[e980b4312587]
+
+	* xenguest-install:
+	fix interactive mode (patch from misa)
+	[4d68b9bf8a8c]
+
+2006-08-29  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag xeninst-0_91_0 for changeset
+	57b6ff5c7c687c3ff699ed252e243a79a4c93ac3
+	[5ccc94034669]
+
+	* README, setup.py:
+	bump version
+	[57b6ff5c7c68] [xeninst-0_91_0]
+
+	* xenguest-install, xeninst/ParaVirtGuest.py, xeninst/XenGuest.py:
+	support spawning vncviewer or xm console as appropriate for the
+	console case.
+	[d31935c8621b]
+
+2006-08-28  "Jeremy Katz  <katzj@redhat.com>
+
+	* xeninst/FullVirtGuest.py, xeninst/XenGuest.py:
+	fix defaults for graphics. also, fix FV installs
+	[76eeb332e6d9]
+
+	* xenguest-install, xeninst/FullVirtGuest.py,
+	xeninst/ParaVirtGuest.py, xeninst/XenGuest.py:
+	add some support for setting up graphics (vnc or sdl) for both PV
+	and FV guests. only expose vnc via xenguest-install
+
+	also, add features to FullVirt guests a little bit more sanely
+	[e225cab985ed]
+
+2006-08-26  "Jeremy Katz  <katzj@redhat.com>
+
+	* xenguest-install, xeninst/FullVirtGuest.py,
+	xeninst/ParaVirtGuest.py, xeninst/XenGuest.py:
+	make start_install a little bit more generic and push it up to
+	XenGuest, add the bits for a console callback method instead of just
+	having an 'xm console' call
+	[1b9591c9e8bc]
+
+	* xenguest-install:
+	don't loop endlessly if ram < MIN_RAM
+	[8b9a605f6a4b]
+
+2006-08-21  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag xeninst-0_90_1 for changeset
+	04de889a7913a6627be1f9c5e64ccb9b43923a83
+	[01240ab480e3]
+
+	* setup.py:
+	0.90.1
+	[04de889a7913] [xeninst-0_90_1]
+
+	* xenguest-install:
+	fix tab/space mixups
+	[6a79a5d8912f]
+
+2006-08-16  "Jeremy Katz  <katzj@redhat.com>
+
+	* .hgtags:
+	Added tag xeninst-0_90_0 for changeset
+	b9b0c26c43ac9cb72ec6a97744bf4d848d4008e6
+	[629746bc3e6c]
+
+	* setup.py:
+	need to set version here too
+	[b9b0c26c43ac] [xeninst-0_90_0]
+
+	* .hgtags:
+	Added tag xeninst-0_90_0 for changeset
+	5c415fab3aab716e0c7bbe136593a4151e6df494
+	[2574f179804e]
+
+	* xeninst/FullVirtGuest.py, xeninst/ParaVirtGuest.py:
+	adjust for libvirt 0.1.4 changes. FV guest installs work now
+	[5c415fab3aab]
+
+	* xeninst/XenGuest.py:
+	use the disk node type for the xen disk config too
+	[db982552777a]
+
+2006-08-15  "Jeremy Katz  <katzj@redhat.com>
+
+	* merge
+	[2697e6200e3c]
+
+	* setup.py, xenguest-install:
+	make them executable
+	[c23bfb2eacf9]
+
+	* setup.py, xenguest-install, xenguest-install.py:
+	* rename xenguest-install.py -> xenguest-install
+	* add a setup.py
+	[aeed403f35ab]
+
+	* README:
+	add a readme
+	[c42e8956ef45]
+
+	* xenguest-install.py:
+	fix extraargs
+	[cf4ac306cab8]
+
+2006-08-10  "Jeremy Katz  <katzj@redhat.com>
+
+	* xeninst/ParaVirtGuest.py:
+	give the error to help people diagnosing problems (per a comment on
+	my blog)
+	[8a5e11a80a02]
+
+2006-08-09  "Jeremy Katz  <katzj@redhat.com>
+
+	* xenguest-install.py:
+	prompt for cd bits
+	[343d4e96f320]
+
+	* xeninst/FullVirtGuest.py:
+	first pass at full virt installs. doesn't currently work due to
+	libvirt not fully understanding cd devices for hvm guests
+	[927ce0645782]
+
+	* xeninst/ParaVirtGuest.py:
+	use common bits from XenGuest, define disk to be xvd, remove some
+	extraneous quotes
+	[41aa1b38a546]
+
+	* xeninst/XenGuest.py:
+	disk and network xml/xen methods can be shared between PV and FV
+	[5868f760fd85]
+
+	* xeninst/ParaVirtGuest.py:
+	fix type of boot to be a tuple properly. also take a dict
+	[208313b93e92]
+
+	* xeninst/ParaVirtGuest.py:
+	allow specifying just the boot kernel + initrd instead of just
+	booting them via location for koan's use
+	[35c3c080d448]
+
+2006-08-08  "Jeremy Katz  <katzj@redhat.com>
+
+	* xenguest-install.py, xeninst/FullVirtGuest.py,
+	xeninst/ParaVirtGuest.py, xeninst/XenGuest.py, xeninst/__init__.py,
+	xeninst/util.py:
+	first pass at breaking up xenguest-install to have more of a usable
+	API. currently only works for paravirt and some of the bits after
+	the install gets started are still a little less than ideal
+	[6f612cc86dd1]
+

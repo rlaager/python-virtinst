@@ -7,3 +7,9 @@ things.
 
 Also contained is a simple script virt-install which uses
 virtinst in a command line mode.
+
+This library currently requires  
+
+    libvirt >= 0.2.0
+    python >= 2.4 / 2.5
+
