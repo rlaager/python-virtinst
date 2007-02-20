@@ -1,4 +1,4 @@
-include README AUTHORS
+include README AUTHORS NEWS ChangeLog
 include *.py
 include virtinst/*.py
 include tests/*.xml
