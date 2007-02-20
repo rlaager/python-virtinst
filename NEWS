@@ -1,0 +1,18 @@
+   Virt Install News
+   =================
+
+Release 0.101.0
+---------------
+
+This release introduces the first support for provisioning
+of QEMU / KVM virtual machines. This requires an updated
+libvirt of at least 0.2.0 to enable the qemu driver. The
+code for fetching bootable kernel/initrd images has been
+refactored to facilitate porting to deal with other non
+Fedora / RHEL operating systems. Prototype support for dealing
+with SuSE paravirtualized installs is provided. The bootable
+ISO image for fully virtualized installs can also be fetched
+at runtime from an NFS/HTTP/FTP site, or equivalent initrd
+and kernels for baremetal. A list of guest operating systems
+is now maintained to enable virtual hardware configuration 
+to be optimized to suit a particular guest OS.
