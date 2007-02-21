@@ -243,8 +243,9 @@ class Guest(object):
     def get_name(self):
         return self._name
     def set_name(self, val):
-        # FIXME: need some validation here
-        if re.match("^[a-zA-Z0-9_]*$", val) == None: 
+        if re.match("^[0-9]*$", val):
+            raise ValueError, "Domain name must not be numeric only"
+        if re.match("^[a-zA-Z0-9_]*$", val) == None:
             raise ValueError, "Domain name must be alphanumeric or _"
         if len(val) > 50:
             raise ValueError, "Domain name must be less than 50 characters"
