@@ -179,7 +179,9 @@ class XenGraphics(VirtualGraphics):
 class VNCVirtualGraphics(XenGraphics):
     def __init__(self, *args):
         self.name = "vnc"
-        if len(args) >= 1 and args[0]:
+        if len(args) >= 1 and not args[0] is None:
+            if args[0] < 5900:
+                raise ValueError, "Invalid value for vncport, port number must be greater than or equal to 5900"
             self.port = args[0]
         else:
             self.port = -1
