@@ -141,6 +141,10 @@ class XenDisk(VirtualDisk):
 
 class VirtualNetworkInterface:
     def __init__(self, macaddr = None, bridge = None):
+        if macaddr is not None:
+            form = re.match("^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",macaddr)
+            if form is None:
+                raise ValueError, "Invalid value for MAC address"
         self.macaddr = macaddr
         self.bridge = bridge
 
