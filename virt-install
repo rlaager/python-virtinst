@@ -371,7 +371,7 @@ def main():
     conn = libvirt.open(options.connect)
     type = None
     # check to ensure we're really on a xen kernel
-    if conn.getType() == "xen":
+    if conn.getType() == "Xen":
         type = "xen"
         check_xen()
 
@@ -381,7 +381,7 @@ def main():
 
     # first things first, are we trying to create a fully virt guest?
     hvm = False
-    if conn.getType() == "xen":
+    if conn.getType() == "Xen":
         if virtinst.util.is_hvm_capable():
             hvm = options.fullvirt
         if hvm is None:
