@@ -313,11 +313,19 @@ def get_xml_string(dom, path):
         return None
 
 def vnc_console(dom):
-    import time; time.sleep(2) # FIXME: ugh. 
-    vncport = get_xml_string(dom,
-                             "/domain/devices/graphics[@type='vnc']/@port")
-    if vncport == None:
-        vncport = 5900 + dom.ID()
+    import time;
+    num = 0
+    while num < ( 40 / 0.25 ): # 40 seconds, .25 second sleeps
+        vncport = get_xml_string(dom,
+                                 "/domain/devices/graphics[@type='vnc']/@port")
+        if vncport == '-1':
+            num += 1
+            time.sleep(0.25)
+        else:
+            break
+    if vncport == '-1' or vncport is None:
+        print >> sys.stderr, "Unable to connect to graphical console; vnc port number not found."
+        return None
     vncport = int(vncport)
     vnchost = "localhost"
     if not os.path.exists("/usr/bin/vncviewer"):
@@ -326,6 +334,7 @@ def vnc_console(dom):
     if not os.environ.has_key("DISPLAY"):
         print >> sys.stderr, "Unable to connect to graphical console; DISPLAY is not set.  Please connect to %s:%d" %(vnchost, vncport)
         return None
+    logging.debug("VNC Port: %d; VNC host: %s" % (vncport, vnchost))
 
     child = os.fork()
     if not child:
