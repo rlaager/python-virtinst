@@ -475,7 +475,7 @@ def main():
             # things installed enough that we should be able to restart
             # the domain
             print "Guest installation complete... restarting guest."
-            dom.start()
+            dom.create()
         else:
             print ("Domain installation does not appear to have been\n"
                    "successful.  If it was, you can restart your domain\n"
