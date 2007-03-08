@@ -29,6 +29,6 @@
     </disk>
 
 
-
+    <graphics type='sdl'/>
   </devices>
 </domain>
