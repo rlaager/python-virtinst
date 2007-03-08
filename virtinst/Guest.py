@@ -185,9 +185,17 @@ class VNCVirtualGraphics(XenGraphics):
             self.port = args[0]
         else:
             self.port = -1
+        if len(args) >= 2 and args[1]:
+            self.keymap = args[1]
+        else:
+            self.keymap = None
 
     def get_xml_config(self):
-        return "    <graphics type='vnc' port='%d'/>" % (self.port)
+        if self.keymap == None:
+            keymapstr = ""
+        else:
+            keymapstr = "keymap='"+self.keymap+"' "
+        return "    <graphics type='vnc' port='%(port)d' %(keymapstr)s/>" % {"port":self.port, "keymapstr":keymapstr}
 
 # Back compat class to avoid ABI break
 class XenVNCGraphics(VNCVirtualGraphics):
@@ -218,6 +226,7 @@ class Guest(object):
         self._maxmemory = None
         self._vcpus = None
         self._graphics = { "enabled": False }
+        self._keymap = None
 
         self.domain = None
         self.conn = connection
@@ -301,6 +310,21 @@ class Guest(object):
         self._vcpus = val
     vcpus = property(get_vcpus, set_vcpus)
 
+
+    # keymap for the guest
+    def get_keymap(self):
+        return self._keymap
+    def set_keymap(self, val):
+        if val and (re.match("^[a-zA-Z0-9_]*$", val) == None):
+            raise ValueError, "Keymap be alphanumeric or _"
+        if val and (len(val) > 16):
+            raise ValueError, "Keymap must be less than 16 characters"
+        if val and (type(val) != type("string")):
+            raise ValueError, "Keymap must be a string"
+        self._keymap = val
+    keymap = property(get_keymap, set_keymap)
+
+
     # kernel + initrd pair to use for installing as opposed to using a location
     def get_boot(self):
         return self._boot
@@ -374,6 +398,7 @@ class Guest(object):
             if len(val) >= 1: self._graphics["enabled"] = val[0]
             if len(val) >= 2: t = val[1]
             if len(val) >= 3: opts = val[2]
+            if len(val) >= 4: self._graphics["keymap"] = val[3]
         else:
             if val in ("vnc", "sdl"):
                 t = val
@@ -386,7 +411,10 @@ class Guest(object):
 
         if self._graphics["enabled"] == True:
             if t == "vnc":
-                gt = VNCVirtualGraphics(opts)
+                if self.graphics.has_key("keymap"):
+                    gt = VNCVirtualGraphics(opts, self._graphics["keymap"])
+                else:
+                    gt = VNCVirtualGraphics(opts)
             elif t == "sdl":
                 gt = SDLVirtualGraphics(opts)
             else:
