@@ -15,7 +15,7 @@
 
 
 import os, sys, string
-from optparse import OptionParser
+from optparse import OptionParser, OptionValueError
 import subprocess
 import struct
 import logging
@@ -220,20 +220,32 @@ def get_fullvirt_cdrom(cdpath, guest):
             cdpath = None
 
 ### Option parsing
+def check_before_store(option, opt_str, value, parser):
+    if len(value) == 0:
+        raise OptionValueError, "%s option requires an argument" %opt_str
+    setattr(parser.values, option.dest, value)
+
+def check_before_append(option, opt_str, value, parser):
+    if len(value) == 0:
+        raise OptionValueError, "%s option requires an argument" %opt_str
+    parser.values.ensure_value(option.dest, []).append(value)
+
 def parse_args():
     parser = OptionParser()
     parser.add_option("-n", "--name", type="string", dest="name",
+                      action="callback", callback=check_before_store,
                       help="Name of the guest instance")
     parser.add_option("-r", "--ram", type="int", dest="memory",
                       help="Memory to allocate for guest instance in megabytes")
     parser.add_option("-u", "--uuid", type="string", dest="uuid",
+                      action="callback", callback=check_before_store,
                       help="UUID for the guest; if none is given a random UUID will be generated")
     parser.add_option("", "--vcpus", type="int", dest="vcpus",
                       help="Number of vcpus to configure for your guest")
 
     # disk options
     parser.add_option("-f", "--file", type="string",
-                      dest="diskfile", action="append",
+                      dest="diskfile", action="callback", callback=check_before_append,
                       help="File to use as the disk image")
     parser.add_option("-s", "--file-size", type="float",
                       action="append", dest="disksize",
@@ -244,10 +256,10 @@ def parse_args():
     
     # network options
     parser.add_option("-m", "--mac", type="string",
-                      dest="mac", action="append",
+                      dest="mac", action="callback", callback=check_before_append,
                       help="Fixed MAC address for the guest; if none or RANDOM is given a random address will be used")
     parser.add_option("-b", "--bridge", type="string",
-                      dest="bridge", action="append",
+                      dest="bridge", action="callback", callback=check_before_append,
                       help="Bridge to connect guest NIC to; if none given, will try to determine the default")
 
     # graphics options
@@ -264,28 +276,38 @@ def parse_args():
                       help="Don't automatically try to connect to the guest console")
 
     parser.add_option("-k", "--keymap", type="string", dest="keymap",
+                      action="callback", callback=check_before_store,
                       help="set up keymap for a graphical console")
 
     parser.add_option("", "--accelerate", action="store_true", dest="accelerate",
                       help="Use kernel acceleration capabilities")
     parser.add_option("", "--connect", type="string", dest="connect",
+                      action="callback", callback=check_before_store,
                       help="Connect to hypervisor with URI")
     
     # fullvirt options
     parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
                       help="This guest should be a fully virtualized guest")
     parser.add_option("-c", "--cdrom", type="string", dest="cdrom",
+                      action="callback", callback=check_before_store,
                       help="File to use a virtual CD-ROM device for fully virtualized guests")
-    parser.add_option("", "--os-type", type="string", dest="os_type", help="The OS type for fully virtualized guests, e.g. Linux, Solaris, Windows", default="Other")
-    parser.add_option("", "--os-variant", type="string", dest="os_variant", help="The OS variant for fully virtualized guests, e.g. Fedora, Solaris 8, Windows XP", default="Other")
+    parser.add_option("", "--os-type", type="string", dest="os_type",
+                      action="callback", callback=check_before_store,
+                      help="The OS type for fully virtualized guests, e.g. Linux, Solaris, Windows", default="Other")
+    parser.add_option("", "--os-variant", type="string", dest="os_variant",
+                      action="callback", callback=check_before_store,
+                      help="The OS variant for fully virtualized guests, e.g. Fedora, Solaris 8, Windows XP", default="Other")
     parser.add_option("", "--noapic", action="store_true", dest="noapic", help="Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
     parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help="Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
-    parser.add_option("", "--arch", type="string", dest="arch", help="The CPU architecture to simulate")
+    parser.add_option("", "--arch", type="string", dest="arch",
+                      action="callback", callback=check_before_store,
+                      help="The CPU architecture to simulate")
     
     # paravirt options
     parser.add_option("-p", "--paravirt", action="store_false", dest="fullvirt",
                       help="This guest should be a paravirtualized guest")
     parser.add_option("-l", "--location", type="string", dest="location",
+                      action="callback", callback=check_before_store,
                       help="Installation source for paravirtualized guest (eg, nfs:host:/path, http://host/path, ftp://host/path)")
     parser.add_option("-x", "--extra-args", type="string",
                       dest="extra", default="",
