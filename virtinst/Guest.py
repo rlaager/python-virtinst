@@ -587,12 +587,18 @@ class Guest(object):
                 try:
                     if self.conn.lookupByUUIDString(self.uuid) is not None:
                         continue
+                    else:
+                        # libvirt probably shouldn't throw an error on a non-matching UUID,
+                        # so do the right thing on a None return value with no error
+                        break
                 except libvirt.libvirtError:
                     break
         else:
             try:
                 if self.conn.lookupByUUIDString(self.uuid) is not None:
-                    raise RuntimeError, "UUID has been already used by the other guests!"
+                    raise RuntimeError, "The UUID you entered is already in use by another guest!"
+                else:
+                    pass
             except libvirt.libvirtError:
                 pass
         if self.vcpus is None:
