@@ -582,7 +582,19 @@ class Guest(object):
 
     def _set_defaults(self):
         if self.uuid is None:
-            self.uuid = util.uuidToString(util.randomUUID())
+            while 1:
+                self.uuid = util.uuidToString(util.randomUUID())
+                try:
+                    if self.conn.lookupByUUIDString(self.uuid) is not None:
+                        continue
+                except libvirt.libvirtError:
+                    break
+        else:
+            try:
+                if self.conn.lookupByUUIDString(self.uuid) is not None:
+                    raise RuntimeError, "UUID has been already used by the other guests!"
+            except libvirt.libvirtError:
+                pass
         if self.vcpus is None:
             self.vcpus = 1
         if self.name is None or self.memory is None:
