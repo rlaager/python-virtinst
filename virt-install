@@ -106,7 +106,10 @@ def get_keymap(keymap, guest):
 def get_disk(disk, size, sparse, guest, hvm):
     # FIXME: need to handle a list of disks at some point
     while 1:
-        disk = prompt_for_input("What would you like to use as the disk (path)?", disk)
+        msg = "What would you like to use as the disk (path)?"
+        if not size is None:
+            msg = "What would you like the size %sGB to use as the disk (path)?" %(size,)
+        disk = prompt_for_input(msg, disk)
         while 1:
             if os.path.exists(disk):
                 break
@@ -138,8 +141,13 @@ def get_disks(disk, size, sparse, guest, hvm):
             sys.exit(1)
     elif type(disk) == list:
         size = [ None ] * len(disk)
+    elif type(size) == list:
+        disk = [ None ] * len(size)
 
     if (type(disk) == list):
+        map(lambda d, s: get_disk(d, s, sparse, guest, hvm),
+            disk, size)
+    elif (type(size) == list):
         map(lambda d, s: get_disk(d, s, sparse, guest, hvm),
             disk, size)
     else:
