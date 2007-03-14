@@ -575,6 +575,18 @@ class Guest(object):
         # for inactive guest, or get the still running install..
         return self.conn.lookupByName(self.name)
 
+    def connect_console(self, consolecb):
+        child = None
+        if consolecb:
+            logging.debug("Launching console callback")
+            child = consolecb(self.domain)
+
+        if child: # if we connected the console, wait for it to finish
+            try:
+                (pid, status) = os.waitpid(child, 0)
+            except OSError, (errno, msg):
+                raise RuntimeError, "waiting console pid error: %s" % msg
+
     def validate_parms(self):
         if self.domain is not None:
             raise RuntimeError, "Domain already started!"

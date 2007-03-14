@@ -517,6 +517,7 @@ def main():
             # the domain
             print "Guest installation complete... restarting guest."
             dom.create()
+            guest.connect_console(conscb)
         else:
             print ("Domain installation does not appear to have been\n"
                    "successful.  If it was, you can restart your domain\n"
