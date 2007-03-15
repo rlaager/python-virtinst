@@ -15,6 +15,7 @@
 import os, os.path
 import stat, sys, time
 import re
+import libxml2
 
 import libvirt
 
@@ -148,9 +149,32 @@ class VirtualNetworkInterface:
         self.macaddr = macaddr
         self.bridge = bridge
 
-    def setup(self):
+    def setup(self, conn):
+        # get Running Domains
+        ids = conn.listDomainsID();
+        vms = []
+        for id in ids:
+            vm = conn.lookupByID(id)
+            vms.append(vm)
+
+        # get the Host's NIC MACaddress
+        hostdevs = util.get_host_network_devices()
+
+        # check conflict MAC address
         if self.macaddr is None:
-            self.macaddr = util.randomMAC()
+            while 1:
+                self.macaddr = util.randomMAC()
+                if self.countMACaddr(vms) > 0:
+                    continue
+                else:
+                    break
+        else:
+            if self.countMACaddr(vms) > 0:
+                raise RuntimeError, "The MAC address you entered is already in use by another guest!"
+            for (dummy, dummy, dummy, dummy, host_macaddr) in hostdevs:
+                if self.macaddr.upper() == host_macaddr.upper():
+                    raise RuntimeError, "The MAC address you entered conflicts with the physical NIC."
+
         if not self.bridge:
             self.bridge = util.default_bridge()
 
@@ -160,6 +184,30 @@ class VirtualNetworkInterface:
                 "      <mac address='%(mac)s'/>\n" + \
                 "    </interface>\n") % \
                 { "bridge": self.bridge, "mac": self.macaddr }
+
+    def countMACaddr(self, vms):
+        count = 0
+        for vm in vms:
+            doc = None
+            try:
+                doc = libxml2.parseDoc(vm.XMLDesc(0))
+            except:
+                continue
+            ctx = doc.xpathNewContext()
+            try:
+                try:
+                    count += ctx.xpathEval("count(/domain/devices/interface/mac[@address='%s'])"
+                                           % self.macaddr.upper())
+                    count += ctx.xpathEval("count(/domain/devices/interface/mac[@address='%s'])"
+                                           % self.macaddr.lower())
+                except:
+                    continue
+            finally:
+                if ctx is not None:
+                    ctx.xpathFreeContext()
+                if doc is not None:
+                    doc.freeDoc()
+        return count
 
 # Back compat class to avoid ABI break
 class XenNetworkInterface(VirtualNetworkInterface):
@@ -429,7 +477,7 @@ class Guest(object):
         for disk in self.disks:
             disk.setup(progresscb)
         for nic in self.nics:
-            nic.setup()
+            nic.setup(self.conn)
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""

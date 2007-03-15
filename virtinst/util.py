@@ -123,3 +123,22 @@ def uuidToString(u):
 def uuidFromString(s):
     s = s.replace('-', '')
     return [ int(s[i : i + 2], 16) for i in range(0, 32, 2) ]
+
+# the following function quotes from python2.5/uuid.py
+def get_host_network_devices():
+    device = []
+    for dir in ['', '/sbin/', '/usr/sbin']:
+        executable = os.path.join(dir, "ifconfig")
+        if not os.path.exists(executable):
+            continue
+        try:
+            cmd = 'LC_ALL=C %s -a 2>/dev/null' % (executable)
+            pipe = os.popen(cmd)
+        except IOError:
+            continue
+        for line in pipe:
+            words = line.lower().split()
+            for i in range(len(words)):
+                if words[i] == "hwaddr":
+                    device.append(words)
+    return device
