@@ -101,10 +101,10 @@ class MountedImageFetcher(ImageFetcher):
                 cmd = ["mount", "-o", "ro", self.location, self.mntdir]
             else:
                 cmd = ["mount", "-o", "ro,loop", self.location, self.mntdir]
-            ret = subprocess.call(cmd)
-            if ret != 0:
-                self.cleanupLocation()
-                return False
+        ret = subprocess.call(cmd)
+        if ret != 0:
+            self.cleanupLocation()
+            return False
         return True
 
     def cleanupLocation(self):
@@ -123,7 +123,7 @@ class MountedImageFetcher(ImageFetcher):
             base = os.path.basename(filename)
             try:
                 src = self.mntdir + "/" + filename
-                if stat.S_ISDIR(os.stat(src)):
+                if stat.S_ISDIR(os.stat(src)[stat.ST_MODE]):
                     pass
                 else:
                     file = open(src, "r")
