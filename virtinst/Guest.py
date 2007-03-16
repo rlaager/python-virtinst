@@ -133,6 +133,42 @@ class VirtualDisk:
         ret += "    </disk>\n"
         return ret
 
+    def is_conflict_disk(self, conn):
+        vms = []
+        # get working domain's name
+        ids = conn.listDomainsID();
+        for id in ids:
+            vm = conn.lookupByID(id)
+            vms.append(vm)
+        # get defined domain
+        names = conn.listDefinedDomains()
+        for name in names:
+            vm = conn.lookupByName(name)
+            vms.append(vm)
+
+        count = 0
+        for vm in vms:
+            doc = None
+            try:
+                doc = libxml2.parseDoc(vm.XMLDesc(0))
+            except:
+                continue
+            ctx = doc.xpathNewContext()
+            try:
+                try:
+                    count += ctx.xpathEval("count(/domain/devices/disk/source[@dev='%s'])" % self.path)
+                except:
+                    continue
+            finally:
+                if ctx is not None:
+                    ctx.xpathFreeContext()
+                if doc is not None:
+                    doc.freeDoc()
+        if count > 0:
+            return True
+        else:
+            return False
+
     def __repr__(self):
         return "%s:%s" %(self.type, self.path)
 
