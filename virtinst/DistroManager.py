@@ -129,6 +129,8 @@ class MountedImageFetcher(ImageFetcher):
                     file = open(src, "r")
             except IOError, e:
                 raise RuntimeError, "Invalid location given: " + str(e)
+            except OSError, (errno, msg):
+                raise RuntimeError, "Invalid location given: " + msg
             tmpname = self.saveTemp(file, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
             return tmpname
@@ -189,6 +191,14 @@ class FedoraImageStore(ImageStore):
                 return True
             except RuntimeError, e:
                 logging.debug("Doesn't look like a Fedora distro " + str(e))
+                pass
+
+            try:
+                ignore = fetcher.acquireFile("RPM-GPG-KEY-redhat-release", progresscb)
+                logging.debug("Detected a RHEL5.x distro")
+                return True
+            except RuntimeError, e:
+                logging.debug("Doesn't look like a RHEL5.x distro " + str(e))
                 pass
         finally:
             if ignore is not None:
