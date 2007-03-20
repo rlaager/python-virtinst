@@ -56,9 +56,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_sbindir}/virt-install
 
 %changelog
-* Tue Feb 20 2007 Daniel P. Berrange <berrange@redhat.com> - 0.101.1-1
+* Tue Mar 20 2007 Daniel P. Berrange <berrange@redhat.com> - 0.102.0-1
+- Updated to 0.102.0 release
+
+* Tue Feb 20 2007 Daniel P. Berrange <berrange@redhat.com> - 0.101.0-1
 - Introduce QEMU support & refactored kerne/initrd fetching
 
-* Mon Jan 29 2007 Daniel P. Berrange <berrange@redhat.com> - 0.100.1-1
+* Mon Jan 29 2007 Daniel P. Berrange <berrange@redhat.com> - 0.100.0-1
 - Initial generic spec file
 

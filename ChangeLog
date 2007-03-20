@@ -1,7 +1,279 @@
+2007-03-20  Nobuhiro Itou  <fj0873gn@aa.jp.fujitsu.com>
+
+	* virtinst/DistroManager.py:
+	[et-mgmt-tools] [PATCH] RHEL5.0 guest cannot be installed by HTTP
+	and NFS Hi,
+
+	The RHEL5.0 guest domain cannot be installed by HTTP and NFS. "RPM-
+	GPG-KEY" doesn't exist in RHEL5.0. Though I don't have confidence
+	whether this way is the best, how about this correction?
+
+	Signed-off-by: Nobuhiro Itou <fj0873gn@aa.jp.fujitsu.com>
+
+	 Thanks, Nobuhiro Itou.
+	[710c2960136f] [tip]
+
+2007-03-16  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install, virtinst/Guest.py:
+	Check and warn if a disk image is already being used by an active or
+	inactive guest before installing. Thanks to Tatsuro Enokura
+	<fj7716hz@aa-at-jp-dot-fujitsu-dot-com>.
+	[73d38353c139]
+
+2007-03-15  Nobuhiro Itou  <fj0873gn@aa.jp.fujitsu.com>
+
+	* virtinst/DistroManager.py:
+	[et-mgmt-tools] [PATCH] Fix paravirt install by NFS Hi,
+
+	The paravirt domain cannot be installed by NFS. The attached patch
+	adds to solve this problem.
+
+	Signed-off-by: Nobuhiro Itou <fj0873gn@aa.jp.fujitsu.com>
+
+	 Thanks, Nobuhiro Itou.
+	[ecc4386895aa]
+
+2007-03-15  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* AUTHORS:
+	Add Tatsuro Enokura to AUTHORS (thanks for the patches)
+	[c73505c17e05]
+
+2007-03-15  Tatsuro Enokura  <fj7716hz@aa.jp.fujitsu.com>
+
+	* virtinst/Guest.py, virtinst/util.py:
+	Re: [et-mgmt-tools] [PATCH] Check the making domain's mac address
+	Hi, Hugh
+
+	Hugh Brock wrote: >>>>> The virt-install command can specify the
+	making domain's vnif >>>>> MAC address. The MAC address must be
+	unique on the system, >>>>> but the virt-install command doesn't
+	check that >>>>> the MAC address is unique among the running domains
+	and host. >>>>> >>>>> The attached patch resolve this issue in the
+	following way: >>>>> >>>>> 1) Get the running Domain's vnif MAC
+	address. >>>>> 2) Get the host's NIC MAC address. >>>>> 3) Check
+	the making domain's MAC address with 1) and 2) 's data. >> >>>
+	Actually, you really don't need to build up a list of mac addresses
+	and >>> iterate over them. A much easier way is simply to get the
+	XML for a >>> domain and then use an xpath expression something like
+	>>> >>> if >>>
+	ctx.xpathEval("count(/domain/devices/interface/mac/@address='%s')" %
+	>>> macaddr) > 0: >>> # handle the case where the macaddr
+	conflicts with an existing >>> domain >>> >>> If you can rewrite the
+	patch along these lines I'll be happy to take it. >> >> Thank you
+	for your suggestion. >> I rewrite the patch. > > I'm reviewing this
+	now. I'm trying to work out if there's a way to do it > without
+	repeating so much code... :)...
+
+	Thank you for viewing my code. I rewrite the patch that the
+	repeating code become the method.
+
+	Thanks, Tatsuro Enokura
+
+	--------------------------------------------------------------------
+	[92c5fbb1d172]
+
+2007-03-14  Nobuhiro Itou  <fj0873gn@aa.jp.fujitsu.com>
+
+	* virt-install, virtinst/Guest.py:
+	Re: [et-mgmt-tools] [PATCH][RESEND] connecting console after
+	installcompletes Hi, Hugh
+
+	> Two issues here: > > 1. The whole "restart the guest
+	automatically" feature in virt-install > is a bit of a hack, and we
+	are contemplating removing it altogether. The > problem is that
+	virt-install has no real way of knowing whether the > guest that
+	just shut down is really waiting to be rebooted, or is in > fact a
+	failed install that the user would not want restarted anyway.
+
+	Exactly. But, the "restart" hack is also true to help the user.
+	Especially, the domain cannot be completely installed about Windows
+	etc. with the reboot during the installation if it doesn't start
+	automatically. Please keep autorestart function like --autorestart.
+
+	> Having said this, as long as the "restart" hack is still there, I
+	guess > I have no problem reconnecting the console as well. > > 2.
+	Minor nit: instead of swallowing the error like > > +
+	except OSError, (errno, msg): > + print __name__,
+	"waitpid:", msg > > why not go ahead and raise a RuntimeError (and
+	log the message) or > something similar?
+
+	Okey. How about this correction?
+
+	 Thanks, Nobuhiro Itou.
+	[057e8c1b54df]
+
+2007-03-13  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/Guest.py:
+	Handle future case where getByUUIDString returns None without
+	throwing an error
+	[6b63ce413aab]
+
+2007-03-13  Tatsuro Enokura  <fj7716hz@aa.jp.fujitsu.com>
+
+	* virtinst/Guest.py:
+	Re: [et-mgmt-tools] [PATCH][RESEND}Check the starting domain's uuid
+	Hi,
+
+	Would you give me a comment on this patch? If not, please apply it.
+
+	Tatsuro Enokura wrote: > The virt-install command has a problem that
+	the information of > the existent domain is overwritten by virt-
+	install command > specifing the domain's uuid. > Futhermore, the
+	existent domain's set-up file is overwritten > on the xen-3.0.4. > >
+	I make a patch checking the starting domain's uuid on Guest.py.
+
+	Signed-off-by: Tatsuro Enokura <fj1826dm@aa.jp.fujitsu.com>
+
+	Thanks, Tatsuro Enokura
+
+	-------
+	[bfb4725b35c8]
+
+2007-03-13  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install:
+	Clean up prompt a bit more...
+	[d3a99e9754a8]
+
+	* virt-install:
+	Clean up prompt a bit
+	[d4fdb43e35d1]
+
+2007-03-13  Nobuhiro Itou  <fj0873gn@aa.jp.fujitsu.com>
+
+	* virt-install:
+	Re: [et-mgmt-tools] [PATCH][RESEND] "--file-size" option is ignored
+	Hi, Dan
+
+	Would you give me a comment on this patch? If not, please apply it.
+
+	> When I execute "virt-install --file-size=10", > the value of
+	"--file-size" option is ignored and the error message > "ERROR:
+	float() argument must be a string or a number" is output > after I
+	answer "What would you like to use as the disk (path)?". > > The
+	attached patch adds to solve this problem. > > > Signed-off-by:
+	Nobuhiro Itou <fj0873gn@aa.jp.fujitsu.com>
+
+	 Thanks, Nobuhiro Itou.
+	[9c1be02327ed]
+
+2007-03-12  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install:
+	Patch virt-install error handling to use callbacks. Thanks to Saori
+	Fukuta <fukuta-dot-saori-at-jp-dot-fujitsu-dot-com>
+	[95196b0f37a5]
+
+2007-03-08  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* AUTHORS, tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-
+	disk-file.xml, tests/boot-paravirt-disk-block.xml, tests/boot-
+	paravirt-disk-drv-file.xml, tests/boot-paravirt-disk-drv-phy.xml,
+	tests/boot-paravirt-disk-drv-tap-qcow.xml, tests/boot-paravirt-disk-
+	drv-tap.xml, tests/boot-paravirt-disk-file.xml, tests/boot-paravirt-
+	many-disks.xml, tests/install-fullyvirt-disk-block.xml, tests
+	/install-fullyvirt-disk-file.xml, tests/install-paravirt-disk-
+	block.xml, tests/install-paravirt-disk-drv-file.xml, tests/install-
+	paravirt-disk-drv-phy.xml, tests/install-paravirt-disk-drv-tap-
+	qcow.xml, tests/install-paravirt-disk-drv-tap.xml, tests/install-
+	paravirt-disk-file.xml, tests/install-paravirt-many-disks.xml,
+	tests/xmlconfig.py:
+	Extended tests to coverage vnc & sdl graphics
+	[2e5b60ecbd93]
+
+	* virt-install, virtinst/Guest.py:
+	Added support for setting keymap. Signed off by: "Takahashi
+	Tomohiro" <takatom@jp.fujitsu.com>
+	[660a6db5a4be]
+
+2007-03-02  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install:
+	Fix restarting of guest after install completes
+	[3e18fa0cafc4]
+
+2007-03-01  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install:
+	Make the vnc port number acquisition sane. Specifically, sleep in
+	.25 second increments for 40 seconds while waiting for the guest's
+	vnc server to wake up. Patch from Saori Fukuta <fukuta-dot-saori-at-
+	jp-dot-fujitsu-dot-com>.
+	[5a1190f54c80]
+
+2007-02-28  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* AUTHORS, virtinst/Guest.py:
+	Validate VNC port is >= 5900 Signed-off-by: Nobuhiro Itou
+	<fj0873gn@aa.jp.fujitsu.com>
+	[1776ef836bf6]
+
+	* virt-install:
+	Fixed checking of connection type for Xen Signed-off-by: Saori
+	Fukuta <fukuta.saori@jp.fujitsu.com>
+	[5f3f6ae01e2b]
+
+	* AUTHORS, virtinst/Guest.py:
+	Merge heads
+	[a55969f95cb6]
+
+2007-02-27  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* AUTHORS, virtinst/Guest.py:
+	Validate mac address if it is provided. Patch from Saori Fukuta
+	<fukuta-dot-saori-at-jp-dot-fujitsu-dot-com>
+	[57dbbb69dea0]
+
+2007-02-23  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* AUTHORS, virtinst/Guest.py:
+	Further improvements to name validation from Jim Meyering
+	[5e84e3e68e3f]
+
+	* virtinst/Guest.py:
+	Tweak error message at suggestion from Saori Fukuta
+	[fe6b999dd8c8]
+
+2007-02-21  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* AUTHORS, virtinst/Guest.py:
+	Ensure VM names are not numeric only
+
+	Signed-off-by: Saori Fukuta <fukuta.saori@jp.fujitsu.com>
+	[982e9920511c]
+
 2007-02-20  "Daniel P. Berrange  <berrange@redhat.com>
 
+	* .hgtags:
+	Added tag virtinst-0_101_0 for changeset
+	8707deca1823a73a1ff46ac288d605408d6fe3f6
+	[9aca876d3343]
+
+	* MANIFEST.in:
+	Added news & changelog to dist
+	[8707deca1823] [virtinst-0_101_0]
+
+	* NEWS:
+	Add release notes
+	[5f2da74ee230]
+
+	* python-virtinst.spec.in:
+	Increase dep on libvirt to 0.2.0
+	[4d6fefc0d71d]
+
+	* ChangeLog, README:
+	Generate changelog
+	[f514f0860a75]
+
 	* Merge heads
-	[f9a7ddd9e814] [tip]
+	[f9a7ddd9e814]
+
+	* setup.py:
+	Bump version
+	[367e527d66cc]
 
 2007-02-16  "Daniel P. Berrange  <berrange@redhat.com>
 
@@ -27,12 +299,6 @@
 	NFS installs for non-root. Fixed close of filedescriptor in error
 	conditions
 	[488532c4fd01]
-
-2007-02-20  "Daniel P. Berrange  <berrange@redhat.com>
-
-	* setup.py:
-	Bump version
-	[367e527d66cc]
 
 2007-02-14  "Daniel P. Berrange  <berrange@redhat.com>
 
@@ -69,6 +335,15 @@
 	Enable code coverage for unit tests
 	[882e19f29564]
 
+2007-02-13  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install, virtinst/FullVirtGuest.py:
+	Add an OS dictionary for full-virt guests so callers can specify an
+	os-type and os-variant, which will in turn correctly set apic and
+	acpi for the guest. Also allow callers to set --noapic and --noacpi
+	directly
+	[23382c1d1495]
+
 2007-02-01  "Daniel P. Berrange  <berrange@redhat.com>
 
 	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
@@ -85,15 +360,6 @@
 	tests/xmlconfig.py, virtinst/Guest.py:
 	Added support for setting maximum memory for boot
 	[c0fb121cdf62]
-
-2007-02-13  "Hugh O. Brock  <hbrock@redhat.com>
-
-	* virt-install, virtinst/FullVirtGuest.py:
-	Add an OS dictionary for full-virt guests so callers can specify an
-	os-type and os-variant, which will in turn correctly set apic and
-	acpi for the guest. Also allow callers to set --noapic and --noacpi
-	directly
-	[23382c1d1495]
 
 2007-01-29  "Daniel P. Berrange  <berrange@redhat.com>
 

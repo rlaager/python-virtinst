@@ -1,6 +1,14 @@
    Virt Install News
    =================
 
+Release 0.102.0
+---------------
+
+This release has focused on stabilization & improved validation
+of user inputs. MAC addresses, UUIDs are checked for uniqueness
+wrt to other virtual machines. A few minor bug fixes to avoid
+deprecated python features, and installation bugs are resolved.
+
 Release 0.101.0
 ---------------
 
