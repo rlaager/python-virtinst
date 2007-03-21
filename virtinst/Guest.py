@@ -375,8 +375,8 @@ class Guest(object):
             raise ValueError, "Domain name must be nonempty"
         if re.match("^[0-9]+$", val):
             raise ValueError, "Domain name must not be numeric only"
-        if re.match("^[a-zA-Z0-9_]+$", val) == None:
-            raise ValueError, "Domain name must be alphanumeric or _"
+        if re.match("^[a-zA-Z0-9_-]+$", val) == None:
+            raise ValueError, "Domain name must be alphanumeric or _ or -"
         if len(val) > 50:
             raise ValueError, "Domain name must be less than or equal to 50 characters"
         if type(val) != type("string"):
