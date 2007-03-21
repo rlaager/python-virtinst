@@ -177,13 +177,30 @@ class XenDisk(VirtualDisk):
     pass
 
 class VirtualNetworkInterface:
-    def __init__(self, macaddr = None, bridge = None):
+    def __init__(self, macaddr = None, type="bridge", bridge = None, network=None):
         if macaddr is not None:
             form = re.match("^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",macaddr)
             if form is None:
                 raise ValueError, "Invalid value for MAC address"
         self.macaddr = macaddr
+        self.type = type
         self.bridge = bridge
+        self.network = network
+        if self.type == "network":
+            if network is None:
+                raise ValueError, "No network name provided"
+            if bridge != None:
+                raise ValueError, "Bridge name is not required for type=network"
+        elif self.type == "bridge":
+            if network != None:
+                raise ValueError, "Network name is not required for type=bridge"
+        elif self.type == "user":
+            if network != None:
+                raise ValueError, "Network name is not required for type=bridge"
+            if bridge != None:
+                raise ValueError, "Bridge name is not required for type=network"
+        else:
+            raise ValueError, "Unknown network type %s" % (type)
 
     def setup(self, conn):
         # get Running Domains
@@ -211,15 +228,27 @@ class VirtualNetworkInterface:
                 if self.macaddr.upper() == host_macaddr.upper():
                     raise RuntimeError, "The MAC address you entered conflicts with the physical NIC."
 
-        if not self.bridge:
+        if not self.bridge and self.type == "bridge":
             self.bridge = util.default_bridge()
 
     def get_xml_config(self):
-        return ("    <interface type='bridge'>\n" + \
-                "      <source bridge='%(bridge)s'/>\n" + \
-                "      <mac address='%(mac)s'/>\n" + \
-                "    </interface>\n") % \
-                { "bridge": self.bridge, "mac": self.macaddr }
+        if self.type == "bridge":
+            return ("    <interface type='bridge'>\n" + \
+                    "      <source bridge='%(bridge)s'/>\n" + \
+                    "      <mac address='%(mac)s'/>\n" + \
+                    "    </interface>\n") % \
+                    { "bridge": self.bridge, "mac": self.macaddr }
+        elif self.type == "network":
+            return ("    <interface type='network'>\n" + \
+                    "      <source network='%(network)s'/>\n" + \
+                    "      <mac address='%(mac)s'/>\n" + \
+                    "    </interface>\n") % \
+                    { "network": self.network, "mac": self.macaddr }
+        elif self.type == "user":
+            return ("    <interface type='user'>\n" + \
+                    "      <mac address='%(mac)s'/>\n" + \
+                    "    </interface>\n") % \
+                    { "mac": self.macaddr }
 
     def countMACaddr(self, vms):
         count = 0

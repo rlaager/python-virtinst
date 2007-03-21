@@ -170,27 +170,56 @@ def get_disks(disk, size, sparse, guest, hvm, conn):
     else:
         get_disk(disk, size, sparse, guest, hvm, conn)
 
-def get_network(mac, bridge, guest):
+def get_network(mac, network, guest):
     if mac == "RANDOM":
         mac = None
-    n = virtinst.VirtualNetworkInterface(mac, bridge)
+    if network == "user":
+        n = virtinst.VirtualNetworkInterface(mac, type="user")
+    elif network[0:6] == "bridge":
+        n = virtinst.VirtualNetworkInterface(mac, type="bridge", bridge=network[7:])
+    elif network[0:7] == "network":
+        n = virtinst.VirtualNetworkInterface(mac, type="network", network=network[8:])
+    else:
+        print >> sys.stderr, "Unknown network type " + network
+        sys.exit(1)
     guest.nics.append(n)
 
-def get_networks(macs, bridges, guest):
-    # ensure we have equal length lists 
-    if (type(macs) == type(bridges) == list):
-        if len(macs) != len(bridges):
-            print >> sys.stderr, "Need to pass bridge for each network device"
-            sys.exit(1)
-    elif type(macs) == list:
-        bridges = [ None ] * len(macs)
-    elif type(bridges) == list:
-        macs = [ None ] * len(bridges)
+def get_networks(macs, bridges, networks, guest):
+    if type(bridges) != list and bridges != None:
+        bridges = [ bridges ]
 
-    if (type(macs) == list):
-        map(lambda m, b: get_network(m, b, guest), macs, bridges)
+    if type(macs) != list and macs != None:
+        macs = [ macs ]
+
+    if type(networks) != list and networks != None:
+        networks = [ networks ]
+
+    if bridges is not None and networks != None:
+        print >> sys.stderr, "Cannot mix both --bridge and --network arguments"
+
+    # ensure we have equal length lists
+    if bridges != None:
+        networks = map(lambda b: "bridge:" + b, bridges)
+
+    if networks != None:
+        if macs != None:
+            if len(macs) != len(networks):
+                print >> sys.stderr, "Need to pass equal numbers of networks & mac addresses"
+                sys.exit(1)
+        else:
+            macs = [ None ] * len(networks)
     else:
-        get_network(macs, bridges, guest)
+        if os.getuid() == 0:
+            networks = ["bridge:" + virtinst.util.default_bridge()]
+        else:
+            networks = ["user"]
+        if macs != None and len(macs) > 1:
+            print >> sys.stderr, "Need to pass equal numbers of networks & mac addresses"
+            sys.exit(1)
+        else:
+            macs = [ None ]
+
+    map(lambda m, n: get_network(m, n, guest), macs, networks)
 
 def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
     if vnc and nographics:
@@ -286,6 +315,9 @@ def parse_args():
     parser.add_option("-b", "--bridge", type="string",
                       dest="bridge", action="callback", callback=check_before_append,
                       help="Bridge to connect guest NIC to; if none given, will try to determine the default")
+    parser.add_option("-w", "--network", type="string",
+                      dest="network", action="callback", callback=check_before_append,
+                      help="Connect the guest to a virtual network, forwarding to the physical network with NAT")
 
     # graphics options
     parser.add_option("", "--vnc", action="store_true", dest="vnc", 
@@ -481,7 +513,7 @@ def main():
               guest, hvm, conn)
 
     # set up network information
-    get_networks(options.mac, options.bridge, guest)
+    get_networks(options.mac, options.bridge, options.network, guest)
 
     # set up graphics information
     get_graphics(options.vnc, options.vncport, options.nographics, options.sdl, options.keymap, guest)
