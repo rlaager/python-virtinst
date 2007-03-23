@@ -89,12 +89,23 @@ def get_uuid(uuid, guest):
         except ValueError, e:
             print "ERROR: ", e
 
-def get_vcpus(vcpus, guest):
-    if vcpus: 
+def get_vcpus(vcpus, check_cpu, guest, conn):
+    while 1:
+        if check_cpu is None:
+            break
+        hostinfo = conn.getInfo()
+        cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
+        if vcpus <= cpu_num:
+            break
+        res = prompt_for_input("Virtual CPU (%d) is more than physical CPU (%d). Would you like to attach virtual CPU more than physical CPU? (yes or no)" %(vcpus, cpu_num))
         try:
-            guest.vcpus = vcpus
+            if yes_or_no(res):
+                break
+            vcpus = int(prompt_for_input("How many VCPUs should be attached?"))
         except ValueError, e:
             print "ERROR: ", e
+    if vcpus:
+            guest.vcpus = vcpus
 
 def get_keymap(keymap, guest):
     if keymap:
@@ -296,6 +307,8 @@ def parse_args():
                       help="UUID for the guest; if none is given a random UUID will be generated")
     parser.add_option("", "--vcpus", type="int", dest="vcpus",
                       help="Number of vcpus to configure for your guest")
+    parser.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
+                      help="Check the maximum of physical CPU.")
 
     # disk options
     parser.add_option("-f", "--file", type="string",
@@ -505,7 +518,7 @@ def main():
     get_name(options.name, guest)
     get_memory(options.memory, guest)
     get_uuid(options.uuid, guest)
-    get_vcpus(options.vcpus, guest)
+    get_vcpus(options.vcpus, options.check_cpu, guest, conn)
     get_keymap(options.keymap, guest)
 
     # set up disks
