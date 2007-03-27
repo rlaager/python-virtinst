@@ -72,7 +72,7 @@ class FullVirtGuest(Guest.XenGuest):
         if FullVirtGuest.OS_TYPES[self._os_type].has_key(val):
             self._os_variant = val
         else:
-            raise RuntimeError, "OS variant %s does not exist in our dictionary for OS type %s" % (val, os_type)
+            raise RuntimeError, "OS variant %s does not exist in our dictionary for OS type %s" % (val, self._os_type)
     os_variant = property(get_os_variant, set_os_variant)
 
     def set_os_type_parameters(self, os_type, os_variant):
