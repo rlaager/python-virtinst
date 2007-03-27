@@ -181,7 +181,7 @@ def get_disks(disk, size, sparse, guest, hvm, conn):
     else:
         get_disk(disk, size, sparse, guest, hvm, conn)
 
-def get_network(mac, network, guest, conn):
+def get_network(mac, network, guest):
     if mac == "RANDOM":
         mac = None
     if network == "user":
@@ -193,66 +193,9 @@ def get_network(mac, network, guest, conn):
     else:
         print >> sys.stderr, "Unknown network type " + network
         sys.exit(1)
-
-    if mac is not None:
-        # get all Domains
-        ids = conn.listDomainsID();
-        vms = []
-        for id in ids:
-            if id == 0:
-                continue
-            vm = conn.lookupByID(id)
-            vms.append(vm)
-        # get defined domain
-        names = conn.listDefinedDomains()
-        for name in names:
-            vm = conn.lookupByName(name)
-            vms.append(vm)
-        # get the Host's NIC MACaddress
-        hostdevs = virtinst.util.get_host_network_devices()
-
-        while 1:
-            if mac is None:
-                msg = "What is the MAC address of your virtual machine?"
-                mac = prompt_for_input(msg, mac)
-                if network == "user":
-                    n = virtinst.VirtualNetworkInterface(mac, type="user")
-                elif network[0:6] == "bridge":
-                    n = virtinst.VirtualNetworkInterface(mac, type="bridge", bridge=network[7:])
-                elif network[0:7] == "network":
-                    n = virtinst.VirtualNetworkInterface(mac, type="network", network=network[8:])
-            dupFlg = False
-            if n.countMACaddr(vms) > 0:
-                dupFlg = True
-            if dupFlg is not False:
-                for (dummy, dummy, dummy, dummy, host_macaddr) in hostdevs:
-                    if mac.upper() == host_macaddr.upper():
-                        dupFlg = True
-            if dupFlg is True:
-                while 1:
-                    retryFlg = False
-                    warnmsg  = "The MAC address you entered already in use by another guest. "
-                    warnmsg += "The MAC address should be unique in the system. \n"
-                    res = prompt_for_input(warnmsg + "  Do you really want to use the MAC address (yes or no)? ")
-                    try:
-                        if yes_or_no(res) is True:
-                            break
-                        else:
-                            retryFlg = True
-                            break
-                    except ValueError, e:
-                        print "ERROR: ", e
-                        continue
-                if retryFlg is True:
-                    mac = None
-                    continue
-                else:
-                    break
-            except:
-                raise
     guest.nics.append(n)
 
-def get_networks(macs, bridges, networks, guest, conn):
+def get_networks(macs, bridges, networks, guest):
     if type(bridges) != list and bridges != None:
         bridges = [ bridges ]
 
@@ -287,7 +230,7 @@ def get_networks(macs, bridges, networks, guest, conn):
         else:
             macs = [ None ]
 
-    map(lambda m, n: get_network(m, n, guest, conn), macs, networks)
+    map(lambda m, n: get_network(m, n, guest), macs, networks)
 
 def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
     if vnc and nographics:
@@ -583,7 +526,7 @@ def main():
               guest, hvm, conn)
 
     # set up network information
-    get_networks(options.mac, options.bridge, options.network, guest, conn)
+    get_networks(options.mac, options.bridge, options.network, guest)
 
     # set up graphics information
     get_graphics(options.vnc, options.vncport, options.nographics, options.sdl, options.keymap, guest)
