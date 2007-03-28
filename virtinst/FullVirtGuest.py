@@ -17,26 +17,27 @@ import libvirt
 import Guest
 import util
 import DistroManager
+import logging
 
 class FullVirtGuest(Guest.XenGuest):
-    OS_TYPES = { "Linux" : { "Red Hat Enterprise Linux AS 2.1/3" : { "acpi" : True, "apic": True }, \
-                             "Red Hat Enterprise Linux 4" : { "acpi" : True, "apic": True }, \
-                             "Red Hat Enterprise Linux 5" : { "acpi" : True, "apic": True }, \
-                             "Fedora Core 4-6" : { "acpi" : True, "apic": True }, \
-                             "Suse Linux Enterprise Server" : { "acpi" : True, "apic": True }, \
-                             "Other Linux 2.6 kernel" : { "acpi" : True, "apic": True } }, \
-                 "Microsoft Windows" : { "Windows 2000" : { "acpi": False, "apic" : False }, \
-                                         "Windows XP" : { "acpi": True, "apic" : True }, \
-                                         "Windows Server 2003" : { "acpi": True, "apic" : True }, \
-                                         "Windows Vista" : { "acpi": True, "apic" : True } }, \
-                 "Novell Netware" : { "Netware 4" : { "acpi": True, "apic": True }, \
-                                      "Netware 5" : { "acpi": True, "apic": True }, \
-                                      "Netware 6" : { "acpi": True, "apic": True } }, \
-                 "Sun Solaris" : { "Solaris 10" : { "acpi": True, "apic": True }, \
-                                   "Solaris 9" : { "acpi": True, "apic": True } }, \
-                 "Other" : { "MS-DOS" : { "acpi": False, "apic" : False }, \
-                             "Free BSD" : { "acpi": True, "apic" : True }, \
-                             "Other" : { "acpi": True, "apic" : True } } }
+    OS_TYPES = { "Linux" : { "Red Hat Enterprise Linux AS 2.1/3" : { "acpi" : True, "apic": True, "continue": False }, \
+                             "Red Hat Enterprise Linux 4" : { "acpi" : True, "apic": True, "continue": False }, \
+                             "Red Hat Enterprise Linux 5" : { "acpi" : True, "apic": True, "continue": False }, \
+                             "Fedora Core 4-6" : { "acpi" : True, "apic": True, "continue": False }, \
+                             "Suse Linux Enterprise Server" : { "acpi" : True, "apic": True, "continue": False }, \
+                             "Other Linux 2.6 kernel" : { "acpi" : True, "apic": True, "continue": False } }, \
+                 "Microsoft Windows" : { "Windows 2000" : { "acpi": False, "apic" : False, "continue": True }, \
+                                         "Windows XP" : { "acpi": True, "apic" : True, "continue": True }, \
+                                         "Windows Server 2003" : { "acpi": True, "apic" : True, "continue": True }, \
+                                         "Windows Vista" : { "acpi": True, "apic" : True, "continue": True } }, \
+                 "Novell Netware" : { "Netware 4" : { "acpi": True, "apic": True, "continue": False }, \
+                                      "Netware 5" : { "acpi": True, "apic": True, "continue": False }, \
+                                      "Netware 6" : { "acpi": True, "apic": True, "continue": False } }, \
+                 "Sun Solaris" : { "Solaris 10" : { "acpi": True, "apic": True, "continue": False }, \
+                                   "Solaris 9" : { "acpi": True, "apic": True, "continue": False } }, \
+                 "Other" : { "MS-DOS" : { "acpi": False, "apic" : False, "continue": False }, \
+                             "Free BSD" : { "acpi": True, "apic" : True, "continue": False }, \
+                             "Other" : { "acpi": True, "apic" : True, "continue": False } } }
 
     def __init__(self, type=None, arch=None, connection=None, hypervisorURI=None, emulator=None):
         Guest.Guest.__init__(self, type=type, connection=connection, hypervisorURI=hypervisorURI)
@@ -190,3 +191,26 @@ class FullVirtGuest(Guest.XenGuest):
             self.disks.append(Guest.VirtualDisk(cdrom, device=Guest.VirtualDisk.DEVICE_CDROM, readOnly=True, transient=True))
 
         return tmpfiles
+
+    def get_continue_inst(self):
+        return FullVirtGuest.OS_TYPES[self._os_type][self._os_variant]["continue"]
+
+    def continue_install(self, consolecb, meter):
+        install_xml = self.get_config_xml(disk_boot = True)
+        logging.debug("Starting guest from '%s'" % ( install_xml ))
+        meter.start(size=None, text="Starting domain...")
+        self.domain = self.conn.createLinux(install_xml, 0)
+        if self.domain is None:
+            raise RuntimeError, "Unable to start domain for guest, aborting installation!"
+        meter.end(0)
+
+        self.connect_console(consolecb)
+
+        # ensure there's time for the domain to finish destroying if the
+        # install has finished or the guest crashed
+        if consolecb:
+            time.sleep(1)
+
+        # This should always work, because it'll lookup a config file
+        # for inactive guest, or get the still running install..
+        return self.conn.lookupByName(self.name)

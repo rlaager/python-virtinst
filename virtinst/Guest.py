@@ -590,9 +590,12 @@ class Guest(object):
         "networks": self._get_network_xml(install), \
         "graphics": self._get_graphics_xml(install) }
 
-    def get_config_xml(self, install = True):
+    def get_config_xml(self, install = True, disk_boot = False):
         if install:
-            osblob = self._get_install_xml()
+            if disk_boot:
+                osblob = self._get_runtime_xml()
+            else:
+                osblob = self._get_install_xml()
             action = "destroy"
         else:
             osblob = self._get_runtime_xml()

@@ -536,6 +536,7 @@ def main():
     if not hvm: # paravirt
         get_paravirt_install(options.location, guest)
         get_paravirt_extraargs(options.extra, guest)
+        continue_inst = False
     else:
         get_fullvirt_cdrom(options.cdrom, guest)
         guest.set_os_type(options.os_type)
@@ -544,6 +545,7 @@ def main():
             guest.features["acpi"] = False
         if options.noapic:
             guest.features["apic"] = False
+        continue_inst = guest.get_continue_inst()
         
     if options.autoconsole is False:
         conscb = None
@@ -578,6 +580,17 @@ def main():
                struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,):
             # things installed enough that we should be able to restart
             # the domain
+            if continue_inst:
+                # continue to installation.
+                dom = guest.continue_install(conscb,progresscb)
+                if dom is None:
+                    print "Guest installation failed"
+                    sys.exit(0)
+                elif dom.info()[0] != libvirt.VIR_DOMAIN_SHUTOFF:
+                    # domain seems to be running
+                    print "Domain installation still in progress.  You can reconnect "
+                    print "to the console to complete the installation process."
+                    sys.exit(0)
             print "Guest installation complete... restarting guest."
             dom.create()
             guest.connect_console(conscb)
