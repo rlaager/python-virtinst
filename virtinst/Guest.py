@@ -209,6 +209,12 @@ class VirtualNetworkInterface:
         for id in ids:
             vm = conn.lookupByID(id)
             vms.append(vm)
+        # get inactive Domains
+        inactive_vm = []
+        names = conn.listDefinedDomains()
+        for name in names:
+            vm = conn.lookupByName(name)
+            inactive_vm.append(vm)
 
         # get the Host's NIC MACaddress
         hostdevs = util.get_host_network_devices()
@@ -227,6 +233,10 @@ class VirtualNetworkInterface:
             for (dummy, dummy, dummy, dummy, host_macaddr) in hostdevs:
                 if self.macaddr.upper() == host_macaddr.upper():
                     raise RuntimeError, "The MAC address you entered conflicts with the physical NIC."
+            if self.countMACaddr(inactive_vm) > 0:
+                msg = "The MAC address you entered is already in use by another inactive guest!"
+                print >> sys.stderr, msg
+                logging.warning(msg)
 
         if not self.bridge and self.type == "bridge":
             self.bridge = util.default_bridge()
