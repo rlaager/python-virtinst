@@ -224,9 +224,10 @@ def get_networks(macs, bridges, networks, guest):
             networks = ["bridge:" + virtinst.util.default_bridge()]
         else:
             networks = ["user"]
-        if macs != None and len(macs) > 1:
-            print >> sys.stderr, "Need to pass equal numbers of networks & mac addresses"
-            sys.exit(1)
+        if macs != None:
+            if len(macs) > 1:
+                print >> sys.stderr, "Need to pass equal numbers of networks & mac addresses"
+                sys.exit(1)
         else:
             macs = [ None ]
 
