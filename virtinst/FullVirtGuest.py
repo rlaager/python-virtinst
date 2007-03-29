@@ -18,6 +18,7 @@ import Guest
 import util
 import DistroManager
 import logging
+import time
 
 class FullVirtGuest(Guest.XenGuest):
     OS_TYPES = { "Linux" : { "Red Hat Enterprise Linux AS 2.1/3" : { "acpi" : True, "apic": True, "continue": False }, \
