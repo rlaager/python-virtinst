@@ -561,9 +561,15 @@ class Guest(object):
         for d in self.disks:
             if d.transient and not install:
                 continue
+            if count > 4 and self.disknode == "hd":
+                raise ValueError, "Can't use more than 4 disks on HVM guest"
             if d.device == VirtualDisk.DEVICE_CDROM and count != 2:
-                count = 2
-            disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
+                disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + 2 }
+            else:
+               if count == 2 and d.device != VirtualDisk.DEVICE_CDROM and self.disknode == "hd":
+                   # skip "hdc" 
+                   count += 1
+               disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
             ret += d.get_xml_config(disknode)
             count += 1
         return ret
