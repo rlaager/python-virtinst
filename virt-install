@@ -88,6 +88,7 @@ def get_uuid(uuid, guest):
             guest.uuid = uuid
         except ValueError, e:
             print "ERROR: ", e
+            sys.exit(1)
 
 def get_vcpus(vcpus, check_cpu, guest, conn):
     while 1:
@@ -305,7 +306,7 @@ def parse_args():
                       help="Memory to allocate for guest instance in megabytes")
     parser.add_option("-u", "--uuid", type="string", dest="uuid",
                       action="callback", callback=check_before_store,
-                      help="UUID for the guest; if none is given a random UUID will be generated")
+                      help="UUID for the guest; if none is given a random UUID will be generated. If you specify UUID, you should use a 32-digit hexadecimal number.")
     parser.add_option("", "--vcpus", type="int", dest="vcpus",
                       help="Number of vcpus to configure for your guest")
     parser.add_option("", "--check-cpu", action="store_true", dest="check_cpu",

@@ -417,12 +417,14 @@ class Guest(object):
         return self._uuid
     def set_uuid(self, val):
         # need better validation
-        if type(val) == type("str"):
-            self._uuid = val
-        elif type(val) == type(123):
-            self._uuid = util.uuidToString(val)
-        else:
-            raise ValueError, "Invalid value for UUID"
+        form = re.match("[a-fA-F0-9]{8}[-]([a-fA-F0-9]{4}[-]){3}[a-fA-F0-9]{12}", val)
+        if form is None:
+            form=re.match("[a-fA-F0-9]{32}", val)
+            if form is None:
+                raise ValueError, "UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
+            else:
+                val=val[0:8] + "-" + val[8:12] + "-" + val[12:16] + "-" + val[16:20] + "-" + val[20:32]
+        self._uuid = val
     uuid = property(get_uuid, set_uuid)
 
 
