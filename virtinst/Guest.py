@@ -417,9 +417,9 @@ class Guest(object):
         return self._uuid
     def set_uuid(self, val):
         # need better validation
-        form = re.match("[a-fA-F0-9]{8}[-]([a-fA-F0-9]{4}[-]){3}[a-fA-F0-9]{12}&", val)
+        form = re.match("[a-fA-F0-9]{8}[-]([a-fA-F0-9]{4}[-]){3}[a-fA-F0-9]{12}$", val)
         if form is None:
-            form=re.match("[a-fA-F0-9]{32}&", val)
+            form=re.match("[a-fA-F0-9]{32}$", val)
             if form is None:
                 raise ValueError, "UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
             else:
