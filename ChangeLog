@@ -1,3 +1,218 @@
+2007-04-15  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install, virtinst/FullVirtGuest.py:
+	Change OS distro/variant type so that command line can give a short
+	version instead of long label. Include OS distro key for image
+	fetcher support
+	[33d3330b538f] [tip]
+
+	* virtinst/DistroManager.py:
+	Change way Red Hat distro detection works to avoid GPG key name
+	randomness
+	[8dbe844c683c]
+
+2007-04-12  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install:
+	Check for mutually exclusive command line args (patch from Shigeki
+	Sakamoto.
+	[9052b47e88c4]
+
+	* virtinst/Guest.py:
+	Fixed typo in UUID validation regex
+	[071b76772c92]
+
+2007-04-04  "S.Sakamoto"  <fj0588di@aa.jp.fujitsu.com>
+
+	* virtinst/Guest.py:
+	[et-mgmt-tools] [PATCH] check a UUID format Hi
+
+	When, for confirmation of a UUID check, I install it by virt-intall
+	by an invalid UUID, (e.g."uuid=12345678-abcd-1234-cdef-
+	1234567890abc"), virt-install is carried out without an error being
+	given.
+
+	So, here's the patch adds to check a UUID with the number of the
+	characters:
+
+	Signed-off-by: Shigeki Sakamoto <fj0588di@aa.jp.fujitsu.com>
+
+	 Thanks, Shigeki Sakamoto.
+
+	 ==========================================================
+	[04ddef989ad7]
+
+2007-04-02  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* AUTHORS, virt-install, virtinst/Guest.py:
+	Do a better job validating user-submitted UUIDs. Thanks to Shigeki
+	Sakamoto <fj0588di-at-aa-dot-jp-dot-fujitsu-dot-com>. Modified
+	slightly to also accept straight 32-hex-character numbers for UUID
+	without the hyphens, which are also valid even though libvirt
+	doesn't accept them.
+	[a0cd4816ebfd]
+
+2007-03-29  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/FullVirtGuest.py:
+	Fix import problem, thanks to Nobuhiro Itou
+	[e63d9c7f0a89]
+
+2007-03-29  Tatsuro Enokura  <fj7716hz@aa.jp.fujitsu.com>
+
+	* virtinst/Guest.py:
+	Re: [et-mgmt-tools] [PATCH] HVM 3rd disk name don't use "hdc" Hi,
+	Dan
+
+	Tatsuro Enokura wrote: >>> I try that making the HVM domain with 3+
+	disks by the virt-install command, >>> but the command says
+	following error message: >>> # virt-install --name=HVM_3DISKS
+	--file=/dev/sda6 --file=/dev/sda7 \ >>> --file=/dev/sda8 --hvm
+	--vnc --ram=376 --cdrom=/dev/cdrom >> This is a ticky one ! We need
+	to a) refuse to allow > 3 --file arguments >> to be used with HVM
+	guests, and b) make sure the 3rd file gets given >> hdd as its
+	device name. > > Thank you for your reviewing. > I rewite the patch.
+
+	Would you give me a comment on this patch? If not, please apply it.
+
+	Thanks, Tatsuro Enokura
+	[72be2db58908]
+
+2007-03-28  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install, virtinst/FullVirtGuest.py, virtinst/Guest.py:
+	Support rebooting twice to handle Windows installs, among others.
+	Additional reboot is controlled by the continue field in the
+	dictionary in Guest.py. Thanks to Nobuhiro Itou.
+	[0a4efe737df9]
+
+	* virt-install:
+	Fix mac address checking so your submitted mac address doesn't get
+	zeroed if you don't also specify a network.
+	[09ce92502cbe]
+
+2007-03-28  Tatsuro Enokura  <fj7716hz@aa.jp.fujitsu.com>
+
+	* virtinst/Guest.py:
+	Re: [et-mgmt-tools] [PATCH] [RESEND]Check the making domain's mac
+	address(part 2) Hi Hugh
+
+	Hugh Brock wrote: > Actually now that I have thought some more about
+	this, I don't think we > want to apply it at all. > > The current
+	semantics of the --mac flag are as follows: > > 1. If --mac is
+	specified, attempt to use that address. If it conflicts > with an
+	in-use address, fail with an error > > 2. If --mac is not specified,
+	choose an unused mac address at random. > > You would like to add
+	the case wherein if --mac is specified and > conflicts with an
+	existing mac address, a user can override the > conflict. However,
+	we want operations with virt-install to be scriptable > -- that is,
+	we do not ever want the script to halt waiting for input > unless it
+	is obviously being run interactively. This means that, since a > mac
+	address is never entered at a prompt, we can't put up a warning if >
+	it conflicts. And I don't think we want to change the semantics to >
+	always prompt for a mac address if it is not specified, since most
+	users > aren't going to care what the mac address is anyway. > > One
+	way we could address the underlying problem is to change the > mac-
+	address conflict checking code in VirtualNetworkInterface.setup() so
+	> that it prints a warning to the console or logs it, but continues
+	with > the guest creation. I'm fine with this behavior, since it
+	seems > reasonable to me that an installer might want to have
+	multiple inactive > guests with the same mac address. Another
+	alternative would be to fail > if there is an active guest with the
+	same mac address, but only print a > warning (and continue) if there
+	is an inactive guest with the same mac > address. I would take a
+	patch for either scenario.
+
+	I agree with your suggestion. I rewrite a patch that the mac-address
+	conflict checking code in VirtualNetworkInterface.setup() so that it
+	prints a warning to the stderr and logs.
+
+	Thanks, Tatsuro Enokura
+	[bb613fd6756f]
+
+2007-03-27  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install:
+	Backed out changeset a1f13a0e5b8288905efc6c40153b543257268b12. We
+	explicitly do not want to prompt for mac address, we always want to
+	choose randomly if it's not supplied. If it's supplied and
+	conflicts, we want to error out.
+	[5f874aafe698]
+
+	* virt-install:
+	Update mac address code to do a better job of checking and warning
+	for duplicates.
+	[a1f13a0e5b82]
+
+2007-03-27  Nobuhiro Itou  <fj0873gn@aa.jp.fujitsu.com>
+
+	* virtinst/FullVirtGuest.py:
+	Re: [et-mgmt-tools] [PATCH][RESEND] RuntimeError message is error Hi
+
+	Would you give me a comment on this patch? If not, please apply it.
+
+	> The RuntimeError message becomes the error > "NameError: global
+	name 'os_type' is not defined". > > The attached patch adds to solve
+	this problem. > > Signed-off-by: Nobuhiro Itou
+	<fj0873gn@aa.jp.fujitsu.com>
+
+	 Thanks, Nobuhiro Itou.
+	[36a9973c2e28]
+
+2007-03-23  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install:
+	Fix up warning messages for --check-cpu patch
+	[8ac3199c83d1]
+
+2007-03-23  Masayuki Sunou  <fj1826dm@aa.jp.fujitsu.com>
+
+	* virt-install:
+	Re: [et-mgmt-tools] [PATCH][RESEND] Add the option to guard maximums
+	ofthenumber of virtual CPU by the number of physical CPU Hi,
+
+	Would you give me a comment on this patch? If not, please apply it.
+
+	> > Unless you can think of a compelling reason not to allow a user
+	to do > > the above, I think we should not take this patch and leave
+	the vcpu > > setting unbounded. However if you would like to send a
+	patch that warns > > the user without imposing a hard limit, I think
+	that would be reasonable. > > > I accepted your suggestion, and I
+	made a patch again. > > This patch adds the option to warn when the
+	number of virtual CPU is > more than the number of physical CPU.
+
+	Signed-off-by: Masayuki Sunou <fj1826dm@aa.jp.fujitsu.com>
+
+	Thanks, Masayuki Sunou
+
+	 ===================================================================
+	============
+	[0a0d14fbfb80]
+
+2007-03-21  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/Guest.py:
+	Allow '-' in domain names. Fixes bz 221485
+	[aec5777422c0]
+
+2007-03-21  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install, virtinst/Guest.py:
+	Added support for attaching VIF to a network, or using slirp
+	usermode networking (QEMU non-root)
+	[784dcfa0775b]
+
+2007-03-20  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_102_0 for changeset
+	8f7a361541f29d972762866cf8f9c786fbdc651f
+	[112591870ae4]
+
+	* ChangeLog, NEWS, python-virtinst.spec.in, setup.py:
+	Updated for release 0.102.0
+	[8f7a361541f2] [virtinst-0_102_0]
+
 2007-03-20  Nobuhiro Itou  <fj0873gn@aa.jp.fujitsu.com>
 
 	* virtinst/DistroManager.py:
@@ -11,7 +226,7 @@
 	Signed-off-by: Nobuhiro Itou <fj0873gn@aa.jp.fujitsu.com>
 
 	 Thanks, Nobuhiro Itou.
-	[710c2960136f] [tip]
+	[710c2960136f]
 
 2007-03-16  "Hugh O. Brock  <hbrock@redhat.com>
 
