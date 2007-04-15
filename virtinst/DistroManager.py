@@ -52,7 +52,10 @@ class ImageFetcher:
         pass
 
     def acquireFile(self, src, progresscb):
-        raise "Must be subclassed"
+        raise "Must be implemented in subclass"
+
+    def hasFile(self, src, progresscb):
+        raise "Must be implemented in subclass"
 
 # This is a fetcher capable of downloading from FTP / HTTP
 class URIImageFetcher(ImageFetcher):
@@ -85,6 +88,14 @@ class URIImageFetcher(ImageFetcher):
             if file:
                 file.close()
 
+    def hasFile(self, filename, progresscb):
+        try:
+            tmpfile = self.acquireFile(filename, progresscb)
+            os.unlink(tmpfile)
+            return True
+        except RuntimeError, e:
+            logging.debug("Cannot find file %s" % filename)
+            return False
 
 # This is a fetcher capable of extracting files from a NFS server
 # or loopback mounted file, or local CDROM device
@@ -124,7 +135,8 @@ class MountedImageFetcher(ImageFetcher):
             try:
                 src = self.mntdir + "/" + filename
                 if stat.S_ISDIR(os.stat(src)[stat.ST_MODE]):
-                    pass
+                    logging.debug("Found a directory")
+                    return None
                 else:
                     file = open(src, "r")
             except IOError, e:
@@ -137,6 +149,17 @@ class MountedImageFetcher(ImageFetcher):
         finally:
             if file:
                 file.close()
+
+    def hasFile(self, filename, progresscb):
+        try:
+            tmpfile = self.acquireFile(filename, progresscb)
+            if tmpfile is not None:
+                os.unlink(tmpfile)
+            return True
+        except RuntimeError, e:
+            logging.debug("Cannot find file %s" % filename)
+            return False
+
 
 # An image store is a base class for retrieving either a bootable
 # ISO image, or a kernel+initrd  pair for a particular OS distribution
@@ -157,9 +180,9 @@ class ImageStore:
         raise "Not implemented"
 
 
-# Fedora image store is simple - we just fetch the required files
-# straight out of the store.
-class FedoraImageStore(ImageStore):
+# Base image store for any Red Hat related distros which have
+# a common layout
+class RedHatImageStore(ImageStore):
 
     def acquireKernel(self, fetcher, progresscb):
         if self.type is None:
@@ -179,31 +202,33 @@ class FedoraImageStore(ImageStore):
     def acquireBootDisk(self, fetcher, progresscb):
         return fetcher.acquireFile("images/boot.iso", progresscb)
 
+# Fedora distro check
+class FedoraImageStore(RedHatImageStore):
     def isValidStore(self, fetcher, progresscb):
-        # No nice magic file that's consistent across all
-        # versions. So RPM-GPG-KEY is best bet for now. Lets
-        # hope other distros don't have the same named file
-        ignore = None
-        try:
-            try:
-                ignore = fetcher.acquireFile("RPM-GPG-KEY", progresscb)
-                logging.debug("Detected a Fedora / RHEL distro")
-                return True
-            except RuntimeError, e:
-                logging.debug("Doesn't look like a Fedora distro " + str(e))
-                pass
-
-            try:
-                ignore = fetcher.acquireFile("RPM-GPG-KEY-redhat-release", progresscb)
-                logging.debug("Detected a RHEL5.x distro")
-                return True
-            except RuntimeError, e:
-                logging.debug("Doesn't look like a RHEL5.x distro " + str(e))
-                pass
-        finally:
-            if ignore is not None:
-                os.unlink(ignore)
+        if fetcher.hasFile("Fedora", progresscb):
+            logging.debug("Detected a Fedora distro")
+            return True
         return False
+
+# Fedora distro check
+class RHELImageStore(RedHatImageStore):
+    def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile("Server", progresscb):
+            logging.debug("Detected a RHEL 5 distro")
+            return True
+        if fetcher.hasFile("RedHat", progresscb):
+            logging.debug("Detected a RHEL 4 distro")
+            return True
+        return False
+
+# CentOS distro check
+class CentOSImageStore(RedHatImageStore):
+    def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile("CentOS", progresscb):
+            logging.debug("Detected a CentOS distro")
+            return True
+        return False
+
 
 
 # Suse  image store is harder - we fetch the kernel RPM and a helper
@@ -509,6 +534,10 @@ def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=
     stores = []
     if distro == "fedora" or distro is None:
         stores.append(FedoraImageStore(baseuri, type, scratchdir))
+    if distro == "rhel" or distro is None:
+        stores.append(RHELImageStore(baseuri, type, scratchdir))
+    if distro == "centos" or distro is None:
+        stores.append(CentOSImageStore(baseuri, type, scratchdir))
     if distro == "suse" or distro is None:
         stores.append(SuseImageStore(baseuri, type, scratchdir))
     if distro == "debian" or distro is None:
