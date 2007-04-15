@@ -29,7 +29,7 @@ class TestXMLConfig(unittest.TestCase):
         g.name = "TestGuest"
         g.memory = int(200)
         g.maxmemory = int(400)
-        g.uuid = "123456-1234-1234-1234-123456"
+        g.uuid = "12345678-1234-1234-1234-123456789012"
         g.boot = ["/boot/vmlinuz","/boot/initrd"]
         g.graphics = (True, "vnc", None, "ja")
         g.vcpus = 5
@@ -41,7 +41,7 @@ class TestXMLConfig(unittest.TestCase):
         g.name = "TestGuest"
         g.memory = int(200)
         g.maxmemory = int(400)
-        g.uuid = "123456-1234-1234-1234-123456"
+        g.uuid = "12345678-1234-1234-1234-123456789012"
         g.cdrom = "/dev/cdrom"
         g.set_os_type_parameters("Other", "Other")
         g.graphics = (True, "sdl")
