@@ -16,6 +16,7 @@ import os, os.path
 import stat, sys, time
 import re
 import libxml2
+import urlgrabber.progress as progress
 
 import libvirt
 
@@ -710,6 +711,28 @@ class Guest(object):
         return self.conn.lookupByName(self.name)
 
     def connect_console(self, consolecb):
+        logging.debug("Restarted guest, looking to see if it is running")
+        # sleep in .25 second increments until either a) we get running
+        # domain ID or b) it's been 5 seconds.  this is so that
+        # we can try to gracefully handle domain restarting failures
+        num = 0
+        while num < (5 / .25): # 5 seconds, .25 second sleeps
+            try:
+                self.domain = self.conn.lookupByName(self.name)
+                if self.domain and self.domain.ID() != -1:
+                    break
+            except libvirt.libvirtError, e:
+                logging.debug("No guest existing " + str(e))
+                self.domain = None
+                pass
+            num += 1
+            time.sleep(0.25)
+
+        if self.domain is None:
+            raise RuntimeError, "Domain has not existed.  You should be able to find more information in the logs"
+        elif self.domain.ID() == -1:
+            raise RuntimeError, "Domain has not run yet.  You should be able to find more information in the logs"
+
         child = None
         if consolecb:
             logging.debug("Launching console callback")
