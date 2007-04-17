@@ -208,6 +208,7 @@ def get_networks(macs, bridges, networks, guest):
 
     if bridges is not None and networks != None:
         print >> sys.stderr, "Cannot mix both --bridge and --network arguments"
+        sys.exit(1)
 
     # ensure we have equal length lists
     if bridges != None:
@@ -237,6 +238,10 @@ def get_networks(macs, bridges, networks, guest):
 def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
     if vnc and nographics:
         raise ValueError, "Can't do both VNC graphics and nographics"
+    elif vnc and sdl:
+        raise ValueError, "Can't do both VNC graphics and SDL"
+    elif sdl and nographics:
+        raise ValueError, "Can't do both SDL and nographics"
     if nographics:
         guest.graphics = False
         return
@@ -365,10 +370,10 @@ def parse_args():
                       help="File to use a virtual CD-ROM device for fully virtualized guests")
     parser.add_option("", "--os-type", type="string", dest="os_type",
                       action="callback", callback=check_before_store,
-                      help="The OS type for fully virtualized guests, e.g. Linux, Solaris, Windows", default="Other")
+                      help="The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'")
     parser.add_option("", "--os-variant", type="string", dest="os_variant",
                       action="callback", callback=check_before_store,
-                      help="The OS variant for fully virtualized guests, e.g. Fedora, Solaris 8, Windows XP", default="Other")
+                      help="The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k', 'vista'")
     parser.add_option("", "--noapic", action="store_true", dest="noapic", help="Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
     parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help="Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
     parser.add_option("", "--arch", type="string", dest="arch",
@@ -376,7 +381,7 @@ def parse_args():
                       help="The CPU architecture to simulate")
     
     # paravirt options
-    parser.add_option("-p", "--paravirt", action="store_false", dest="fullvirt",
+    parser.add_option("-p", "--paravirt", action="store_false", dest="paravirt",
                       help="This guest should be a paravirtualized guest")
     parser.add_option("-l", "--location", type="string", dest="location",
                       action="callback", callback=check_before_store,
@@ -493,10 +498,21 @@ def main():
             sys.exit(1)
 
     # first things first, are we trying to create a fully virt guest?
-    hvm = False
     if conn.getType() == "Xen":
+        hvm = options.fullvirt
+        pv  = options.paravirt
         if virtinst.util.is_hvm_capable():
-            hvm = options.fullvirt
+            if hvm is not None and pv is not None:
+                print >> sys.stderr, "Can't do both --hvm and --paravirt"
+                sys.exit(1)
+            elif pv is not None:
+                hvm = False
+        else:
+            if hvm is not None:
+                print >> sys.stderr, "Can't do --hvm to this system: HVM guest is not supported by your CPU or enabled in your BIOS"
+                sys.exit(1)
+            else:
+                hvm = False
         if hvm is None:
             hvm = get_full_virt()
     else:
@@ -540,12 +556,14 @@ def main():
         continue_inst = False
     else:
         get_fullvirt_cdrom(options.cdrom, guest)
-        guest.set_os_type(options.os_type)
-        guest.set_os_variant(options.os_variant)
         if options.noacpi:
             guest.features["acpi"] = False
         if options.noapic:
             guest.features["apic"] = False
+        if options.os_type is not None:
+            guest.set_os_type(options.os_type)
+            if options.os_variant is not None:
+                guest.set_os_variant(options.os_variant)
         continue_inst = guest.get_continue_inst()
         
     if options.autoconsole is False:

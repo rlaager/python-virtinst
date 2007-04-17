@@ -1,6 +1,18 @@
    Virt Install News
    =================
 
+Release 0.103.0
+---------------
+
+This release has again focused on stablization and input
+validation. UUIDs are now checked for syntactic correctness.
+Fixed clashes with disk name & CDROM. Automatically reboot
+Windows guest installs with CDROM still attached. The '-'
+character is allowed in guest names. OS types /variants are
+now specified using their short names. The way Red Hat distros
+are detected is changed to be more robust, and cope with CentOS
+and RHEL 5 tree layouts.
+
 Release 0.102.0
 ---------------
 

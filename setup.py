@@ -35,7 +35,7 @@ class TestCommand(Command):
         coverage.stop()
 
 setup(name='virtinst',
-      version='0.102.0',
+      version='0.103.0',
       description='Virtual machine installation',
       author='Jeremy Katz',
       author_email='katzj@redhat.com',

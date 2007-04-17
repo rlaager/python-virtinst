@@ -20,25 +20,74 @@ import DistroManager
 import logging
 import time
 
+
 class FullVirtGuest(Guest.XenGuest):
-    OS_TYPES = { "Linux" : { "Red Hat Enterprise Linux AS 2.1/3" : { "acpi" : True, "apic": True, "continue": False }, \
-                             "Red Hat Enterprise Linux 4" : { "acpi" : True, "apic": True, "continue": False }, \
-                             "Red Hat Enterprise Linux 5" : { "acpi" : True, "apic": True, "continue": False }, \
-                             "Fedora Core 4-6" : { "acpi" : True, "apic": True, "continue": False }, \
-                             "Suse Linux Enterprise Server" : { "acpi" : True, "apic": True, "continue": False }, \
-                             "Other Linux 2.6 kernel" : { "acpi" : True, "apic": True, "continue": False } }, \
-                 "Microsoft Windows" : { "Windows 2000" : { "acpi": False, "apic" : False, "continue": True }, \
-                                         "Windows XP" : { "acpi": True, "apic" : True, "continue": True }, \
-                                         "Windows Server 2003" : { "acpi": True, "apic" : True, "continue": True }, \
-                                         "Windows Vista" : { "acpi": True, "apic" : True, "continue": True } }, \
-                 "Novell Netware" : { "Netware 4" : { "acpi": True, "apic": True, "continue": False }, \
-                                      "Netware 5" : { "acpi": True, "apic": True, "continue": False }, \
-                                      "Netware 6" : { "acpi": True, "apic": True, "continue": False } }, \
-                 "Sun Solaris" : { "Solaris 10" : { "acpi": True, "apic": True, "continue": False }, \
-                                   "Solaris 9" : { "acpi": True, "apic": True, "continue": False } }, \
-                 "Other" : { "MS-DOS" : { "acpi": False, "apic" : False, "continue": False }, \
-                             "Free BSD" : { "acpi": True, "apic" : True, "continue": False }, \
-                             "Other" : { "acpi": True, "apic" : True, "continue": False } } }
+    OS_TYPES = { "linux": { "label": "Linux", \
+                            "acpi": True, \
+                            "apic": True, \
+                            "continue": False, \
+                            "variants": { "rhel2.1": { "label": "Red Hat Enterprise Linux 2.1", "distro": "rhel" }, \
+                                          "rhel3": { "label": "Red Hat Enterprise Linux 3", "distro": "rhel" }, \
+                                          "rhel4": { "label": "Red Hat Enterprise Linux 4", "distro": "rhel" }, \
+                                          "rhel5": { "label": "Red Hat Enterprise Linux 5", "distro": "rhel" }, \
+                                          "centos5": { "label": "Cent OS 5", "distro": "centos" }, \
+                                          "fedora5": { "label": "Fedora Core 5", "distro": "fedora" }, \
+                                          "fedora6": { "label": "Fedora Core 6", "distro": "fedora" }, \
+                                          "fedora7": { "label": "Fedora 7", "distro": "fedora" }, \
+                                          "sles10": { "label": "Suse Linux Enterprise Server", "distro": "suse" }, \
+                                          "generic24": { "label": "Generic 2.4.x kernel" }, \
+                                          "generic26": { "label": "Generic 2.6.x kernel" }, \
+                                          }, \
+                            }, \
+                 "windows": { "label": "Windows", \
+                              "acpi": True, \
+                              "apic": True, \
+                              "continue": True, \
+                              "variants": { "winxp": { "label": "Microsoft Windows XP" }, \
+                                            "win2k": { "label": "Microsoft Windows 2000" }, \
+                                            "win2k3": { "label": "Microsoft Windows 2003" }, \
+                                            "vista": { "label": "Microsoft Windows Vista" }, \
+                                            }, \
+                              }, \
+                 "unix": { "label": "UNIX", \
+                           "acpi": True,
+                           "apic": True,
+                           "continue": False, \
+                           "variants": { "solaris9": { "label": "Sun Solaris 9" }, \
+                                         "solaris10": { "label": "Sun Solaris 10" }, \
+                                         "freebsd6": { "label": "Free BSD 6.x" }, \
+                                         "openbsd4": { "label": "Open BSD 4.x" }, \
+                                         }, \
+                           }, \
+                 "other": { "label": "Other", \
+                            "acpi": True,
+                            "apic": True,
+                            "continue": False,
+                            "variants": { "msdos": { "label": "MS-DOS" }, \
+                                          "netware4": { "label": "Novell Netware 4" }, \
+                                          "netware5": { "label": "Novell Netware 5" }, \
+                                          "netware6": { "label": "Novell Netware 6" }, \
+                                          "generic": { "label": "Generic" }, \
+                                          }, \
+                            } \
+                 }
+
+    def list_os_types():
+        return FullVirtGuest.OS_TYPES.keys()
+    list_os_types = staticmethod(list_os_types)
+
+    def list_os_variants(type):
+        return FullVirtGuest.OS_TYPES[type]["variants"].keys()
+    list_os_variants = staticmethod(list_os_variants)
+
+    def get_os_type_label(type):
+        return FullVirtGuest.OS_TYPES[type]["label"]
+    get_os_type_label = staticmethod(get_os_type_label)
+
+    def get_os_variant_label(type, variant):
+        return FullVirtGuest.OS_TYPES[type]["variants"][variant]["label"]
+    get_os_variant_label = staticmethod(get_os_variant_label)
+
 
     def __init__(self, type=None, arch=None, connection=None, hypervisorURI=None, emulator=None):
         Guest.Guest.__init__(self, type=type, connection=connection, hypervisorURI=hypervisorURI)
@@ -59,6 +108,7 @@ class FullVirtGuest(Guest.XenGuest):
         self._os_type = None
         self._os_variant = None
 
+
     def get_os_type(self):
         return self._os_type
     def set_os_type(self, val):
@@ -71,7 +121,7 @@ class FullVirtGuest(Guest.XenGuest):
     def get_os_variant(self):
         return self._os_variant
     def set_os_variant(self, val):
-        if FullVirtGuest.OS_TYPES[self._os_type].has_key(val):
+        if FullVirtGuest.OS_TYPES[self._os_type]["variants"].has_key(val):
             self._os_variant = val
         else:
             raise RuntimeError, "OS variant %s does not exist in our dictionary for OS type %s" % (val, self._os_type)
@@ -79,12 +129,23 @@ class FullVirtGuest(Guest.XenGuest):
 
     def set_os_type_parameters(self, os_type, os_variant):
         # explicitly disabling apic and acpi will override OS_TYPES values
-        acpi = FullVirtGuest.OS_TYPES[os_type][os_variant]["acpi"]
-        apic = FullVirtGuest.OS_TYPES[os_type][os_variant]["apic"]
-        if self.features["acpi"] == None:
-            self.features["acpi"] = acpi
-        if self.features["apic"] == None:
-            self.features["apic"] = apic
+        if self.features["acpi"] is None and os_type is not None:
+            if os_variant is not None and FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant].has_key("acpi"):
+                self.features["acpi"] = FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant]["acpi"]
+            else:
+                self.features["acpi"] = FullVirtGuest.OS_TYPES[os_type]["acpi"]
+
+        if self.features["apic"] is None and os_type is not None:
+            if os_variant is not None and FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant].has_key("apic"):
+                self.features["apic"] = FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant]["apic"]
+            else:
+                self.features["apic"] = FullVirtGuest.OS_TYPES[os_type]["apic"]
+
+    def get_os_distro(self):
+        if self.os_type is not None and self.os_variant is not None:
+            return FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant]["distro"]
+        return None
+    os_distro = property(get_os_distro)
 
     def _get_features_xml(self):
         ret = ""
@@ -174,7 +235,7 @@ class FullVirtGuest(Guest.XenGuest):
                     self.kernel = self.boot["kernel"]
                     self.initrd = self.boot["initrd"]
                 else:
-                    (kernelfn,initrdfn,args) = DistroManager.acquireKernel(self.location, meter, scratchdir=self.scratchdir)
+                    (kernelfn,initrdfn,args) = DistroManager.acquireKernel(self.location, meter, scratchdir=self.scratchdir, distro=self.os_distro)
                     self.kernel = kernelfn
                     self.initrd = initrdfn
                     if self.extraargs is not None:
@@ -185,7 +246,7 @@ class FullVirtGuest(Guest.XenGuest):
                     tmpfiles.append(initrdfn)
             else:
                 # Xen needs a boot.iso if its a http://, ftp://, or nfs:/ url
-                cdrom = DistroManager.acquireBootDisk(self.location, meter, scratchdir=self.scratchdir)
+                cdrom = DistroManager.acquireBootDisk(self.location, meter, scratchdir=self.scratchdir, distro=self.os_distro)
                 tmpfiles.append(cdrom)
 
         if cdrom is not None:
@@ -194,7 +255,12 @@ class FullVirtGuest(Guest.XenGuest):
         return tmpfiles
 
     def get_continue_inst(self):
-        return FullVirtGuest.OS_TYPES[self._os_type][self._os_variant]["continue"]
+        if self.os_type is not None:
+            if self.os_variant is not None and FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant].has_key("continue"):
+                return FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant]["continue"]
+            else:
+                return FullVirtGuest.OS_TYPES[self.os_type]["continue"]
+        return False
 
     def continue_install(self, consolecb, meter):
         install_xml = self.get_config_xml(disk_boot = True)
