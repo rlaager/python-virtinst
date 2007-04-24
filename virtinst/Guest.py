@@ -24,6 +24,8 @@ import util
 
 import logging
 
+import urlgrabber.progress as progress
+
 class VirtualDisk:
     DRIVER_FILE = "file"
     DRIVER_PHY = "phy"
