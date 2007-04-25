@@ -78,3 +78,16 @@ class ParaVirtGuest(Guest.XenGuest):
             self.disks.append(Guest.VirtualDisk(self.location, readOnly=True, transient=True))
 
         return tmpfiles
+
+    def _get_disk_xml(self, install = True):
+        """Get the disk config in the libvirt XML format"""
+        ret = ""
+        count = 0
+        for d in self.disks:
+            if d.transient and not install:
+                continue
+            if count > 15:
+                raise ValueError, "Can't use more than 16 disks on a PV guest"
+            ret += d.get_xml_config("%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count })
+            count += 1
+        return ret

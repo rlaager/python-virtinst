@@ -281,3 +281,23 @@ class FullVirtGuest(Guest.XenGuest):
         # This should always work, because it'll lookup a config file
         # for inactive guest, or get the still running install..
         return self.conn.lookupByName(self.name)
+
+    def _get_disk_xml(self, install = True):
+        """Get the disk config in the libvirt XML format"""
+        ret = ""
+        count = 0
+        for d in self.disks:
+            if d.transient and not install:
+                continue
+            if count > 4:
+                raise ValueError, "Can't use more than 4 disks on an HVM guest"
+            if d.device == Guest.VirtualDisk.DEVICE_CDROM and count != 2:
+                disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + 2 }
+            else:
+               if count == 2 and d.device != Guest.VirtualDisk.DEVICE_CDROM:
+                   # skip "hdc"
+                   count += 1
+               disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
+            ret += d.get_xml_config(disknode)
+            count += 1
+        return ret
