@@ -185,10 +185,10 @@ class FullVirtGuest(Guest.XenGuest):
     <kernel>%(kernel)s</kernel>
     <initrd>%(initrd)s</initrd>
     <cmdline>%(extra)s</cmdline>
-    <features>
-      %(features)s
-    </features>
-  </os>""" % \
+  </os>
+  <features>
+    %(features)s
+  </features>""" % \
     { "kernel": self.kernel, \
       "initrd": self.initrd, \
       "extra": self.extraargs, \
