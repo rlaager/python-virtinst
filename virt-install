@@ -519,9 +519,9 @@ def main():
         hvm = True
         type = "qemu"
         if options.accelerate:
-            if util.is_kvm_capable():
+            if virtinst.util.is_kvm_capable():
                 type = "kvm"
-            elif util.is_kqemu_capable():
+            elif virtinst.util.is_kqemu_capable():
                 type = "kqemu"
 
     if hvm:
