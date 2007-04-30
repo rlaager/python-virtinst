@@ -108,13 +108,6 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
     if vcpus:
             guest.vcpus = vcpus
 
-def get_keymap(keymap, guest):
-    if keymap:
-        try:
-            guest.keymap = keymap
-        except ValueError, e:
-            print "ERROR: ", e
-
 def get_disk(disk, size, sparse, guest, hvm, conn):
     # FIXME: need to handle a list of disks at some point
     while 1:
@@ -534,7 +527,6 @@ def main():
     get_memory(options.memory, guest)
     get_uuid(options.uuid, guest)
     get_vcpus(options.vcpus, options.check_cpu, guest, conn)
-    get_keymap(options.keymap, guest)
 
     # set up disks
     get_disks(options.diskfile, options.disksize, options.sparse,

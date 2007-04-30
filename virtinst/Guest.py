@@ -439,20 +439,6 @@ class Guest(object):
     vcpus = property(get_vcpus, set_vcpus)
 
 
-    # keymap for the guest
-    def get_keymap(self):
-        return self._keymap
-    def set_keymap(self, val):
-        if val and (re.match("^[a-zA-Z0-9_]*$", val) == None):
-            raise ValueError, "Keymap be alphanumeric or _"
-        if val and (len(val) > 16):
-            raise ValueError, "Keymap must be less than 16 characters"
-        if val and (type(val) != type("string")):
-            raise ValueError, "Keymap must be a string"
-        self._keymap = val
-    keymap = property(get_keymap, set_keymap)
-
-
     # kernel + initrd pair to use for installing as opposed to using a location
     def get_boot(self):
         return self._boot
@@ -512,6 +498,17 @@ class Guest(object):
     def get_graphics(self):
         return self._graphics
     def set_graphics(self, val):
+        def validate_keymap(keymap):
+            if not keymap:
+                return keymap
+            if type(keymap) != type("string"):
+                raise ValueError, "Keymap must be a string"
+            if len(keymap) > 16:
+                raise ValueError, "Keymap must be less than 16 characters"
+            if re.match("^[a-zA-Z0-9_]*$", keymap) == None:
+                raise ValueError, "Keymap be alphanumeric or _"
+            return keymap
+
         opts = None
         t = None
         if type(val) == dict:
@@ -526,7 +523,7 @@ class Guest(object):
             if len(val) >= 1: self._graphics["enabled"] = val[0]
             if len(val) >= 2: t = val[1]
             if len(val) >= 3: opts = val[2]
-            if len(val) >= 4: self._graphics["keymap"] = val[3]
+            if len(val) >= 4: self._graphics["keymap"] = validate_keymap(val[3])
         else:
             if val in ("vnc", "sdl"):
                 t = val
