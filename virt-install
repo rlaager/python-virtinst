@@ -525,10 +525,7 @@ def main():
                 type = "kqemu"
 
     if hvm:
-        if options.arch is None:
-            guest = virtinst.FullVirtGuest(connection=conn, type=type)
-        else:
-            guest = virtinst.FullVirtGuest(connection=conn, type=type, arch=options.arch)
+        guest = virtinst.FullVirtGuest(connection=conn, type=type, arch=options.arch)
     else:
         guest = virtinst.ParaVirtGuest(connection=conn, type=type)
 
