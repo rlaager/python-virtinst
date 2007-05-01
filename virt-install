@@ -43,11 +43,6 @@ def prompt_for_input(prompt = "", val = None):
     return sys.stdin.readline().strip()
 
 
-def check_xen():
-    if not os.path.isdir("/proc/xen"):
-        print >> sys.stderr, "Can only install guests if running under a Xen kernel!"
-        sys.exit(1)
-
 ### General input gathering functions
 def get_full_virt():
     while 1:
@@ -216,7 +211,8 @@ def get_networks(macs, bridges, networks, guest):
             macs = [ None ] * len(networks)
     else:
         if os.getuid() == 0:
-            networks = ["bridge:" + virtinst.util.default_bridge()]
+            net = virtinst.util.default_network()
+            networks = [net[0] + ":" + net[1]]
         else:
             networks = ["user"]
         if macs != None:
@@ -274,9 +270,12 @@ def get_paravirt_extraargs(extra, guest):
 
 
 ### fullvirt input gathering functions
-def get_fullvirt_cdrom(cdpath, guest):
+def get_fullvirt_cdrom(cdpath, location, guest):
+    if cdpath is None and location is not None:
+        cdpath = location
+
     while 1:
-        cdpath = prompt_for_input("What would you like to use for the virtual CD image?", cdpath)
+        cdpath = prompt_for_input("What is the virtual CD image, CD device or install location?", cdpath)
         try:
             guest.location = cdpath
             break
@@ -353,7 +352,8 @@ def parse_args():
                       help="Use kernel acceleration capabilities")
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=check_before_store,
-                      help="Connect to hypervisor with URI")
+                      help="Connect to hypervisor with URI",
+                      default=virtinst.util.default_connection())
     
     # fullvirt options
     parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
@@ -484,7 +484,6 @@ def main():
     # check to ensure we're really on a xen kernel
     if conn.getType() == "Xen":
         type = "xen"
-        check_xen()
 
         if os.geteuid() != 0:
             print >> sys.stderr, "Must be root to install guests"
@@ -544,7 +543,7 @@ def main():
         get_paravirt_extraargs(options.extra, guest)
         continue_inst = False
     else:
-        get_fullvirt_cdrom(options.cdrom, guest)
+        get_fullvirt_cdrom(options.cdrom, options.location, guest)
         if options.noacpi:
             guest.features["acpi"] = False
         if options.noapic:

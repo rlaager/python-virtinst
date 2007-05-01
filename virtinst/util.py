@@ -16,7 +16,7 @@ import random
 import os.path
 from sys import stderr
 
-def default_bridge():
+def default_route():
     route_file = "/proc/net/route"
     d = file(route_file)
 
@@ -30,12 +30,47 @@ def default_bridge():
         try:
             route = int(info[1],16)
             if route == 0:
-                defn = int(info[0][-1])
-                break 
+                return info[0]
         except ValueError:
             continue
+    return None
 
-    return "xenbr%d"%(defn)
+# Legacy for compat only.
+def default_bridge():
+    rt = default_route()
+    defn = int(rt[-1])
+
+    if defn is None:
+        return "xenbr0"
+    else:
+        return "xenbr%d"%(defn)
+
+def default_network():
+    dev = default_route()
+
+    if dev is not None:
+        # New style peth0 == phys dev, eth0 == bridge, eth0 == default route
+        if os.path.exists("/sys/class/net/%s/bridge" % dev):
+            return ["bridge", dev]
+
+        # Old style, peth0 == phys dev, eth0 == netloop, xenbr0 == bridge,
+        # vif0.0 == netloop enslaved, eth0 == default route
+        defn = int(dev[-1])
+        if os.path.exists("/sys/class/net/peth%d/brport" % defn) and \
+           os.path.exists("/sys/class/net/xenbr%d/bridge" % defn):
+            return ["bridge", "xenbr%d" % defn]
+
+    return ["network", "default"]
+
+def default_connection():
+    if os.path.exists("/var/lib/xend") and os.path.exists("/proc/xen"):
+        return "xen"
+    elif os.path.exists("/usr/bin/qemu"):
+        if os.getuid() == 0:
+            return "qemu:///system"
+        else:
+            return "qemu:///session"
+    return None
 
 def get_cpu_flags():
     f = open("/proc/cpuinfo")
