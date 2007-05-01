@@ -214,7 +214,10 @@ class FedoraImageStore(RedHatImageStore):
 class RHELImageStore(RedHatImageStore):
     def isValidStore(self, fetcher, progresscb):
         if fetcher.hasFile("Server", progresscb):
-            logging.debug("Detected a RHEL 5 distro")
+            logging.debug("Detected a RHEL 5 Server distro")
+            return True
+        if fetcher.hasFile("Client", progresscb):
+            logging.debug("Detected a RHEL 5 Client distro")
             return True
         if fetcher.hasFile("RedHat", progresscb):
             logging.debug("Detected a RHEL 4 distro")
