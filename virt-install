@@ -149,7 +149,11 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
         guest.disks.append(d)
         break
 
-def get_disks(disk, size, sparse, guest, hvm, conn):
+def get_disks(disk, size, sparse, nodisks, guest, hvm, conn):
+    if nodisks:
+        if disk or size:
+            raise ValueError, "Cannot use --file with --nodisks"
+        return
     # ensure we have equal length lists 
     if (type(disk) == type(size) == list):
         if len(disk) != len(size):
@@ -318,6 +322,8 @@ def parse_args():
     parser.add_option("", "--nonsparse", action="store_false",
                       default=True, dest="sparse",
                       help="Don't use sparse files for disks.  Note that this will be significantly slower for guest creation")
+    parser.add_option("", "--nodisks", action="store_true",
+                      help="Don't set up any disks for the guest.")
     
     # network options
     parser.add_option("-m", "--mac", type="string",
@@ -353,7 +359,10 @@ def parse_args():
                       action="callback", callback=check_before_store,
                       help="Connect to hypervisor with URI",
                       default=virtinst.util.default_connection())
-    
+    parser.add_option("", "--installer", type="string", dest="installer",
+                      action="callback", callback=check_before_store,
+                      help="Specify the installation method to use e.g. 'distro', ...")
+
     # fullvirt options
     parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
                       help="This guest should be a fully virtualized guest")
@@ -515,7 +524,11 @@ def main():
             elif virtinst.util.is_kqemu_capable():
                 type = "kqemu"
 
-    installer = virtinst.DistroInstaller(type = type)
+    if not options.installer or options.installer == "distro":
+        installer = virtinst.DistroInstaller(type = type)
+    else:
+        print >> sys.stderr, "Unknown installer type '%s'" % options.installer
+        sys.exit(1)
 
     if hvm:
         guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=options.arch)
@@ -529,7 +542,7 @@ def main():
     get_vcpus(options.vcpus, options.check_cpu, guest, conn)
 
     # set up disks
-    get_disks(options.diskfile, options.disksize, options.sparse,
+    get_disks(options.diskfile, options.disksize, options.sparse, options.nodisks,
               guest, hvm, conn)
 
     # set up network information
