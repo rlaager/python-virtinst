@@ -1,5 +1,11 @@
 2007-04-17  Mark McLoughlin  <markmc@redhat.com>
 
+	* virt-install: instantiate the appropriate guest type
+	with a DistroInstaller instance. This should be the
+	same as passing installer=None to the guest constructors.
+	
+2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+
 	* virtinst/Guest.py: introduce a new Installer class which
 	encapsulates the notion of how to install a guest, the
 	idea being that we can install a guest using e.g. a distro

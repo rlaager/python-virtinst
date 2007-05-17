@@ -516,10 +516,12 @@ def main():
             elif virtinst.util.is_kqemu_capable():
                 type = "kqemu"
 
+    installer = virtinst.DistroInstaller(type = type)
+
     if hvm:
-        guest = virtinst.FullVirtGuest(connection=conn, type=type, arch=options.arch)
+        guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=options.arch)
     else:
-        guest = virtinst.ParaVirtGuest(connection=conn, type=type)
+        guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
 
     # now let's get some of the common questions out of the way
     get_name(options.name, guest)
