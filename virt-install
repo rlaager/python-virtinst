@@ -565,51 +565,47 @@ def main():
     # we've got everything -- try to start the install
     try:
         print "\n\nStarting install..."
-        dom = guest.start_install(conscb,progresscb)
-        if dom is None:
-            print "Guest installation failed"
-            sys.exit(0)
-        elif dom.info()[0] != libvirt.VIR_DOMAIN_SHUTOFF:
-            # domain seems to be running
-            print "Domain installation still in progress.  You can reconnect "
-            print "to the console to complete the installation process."
-            sys.exit(0)
+
+        started = False
+        while True:
+            if not started:
+                dom = guest.start_install(conscb,progresscb)
+            elif continue_inst:
+                dom = guest.continue_install(conscb,progresscb)
+                continue_inst = False
+            else:
+                break
+
+            if dom is None:
+                print "Guest installation failed"
+                sys.exit(0)
+            elif dom.info()[0] != libvirt.VIR_DOMAIN_SHUTOFF:
+                # domain seems to be running
+                print "Domain installation still in progress.  You can reconnect "
+                print "to the console to complete the installation process."
+                sys.exit(0)
+
+            if not started:
+                started = True
+                if not guest.post_install_check():
+                    print ("Domain installation does not appear to have been\n"
+                           "successful.  If it was, you can restart your domain\n"
+                           "by running 'virsh start %s'; otherwise, please\n"
+                           "restart your installation.") %(guest.name,)
+                    sys.exit(0)
+
+        print "Guest installation complete... restarting guest."
+        dom.create()
+        guest.connect_console(conscb)
     except RuntimeError, e:
         print >> sys.stderr, "ERROR: ", e
         sys.exit(1)
-
-    # the domain is no longer running
-    # FIXME: this is just a hacky heuristic, but I'll take what I can get
-    try:
-        if guest.post_install_check():
-            # things installed enough that we should be able to restart
-            # the domain
-            if continue_inst:
-                # continue to installation.
-                dom = guest.continue_install(conscb,progresscb)
-                if dom is None:
-                    print "Guest installation failed"
-                    sys.exit(0)
-                elif dom.info()[0] != libvirt.VIR_DOMAIN_SHUTOFF:
-                    # domain seems to be running
-                    print "Domain installation still in progress.  You can reconnect "
-                    print "to the console to complete the installation process."
-                    sys.exit(0)
-            print "Guest installation complete... restarting guest."
-            dom.create()
-            guest.connect_console(conscb)
-        else:
-            print ("Domain installation does not appear to have been\n"
-                   "successful.  If it was, you can restart your domain\n"
-                   "by running 'virsh start %s'; otherwise, please\n"
-                   "restart your installation.") %(guest.name,)
     except Exception, e:
-        print "exception was:", e
         print ("Domain installation may not have been\n"
                "successful.  If it was, you can restart your domain\n"
                "by running 'virsh start %s'; otherwise, please\n"
                "restart your installation.") %(guest.name,)
-
+        raise
 
 if __name__ == "__main__":
     main()

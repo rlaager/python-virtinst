@@ -1,5 +1,11 @@
 2007-04-17  Mark McLoughlin  <markmc@redhat.com>
 
+	* virt-install: clean up the two similar "start guest,
+	check to see if it succeeded" code paths into a single code
+	path.
+	
+2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+
 	* virt-install, virtinst/DistroManager.py, virtinst/Guest.py:
 	The existing heuristic we use in virt-install to detect whether
 	an install has completed successfully is dependant on the type
