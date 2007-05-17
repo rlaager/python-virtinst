@@ -526,6 +526,8 @@ def main():
 
     if not options.installer or options.installer == "distro":
         installer = virtinst.DistroInstaller(type = type)
+    elif options.installer == "livecd":
+        installer = virtinst.LiveCDInstaller(type = type)
     else:
         print >> sys.stderr, "Unknown installer type '%s'" % options.installer
         sys.exit(1)

@@ -1,5 +1,17 @@
 2007-04-17  Mark McLoughlin  <markmc@redhat.com>
 
+	This patch adds a LiveCDInstaller class which has the simple
+	job of setting up the cdrom disk and returning the appropriate
+	<os> blob to boot from it.
+	
+	* virt-install: add livecd installer type.
+
+	* virtinst/LiveCDInstaller.py: add LiveCDInstaller
+
+	* virtinst/__init__.py: expose it here
+	
+2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+
 	* virtinst/CapabilitiesParser.py: adds a simple module
 	for parsing libvirt's getCapabilities() XML.
 
