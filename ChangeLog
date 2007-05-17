@@ -1,5 +1,14 @@
 2007-04-17  Mark McLoughlin  <markmc@redhat.com>
 
+	Not all installer types need the VM to be executed twice
+	- i.e. the "install" phase may not need the VM to be run,
+	and we only start the VM post-install.
+
+	* virtinst/Guest.py: allow get_config_xml(install=True)
+	to return None, causing the first VM run to be skipped.
+	
+2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+
 	* virt-install: clean up the two similar "start guest,
 	check to see if it succeeded" code paths into a single code
 	path.

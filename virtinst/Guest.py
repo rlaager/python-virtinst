@@ -675,38 +675,39 @@ class Guest(object):
         except libvirt.libvirtError:
             pass
 
+        child = None
         self._create_devices(meter)
         install_xml = self.get_config_xml()
-        logging.debug("Creating guest from '%s'" % ( install_xml ))
-        meter.start(size=None, text="Creating domain...")
-        self.domain = self.conn.createLinux(install_xml, 0)
-        if self.domain is None:
-            raise RuntimeError, "Unable to create domain for guest, aborting installation!"
-        meter.end(0)
+        if install_xml:
+            logging.debug("Creating guest from '%s'" % ( install_xml ))
+            meter.start(size=None, text="Creating domain...")
+            self.domain = self.conn.createLinux(install_xml, 0)
+            if self.domain is None:
+                raise RuntimeError, "Unable to create domain for guest, aborting installation!"
+            meter.end(0)
 
-        logging.debug("Created guest, looking to see if it is running")
-        # sleep in .25 second increments until either a) we find
-        # our domain or b) it's been 5 seconds.  this is so that
-        # we can try to gracefully handle domain creation failures
-        num = 0
-        d = None
-        while num < (5 / .25): # 5 seconds, .25 second sleeps
-            try:
-                d = self.conn.lookupByName(self.name)
-                break
-            except libvirt.libvirtError, e:
-                logging.debug("No guest running yet " + str(e))
-                pass
-            num += 1
-            time.sleep(0.25)
+            logging.debug("Created guest, looking to see if it is running")
+            # sleep in .25 second increments until either a) we find
+            # our domain or b) it's been 5 seconds.  this is so that
+            # we can try to gracefully handle domain creation failures
+            num = 0
+            d = None
+            while num < (5 / .25): # 5 seconds, .25 second sleeps
+                try:
+                    d = self.conn.lookupByName(self.name)
+                    break
+                except libvirt.libvirtError, e:
+                    logging.debug("No guest running yet " + str(e))
+                    pass
+                num += 1
+                time.sleep(0.25)
 
-        if d is None:
-            raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the logs"
+            if d is None:
+                raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the logs"
 
-        child = None
-        if consolecb:
-            logging.debug("Launching console callback")
-            child = consolecb(self.domain)
+            if consolecb:
+                logging.debug("Launching console callback")
+                child = consolecb(self.domain)
 
         boot_xml = self.get_config_xml(install = False)
         logging.debug("Saving XML boot config '%s'" % ( boot_xml ))
@@ -718,9 +719,8 @@ class Guest(object):
             except OSError, (errno, msg):
                 print __name__, "waitpid:", msg
 
-        # ensure there's time for the domain to finish destroying if the
-        # install has finished or the guest crashed
-        if consolecb:
+            # ensure there's time for the domain to finish destroying if the
+            # install has finished or the guest crashed
             time.sleep(1)
 
         # This should always work, because it'll lookup a config file
