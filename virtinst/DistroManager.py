@@ -18,6 +18,7 @@ import os
 import gzip
 import re
 import stat
+import struct
 import subprocess
 import urlgrabber.grabber as grabber
 import urlgrabber.progress as progress
@@ -698,3 +699,10 @@ class DistroInstaller(Guest.Installer):
             osblob += "<bootloader>/usr/bin/pygrub</bootloader>"
 
         return osblob
+
+    def post_install_check(self, guest):
+        # Check for the 0xaa55 signature at the end of the MBR
+        fd = os.open(guest.disks[0].path, os.O_RDONLY)
+        buf = os.read(fd, 512)
+        os.close(fd)
+        return len(buf) == 512 and struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,)

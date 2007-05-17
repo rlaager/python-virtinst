@@ -727,6 +727,9 @@ class Guest(object):
         # for inactive guest, or get the still running install..
         return self.conn.lookupByName(self.name)
 
+    def post_install_check(self):
+        return self.installer.post_install_check(self)
+
     def connect_console(self, consolecb):
         logging.debug("Restarted guest, looking to see if it is running")
         # sleep in .25 second increments until either a) we get running

@@ -17,7 +17,6 @@
 import os, sys, string
 from optparse import OptionParser, OptionValueError
 import subprocess
-import struct
 import logging
 import libxml2
 import urlgrabber.progress as progress
@@ -582,11 +581,7 @@ def main():
     # the domain is no longer running
     # FIXME: this is just a hacky heuristic, but I'll take what I can get
     try:
-        fd = os.open(guest.disks[0].path, os.O_RDONLY)
-        buf = os.read(fd, 512)
-        os.close(fd)
-        if len(buf) == 512 and \
-               struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,):
+        if guest.post_install_check():
             # things installed enough that we should be able to restart
             # the domain
             if continue_inst:

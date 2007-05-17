@@ -1,8 +1,11 @@
 2007-04-17  Mark McLoughlin  <markmc@redhat.com>
 
-	* virt-install: instantiate the appropriate guest type
-	with a DistroInstaller instance. This should be the
-	same as passing installer=None to the guest constructors.
+	* virt-install, virtinst/DistroManager.py, virtinst/Guest.py:
+	The existing heuristic we use in virt-install to detect whether
+	an install has completed successfully is dependant on the type
+	of installer being used - i.e. if you create a VM with a livecd
+	or a raw ext3 image, there may be no disk with an MBR at the end.
+	Move the post-install logic into a new DistroInstaller method.
 	
 2007-04-17  Mark McLoughlin  <markmc@redhat.com>
 
