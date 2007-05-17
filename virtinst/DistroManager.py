@@ -22,6 +22,7 @@ import subprocess
 import urlgrabber.grabber as grabber
 import urlgrabber.progress as progress
 import tempfile
+import Guest
 
 
 # This is a generic base class for fetching/extracting files from
@@ -585,3 +586,115 @@ def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None, distr
     finally:
         fetcher.cleanupLocation()
 
+class DistroInstaller(Guest.Installer):
+    def __init__(self, type = "xen", location = None, boot = None, extraargs = None):
+        Guest.Installer.__init__(self, type, location, boot, extraargs)
+
+    def get_location(self):
+        return self._location
+    def set_location(self, val):
+        if not (val.startswith("http://") or val.startswith("ftp://") or
+                val.startswith("nfs:") or val.startswith("/")):
+            raise ValueError("Install location must be an NFS, HTTP or FTP " +
+                             "network install source, or local file/device")
+        if os.geteuid() != 0 and val.startswith("nfs:"):
+            raise ValueError("NFS installations are only supported as root")
+        self._location = val
+    location = property(get_location, set_location)
+
+    def _prepare_cdrom(self, guest, distro, meter):
+        if self.location.startswith("/"):
+            # Huzzah, a local file/device
+            cdrom = self.location
+        else:
+            # Xen needs a boot.iso if its a http://, ftp://, or nfs:/ url
+            cdrom = DistroManager.acquireBootDisk(self.location,
+                                                  meter,
+                                                  scratchdir = self.scratchdir,
+                                                  distro = distro)
+            self._tmpfiles.append(cdrom)
+
+        guest.disks.append(Guest.VirtualDisk(cdrom,
+                                             device=Guest.VirtualDisk.DEVICE_CDROM,
+                                             readOnly=True,
+                                             transient=True))
+
+    def _prepare_kernel_and_initrd(self, guest, distro, meter):
+        if self.boot is not None:
+            # Got a local kernel/initrd already
+            self.install["kernel"] = self.boot["kernel"]
+            self.install["initrd"] = self.boot["initrd"]
+            if not self.extraargs is None:
+                self.install["extraargs"] = self.extraargs
+        else:
+            # Need to fetch the kernel & initrd from a remote site, or
+            # out of a loopback mounted disk image/device
+            (kernelfn, initrdfn, args) = acquireKernel(self.location,
+                                                       meter,
+                                                       scratchdir = self.scratchdir,
+                                                       type = self.type,
+                                                       distro = distro)
+            self.install["kernel"] = kernelfn
+            self.install["initrd"] = initrdfn
+            if not self.extraargs is None:
+                self.install["extraargs"] = self.extraargs + " " + args
+            else:
+                self.install["extraargs"] = args
+
+            self._tmpfiles.append(kernelfn)
+            self._tmpfiles.append(initrdfn)
+
+        # If they're installing off a local file/device, we map it
+        # through to a virtual harddisk
+        if self.location is not None and self.location.startswith("/"):
+            guest.disks.append(Guest.VirtualDisk(self.location,
+                                                 readOnly=True,
+                                                 transient=True))
+
+    def prepare(self, guest, need_bootdev, meter, distro = None):
+        self.cleanup()
+
+        self.install = {
+            "kernel" : "",
+            "initrd" : "",
+            "extraargs" : "",
+        }
+
+        if need_bootdev:
+            self._prepare_cdrom(guest, distro, meter)
+        else:
+            self._prepare_kernel_and_initrd(guest, distro, meter)
+
+    def _get_osblob(self, install, hvm, arch = None, loader = None):
+        osblob = ""
+        if install or hvm:
+            osblob = "<os>\n"
+
+            if hvm:
+                type = "hvm"
+            else:
+                type = "linux"
+
+            if arch:
+                osblob += "    <type arch='%s'>%s</type>\n" % (arch, type)
+            else:
+                osblob += "    <type>%s</type>\n" % type
+
+            if self.install["kernel"]:
+                osblob += "    <kernel>%s</kernel>\n"   % self.install["kernel"]
+                osblob += "    <initrd>%s</initrd>\n"   % self.install["initrd"]
+                osblob += "    <cmdline>%s</cmdline>\n" % self.install["extraargs"]
+            else:
+                if loader:
+                    osblob += "    <loader>%s</loader>\n" % loader
+
+                if install:
+                    osblob += "    <boot dev='cdrom'/>\n"
+                else:
+                    osblob += "    <boot dev='hd'/>\n"
+
+            osblob += "  </os>"
+        else:
+            osblob += "<bootloader>/usr/bin/pygrub</bootloader>"
+
+        return osblob

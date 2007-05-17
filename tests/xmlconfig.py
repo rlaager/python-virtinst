@@ -11,7 +11,7 @@ class TestXMLConfig(unittest.TestCase):
         expectXML = string.join(f.readlines(), "")
         f.close()
 
-        tmpfiles = xenguest._prepare_install_location(progress.BaseMeter())
+        xenguest._prepare_install(progress.BaseMeter())
         try:
             actualXML = xenguest.get_config_xml(install=install)
 
@@ -21,8 +21,7 @@ class TestXMLConfig(unittest.TestCase):
 
             self.assertEqual(actualXML, expectXML)
         finally:
-            for file in tmpfiles:
-                os.unlink(file)
+            xenguest._installer.cleanup()
 
     def _get_basic_paravirt_guest(self):
         g = virtinst.ParaVirtGuest(hypervisorURI="test:///default", type="xen")

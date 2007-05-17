@@ -89,8 +89,10 @@ class FullVirtGuest(Guest.XenGuest):
     get_os_variant_label = staticmethod(get_os_variant_label)
 
 
-    def __init__(self, type=None, arch=None, connection=None, hypervisorURI=None, emulator=None):
-        Guest.Guest.__init__(self, type=type, connection=connection, hypervisorURI=hypervisorURI)
+    def __init__(self, type=None, arch=None, connection=None, hypervisorURI=None, emulator=None, installer=None):
+        if not installer:
+            installer = DistroManager.DistroInstaller(type = type)
+        Guest.Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "hd"
         self.features = { "acpi": None, "pae": util.is_pae_capable(), "apic": None }
         self.arch = arch
@@ -148,58 +150,20 @@ class FullVirtGuest(Guest.XenGuest):
     os_distro = property(get_os_distro)
 
     def _get_features_xml(self):
-        ret = ""
-        for (k, v) in self.features.items():
-            if v:
+        ret = "<features>\n"
+        if self.features:
+            ret += "    "
+            for (k, v) in self.features.items():
                 ret += "<%s/>" %(k,)
-        return ret
+            ret += "\n"
+        return ret + "  </features>"
 
-    def _get_loader_xml(self):
-        if self.loader is None:
-            return ""
+    def _get_osblob(self, install):
+        osblob = self.installer._get_osblob(install, True, self.arch, self.loader)
+        if osblob is None:
+            return None
 
-        return """    <loader>%(loader)s</loader>""" % { "loader": self.loader }
-
-    def _get_os_xml(self, bootdev, install=True):
-        if self.arch is None:
-            arch = ""
-        else:
-            arch = " arch='" + self.arch + "'"
-
-        if self.kernel is None or install == False:
-            return """<os>
-    <type%(arch)s>hvm</type>
-%(loader)s
-    <boot dev='%(bootdev)s'/>
-  </os>
-  <features>
-    %(features)s
-  </features>""" % \
-    { "bootdev": bootdev, \
-      "arch": arch, \
-      "loader": self._get_loader_xml(), \
-      "features": self._get_features_xml() }
-        else:
-            return """<os>
-    <type%(arch)s>hvm</type>
-    <kernel>%(kernel)s</kernel>
-    <initrd>%(initrd)s</initrd>
-    <cmdline>%(extra)s</cmdline>
-  </os>
-  <features>
-    %(features)s
-  </features>""" % \
-    { "kernel": self.kernel, \
-      "initrd": self.initrd, \
-      "extra": self.extraargs, \
-      "arch": arch, \
-      "features": self._get_features_xml() }
-
-    def _get_install_xml(self):
-        return self._get_os_xml("cdrom", True)
-
-    def _get_runtime_xml(self):
-        return self._get_os_xml("hd", False)
+        return "%s\n  %s" % (osblob, self._get_features_xml())
 
     def _get_device_xml(self, install = True):
         if self.emulator is None:
@@ -217,42 +181,18 @@ class FullVirtGuest(Guest.XenGuest):
         self.set_os_type_parameters(self.os_type, self.os_variant)
         Guest.Guest.validate_parms(self)
 
-    def _prepare_install_location(self, meter):
-        cdrom = None
-        tmpfiles = []
-        self.kernel = None
-        self.initrd = None
-        if self.location.startswith("/"):
-            # Huzzah, a local file/device
-            cdrom = self.location
-        else:
-            # Hmm, qemu ought to be able to boot off a kernel/initrd but
-            # for some reason it often fails, hence disabled here..
-            if self.type == "qemuXXX":
-                # QEMU can go straight off a kernel/initrd
-                if self.boot is not None:
-                    # Got a local kernel/initrd already
-                    self.kernel = self.boot["kernel"]
-                    self.initrd = self.boot["initrd"]
-                else:
-                    (kernelfn,initrdfn,args) = DistroManager.acquireKernel(self.location, meter, scratchdir=self.scratchdir, distro=self.os_distro)
-                    self.kernel = kernelfn
-                    self.initrd = initrdfn
-                    if self.extraargs is not None:
-                        self.extraargs = self.extraargs + " " + args
-                    else:
-                        self.extraargs = args
-                    tmpfiles.append(kernelfn)
-                    tmpfiles.append(initrdfn)
-            else:
-                # Xen needs a boot.iso if its a http://, ftp://, or nfs:/ url
-                cdrom = DistroManager.acquireBootDisk(self.location, meter, scratchdir=self.scratchdir, distro=self.os_distro)
-                tmpfiles.append(cdrom)
+    def _prepare_install(self, meter):
+        need_bootdev = True
 
-        if cdrom is not None:
-            self.disks.append(Guest.VirtualDisk(cdrom, device=Guest.VirtualDisk.DEVICE_CDROM, readOnly=True, transient=True))
+        # Hmm, qemu ought to be able to boot off a kernel/initrd but
+        # for some reason it often fails, hence disabled here..
+        if self.type == "qemuXXX":
+            need_bootdev = False
 
-        return tmpfiles
+        self._installer.prepare(guest = self,
+                                need_bootdev = need_bootdev,
+                                meter = meter,
+                                distro = self.os_distro)
 
     def get_continue_inst(self):
         if self.os_type is not None:

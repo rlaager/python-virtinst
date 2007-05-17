@@ -338,14 +338,80 @@ class SDLVirtualGraphics(XenGraphics):
 class XenSDLGraphics(SDLVirtualGraphics):
     pass
 
-class Guest(object):
-    def __init__(self, type=None, connection=None, hypervisorURI=None):
+class Installer(object):
+    def __init__(self, type = "xen", location = None, boot = None, extraargs = None):
+        self._location = None
+        self._extraargs = None
+        self._boot = None
+
         if type is None:
             type = "xen"
-        self._type = type
+        self.type = type
+
+        if not location is None:
+            self.location = location
+        if not boot is None:
+            self.boot = boot
+        if not extraargs is None:
+            self.extraargs = extraargs
+
+        self._tmpfiles = []
+
+    def cleanup(self):
+        for f in self._tmpfiles:
+            logging.debug("Removing " + f)
+            os.unlink(f)
+        self._tmpfiles = []
+
+    def get_type(self):
+        return self._type
+    def set_type(self, val):
+        self._type = val
+    type = property(get_type, set_type)
+
+    def get_scratchdir(self):
+        if self.type == "xen":
+            return "/var/lib/xen"
+        return "/var/tmp"
+    scratchdir = property(get_scratchdir)
+
+    def get_location(self):
+        return self._location
+    def set_location(self, val):
+        self._location = val
+    location = property(get_location, set_location)
+
+    # kernel + initrd pair to use for installing as opposed to using a location
+    def get_boot(self):
+        return self._boot
+    def set_boot(self, val):
+        if type(val) == tuple:
+            if len(val) != 2:
+                raise ValueError, "Must pass both a kernel and initrd"
+            (k, i) = val
+            self._boot = {"kernel": k, "initrd": i}
+        elif type(val) == dict:
+            if not val.has_key("kernel") or not val.has_key("initrd"):
+                raise ValueError, "Must pass both a kernel and initrd"
+            self._boot = val
+        elif type(val) == list:
+            if len(val) != 2:
+                raise ValueError, "Must pass both a kernel and initrd"
+            self._boot = {"kernel": val[0], "initrd": val[1]}
+    boot = property(get_boot, set_boot)
+
+    # extra arguments to pass to the guest installer
+    def get_extraargs(self):
+        return self._extraargs
+    def set_extraargs(self, val):
+        self._extraargs = val
+    extraargs = property(get_extraargs, set_extraargs)
+
+class Guest(object):
+    def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
+        self._installer = installer
         self.disks = []
         self.nics = []
-        self._location = None
         self._name = None
         self._uuid = None
         self._memory = None
@@ -362,22 +428,17 @@ class Guest(object):
             raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
 
         self.disknode = None # this needs to be set in the subclass
-        self._boot = None
-        self._extraargs = ""
+
+    def get_installer(self):
+        return self._installer
+    installer = property(get_installer)
+
 
     def get_type(self):
-        return self._type
+        return self._installer.type
     def set_type(self, val):
-        self._type = type
+        self._installer.type = type
     type = property(get_type, set_type)
-
-
-    def get_scratchdir(self):
-        if self.type == "xen":
-            return "/var/lib/xen"
-        return "/var/tmp"
-    scratchdir = property(get_scratchdir)
-
 
 
     # Domain name of the guest
@@ -439,61 +500,6 @@ class Guest(object):
     vcpus = property(get_vcpus, set_vcpus)
 
 
-    # kernel + initrd pair to use for installing as opposed to using a location
-    def get_boot(self):
-        return self._boot
-    def set_boot(self, val):
-        if type(val) == tuple:
-            if len(val) != 2:
-                raise ValueError, "Must pass both a kernel and initrd"
-            (k, i) = val
-            self._boot = {"kernel": k, "initrd": i}
-        elif type(val) == dict:
-            if not val.has_key("kernel") or not val.has_key("initrd"):
-                raise ValueError, "Must pass both a kernel and initrd"
-            self._boot = val
-        elif type(val) == list:
-            if len(val) != 2:
-                raise ValueError, "Must pass both a kernel and initrd"
-            self._boot = {"kernel": val[0], "initrd": val[1]}
-    boot = property(get_boot, set_boot)
-
-    # extra arguments to pass to the guest installer
-    def get_extra_args(self):
-        return self._extraargs
-    def set_extra_args(self, val):
-        self._extraargs = val
-    extraargs = property(get_extra_args, set_extra_args)
-
-
-    # install location for the PV guest
-    # this is a string pointing to an NFS, HTTP or FTP install source 
-    def get_install_location(self):
-        return self._location
-    def set_install_location(self, val):
-        if not (val.startswith("http://") or val.startswith("ftp://") or
-                val.startswith("nfs:") or val.startswith("/")):
-            raise ValueError, "Install location must be an NFS, HTTP or FTP network install source, or local file/device"
-        if os.geteuid() != 0 and val.startswith("nfs:"):
-            raise ValueError, "NFS installations are only supported as root"
-        self._location = val
-    location = property(get_install_location, set_install_location)
-
-
-    # Legacy, deprecated
-    def get_cdrom(self):
-        if self._location is not None and self._location.startswith("/"):
-            return self._location
-        return None
-    def set_cdrom(self, val):
-        val = os.path.abspath(val)
-        if not os.path.exists(val):
-            raise ValueError, "CD device must exist!"
-        self.set_install_location(val)
-    cdrom = property(get_cdrom, set_cdrom)
-
-
-
     # graphics setup
     def get_graphics(self):
         return self._graphics
@@ -549,6 +555,38 @@ class Guest(object):
     graphics = property(get_graphics, set_graphics)
 
 
+    # Legacy, deprecated properties
+    def get_scratchdir(self):
+        return self._installer.scratchdir
+    scratchdir = property(get_scratchdir)
+
+    def get_boot(self):
+        return self._installer.boot
+    def set_boot(self, val):
+        self._installer.boot = val
+    boot = property(get_boot, set_boot)
+
+    def get_location(self):
+        return self._installer.location
+    def set_location(self, val):
+        self._installer.location = val
+    location = property(get_location, set_location)
+
+    def get_extraargs(self):
+        return self._installer.extraargs
+    def set_extraargs(self, val):
+        self._installer.extraargs = val
+    extraargs = property(get_extraargs, set_extraargs)
+
+    def get_cdrom(self):
+        if self._installer.location is not None and self._installer.location.startswith("/"):
+            return self._installer.location
+        return None
+    def set_cdrom(self, val):
+        self._installer.location = os.path.abspath(val)
+    cdrom = property(get_cdrom, set_cdrom)
+
+
     def _create_devices(self,progresscb):
         """Ensure that devices are setup"""
         for disk in self.disks:
@@ -580,14 +618,16 @@ class Guest(object):
 
     def get_config_xml(self, install = True, disk_boot = False):
         if install:
-            if disk_boot:
-                osblob = self._get_runtime_xml()
-            else:
-                osblob = self._get_install_xml()
             action = "destroy"
         else:
-            osblob = self._get_runtime_xml()
             action = "restart"
+
+        if disk_boot:
+            install = False
+
+        osblob = self._get_osblob(install)
+        if not osblob:
+            return None
 
         return """<domain type='%(type)s'>
   <name>%(name)s</name>
@@ -622,13 +662,11 @@ class Guest(object):
             # BaseMeter does nothing, but saves a lot of null checking
             meter = progress.BaseMeter()
 
-        tmpfiles = self._prepare_install_location(meter)
+        self._prepare_install(meter)
         try:
             return self._do_install(consolecb, meter)
         finally:
-            for file in tmpfiles:
-                logging.debug("Removing " + file)
-                os.unlink(file)
+            self._installer.cleanup()
 
     def _do_install(self, consolecb, meter):
         try:

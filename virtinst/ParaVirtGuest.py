@@ -18,24 +18,14 @@ import Guest
 import DistroManager
 
 class ParaVirtGuest(Guest.XenGuest):
-    def __init__(self, type=None, connection=None, hypervisorURI=None):
-        Guest.Guest.__init__(self, type=type, connection=connection, hypervisorURI=hypervisorURI)
+    def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
+        if not installer:
+            installer = DistroManager.DistroInstaller(type = type)
+        Guest.Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "xvd"
 
-    def _get_install_xml(self):
-        return """<os>
-    <type>linux</type>
-    <kernel>%(kernel)s</kernel>
-    <initrd>%(initrd)s</initrd>
-    <cmdline>%(extra)s</cmdline>
-  </os>""" % \
-    { "kernel": self.kernel, \
-      "initrd": self.initrd, \
-      "extra": self.extraargs }
-
-
-    def _get_runtime_xml(self):
-        return """<bootloader>/usr/bin/pygrub</bootloader>"""
+    def _get_osblob(self, install):
+        return self.installer._get_osblob(install, hvm = False)
 
     def _connectSerialConsole(self):
         # *sigh*  would be nice to have a python version of xmconsole
@@ -53,31 +43,8 @@ class ParaVirtGuest(Guest.XenGuest):
             raise RuntimeError, "A location must be specified to install from"
         Guest.Guest.validate_parms(self)
 
-    def _prepare_install_location(self, meter):
-        tmpfiles = []
-        if self.boot is not None:
-            # Got a local kernel/initrd already
-            self.kernel = self.boot["kernel"]
-            self.initrd = self.boot["initrd"]
-        else:
-            # Need to fetch the kernel & initrd from a remote site, or
-            # out of a loopback mounted disk image/device
-            (kernelfn,initrdfn,args) = DistroManager.acquireKernel(self.location, meter, scratchdir=self.scratchdir, type=self.type)
-            self.kernel = kernelfn
-            self.initrd = initrdfn
-            if self.extraargs is not None:
-                self.extraargs = self.extraargs + " " + args
-            else:
-                self.extraargs = args
-            tmpfiles.append(kernelfn)
-            tmpfiles.append(initrdfn)
-
-        # If they're installing off a local file/device, we map it
-        # through to a virtual harddisk
-        if self.location is not None and self.location.startswith("/"):
-            self.disks.append(Guest.VirtualDisk(self.location, readOnly=True, transient=True))
-
-        return tmpfiles
+    def _prepare_install(self, meter):
+        self._installer.prepare(guest = self, need_bootdev = False, meter = meter)
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
