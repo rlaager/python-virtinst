@@ -1,5 +1,12 @@
 2007-04-17  Mark McLoughlin  <markmc@redhat.com>
 
+	* virtinst/CapabilitiesParser.py: adds a simple module
+	for parsing libvirt's getCapabilities() XML.
+
+	* tests/capabilities.py: add some tests for the parser
+	
+2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+
 	* virt-install: add two new options to virt-install:
 	  --nodisks - if creating a VM to run a livecd or a prebuilt
 	  system image, it is not neccessary to create another disk
