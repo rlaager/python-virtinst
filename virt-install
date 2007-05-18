@@ -18,6 +18,7 @@ import os, sys, string
 from optparse import OptionParser, OptionValueError
 import subprocess
 import logging
+import logging.handlers
 import libxml2
 import urlgrabber.progress as progress
 
@@ -25,6 +26,29 @@ import libvirt
 import virtinst
 
 MIN_RAM = 256
+MAX_LOGSIZE   = 1024 * 1024  # 1MB
+ROTATE_NUM    = 5
+DIR_NAME      = ".virt-install"
+FILE_NAME     = "virt-install.log"
+FILE_MODE     = 'a'
+FILE_FORMAT   = "[%(asctime)s virt-install %(process)d] %(levelname)s (%(module)s:%(lineno)d) %(message)s"
+STREAM_FORMAT = "%(asctime)s %(levelname)-8s %(message)s"
+DATEFMT       = "%a, %d %b %Y %H:%M:%S"
+
+# set up logging
+vi_dir = os.path.expanduser("~/%s" % DIR_NAME)
+if not os.access(vi_dir,os.W_OK):
+    try:
+        os.mkdir(vi_dir)
+    except IOError, e:
+        raise RuntimeError, "Could not create %d directory: " % vi_dir, e
+
+filename = "%s/%s" % (vi_dir, FILE_NAME)
+rootLogger = logging.getLogger()
+rootLogger.setLevel(logging.DEBUG)
+fileHandler = logging.handlers.RotatingFileHandler(filename, FILE_MODE, MAX_LOGSIZE, ROTATE_NUM)
+fileHandler.setFormatter(logging.Formatter(FILE_FORMAT, DATEFMT))
+rootLogger.addHandler(fileHandler)
 
 ### Utility functions
 def yes_or_no(s):
@@ -476,16 +500,13 @@ def show_console(dom):
 def main():
     options = parse_args()
 
+    streamHandler = logging.StreamHandler(sys.stderr)
+    streamHandler.setFormatter(logging.Formatter(STREAM_FORMAT, DATEFMT))
     if options.debug:
-        logging.basicConfig(level=logging.DEBUG,
-                            format="%(asctime)s %(levelname)-8s %(message)s",
-                            datefmt="%a, %d %b %Y %H:%M:%S",
-                            stream=sys.stderr)
+        streamHandler.setLevel(logging.DEBUG)
     else:
-        logging.basicConfig(level=logging.ERROR,
-                            format="%(asctime)s %(levelname)-8s %(message)s",
-                            datefmt="%a, %d %b %Y %H:%M:%S",
-                            stream=sys.stderr)
+        streamHandler.setLevel(logging.ERROR)
+    rootLogger.addHandler(streamHandler)
 
     conn = libvirt.open(options.connect)
     type = None
@@ -623,4 +644,8 @@ def main():
         raise
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception, e:
+        logging.exception(e)
+
