@@ -28,10 +28,7 @@ class ParaVirtGuest(Guest.XenGuest):
         return self.installer._get_osblob(install, hvm = False)
 
     def _connectSerialConsole(self):
-        # *sigh*  would be nice to have a python version of xmconsole
-        # and probably not much work at all to throw together, but this will
-        # do for now
-        cmd = ["/usr/sbin/xm", "console", "%s" %(self.domain.ID(),)]
+        cmd = ["/usr/bin/virsh", "console", "%s" %(self.domain.ID(),)]
         child = os.fork()
         if (not child):
             os.execvp(cmd[0], cmd)
