@@ -34,10 +34,9 @@ import libvirt
 #
 class CloneDesign(object):
 
-    def __init__(self):
-        # hyper rui and connection
-        self._hyper_connect = None
-        self._hyper_conn    = None
+    def __init__(self,connection):
+        # hypervisor connection
+        self._hyper_conn = connection
 
         # original guest name or uuid 
         self._original_guest        = None
@@ -56,12 +55,6 @@ class CloneDesign(object):
         self._clone_mac          = []
         self._clone_uuid         = None
         self._clone_xml          = None
-
-    def get_hyper_connect(self):
-        return self._hyper_connect
-    def set_hyper_connect(self, uri):
-        self._hyper_connect = uri
-    original_hyperuri = property(get_hyper_connect, set_hyper_connect)
 
     def get_original_guest(self):
         return self._original_guest
@@ -155,13 +148,6 @@ class CloneDesign(object):
     #
     def setup_original(self):
         logging.debug("setup_original in")
-        #
-        # open connection
-        #
-        self._hyper_conn = libvirt.open(self._hyper_connect)
-        if self._hyper_conn == None:
-            raise RuntimeError, "Unable to connect to hypervisor, aborting cloning!"
-
         try:
             self._original_dom = self._hyper_conn.lookupByName(self._original_guest)
         except libvirt.libvirtError, e:
