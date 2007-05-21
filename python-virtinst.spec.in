@@ -53,6 +53,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc README AUTHORS ChangeLog NEWS
 %dir %{python_sitelib}/%{appname}
 %{python_sitelib}/%{appname}/*
+%{_mandir}/man1/virt-install.1*
 %{_sbindir}/virt-install
 
 %changelog

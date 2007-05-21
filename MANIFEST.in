@@ -5,3 +5,5 @@ include tests/*.xml
 include tests/*.py
 include virt-install
 include autobuild.sh
+include man/*/*.1
+include man/*/*.pod
