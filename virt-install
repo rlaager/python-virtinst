@@ -28,7 +28,7 @@ import virtinst
 MIN_RAM = 256
 MAX_LOGSIZE   = 1024 * 1024  # 1MB
 ROTATE_NUM    = 5
-DIR_NAME      = ".virt-install"
+DIR_NAME      = ".virtinst"
 FILE_NAME     = "virt-install.log"
 FILE_MODE     = 'a'
 FILE_FORMAT   = "[%(asctime)s virt-install %(process)d] %(levelname)s (%(module)s:%(lineno)d) %(message)s"
@@ -508,18 +508,17 @@ def main():
         streamHandler.setLevel(logging.ERROR)
     rootLogger.addHandler(streamHandler)
 
+    if options.connect is None or options.connect.lower()[0:3] == "xen":
+        if os.geteuid() != 0:
+            print >> sys.stderr, "Must be root to clone Xen guests"
+            sys.exit(1)
+
     conn = libvirt.open(options.connect)
     type = None
-    # check to ensure we're really on a xen kernel
-    if conn.getType() == "Xen":
-        type = "xen"
-
-        if os.geteuid() != 0:
-            print >> sys.stderr, "Must be root to install guests"
-            sys.exit(1)
 
     # first things first, are we trying to create a fully virt guest?
     if conn.getType() == "Xen":
+        type = "xen"
         hvm = options.fullvirt
         pv  = options.paravirt
         if virtinst.util.is_hvm_capable():
