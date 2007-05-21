@@ -198,8 +198,8 @@ preferred over KQEMU if both are available.
 
 =item  --connect=CONNECT     Connect to hypervisor with URI
 
-Connect to a non-defautl hypervisor. The default connection is chosen from
-one of the following three options:
+Connect to a non-default hypervisor. The default connection is chosen based
+on the following rules:
 
 =over 4
 
@@ -216,6 +216,9 @@ If running on a bare metal kernel as root
 If running on a bare metal kernel as non-root
 
 =back
+
+It is only neccessary to provide the C<--connect> argument if this default
+prioritization is incorrect, eg if wanting to use QEMU while on a Xen kernel.
 
 =item  --installer=INSTALLER
 
@@ -472,7 +475,7 @@ performing a paravirtualized guest install
 =item  -d, --debug
 
 Print debugging information to the terminal when running the install process.
-The debugging information is also stored in C<$HOME/.virt-install/virt-install.log>
+The debugging information is also stored in C<$HOME/.virtinst/virt-install.log>
 even if this parameter is omitted.
 
 =back

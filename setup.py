@@ -43,7 +43,7 @@ setup(name='virtinst',
       package_dir={'virtinst': 'virtinst'},
       scripts = ["virt-install"],
       packages=pkgs,
-      data_files = [('share/man/man1', ['man/en/virt-install.1'])],
+      data_files = [('share/man/man1', ['man/en/virt-install.1', 'man/en/virt-clone.1'])],
       cmdclass = { 'test': TestCommand }
       )
 
