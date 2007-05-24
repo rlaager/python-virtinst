@@ -514,8 +514,8 @@ class Guest(object):
                 raise ValueError, "Keymap must be a string"
             if len(keymap) > 16:
                 raise ValueError, "Keymap must be less than 16 characters"
-            if re.match("^[a-zA-Z0-9_]*$", keymap) == None:
-                raise ValueError, "Keymap be alphanumeric or _"
+            if re.match("^[a-zA-Z0-9_-]*$", keymap) == None:
+                raise ValueError, "Keymap must be alphanumeric, _, or -"
             return keymap
 
         opts = None
