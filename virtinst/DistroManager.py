@@ -609,10 +609,10 @@ class DistroInstaller(Guest.Installer):
             cdrom = self.location
         else:
             # Xen needs a boot.iso if its a http://, ftp://, or nfs:/ url
-            cdrom = DistroManager.acquireBootDisk(self.location,
-                                                  meter,
-                                                  scratchdir = self.scratchdir,
-                                                  distro = distro)
+            cdrom = acquireBootDisk(self.location,
+                                    meter,
+                                    scratchdir = self.scratchdir,
+                                    distro = distro)
             self._tmpfiles.append(cdrom)
 
         guest.disks.append(Guest.VirtualDisk(cdrom,
