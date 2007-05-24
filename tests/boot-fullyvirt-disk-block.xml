@@ -22,6 +22,10 @@
       <source dev='/dev/hdb1'/>
       <target dev='hda'/>
     </disk>
+    <disk device='cdrom'>
+      <target dev='hdc'/>
+      <readonly/>
+    </disk>
 
 
     <graphics type='sdl'/>

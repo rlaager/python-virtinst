@@ -22,6 +22,10 @@
       <source file='/xen/test.img'/>
       <target dev='hda'/>
     </disk>
+    <disk device='cdrom'>
+      <target dev='hdc'/>
+      <readonly/>
+    </disk>
 
 
     <graphics type='sdl'/>
