@@ -119,17 +119,20 @@ class VirtualDisk:
         # FIXME: set selinux context?
 
     def get_xml_config(self, disknode):
-        typeattr = 'file'
-        if self.type == VirtualDisk.TYPE_BLOCK:
-            typeattr = 'dev'
+        if self.path is None:
+               ret = "    <disk device='%(device)s'>\n" % { "device": self.device }
+        else:
+            typeattr = 'file'
+            if self.type == VirtualDisk.TYPE_BLOCK:
+                typeattr = 'dev'
 
-        ret = "    <disk type='%(type)s' device='%(device)s'>\n" % { "type": self.type, "device": self.device }
-        if not(self.driver_name is None):
-            if self.driver_type is None:
-                ret += "      <driver name='%(name)s'/>\n" % { "name": self.driver_name }
-            else:
-                ret += "      <driver name='%(name)s' type='%(type)s'/>\n" % { "name": self.driver_name, "type": self.driver_type }
-        ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": self.path }
+            ret = "    <disk type='%(type)s' device='%(device)s'>\n" % { "type": self.type, "device": self.device }
+            if not(self.driver_name is None):
+                if self.driver_type is None:
+                    ret += "      <driver name='%(name)s'/>\n" % { "name": self.driver_name }
+                else:
+                    ret += "      <driver name='%(name)s' type='%(type)s'/>\n" % { "name": self.driver_name, "type": self.driver_type }
+            ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": self.path }
         ret += "      <target dev='%(disknode)s'/>\n" % { "disknode": disknode }
         if self.read_only:
             ret += "      <readonly/>\n"

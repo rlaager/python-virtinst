@@ -228,7 +228,10 @@ class FullVirtGuest(Guest.XenGuest):
         count = 0
         for d in self.disks:
             if d.transient and not install:
-                continue
+                if d.device == Guest.VirtualDisk.DEVICE_CDROM:
+                    d.path = None
+                else:
+                    continue
             if count > 4:
                 raise ValueError, "Can't use more than 4 disks on an HVM guest"
             if d.device == Guest.VirtualDisk.DEVICE_CDROM and count != 2:
