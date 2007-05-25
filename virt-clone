@@ -102,6 +102,8 @@ def get_clone_diskfile(new_diskfile, design):
     for i in new_diskfile:
         design.set_clone_devices(i) 
 
+def get_clone_sparse(sparse, design):
+    design.set_clone_sparse(sparse)
 
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):
@@ -145,7 +147,10 @@ def parse_args():
                       dest="connect", action="callback", callback=check_before_store,
                       help="Connect to hypervisor with URI",
                       default=virtinst.util.default_connection())
-
+    # non sparse
+    parser.add_option("", "--nonsparse", action="store_false",
+                      default=True, dest="sparse",
+                      help="Don't use sparse files for the disk images for the clone guest")
 
     # Misc options
     parser.add_option("-d", "--debug", action="store_true", dest="debug",
@@ -173,7 +178,6 @@ def main():
             print >> sys.stderr, "Must be root to clone Xen guests"
             sys.exit(1)
 
-
     conn = libvirt.open(options.connect)
     design = clmgr.CloneDesign(connection=conn)
 
@@ -183,6 +187,7 @@ def main():
         get_original_guest(options.original_guest, design)
         get_clone_name(options.new_name, design)
         get_clone_uuid(options.new_uuid, design)
+        get_clone_sparse(options.sparse, design)
 
         # setup design object
         design.setup()
