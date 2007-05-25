@@ -54,6 +54,7 @@ class CloneDesign(object):
         self._clone_bs           = 1024*1024*10
         self._clone_mac          = []
         self._clone_uuid         = None
+        self._clone_sparse       = True
         self._clone_xml          = None
 
     def get_original_guest(self):
@@ -142,6 +143,12 @@ class CloneDesign(object):
     def set_clone_xml(self, clone_xml):
         self._clone_xml = clone_xml
     clone_xml = property(get_clone_xml, set_clone_xml)
+
+    def get_clone_sparse(self):
+        return self._clone_sparse
+    def set_clone_sparse(self, flg):
+        self._clone_sparse = flg
+    clone_sparse = property(get_clone_sparse, set_clone_sparse)
 
     #
     # setup original guest
@@ -482,10 +489,30 @@ def _do_duplicate(design):
     dst_dev_iter = iter(design.clone_devices)
     dst_siz_iter = iter(design.original_devices_size)
 
+    zeros            = '\0' * 4096
+    sparse_copy_mode = False
+
     try:
         for src_dev in design.original_devices: 
             dst_dev = dst_dev_iter.next()
             dst_siz = dst_siz_iter.next()
+
+            #
+            # create sparse file
+            # if a destination file exists and sparse flg is True,
+            # this priority takes a existing file.
+            #
+            if os.path.exists(dst_dev) == False and design.clone_sparse == True:
+                design.clone_bs = 4096
+                sparse_copy_mode = True
+                fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
+                os.lseek(fd, dst_siz, 0)
+                os.write(fd, '\x00')
+                os.close(fd)
+            else:
+                design.clone_bs = 1024*1024*10
+                sparse_copy_mode = False
+            logging.debug("dst_dev:%s sparse_copy_mode:%s bs:%d" % (dst_dev,sparse_copy_mode,design.clone_bs))
 
             src_fd = os.open(src_dev, os.O_RDONLY)
             dst_fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
@@ -502,7 +529,11 @@ def _do_duplicate(design):
                 if s == 0:
                     meter.end(size)
                     break
-                b = os.write(dst_fd, l)
+                # check sequence of zeros
+                if sparse_copy_mode == True and zeros == l:
+                    os.lseek(dst_fd, s, 1)
+                else:
+                    b = os.write(dst_fd, l)
                 if s != b:
                     meter.end(i)
                     break
