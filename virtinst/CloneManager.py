@@ -57,6 +57,8 @@ class CloneDesign(object):
         self._clone_sparse       = True
         self._clone_xml          = None
 
+        self._force_target       = []
+
     def get_original_guest(self):
         return self._original_guest
     def set_original_guest(self, original_guest):
@@ -150,6 +152,12 @@ class CloneDesign(object):
         self._clone_sparse = flg
     clone_sparse = property(get_clone_sparse, set_clone_sparse)
 
+    def set_force_target(self, dev):
+        self._force_target.append(dev)
+    def get_force_target(self):
+        return self._force_target
+    force_target = property(set_force_target)
+
     #
     # setup original guest
     #
@@ -225,12 +233,15 @@ class CloneDesign(object):
         node[0].setContent(self._clone_name)
 
         # changing devices
+        clone_devices = iter(self._clone_devices)
         count = ctx.xpathEval("count(/domain/devices/disk)")
         for i in range(1, int(count+1)):
-            node = ctx.xpathEval("/domain/devices/disk[%d]/source" % i)
+            node = self._get_available_cloning_device(ctx, i, self._force_target)
+            if node == None:
+                continue
             node = node[0].get_properties()
             try:
-                node.setContent(self._clone_devices[i-1])
+                node.setContent(clone_devices.next())
             except Exception, e:
                 raise ValueError, "Missing new file to use disk image for %s" % node.getContent()
 
@@ -383,7 +394,9 @@ class CloneDesign(object):
         try:
             count = ctx.xpathEval("count(/domain/devices/disk)")
             for i in range(1, int(count+1)):
-                node = ctx.xpathEval("/domain/devices/disk[%d]/source" % i)
+                node = self._get_available_cloning_device(ctx, i, self._force_target)
+                if node == None:
+                    continue
                 list.append(node[0].get_properties().getContent())
         finally:
             if ctx is not None:
@@ -396,6 +409,11 @@ class CloneDesign(object):
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
                 ret,str = commands.getstatusoutput('fdisk -s %s' % i)
+                # check
+                if str.isdigit() == False:
+                    lines = str.splitlines()
+                    # retry eg. for the GPT disk
+                    str = lines[len(lines)-1]
                 size.append(int(str) * 1024)
                 type.append(False)
             elif stat.S_ISREG(mode):
@@ -405,6 +423,34 @@ class CloneDesign(object):
         logging.debug("original device type: %s" % (type))
 
         return (list, size, type)
+
+    #
+    # get available original device for clone
+    #
+    def _get_available_cloning_device(self, ctx, i, force):
+
+        node = None
+        force_flg = False
+        
+        node = ctx.xpathEval("/domain/devices/disk[%d]/source" % i)
+        if len(node) == 0:
+            return None
+
+        target = ctx.xpathEval("/domain/devices/disk[%d]/target/@dev" % i)
+        target = target[0].getContent()
+
+        for f_target in force:
+            if target == f_target:
+                force_flg = True
+
+        ro = ctx.xpathEval("/domain/devices/disk[%d]/readonly" % i)
+        if len(ro) != 0 and force_flg == False:
+            return None
+        share = ctx.xpathEval("/domain/devices/disk[%d]/shareable" % i) 
+        if len(share) != 0 and force_flg == False:
+            return None
+
+        return node 
 
     #
     # get the clone devices information
@@ -423,6 +469,11 @@ class CloneDesign(object):
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
                 ret,str = commands.getstatusoutput('fdisk -s %s' % i)
+                # check
+                if str.isdigit() == False:
+                    lines = str.splitlines()
+                    # retry eg. for the GPT disk
+                    str = lines[len(lines)-1]
                 size.append(int(str) * 1024)
                 type.append(False)
             elif stat.S_ISREG(mode):
@@ -497,6 +548,15 @@ def _do_duplicate(design):
             dst_dev = dst_dev_iter.next()
             dst_siz = dst_siz_iter.next()
 
+            size = dst_siz
+            meter = progress.TextMeter()
+            print "Cloning from %s to %s" % (src_dev, dst_dev)
+            meter.start(size=size, text="Cloning domain...")
+
+            # skip
+            if src_dev == "/dev/null" or src_dev == dst_dev:
+                meter.end(size)
+                continue
             #
             # create sparse file
             # if a destination file exists and sparse flg is True,
@@ -516,11 +576,6 @@ def _do_duplicate(design):
 
             src_fd = os.open(src_dev, os.O_RDONLY)
             dst_fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
-
-            size = dst_siz
-            meter = progress.TextMeter()
-            print "Cloning from %s to %s" % (src_dev, dst_dev)
-            meter.start(size=size, text="Cloning domain...")
 
             i=0
             while 1:
