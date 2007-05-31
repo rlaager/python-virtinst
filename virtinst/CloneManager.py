@@ -57,6 +57,8 @@ class CloneDesign(object):
         self._clone_sparse       = True
         self._clone_xml          = None
 
+        self._preserve           = True
+
     def get_original_guest(self):
         return self._original_guest
     def set_original_guest(self, original_guest):
@@ -149,6 +151,12 @@ class CloneDesign(object):
     def set_clone_sparse(self, flg):
         self._clone_sparse = flg
     clone_sparse = property(get_clone_sparse, set_clone_sparse)
+
+    def get_preserve(self):
+        return self._preserve
+    def set_preserve(self, flg):
+        self._preserve = flg
+    preserve = property(get_preserve, set_preserve)
 
     #
     # setup original guest
@@ -471,7 +479,8 @@ def start_duplicate(design):
 
     # do dupulicate
     # at this point, handling the cloning way.
-    _do_duplicate(design)
+    if design.preserve == True:
+        _do_duplicate(design)
 
     # define clone xml
     design.original_conn.defineXML(design.clone_xml)
