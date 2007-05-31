@@ -105,6 +105,10 @@ def get_clone_diskfile(new_diskfile, design):
 def get_clone_sparse(sparse, design):
     design.set_clone_sparse(sparse)
 
+def get_preserve(preserve, design):
+    design.set_preserve(preserve)
+
+
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):
     if len(value) == 0:
@@ -152,6 +156,11 @@ def parse_args():
                       default=True, dest="sparse",
                       help="Don't use sparse files for the disk images for the clone guest")
 
+    # preserve
+    parser.add_option("", "--preserve-data", action="store_false",
+                      default=True, dest="preserve",
+                      help="Preserve a new file to use as the disk image for the clone guest")
+
     # Misc options
     parser.add_option("-d", "--debug", action="store_true", dest="debug",
                       help="Print debugging information") 
@@ -188,6 +197,7 @@ def main():
         get_clone_name(options.new_name, design)
         get_clone_uuid(options.new_uuid, design)
         get_clone_sparse(options.sparse, design)
+        get_preserve(options.preserve, design)
 
         # setup design object
         design.setup()
