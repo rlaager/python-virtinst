@@ -109,6 +109,13 @@ def get_preserve(preserve, design):
     design.set_preserve(preserve)
 
 
+def get_force_target(target, design):
+    if target is None:
+        pass
+    else:
+        for i in target:
+            design.set_force_target(i)
+
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):
     if len(value) == 0:
@@ -151,6 +158,12 @@ def parse_args():
                       dest="connect", action="callback", callback=check_before_store,
                       help="Connect to hypervisor with URI",
                       default=virtinst.util.default_connection())
+
+    # target
+    parser.add_option("", "--force-copy", type="string",
+                      dest="target", action="callback", callback=check_before_append,
+                      help="Force to copy devices (eg, if 'hdc' is a readonly cdrom device or shareable any devices, --force-copy=hdc)")
+
     # non sparse
     parser.add_option("", "--nonsparse", action="store_false",
                       default=True, dest="sparse",
@@ -197,6 +210,7 @@ def main():
         get_clone_name(options.new_name, design)
         get_clone_uuid(options.new_uuid, design)
         get_clone_sparse(options.sparse, design)
+        get_force_target(options.target, design)
         get_preserve(options.preserve, design)
 
         # setup design object
