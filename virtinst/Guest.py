@@ -625,10 +625,11 @@ class Guest(object):
         else:
             action = "restart"
 
+        osblob_install = install
         if disk_boot:
-            install = False
+            osblob_install = False
 
-        osblob = self._get_osblob(install)
+        osblob = self._get_osblob(osblob_install)
         if not osblob:
             return None
 

@@ -227,8 +227,10 @@ class FullVirtGuest(Guest.XenGuest):
         ret = ""
         count = 0
         for d in self.disks:
+            backup_path = None
             if d.transient and not install:
                 if d.device == Guest.VirtualDisk.DEVICE_CDROM:
+                    backup_path = d.path
                     d.path = None
                 else:
                     continue
@@ -242,5 +244,7 @@ class FullVirtGuest(Guest.XenGuest):
                    count += 1
                disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
             ret += d.get_xml_config(disknode)
+            if backup_path:
+                d.path = backup_path
             count += 1
         return ret
