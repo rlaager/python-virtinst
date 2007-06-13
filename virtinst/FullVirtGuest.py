@@ -144,7 +144,7 @@ class FullVirtGuest(Guest.XenGuest):
                 self.features["apic"] = FullVirtGuest.OS_TYPES[os_type]["apic"]
 
     def get_os_distro(self):
-        if self.os_type is not None and self.os_variant is not None:
+        if self.os_type is not None and self.os_variant is not None and "distro" in FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant]:
             return FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant]["distro"]
         return None
     os_distro = property(get_os_distro)
