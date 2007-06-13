@@ -57,6 +57,8 @@ class VirtualDisk:
             if not os.path.exists(self.path):
                 if size is None:
                     raise ValueError, "Must provide a size for non-existent disks"
+                if size <= 0:
+                    raise ValueError, "Size of the disk image must be greater than 0"
                 self._type = VirtualDisk.TYPE_FILE
             else:
                 if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
