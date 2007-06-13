@@ -87,14 +87,14 @@ def get_name(name, guest):
 
 def get_memory(memory, guest):
     while 1:
-        memory = prompt_for_input("How much RAM should be allocated (in megabytes)?", memory)
-        if memory < MIN_RAM:
-            print "ERROR: Installs currently require %d megs of RAM." %(MIN_RAM,)
-            print ""
-            memory = None
-            continue
         try:
-            guest.memory = int(memory)
+            memory = int(prompt_for_input("How much RAM should be allocated (in megabytes)?", memory))
+            if memory < MIN_RAM:
+                print "ERROR: Installs currently require %d megs of RAM." %(MIN_RAM,)
+                print ""
+                memory = None
+                continue
+            guest.memory = memory
             break
         except ValueError, e:
             print "ERROR: ", e
