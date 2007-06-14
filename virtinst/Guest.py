@@ -165,6 +165,7 @@ class VirtualDisk:
             try:
                 try:
                     count += ctx.xpathEval("count(/domain/devices/disk/source[@dev='%s'])" % self.path)
+                    count += ctx.xpathEval("count(/domain/devices/disk/source[@file='%s'])" % self.path)
                 except:
                     continue
             finally:
