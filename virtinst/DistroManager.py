@@ -69,7 +69,9 @@ class URIImageFetcher(ImageFetcher):
                             text = "Verifying install location...")
             return True
         except IOError, e:
-            logging.debug("Validation failed for " + self.location + " " + str(e))
+            msg = "Opening URL " + self.location + " failed."
+            logging.debug(msg + " " + str(e))
+            raise ValueError(msg)
             return False
 
     def acquireFile(self, filename, progresscb):
@@ -117,6 +119,9 @@ class MountedImageFetcher(ImageFetcher):
         ret = subprocess.call(cmd)
         if ret != 0:
             self.cleanupLocation()
+            msg = "Mounting " + self.location + " failed."
+            logging.debug(msg)
+            raise ValueError(msg)
             return False
         return True
 
@@ -564,8 +569,11 @@ def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=
 # Method to fetch a krenel & initrd pair for a particular distro / HV type
 def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None, distro=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
-    if not fetcher.prepareLocation(progresscb):
-        raise RuntimeError, "Invalid install location"
+    
+    try:
+        fetcher.prepareLocation(progresscb)
+    except ValueError, e:
+        raise RuntimeError, "Invalid install location: " + str(e)
 
     try:
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type, \
@@ -577,8 +585,11 @@ def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None, distro=
 # Method to fetch a bootable ISO image for a particular distro / HV type
 def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None, distro=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
-    if not fetcher.prepareLocation(progresscb):
-        raise RuntimeError, "Invalid install location"
+
+    try:
+        fetcher.prepareLocation(progresscb)
+    except ValueError, e:
+        raise RuntimeError, "Invalid install location: " + str(e)
 
     try:
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type, \

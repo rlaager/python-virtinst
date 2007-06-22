@@ -124,7 +124,11 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
         except ValueError, e:
             print "ERROR: ", e
     if vcpus:
+        try:
             guest.vcpus = vcpus
+        except ValueError, e:
+            print "ERROR: ", e
+            
 
 def get_disk(disk, size, sparse, guest, hvm, conn):
     # FIXME: need to handle a list of disks at some point

@@ -177,3 +177,12 @@ def get_host_network_devices():
                 if words[i] == "hwaddr":
                     device.append(words)
     return device
+
+def get_max_vcpus(conn):
+    """@conn libvirt connection to poll for max possible vcpus"""
+    try:
+        max = conn.getMaxVcpus(conn.getType())
+    except:
+        print >> stderr, "Couldn't determine max vcpus. Using 32."
+        max = 32
+    return max

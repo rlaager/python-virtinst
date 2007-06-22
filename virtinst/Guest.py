@@ -24,8 +24,6 @@ import util
 
 import logging
 
-import urlgrabber.progress as progress
-
 class VirtualDisk:
     DRIVER_FILE = "file"
     DRIVER_PHY = "phy"
@@ -51,22 +49,39 @@ class VirtualDisk:
         self.path = os.path.abspath(path)
 
         if os.path.isdir(self.path):
-            raise ValueError, "Must provide a file, not a directory for the disk"
+            raise ValueError, \
+                "The disk path must be a file/device, not a directory"
+
+        if not self.path.startswith("/"):
+            raise ValueError, \
+                "The disk path must be an absolute path location, beginning with '/'"
 
         if type is None:
             if not os.path.exists(self.path):
-                if size is None:
-                    raise ValueError, "Must provide a size for non-existent disks"
-                if size <= 0:
-                    raise ValueError, "Size of the disk image must be greater than 0"
+                logging.debug("Disk path not found: Assuming file disk type.");
                 self._type = VirtualDisk.TYPE_FILE
             else:
                 if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                    logging.debug(\
+                        "Path is block file: Assuming Block disk type.");
                     self._type = VirtualDisk.TYPE_BLOCK
                 else:
                     self._type = VirtualDisk.TYPE_FILE
         else:
             self._type = type
+
+        if self._type == VirtualDisk.TYPE_FILE:
+            if size is None and not os.path.exists(self.path):
+                raise ValueError, \
+                    "A size must be provided for non-existent disks"
+            if size is not None and size <= 0:
+                raise ValueError, \
+                    "The size of the disk image must be greater than 0"
+        elif self._type == VirtualDisk.TYPE_BLOCK:
+            if not os.path.exists(self.path):
+                raise ValueError, "The specified block device does not exist." 
+            if not stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                raise ValueError, "The specified path is not a block device."
 
         self._readOnly = readOnly
         self._device = device
@@ -187,10 +202,11 @@ class XenDisk(VirtualDisk):
 
 class VirtualNetworkInterface:
     def __init__(self, macaddr = None, type="bridge", bridge = None, network=None):
+
         if macaddr is not None:
             form = re.match("^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",macaddr)
             if form is None:
-                raise ValueError, "Invalid value for MAC address"
+                raise ValueError("MAC address must be of the format AA:BB:CC:DD:EE:FF")
         self.macaddr = macaddr
         self.type = type
         self.bridge = bridge
@@ -451,16 +467,14 @@ class Guest(object):
     def get_name(self):
         return self._name
     def set_name(self, val):
-        if len(val) == 0:
-            raise ValueError, "Domain name must be nonempty"
+        if len(val) > 50 or len(val) == 0:
+            raise ValueError, "System name must be greater than 0 and no more than 50 characters"
         if re.match("^[0-9]+$", val):
-            raise ValueError, "Domain name must not be numeric only"
-        if re.match("^[a-zA-Z0-9_-]+$", val) == None:
-            raise ValueError, "Domain name must be alphanumeric or _ or -"
-        if len(val) > 50:
-            raise ValueError, "Domain name must be less than or equal to 50 characters"
+            raise ValueError, "System name must not be only numeric characters"
+        if re.match("^[a-zA-Z0-9._-]+$", val) == None:
+            raise ValueError, "System name can only contain alphanumeric, '_', '.', or '-' characters"
         if type(val) != type("string"):
-            raise ValueError, "Domain name must be a string"
+            raise ValueError, "System name must be a string"
         self._name = val
     name = property(get_name, set_name)
 
@@ -469,6 +483,8 @@ class Guest(object):
     def get_memory(self):
         return self._memory
     def set_memory(self, val):
+        if (type(val) is not type(1) or val < 0):
+            raise ValueError, "Memory value must be an integer greater than 0"
         self._memory = val
         if self._maxmemory is None or self._maxmemory < val:
             self._maxmemory = val
@@ -478,6 +494,8 @@ class Guest(object):
     def get_maxmemory(self):
         return self._maxmemory
     def set_maxmemory(self, val):
+        if (type(val) is not type(1) or val < 0):
+            raise ValueError, "Max Memory value must be an integer greater than 0"
         self._maxmemory = val
     maxmemory = property(get_maxmemory, set_maxmemory)
 
@@ -489,11 +507,15 @@ class Guest(object):
         # need better validation
         form = re.match("[a-fA-F0-9]{8}[-]([a-fA-F0-9]{4}[-]){3}[a-fA-F0-9]{12}$", val)
         if form is None:
-            form=re.match("[a-fA-F0-9]{32}$", val)
+            form = re.match("[a-fA-F0-9]{32}$", val)
             if form is None:
-                raise ValueError, "UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
-            else:
-                val=val[0:8] + "-" + val[8:12] + "-" + val[12:16] + "-" + val[16:20] + "-" + val[20:32]
+                raise ValueError, "UUID must be a 32-digit hexadecimal " + \
+                      "number. It may take the form XXXXXXXX-XXXX-XXXX-" + \
+                      "XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
+
+            else:   # UUID had no dashes, so add them in
+                val=val[0:8] + "-" + val[8:12] + "-" + val[12:16] + \
+                "-" + val[16:20] + "-" + val[20:32]
         self._uuid = val
     uuid = property(get_uuid, set_uuid)
 
@@ -502,6 +524,10 @@ class Guest(object):
     def get_vcpus(self):
         return self._vcpus
     def set_vcpus(self, val):
+        maxvcpus = util.get_max_vcpus(self.conn)
+        if val < 1 or val > maxvcpus:
+            raise ValueError, \
+                  "Number of vcpus must be in the range of 1-%d" % (maxvcpus,)
         self._vcpus = val
     vcpus = property(get_vcpus, set_vcpus)
 
@@ -585,10 +611,15 @@ class Guest(object):
     extraargs = property(get_extraargs, set_extraargs)
 
     def get_cdrom(self):
-        if self._installer.location is not None and self._installer.location.startswith("/"):
+        if self._installer.location is not None and \
+           self._installer.location.startswith("/"):
             return self._installer.location
         return None
     def set_cdrom(self, val):
+        if val is None or len(val) == 0:
+            raise ValueError, "You must specify an ISO or CD-ROM location for the guest installation"
+        if not os.path.exists(val):
+            raise ValueError, "The specified media path does not exist."
         self._installer.location = os.path.abspath(val)
     cdrom = property(get_cdrom, set_cdrom)
 
