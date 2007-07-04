@@ -19,13 +19,13 @@ uniqueness will be updated to avoid a clash between old and new guests.
 Given suitable command line arguments, C<virt-clone> is capable of running
 completely unattended, with the guest 'kickstarting' itself too. This allows
 for easy automation of guest installs. A companion tool C<virt-clone(1)> is
-provided for cloning pre-existing guests if their instalation cannot be easily
+provided for cloning pre-existing guests if their installation cannot be easily
 automated from pristine media.
 
 =head1 OPTIONS
 
 Any of the options can be omitted, in which case C<virt-clone> will run
-interactivately prompting for input as required.
+interactively prompting for input as required.
 
 =over 4
 
@@ -89,7 +89,7 @@ If running on a bare metal kernel as non-root
 
 =back
 
-It is only neccessary to provide the C<--connect> argument if this default
+It is only necessary to provide the C<--connect> argument if this default
 prioritization is incorrect, eg if wanting to use QEMU while on a Xen kernel.
 
 =item  -d, --debug
@@ -130,7 +130,7 @@ new guest can do a filesystem resize when it boots.
 
 =head1 AUTHOR
 
-Writen by Kazuki Mizushima, and a team of many other contributors. See the AUTHORS 
+Written by Kazuki Mizushima, and a team of many other contributors. See the AUTHORS 
 file in the source distribution for the complete list of credits.
 
 =head1 BUGS
@@ -141,7 +141,7 @@ C<Fedora> product, and the C<python-virtinst> component.
 
 =head1 COPYRIGHT
 
-Copright (C) Fujitsu Limited 2007, and various contributors. 
+Copyright (C) Fujitsu Limited 2007, and various contributors. 
 This is free software. You may redistribute copies of it under the terms of the GNU General 
 Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent 
 permitted by law.
