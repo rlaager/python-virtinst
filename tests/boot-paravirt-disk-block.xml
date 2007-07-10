@@ -10,7 +10,7 @@
   <vcpu>5</vcpu>
   <devices>
     <disk type='block' device='disk'>
-      <source dev='/dev/hdb1'/>
+      <source dev='/dev/root'/>
       <target dev='xvda'/>
     </disk>
 
