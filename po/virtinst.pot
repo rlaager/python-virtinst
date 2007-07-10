@@ -1,0 +1,758 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-07-06 15:27-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: virt-clone:55 virt-install:51
+#, python-format
+msgid "Could not create %d directory: "
+msgstr ""
+
+#: virt-clone:75
+msgid "What is the name for the cloned virtual machine?"
+msgstr ""
+
+#: virt-clone:80 virt-clone:90 virt-install:60
+msgid "ERROR: "
+msgstr ""
+
+#: virt-clone:85
+msgid "What is the name or uuid of the original virtual machine?"
+msgstr ""
+
+#: virt-clone:108
+msgid "A new disk image file for the cloned guest is required"
+msgstr ""
+
+#: virt-clone:129 virt-clone:134 virt-install:329 virt-install:334
+#, python-format
+msgid "%s option requires an argument"
+msgstr ""
+
+#: virt-clone:143
+msgid "Name or uuid for the original guest; The status must be shut off"
+msgstr ""
+
+#: virt-clone:147
+msgid "Name for the new guest"
+msgstr ""
+
+#: virt-clone:152
+msgid "New UUID for the clone guest; Default is a randomly generated UUID"
+msgstr ""
+
+#: virt-clone:157
+msgid ""
+"New fixed MAC address for the clone guest. Default is a randomly generated "
+"MAC"
+msgstr ""
+
+#: virt-clone:162
+msgid "New file to use as the disk image for the new guest"
+msgstr ""
+
+#: virt-clone:166 virt-install:397
+msgid "Connect to hypervisor with URI"
+msgstr ""
+
+#: virt-clone:172
+msgid ""
+"Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-"
+"copy=hdc)"
+msgstr ""
+
+#: virt-clone:177
+msgid "Do not use a sparse file for the clone's disk image"
+msgstr ""
+
+#: virt-clone:182
+msgid "Preserve a new file to use as the disk image for the new guest"
+msgstr ""
+
+#: virt-clone:186 virt-install:433
+msgid "Print debugging information"
+msgstr ""
+
+#: virt-clone:207 virt-install:527
+msgid "Must be root to clone Xen guests"
+msgstr ""
+
+#: virt-install:69
+msgid "A yes or no response is required"
+msgstr ""
+
+#: virt-install:81
+msgid ""
+"Would you like a fully virtualized guest (yes or no)?  This will allow you "
+"to run unmodified operating systems."
+msgstr ""
+
+#: virt-install:89
+msgid "What is the name of your virtual machine?"
+msgstr ""
+
+#: virt-install:100
+msgid "How much RAM should be allocated (in megabytes)?"
+msgstr ""
+
+#: virt-install:102
+#, python-format
+msgid "ERROR: Installs currently require %d megs of RAM."
+msgstr ""
+
+#: virt-install:128
+#, python-format
+msgid ""
+"You have asked for more virtual CPUs (%(vcpu)d) than there are physical CPUs "
+"(%(phys)d) on the host. This will work, but performance will be poor. Are "
+"you sure? (yes or no)"
+msgstr ""
+
+#: virt-install:132
+msgid "How many VCPUs should be attached?"
+msgstr ""
+
+#: virt-install:145
+msgid "What would you like to use as the disk (path)?"
+msgstr ""
+
+#: virt-install:147
+#, python-format
+msgid ""
+"Please enter the path to the file you would like to use for storage. It will "
+"have size %sGB."
+msgstr ""
+
+#: virt-install:152
+#, python-format
+msgid "How large would you like the disk (%s) to be (in gigabytes)?"
+msgstr ""
+
+#: virt-install:165
+#, python-format
+msgid "Disk %s is already in use by another guest!"
+msgstr ""
+
+#: virt-install:166
+msgid "  Do you really want to use the disk (yes or no)? "
+msgstr ""
+
+#: virt-install:192
+msgid "Cannot use --file with --nodisks"
+msgstr ""
+
+#: virt-install:197
+msgid "Need to pass size for each disk"
+msgstr ""
+
+#: virt-install:223
+msgid "Unknown network type "
+msgstr ""
+
+#: virt-install:238
+msgid "Cannot mix both --bridge and --network arguments"
+msgstr ""
+
+#: virt-install:248 virt-install:260
+msgid "Need to pass equal numbers of networks & mac addresses"
+msgstr ""
+
+#: virt-install:269
+msgid "Can't do both VNC graphics and nographics"
+msgstr ""
+
+#: virt-install:271
+msgid "Can't do both VNC graphics and SDL"
+msgstr ""
+
+#: virt-install:273
+msgid "Can't do both SDL and nographics"
+msgstr ""
+
+#: virt-install:284
+msgid "Would you like to enable graphics support? (yes or no)"
+msgstr ""
+
+#: virt-install:300
+msgid "What is the install location?"
+msgstr ""
+
+#: virt-install:318
+msgid "What is the virtual CD image, CD device or install location?"
+msgstr ""
+
+#: virt-install:341
+msgid "Name of the guest instance"
+msgstr ""
+
+#: virt-install:343
+msgid "Memory to allocate for guest instance in megabytes"
+msgstr ""
+
+#: virt-install:346
+msgid ""
+"UUID for the guest; if none is given a random UUID will be generated. If you "
+"specify UUID, you should use a 32-digit hexadecimal number."
+msgstr ""
+
+#: virt-install:348
+msgid "Number of vcpus to configure for your guest"
+msgstr ""
+
+#: virt-install:350
+msgid "Check that vcpus do not exceed physical CPUs and warn if they do."
+msgstr ""
+
+#: virt-install:355
+msgid "File to use as the disk image"
+msgstr ""
+
+#: virt-install:358
+msgid "Size of the disk image (if it doesn't exist) in gigabytes"
+msgstr ""
+
+#: virt-install:361
+msgid ""
+"Don't use sparse files for disks.  Note that this will be significantly "
+"slower for guest creation"
+msgstr ""
+
+#: virt-install:363
+msgid "Don't set up any disks for the guest."
+msgstr ""
+
+#: virt-install:368
+msgid ""
+"Fixed MAC address for the guest; if none or RANDOM is given a random address "
+"will be used"
+msgstr ""
+
+#: virt-install:371
+msgid ""
+"Bridge to connect guest NIC to; if none given, will try to determine the "
+"default"
+msgstr ""
+
+#: virt-install:374
+msgid ""
+"Connect the guest to a virtual network, forwarding to the physical network "
+"with NAT"
+msgstr ""
+
+#: virt-install:378
+msgid "Use VNC for graphics support"
+msgstr ""
+
+#: virt-install:380
+msgid "Port to use for VNC"
+msgstr ""
+
+#: virt-install:382
+msgid "Use SDL for graphics support"
+msgstr ""
+
+#: virt-install:384
+msgid "Don't set up a graphical console for the guest."
+msgstr ""
+
+#: virt-install:387
+msgid "Don't automatically try to connect to the guest console"
+msgstr ""
+
+#: virt-install:391
+msgid "set up keymap for a graphical console"
+msgstr ""
+
+#: virt-install:394
+msgid "Use kernel acceleration capabilities"
+msgstr ""
+
+#: virt-install:401
+msgid "Specify the installation method to use e.g. 'distro', ..."
+msgstr ""
+
+#: virt-install:405
+msgid "This guest should be a fully virtualized guest"
+msgstr ""
+
+#: virt-install:408
+msgid "File to use a virtual CD-ROM device for fully virtualized guests"
+msgstr ""
+
+#: virt-install:411
+msgid ""
+"The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
+msgstr ""
+
+#: virt-install:414
+msgid ""
+"The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
+"'solaris10', 'win2k', 'vista'"
+msgstr ""
+
+#: virt-install:415
+msgid ""
+"Disables APIC for fully virtualized guest (overrides value in os-type/os-"
+"variant db)"
+msgstr ""
+
+#: virt-install:416
+msgid ""
+"Disables ACPI for fully virtualized guest (overrides value in os-type/os-"
+"variant db)"
+msgstr ""
+
+#: virt-install:419
+msgid "The CPU architecture to simulate"
+msgstr ""
+
+#: virt-install:423
+msgid "This guest should be a paravirtualized guest"
+msgstr ""
+
+#: virt-install:426
+msgid ""
+"Installation source for paravirtualized guest (eg, nfs:host:/path, http://"
+"host/path, ftp://host/path)"
+msgstr ""
+
+#: virt-install:429
+msgid "Additional arguments to pass to the installer with paravirt guests"
+msgstr ""
+
+#: virt-install:474
+msgid "Unable to connect to graphical console; vnc port number not found."
+msgstr ""
+
+#: virt-install:479 virt-install:483
+#, python-format
+msgid ""
+"Unable to connect to graphical console; vncviewer not installed.  Please "
+"connect to %(serv)s:%(port)d"
+msgstr ""
+
+#: virt-install:540
+msgid "Can't do both --hvm and --paravirt"
+msgstr ""
+
+#: virt-install:546
+msgid ""
+"Can't do --hvm on this system: HVM guest is not supported by your CPU or "
+"enabled in your BIOS"
+msgstr ""
+
+#: virt-install:566
+#, python-format
+msgid "Unknown installer type '%s'"
+msgstr ""
+
+#: virt-install:616
+msgid ""
+"\n"
+"\n"
+"Starting install..."
+msgstr ""
+
+#: virt-install:629
+msgid "Guest installation failed"
+msgstr ""
+
+#: virt-install:633
+msgid ""
+"Domain installation still in progress.  You can reconnect to \n"
+"the console to complete the installation process."
+msgstr ""
+
+#: virt-install:639
+#, python-format
+msgid ""
+"Domain installation does not appear to have been\n"
+" successful.  If it was, you can restart your domain\n"
+" by running 'virsh start %s'; otherwise, please\n"
+" restart your installation."
+msgstr ""
+
+#: virt-install:642
+msgid "Guest installation complete... restarting guest."
+msgstr ""
+
+#: virt-install:649
+#, python-format
+msgid ""
+"Domain installation may not have been\n"
+" successful.  If it was, you can restart your domain\n"
+" by running 'virsh start %s'; otherwise, please\n"
+" restart your installation."
+msgstr ""
+
+#: virtinst/CloneManager.py:73
+msgid "Name or UUID of guest to clone is required"
+msgstr ""
+
+#: virtinst/CloneManager.py:82
+msgid "A valid name or UUID of guest to clone is required"
+msgstr ""
+
+#: virtinst/CloneManager.py:92
+#, python-format
+msgid "Invalid name for new guest: %s"
+msgstr ""
+
+#: virtinst/CloneManager.py:100
+#, python-format
+msgid "Invalid uuid for new guest: %s"
+msgstr ""
+
+#: virtinst/CloneManager.py:108
+msgid "New file to use for disk image is required"
+msgstr ""
+
+#: virtinst/CloneManager.py:179
+#, python-format
+msgid "Domain %s is not found"
+msgstr ""
+
+#: virtinst/CloneManager.py:196
+msgid "Domain status must be SHUTOFF"
+msgstr ""
+
+#: virtinst/CloneManager.py:203
+#, python-format
+msgid "Domain %s already exists"
+msgstr ""
+
+#: virtinst/CloneManager.py:212 virtinst/Guest.py:830
+msgid "The UUID you entered is already in use by another guest!"
+msgstr ""
+
+#: virtinst/CloneManager.py:256
+#, python-format
+msgid "Missing new file to use disk image for %s"
+msgstr ""
+
+#: virtinst/CloneManager.py:334 virtinst/Guest.py:265
+msgid "The MAC address you entered conflicts with the physical NIC."
+msgstr ""
+
+#: virtinst/CloneManager.py:335
+msgid "The MAC address you entered is already in use by another guest!"
+msgstr ""
+
+#: virtinst/CloneManager.py:336
+msgid ""
+"The MAC address you entered is already in use by another inactive guest!"
+msgstr ""
+
+#: virtinst/CloneManager.py:564
+#, python-format
+msgid "Cloning from %(src)s to %(dst)s"
+msgstr ""
+
+#: virtinst/CloneManager.py:566
+msgid "Cloning domain..."
+msgstr ""
+
+#: virtinst/DistroManager.py:69
+msgid "Verifying install location..."
+msgstr ""
+
+#: virtinst/DistroManager.py:73
+#, python-format
+msgid "Opening URL %s failed."
+msgstr ""
+
+#: virtinst/DistroManager.py:84
+#, python-format
+msgid "Retrieving file %s..."
+msgstr ""
+
+#: virtinst/DistroManager.py:86
+msgid "Invalid URL location given: "
+msgstr ""
+
+#: virtinst/DistroManager.py:122
+#, python-format
+msgid "Mounting location %s failed"
+msgstr ""
+
+#: virtinst/DistroManager.py:148 virtinst/DistroManager.py:150
+msgid "Invalid file location given: "
+msgstr ""
+
+#: virtinst/DistroManager.py:316
+msgid "Unable to determine kernel RPM path"
+msgstr ""
+
+#: virtinst/DistroManager.py:318
+msgid "Unable to determine install-initrd RPM path"
+msgstr ""
+
+#: virtinst/DistroManager.py:329
+msgid "Building initrd"
+msgstr ""
+
+#: virtinst/DistroManager.py:564
+msgid "Could not find an installable distribution the install location"
+msgstr ""
+
+#: virtinst/DistroManager.py:574 virtinst/DistroManager.py:590
+msgid "Invalid install location: "
+msgstr ""
+
+#: virtinst/DistroManager.py:608
+msgid ""
+"Install location must be an NFS, HTTP or FTP network install source, or "
+"local file/device"
+msgstr ""
+
+#: virtinst/DistroManager.py:610
+msgid "NFS installations are only supported as root"
+msgstr ""
+
+#: virtinst/FullVirtGuest.py:121
+#, python-format
+msgid "OS type %s does not exist in our dictionary"
+msgstr ""
+
+#: virtinst/FullVirtGuest.py:130
+#, python-format
+msgid ""
+"OS variant %(var)s does not exist in our dictionary for OS type %(type)s"
+msgstr ""
+
+#: virtinst/FullVirtGuest.py:181
+msgid "A CD must be specified to boot from"
+msgstr ""
+
+#: virtinst/FullVirtGuest.py:212
+msgid "Unable to start domain for guest, aborting installation!"
+msgstr ""
+
+#: virtinst/FullVirtGuest.py:239
+msgid "Can't use more than 4 disks on an HVM guest"
+msgstr ""
+
+#: virtinst/Guest.py:58
+msgid "The disk path must be a file or a device, not a directory"
+msgstr ""
+
+#: virtinst/Guest.py:62
+msgid "The disk path must be an absolute path location, beginning with '/'"
+msgstr ""
+
+#: virtinst/Guest.py:81
+msgid "A size must be provided for non-existent disks"
+msgstr ""
+
+#: virtinst/Guest.py:84
+msgid "The size of the disk image must be greater than 0"
+msgstr ""
+
+#: virtinst/Guest.py:87
+msgid "The specified block device does not exist."
+msgstr ""
+
+#: virtinst/Guest.py:89
+msgid "The specified path is not a block device."
+msgstr ""
+
+#: virtinst/Guest.py:124
+msgid "Creating storage file..."
+msgstr ""
+
+#: virtinst/Guest.py:214
+msgid "MAC address must be of the format AA:BB:CC:DD:EE:FF"
+msgstr ""
+
+#: virtinst/Guest.py:221
+msgid "A network name was not provided"
+msgstr ""
+
+#: virtinst/Guest.py:223 virtinst/Guest.py:231
+#, python-format
+msgid "Bridge name is not required for %s"
+msgstr ""
+
+#: virtinst/Guest.py:226 virtinst/Guest.py:229
+#, python-format
+msgid "Network name is not required for %s"
+msgstr ""
+
+#: virtinst/Guest.py:233
+#, python-format
+msgid "Unknown network type %s"
+msgstr ""
+
+#: virtinst/Guest.py:262
+msgid ""
+"The MAC address you entered is already in use by another virtual machine!"
+msgstr ""
+
+#: virtinst/Guest.py:267
+msgid ""
+"The MAC address you entered is already in use by another inactive virtual "
+"machine!"
+msgstr ""
+
+#: virtinst/Guest.py:337
+msgid ""
+"Invalid value for vnc port, port number must be greater than or equal to 5900"
+msgstr ""
+
+#: virtinst/Guest.py:417 virtinst/Guest.py:422 virtinst/Guest.py:426
+msgid "Must pass both a kernel and initrd"
+msgstr ""
+
+#: virtinst/Guest.py:455
+msgid "Unable to connect to hypervisor, aborting installation!"
+msgstr ""
+
+#: virtinst/Guest.py:476
+msgid "System name must be greater than 0 and no more than 50 characters"
+msgstr ""
+
+#: virtinst/Guest.py:478
+msgid "System name must not be only numeric characters"
+msgstr ""
+
+#: virtinst/Guest.py:480
+msgid "System name can only contain alphanumeric, '_', '.', or '-' characters"
+msgstr ""
+
+#: virtinst/Guest.py:482
+msgid "System name must be a string"
+msgstr ""
+
+#: virtinst/Guest.py:492
+msgid "Memory value must be an integer greater than 0"
+msgstr ""
+
+#: virtinst/Guest.py:503
+msgid "Max Memory value must be an integer greater than 0"
+msgstr ""
+
+#: virtinst/Guest.py:517
+msgid ""
+"UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-"
+"XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
+msgstr ""
+
+#: virtinst/Guest.py:533
+#, python-format
+msgid "Number of vcpus must be in the range of 1-%d"
+msgstr ""
+
+#: virtinst/Guest.py:546
+msgid "Keymap must be a string"
+msgstr ""
+
+#: virtinst/Guest.py:548
+msgid "Keymap must be less than 16 characters"
+msgstr ""
+
+#: virtinst/Guest.py:550
+msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
+msgstr ""
+
+#: virtinst/Guest.py:557
+msgid "Must specify whether graphics are enabled"
+msgstr ""
+
+#: virtinst/Guest.py:576
+msgid "Graphics enabled must be True or False"
+msgstr ""
+
+#: virtinst/Guest.py:587
+msgid "Unknown graphics type"
+msgstr ""
+
+#: virtinst/Guest.py:623
+msgid "You must specify an ISO or CD-ROM location for the installation"
+msgstr ""
+
+#: virtinst/Guest.py:625
+msgid "The specified media path does not exist."
+msgstr ""
+
+#: virtinst/Guest.py:715
+#, python-format
+msgid "Domain named %s already exists!"
+msgstr ""
+
+#: virtinst/Guest.py:724
+msgid "Creating domain..."
+msgstr ""
+
+#: virtinst/Guest.py:727
+msgid "Unable to create domain for the guest, aborting installation!"
+msgstr ""
+
+#: virtinst/Guest.py:747
+msgid ""
+"It appears that your installation has crashed.  You should be able to find "
+"more information in the logs"
+msgstr ""
+
+#: virtinst/Guest.py:793
+msgid ""
+"Domain has not existed.  You should be able to find more information in the "
+"logs"
+msgstr ""
+
+#: virtinst/Guest.py:795
+msgid ""
+"Domain has not run yet.  You should be able to find more information in the "
+"logs"
+msgstr ""
+
+#: virtinst/Guest.py:810
+msgid "Domain has already been started!"
+msgstr ""
+
+#: virtinst/Guest.py:838
+msgid "Name and memory must be specified for all guests!"
+msgstr ""
+
+#: virtinst/LiveCDInstaller.py:33
+#, python-format
+msgid "LiveCD image '%s' does not exist"
+msgstr ""
+
+#: virtinst/LiveCDInstaller.py:44
+msgid "HVM virtualisation not supported; cannot boot LiveCD"
+msgstr ""
+
+#: virtinst/ParaVirtGuest.py:41
+msgid "A location must be specified to install from"
+msgstr ""
+
+#: virtinst/ParaVirtGuest.py:55
+msgid "Can't use more than 16 disks on a PV guest"
+msgstr ""
+
+#: virtinst/util.py:28
+#, python-format
+msgid "Invalid line length while parsing %s."
+msgstr ""
+
+#: virtinst/util.py:29
+#, python-format
+msgid "Defaulting bridge to xenbr%d"
+msgstr ""
+
+#: virtinst/util.py:187
+msgid "Couldn't determine max vcpus. Using 32."
+msgstr ""

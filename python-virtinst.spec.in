@@ -42,11 +42,12 @@ python setup.py build
 %install
 rm -rf $RPM_BUILD_ROOT
 python setup.py install -O1 --root=$RPM_BUILD_ROOT
+%find_lang %{appname} || echo 0
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files
+%files -f %{appname}.lang
 %defattr(-,root,root)
 %doc README AUTHORS ChangeLog NEWS
 %dir %{python_sitelib}/%{appname}

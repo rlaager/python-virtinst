@@ -1,9 +1,13 @@
 include README AUTHORS NEWS ChangeLog
 include *.py
 include virtinst/*.py
+include virtinst/*.in
 include tests/*.xml
 include tests/*.py
 include virt-install
+include virt-clone
 include autobuild.sh
 include man/*/*.1
 include man/*/*.pod
+include po/*.po
+include po/*.pot
