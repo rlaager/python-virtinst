@@ -64,7 +64,7 @@ class CloneDesign(object):
         self._preserve           = True
 
         # Throwaway guest to use for easy validation
-        self._valid_guest        = Guest.Guest()
+        self._valid_guest        = Guest.Guest(connection=connection)
 
     def get_original_guest(self):
         return self._original_guest
