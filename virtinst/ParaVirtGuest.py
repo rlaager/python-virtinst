@@ -16,6 +16,7 @@ import os
 import libvirt
 import Guest
 import DistroManager
+from virtinst import _virtinst as _
 
 class ParaVirtGuest(Guest.XenGuest):
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
@@ -37,7 +38,7 @@ class ParaVirtGuest(Guest.XenGuest):
 
     def validate_parms(self):
         if not self.location and not self.boot:
-            raise RuntimeError, "A location must be specified to install from"
+            raise ValueError, _("A location must be specified to install from")
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
@@ -51,7 +52,7 @@ class ParaVirtGuest(Guest.XenGuest):
             if d.transient and not install:
                 continue
             if count > 15:
-                raise ValueError, "Can't use more than 16 disks on a PV guest"
+                raise ValueError, _("Can't use more than 16 disks on a PV guest")
             ret += d.get_xml_config("%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count })
             count += 1
         return ret

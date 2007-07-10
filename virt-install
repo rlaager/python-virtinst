@@ -25,6 +25,13 @@ import urlgrabber.progress as progress
 import libvirt
 import virtinst
 
+import gettext
+import locale
+
+locale.setlocale(locale.LC_ALL, '')
+gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
+gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
+
 MIN_RAM = 256
 MAX_LOGSIZE   = 1024 * 1024  # 1MB
 ROTATE_NUM    = 5
@@ -41,7 +48,7 @@ if not os.access(vi_dir,os.W_OK):
     try:
         os.mkdir(vi_dir)
     except IOError, e:
-        raise RuntimeError, "Could not create %d directory: " % vi_dir, e
+        raise RuntimeError, _("Could not create %d directory: ") % vi_dir, e
 
 filename = "%s/%s" % (vi_dir, FILE_NAME)
 rootLogger = logging.getLogger()
@@ -50,6 +57,8 @@ fileHandler = logging.handlers.RotatingFileHandler(filename, FILE_MODE, MAX_LOGS
 fileHandler.setFormatter(logging.Formatter(FILE_FORMAT, DATEFMT))
 rootLogger.addHandler(fileHandler)
 
+errstr = _("ERROR: ")
+
 ### Utility functions
 def yes_or_no(s):
     s = s.lower()
@@ -57,7 +66,7 @@ def yes_or_no(s):
         return True
     elif s in ("n", "no", "0", "false", "f"):
         return False
-    raise ValueError, "A yes or no response is required" 
+    raise ValueError, _("A yes or no response is required")
 
 def prompt_for_input(prompt = "", val = None):
     if val is not None:
@@ -69,35 +78,35 @@ def prompt_for_input(prompt = "", val = None):
 ### General input gathering functions
 def get_full_virt():
     while 1:
-        res = prompt_for_input("Would you like a fully virtualized guest (yes or no)?  This will allow you to run unmodified operating systems.")
+        res = prompt_for_input(_("Would you like a fully virtualized guest (yes or no)?  This will allow you to run unmodified operating systems."))
         try:
             return yes_or_no(res)
         except ValueError, e:
-            print "ERROR: ", e
+            print errstr, e
 
 def get_name(name, guest):
     while 1:
-        name = prompt_for_input("What is the name of your virtual machine?", name)
+        name = prompt_for_input(_("What is the name of your virtual machine?"), name)
         try:
             guest.name = name
             break
         except ValueError, e:
-            print "ERROR: ", e            
+            print errstr, e            
             name = None
 
 def get_memory(memory, guest):
     while 1:
         try:
-            memory = int(prompt_for_input("How much RAM should be allocated (in megabytes)?", memory))
+            memory = int(prompt_for_input(_("How much RAM should be allocated (in megabytes)?"), memory))
             if memory < MIN_RAM:
-                print "ERROR: Installs currently require %d megs of RAM." %(MIN_RAM,)
+                print _("ERROR: Installs currently require %d megs of RAM.") %(MIN_RAM,)
                 print ""
                 memory = None
                 continue
             guest.memory = memory
             break
         except ValueError, e:
-            print "ERROR: ", e
+            print errstr, e
             memory = None
 
 def get_uuid(uuid, guest):
@@ -105,7 +114,7 @@ def get_uuid(uuid, guest):
         try:
             guest.uuid = uuid
         except ValueError, e:
-            print "ERROR: ", e
+            print errstr, e
             sys.exit(1)
 
 def get_vcpus(vcpus, check_cpu, guest, conn):
@@ -116,36 +125,36 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
         cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
         if vcpus <= cpu_num:
             break
-        res = prompt_for_input("You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) on the host. This will work, but performance will be poor. Are you sure? (yes or no)" %(vcpus, cpu_num))
+        res = prompt_for_input(_("You have asked for more virtual CPUs (%(vcpu)d) than there are physical CPUs (%(phys)d) on the host. This will work, but performance will be poor. Are you sure? (yes or no)") % {'vcpu' : vcpus, 'phys' : cpu_num})
         try:
             if yes_or_no(res):
                 break
-            vcpus = int(prompt_for_input("How many VCPUs should be attached?"))
+            vcpus = int(prompt_for_input(_("How many VCPUs should be attached?")))
         except ValueError, e:
-            print "ERROR: ", e
+            print errstr, e
     if vcpus:
         try:
             guest.vcpus = vcpus
         except ValueError, e:
-            print "ERROR: ", e
+            print errstr, e
             
 
 def get_disk(disk, size, sparse, guest, hvm, conn):
     # FIXME: need to handle a list of disks at some point
     while 1:
-        msg = "What would you like to use as the disk (path)?"
+        msg = _("What would you like to use as the disk (path)?")
         if not size is None:
-            msg = "Please enter the path to the file you would like to use for storage. It will have size %sGB." %(size,)
+            msg = _("Please enter the path to the file you would like to use for storage. It will have size %sGB.") %(size,)
         disk = prompt_for_input(msg, disk)
         while 1:
             if os.path.exists(disk):
                 break
-            size = prompt_for_input("How large would you like the disk (%s) to be (in gigabytes)?" %(disk,), size)
+            size = prompt_for_input(_("How large would you like the disk (%s) to be (in gigabytes)?") %(disk,), size)
             try:
                 size = float(size)
                 break
             except Exception, e:
-                print "ERROR: ", e
+                print errstr, e
                 size = None
 
         try:
@@ -153,8 +162,8 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
             if d.is_conflict_disk(conn) is True:
                 while 1:
                     retryFlg = False
-                    warnmsg = "Disk %s is already in use by another guest!" % disk
-                    res = prompt_for_input(warnmsg + "  Do you really want to use the disk (yes or no)? ")
+                    warnmsg = _("Disk %s is already in use by another guest!") % disk
+                    res = prompt_for_input(warnmsg + _("  Do you really want to use the disk (yes or no)? "))
                     try:
                         if yes_or_no(res) is True:
                             break
@@ -162,7 +171,7 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
                             retryFlg = True
                             break
                     except ValueError, e:
-                        print "ERROR: ", e
+                        print errstr, e
                         continue
                 if retryFlg is True:
                     disk = size = None
@@ -170,7 +179,7 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
             if d.type == virtinst.VirtualDisk.TYPE_FILE and not(hvm) and virtinst.util.is_blktap_capable():
                 d.driver_name = virtinst.VirtualDisk.DRIVER_TAP
         except ValueError, e:
-            print "ERROR: ", e
+            print errstr, e
             disk = size = None
             continue
 
@@ -180,12 +189,12 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
 def get_disks(disk, size, sparse, nodisks, guest, hvm, conn):
     if nodisks:
         if disk or size:
-            raise ValueError, "Cannot use --file with --nodisks"
+            raise ValueError, _("Cannot use --file with --nodisks")
         return
     # ensure we have equal length lists 
     if (type(disk) == type(size) == list):
         if len(disk) != len(size):
-            print >> sys.stderr, "Need to pass size for each disk"
+            print >> sys.stderr, _("Need to pass size for each disk")
             sys.exit(1)
     elif type(disk) == list:
         size = [ None ] * len(disk)
@@ -211,7 +220,7 @@ def get_network(mac, network, guest):
     elif network[0:7] == "network":
         n = virtinst.VirtualNetworkInterface(mac, type="network", network=network[8:])
     else:
-        print >> sys.stderr, "Unknown network type " + network
+        print >> sys.stderr, _("Unknown network type ") + network
         sys.exit(1)
     guest.nics.append(n)
 
@@ -226,7 +235,7 @@ def get_networks(macs, bridges, networks, guest):
         networks = [ networks ]
 
     if bridges is not None and networks != None:
-        print >> sys.stderr, "Cannot mix both --bridge and --network arguments"
+        print >> sys.stderr, _("Cannot mix both --bridge and --network arguments")
         sys.exit(1)
 
     # ensure we have equal length lists
@@ -236,7 +245,7 @@ def get_networks(macs, bridges, networks, guest):
     if networks != None:
         if macs != None:
             if len(macs) != len(networks):
-                print >> sys.stderr, "Need to pass equal numbers of networks & mac addresses"
+                print >> sys.stderr, _("Need to pass equal numbers of networks & mac addresses")
                 sys.exit(1)
         else:
             macs = [ None ] * len(networks)
@@ -248,7 +257,7 @@ def get_networks(macs, bridges, networks, guest):
             networks = ["user"]
         if macs != None:
             if len(macs) > 1:
-                print >> sys.stderr, "Need to pass equal numbers of networks & mac addresses"
+                print >> sys.stderr, _("Need to pass equal numbers of networks & mac addresses")
                 sys.exit(1)
         else:
             macs = [ None ]
@@ -257,11 +266,11 @@ def get_networks(macs, bridges, networks, guest):
 
 def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
     if vnc and nographics:
-        raise ValueError, "Can't do both VNC graphics and nographics"
+        raise ValueError, _("Can't do both VNC graphics and nographics")
     elif vnc and sdl:
-        raise ValueError, "Can't do both VNC graphics and SDL"
+        raise ValueError, _("Can't do both VNC graphics and SDL")
     elif sdl and nographics:
-        raise ValueError, "Can't do both SDL and nographics"
+        raise ValueError, _("Can't do both SDL and nographics")
     if nographics:
         guest.graphics = False
         return
@@ -272,11 +281,11 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
         guest.graphics = (True, "sdl")
         return
     while 1:
-        res = prompt_for_input("Would you like to enable graphics support? (yes or no)")
+        res = prompt_for_input(_("Would you like to enable graphics support? (yes or no)"))
         try:
             vnc = yes_or_no(res)
         except ValueError, e:
-            print "ERROR", e
+            print errstr, e
             continue
         if vnc:
             guest.graphics = (True, "vnc", vncport, keymap)
@@ -288,12 +297,12 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
 ### Paravirt input gathering functions
 def get_paravirt_install(src, guest):
     while 1:
-        src = prompt_for_input("What is the install location?", src)
+        src = prompt_for_input(_("What is the install location?"), src)
         try:
             guest.location = src
             break
         except ValueError, e:
-            print "ERROR: ", e
+            print errstr, e
             src = None
 
 def get_paravirt_extraargs(extra, guest):
@@ -306,122 +315,122 @@ def get_fullvirt_cdrom(cdpath, location, guest):
         cdpath = location
 
     while 1:
-        cdpath = prompt_for_input("What is the virtual CD image, CD device or install location?", cdpath)
+        cdpath = prompt_for_input(_("What is the virtual CD image, CD device or install location?"), cdpath)
         try:
             guest.location = cdpath
             break
         except ValueError, e:
-            print "ERROR: ", e
+            print errstr, e
             cdpath = None
 
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):
     if len(value) == 0:
-        raise OptionValueError, "%s option requires an argument" %opt_str
+        raise OptionValueError, _("%s option requires an argument") %opt_str
     setattr(parser.values, option.dest, value)
 
 def check_before_append(option, opt_str, value, parser):
     if len(value) == 0:
-        raise OptionValueError, "%s option requires an argument" %opt_str
+        raise OptionValueError, _("%s option requires an argument") %opt_str
     parser.values.ensure_value(option.dest, []).append(value)
 
 def parse_args():
     parser = OptionParser()
     parser.add_option("-n", "--name", type="string", dest="name",
                       action="callback", callback=check_before_store,
-                      help="Name of the guest instance")
+                      help=_("Name of the guest instance"))
     parser.add_option("-r", "--ram", type="int", dest="memory",
-                      help="Memory to allocate for guest instance in megabytes")
+                      help=_("Memory to allocate for guest instance in megabytes"))
     parser.add_option("-u", "--uuid", type="string", dest="uuid",
                       action="callback", callback=check_before_store,
-                      help="UUID for the guest; if none is given a random UUID will be generated. If you specify UUID, you should use a 32-digit hexadecimal number.")
+                      help=_("UUID for the guest; if none is given a random UUID will be generated. If you specify UUID, you should use a 32-digit hexadecimal number."))
     parser.add_option("", "--vcpus", type="int", dest="vcpus",
-                      help="Number of vcpus to configure for your guest")
+                      help=_("Number of vcpus to configure for your guest"))
     parser.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
-                      help="Check that vcpus do not exceed physical CPUs and warn if they do.")
+                      help=_("Check that vcpus do not exceed physical CPUs and warn if they do."))
 
     # disk options
     parser.add_option("-f", "--file", type="string",
                       dest="diskfile", action="callback", callback=check_before_append,
-                      help="File to use as the disk image")
+                      help=_("File to use as the disk image"))
     parser.add_option("-s", "--file-size", type="float",
                       action="append", dest="disksize",
-                      help="Size of the disk image (if it doesn't exist) in gigabytes")
+                      help=_("Size of the disk image (if it doesn't exist) in gigabytes"))
     parser.add_option("", "--nonsparse", action="store_false",
                       default=True, dest="sparse",
-                      help="Don't use sparse files for disks.  Note that this will be significantly slower for guest creation")
+                      help=_("Don't use sparse files for disks.  Note that this will be significantly slower for guest creation"))
     parser.add_option("", "--nodisks", action="store_true",
-                      help="Don't set up any disks for the guest.")
+                      help=_("Don't set up any disks for the guest."))
     
     # network options
     parser.add_option("-m", "--mac", type="string",
                       dest="mac", action="callback", callback=check_before_append,
-                      help="Fixed MAC address for the guest; if none or RANDOM is given a random address will be used")
+                      help=_("Fixed MAC address for the guest; if none or RANDOM is given a random address will be used"))
     parser.add_option("-b", "--bridge", type="string",
                       dest="bridge", action="callback", callback=check_before_append,
-                      help="Bridge to connect guest NIC to; if none given, will try to determine the default")
+                      help=_("Bridge to connect guest NIC to; if none given, will try to determine the default"))
     parser.add_option("-w", "--network", type="string",
                       dest="network", action="callback", callback=check_before_append,
-                      help="Connect the guest to a virtual network, forwarding to the physical network with NAT")
+                      help=_("Connect the guest to a virtual network, forwarding to the physical network with NAT"))
 
     # graphics options
     parser.add_option("", "--vnc", action="store_true", dest="vnc", 
-                      help="Use VNC for graphics support")
+                      help=_("Use VNC for graphics support"))
     parser.add_option("", "--vncport", type="int", dest="vncport",
-                      help="Port to use for VNC")
+                      help=_("Port to use for VNC"))
     parser.add_option("", "--sdl", action="store_true", dest="sdl", 
-                      help="Use SDL for graphics support")
+                      help=_("Use SDL for graphics support"))
     parser.add_option("", "--nographics", action="store_true",
-                      help="Don't set up a graphical console for the guest.")
+                      help=_("Don't set up a graphical console for the guest."))
     parser.add_option("", "--noautoconsole",
                       action="store_false", dest="autoconsole",
-                      help="Don't automatically try to connect to the guest console")
+                      help=_("Don't automatically try to connect to the guest console"))
 
     parser.add_option("-k", "--keymap", type="string", dest="keymap",
                       action="callback", callback=check_before_store,
-                      help="set up keymap for a graphical console")
+                      help=_("set up keymap for a graphical console"))
 
     parser.add_option("", "--accelerate", action="store_true", dest="accelerate",
-                      help="Use kernel acceleration capabilities")
+                      help=_("Use kernel acceleration capabilities"))
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=check_before_store,
-                      help="Connect to hypervisor with URI",
+                      help=_("Connect to hypervisor with URI"),
                       default=virtinst.util.default_connection())
     parser.add_option("", "--installer", type="string", dest="installer",
                       action="callback", callback=check_before_store,
-                      help="Specify the installation method to use e.g. 'distro', ...")
+                      help=_("Specify the installation method to use e.g. 'distro', ..."))
 
     # fullvirt options
     parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
-                      help="This guest should be a fully virtualized guest")
+                      help=_("This guest should be a fully virtualized guest"))
     parser.add_option("-c", "--cdrom", type="string", dest="cdrom",
                       action="callback", callback=check_before_store,
-                      help="File to use a virtual CD-ROM device for fully virtualized guests")
+                      help=_("File to use a virtual CD-ROM device for fully virtualized guests"))
     parser.add_option("", "--os-type", type="string", dest="os_type",
                       action="callback", callback=check_before_store,
-                      help="The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'")
+                      help=_("The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"))
     parser.add_option("", "--os-variant", type="string", dest="os_variant",
                       action="callback", callback=check_before_store,
-                      help="The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k', 'vista'")
-    parser.add_option("", "--noapic", action="store_true", dest="noapic", help="Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
-    parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help="Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)", default=False)
+                      help=_("The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k', 'vista'"))
+    parser.add_option("", "--noapic", action="store_true", dest="noapic", help=_("Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
+    parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help=_("Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
     parser.add_option("", "--arch", type="string", dest="arch",
                       action="callback", callback=check_before_store,
-                      help="The CPU architecture to simulate")
+                      help=_("The CPU architecture to simulate"))
     
     # paravirt options
     parser.add_option("-p", "--paravirt", action="store_false", dest="paravirt",
-                      help="This guest should be a paravirtualized guest")
+                      help=_("This guest should be a paravirtualized guest"))
     parser.add_option("-l", "--location", type="string", dest="location",
                       action="callback", callback=check_before_store,
-                      help="Installation source for paravirtualized guest (eg, nfs:host:/path, http://host/path, ftp://host/path)")
+                      help=_("Installation source for paravirtualized guest (eg, nfs:host:/path, http://host/path, ftp://host/path)"))
     parser.add_option("-x", "--extra-args", type="string",
                       dest="extra", default="",
-                      help="Additional arguments to pass to the installer with paravirt guests")
+                      help=_("Additional arguments to pass to the installer with paravirt guests"))
 
     # Misc options
     parser.add_option("-d", "--debug", action="store_true", dest="debug", 
-                      help="Print debugging information")
+                      help=_("Print debugging information"))
 
 
     (options,args) = parser.parse_args()
@@ -462,16 +471,17 @@ def vnc_console(dom):
         else:
             break
     if vncport == '-1' or vncport is None:
-        print >> sys.stderr, "Unable to connect to graphical console; vnc port number not found."
+        print >> sys.stderr, _("Unable to connect to graphical console; vnc port number not found.")
         return None
     vncport = int(vncport)
     vnchost = "localhost"
     if not os.path.exists("/usr/bin/vncviewer"):
-        print >> sys.stderr, "Unable to connect to graphical console; vncviewer not installed.  Please connect to %s:%d" %(vnchost, vncport)
+        print >> sys.stderr, _("Unable to connect to graphical console; vncviewer not installed.  Please connect to %(serv)s:%(port)d") % \
+            {'serv' : vnchost, 'port' : vncport}
         return None
     if not os.environ.has_key("DISPLAY"):
-        print >> sys.stderr, "Unable to connect to graphical console; DISPLAY is not set.  Please connect to %s:%d" %(vnchost, vncport)
-        return None
+        print >> sys.stderr, _("Unable to connect to graphical console; vncviewer not installed.  Please connect to %(serv)s:%(port)d") % \
+            {'serv' : vnchost, 'port' : vncport}
     logging.debug("VNC Port: %d; VNC host: %s" % (vncport, vnchost))
 
     child = os.fork()
@@ -514,7 +524,7 @@ def main():
 
     if options.connect is None or options.connect.lower()[0:3] == "xen":
         if os.geteuid() != 0:
-            print >> sys.stderr, "Must be root to clone Xen guests"
+            print >> sys.stderr, _("Must be root to clone Xen guests")
             sys.exit(1)
 
     conn = libvirt.open(options.connect)
@@ -527,13 +537,13 @@ def main():
         pv  = options.paravirt
         if virtinst.util.is_hvm_capable():
             if hvm is not None and pv is not None:
-                print >> sys.stderr, "Can't do both --hvm and --paravirt"
+                print >> sys.stderr, _("Can't do both --hvm and --paravirt")
                 sys.exit(1)
             elif pv is not None:
                 hvm = False
         else:
             if hvm is not None:
-                print >> sys.stderr, "Can't do --hvm to this system: HVM guest is not supported by your CPU or enabled in your BIOS"
+                print >> sys.stderr, _("Can't do --hvm on this system: HVM guest is not supported by your CPU or enabled in your BIOS")
                 sys.exit(1)
             else:
                 hvm = False
@@ -553,7 +563,7 @@ def main():
     elif options.installer == "livecd":
         installer = virtinst.LiveCDInstaller(type = type)
     else:
-        print >> sys.stderr, "Unknown installer type '%s'" % options.installer
+        print >> sys.stderr, _("Unknown installer type '%s'") % options.installer
         sys.exit(1)
 
     if hvm:
@@ -603,7 +613,7 @@ def main():
 
     # we've got everything -- try to start the install
     try:
-        print "\n\nStarting install..."
+        print _("\n\nStarting install...")
 
         started = False
         while True:
@@ -616,34 +626,27 @@ def main():
                 break
 
             if dom is None:
-                print "Guest installation failed"
+                print _("Guest installation failed")
                 sys.exit(0)
             elif dom.info()[0] != libvirt.VIR_DOMAIN_SHUTOFF:
                 # domain seems to be running
-                print "Domain installation still in progress.  You can reconnect "
-                print "to the console to complete the installation process."
+                print _("Domain installation still in progress.  You can reconnect to \nthe console to complete the installation process.")
                 sys.exit(0)
 
             if not started:
                 started = True
                 if not guest.post_install_check():
-                    print ("Domain installation does not appear to have been\n"
-                           "successful.  If it was, you can restart your domain\n"
-                           "by running 'virsh start %s'; otherwise, please\n"
-                           "restart your installation.") %(guest.name,)
+                    print _("Domain installation does not appear to have been\n successful.  If it was, you can restart your domain\n by running 'virsh start %s'; otherwise, please\n restart your installation.") %(guest.name,)
                     sys.exit(0)
 
-        print "Guest installation complete... restarting guest."
+        print _("Guest installation complete... restarting guest.")
         dom.create()
         guest.connect_console(conscb)
     except RuntimeError, e:
-        print >> sys.stderr, "ERROR: ", e
+        print >> sys.stderr, errstr, e
         sys.exit(1)
     except Exception, e:
-        print ("Domain installation may not have been\n"
-               "successful.  If it was, you can restart your domain\n"
-               "by running 'virsh start %s'; otherwise, please\n"
-               "restart your installation.") %(guest.name,)
+        print _("Domain installation may not have been\n successful.  If it was, you can restart your domain\n by running 'virsh start %s'; otherwise, please\n restart your installation.") %(guest.name,)
         raise
 
 if __name__ == "__main__":

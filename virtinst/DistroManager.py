@@ -24,7 +24,7 @@ import urlgrabber.grabber as grabber
 import urlgrabber.progress as progress
 import tempfile
 import Guest
-
+from virtinst import _virtinst as _
 
 # This is a generic base class for fetching/extracting files from
 # a media source, such as CD ISO, NFS server, or HTTP/FTP server
@@ -66,12 +66,11 @@ class URIImageFetcher(ImageFetcher):
         try:
             grabber.urlopen(self.location,
                             progress_obj = progresscb,
-                            text = "Verifying install location...")
+                            text = _("Verifying install location..."))
             return True
         except IOError, e:
-            msg = "Opening URL " + self.location + " failed."
-            logging.debug(msg + " " + str(e))
-            raise ValueError(msg)
+            logging.debug("Opening URL %s failed." % (self.location,) + " " + str(e))
+            raise ValueError(_("Opening URL %s failed.") % (self.location,))
             return False
 
     def acquireFile(self, filename, progresscb):
@@ -82,9 +81,9 @@ class URIImageFetcher(ImageFetcher):
             try:
                 file = grabber.urlopen(self.location + "/" + filename,
                                        progress_obj = progresscb, \
-                                       text = "Retrieving %s..." % base)
+                                       text = _("Retrieving file %s...") % base)
             except IOError, e:
-                raise RuntimeError, "Invalid URL location given: " + str(e)
+                raise ValueError, _("Invalid URL location given: ") + str(e)
             tmpname = self.saveTemp(file, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
             return tmpname
@@ -119,9 +118,8 @@ class MountedImageFetcher(ImageFetcher):
         ret = subprocess.call(cmd)
         if ret != 0:
             self.cleanupLocation()
-            msg = "Mounting " + self.location + " failed."
-            logging.debug(msg)
-            raise ValueError(msg)
+            logging.debug("Mounting location %s failed" % (self.location,))
+            raise ValueError(_("Mounting location %s failed") % (self.location))
             return False
         return True
 
@@ -147,9 +145,9 @@ class MountedImageFetcher(ImageFetcher):
                 else:
                     file = open(src, "r")
             except IOError, e:
-                raise RuntimeError, "Invalid location given: " + str(e)
+                raise ValueError, _("Invalid file location given: ") + str(e)
             except OSError, (errno, msg):
-                raise RuntimeError, "Invalid location given: " + msg
+                raise ValueError, _("Invalid file location given: ") + msg
             tmpname = self.saveTemp(file, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
             return tmpname
@@ -315,9 +313,9 @@ class SuseImageStore(ImageStore):
                                 kernelrpm = dir + "/" + filename
 
             if kernelrpm is None:
-                raise "Unable to determine kernel RPM path"
+                raise _("Unable to determine kernel RPM path")
             if installinitrdrpm is None:
-                raise "Unable to determine install-initrd RPM path"
+                raise _("Unable to determine install-initrd RPM path")
             return (kernelrpm, installinitrdrpm)
         finally:
             filelistData.close()
@@ -328,7 +326,7 @@ class SuseImageStore(ImageStore):
     #
     # Yes, this is crazy ass stuff :-)
     def buildKernelInitrd(self, fetcher, kernelrpm, installinitrdrpm, progresscb):
-        progresscb.start(text="Building initrd", size=11)
+        progresscb.start(text=_("Building initrd"), size=11)
         progresscb.update(1)
         cpiodir = tempfile.mkdtemp(prefix="virtinstcpio.", dir=self.scratchdir)
         try:
@@ -563,7 +561,7 @@ def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=
         if store.isValidStore(fetcher, progresscb):
             return store
 
-    raise RuntimeError, "Could not find an installable distribution the install location"
+    raise ValueError, _("Could not find an installable distribution the install location")
 
 
 # Method to fetch a krenel & initrd pair for a particular distro / HV type
@@ -573,7 +571,7 @@ def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None, distro=
     try:
         fetcher.prepareLocation(progresscb)
     except ValueError, e:
-        raise RuntimeError, "Invalid install location: " + str(e)
+        raise ValueError, _("Invalid install location: ") + str(e)
 
     try:
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type, \
@@ -589,7 +587,7 @@ def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None, distr
     try:
         fetcher.prepareLocation(progresscb)
     except ValueError, e:
-        raise RuntimeError, "Invalid install location: " + str(e)
+        raise ValueError, _("Invalid install location: ") + str(e)
 
     try:
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type, \
@@ -607,10 +605,9 @@ class DistroInstaller(Guest.Installer):
     def set_location(self, val):
         if not (val.startswith("http://") or val.startswith("ftp://") or
                 val.startswith("nfs:") or val.startswith("/")):
-            raise ValueError("Install location must be an NFS, HTTP or FTP " +
-                             "network install source, or local file/device")
+            raise ValueError(_("Install location must be an NFS, HTTP or FTP network install source, or local file/device"))
         if os.geteuid() != 0 and val.startswith("nfs:"):
-            raise ValueError("NFS installations are only supported as root")
+            raise ValueError(_("NFS installations are only supported as root"))
         self._location = val
     location = property(get_location, set_location)
 

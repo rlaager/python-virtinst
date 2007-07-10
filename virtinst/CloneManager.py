@@ -28,6 +28,8 @@ import urlgrabber.progress as progress
 import util
 import commands
 import libvirt
+import Guest
+from virtinst import _virtinst as _
 
 #
 # This class is the design paper for a clone virtual machine.
@@ -61,39 +63,41 @@ class CloneDesign(object):
 
         self._preserve           = True
 
+        # Throwaway guest to use for easy validation
+        self._valid_guest        = Guest.Guest()
+
     def get_original_guest(self):
         return self._original_guest
     def set_original_guest(self, original_guest):
         if len(original_guest) == 0:
-           raise ValueError, "Original name or uuid must be needed"
+           raise ValueError, _("Name or UUID of guest to clone is required")
+
+        try:
+            self._valid_guest.set_uuid(original_guest)
+        except ValueError, e:
+            try:
+                self._valid_guest.set_name(original_guest)
+            except ValueError, e:
+                raise ValueError, \
+                    _("A valid name or UUID of guest to clone is required")
         self._original_guest = original_guest
     original_guest = property(get_original_guest, set_original_guest)
 
     def get_clone_name(self):
         return self._clone_name
     def set_clone_name(self, name):
-        if len(name) == 0:
-           raise ValueError, "New name must be needed"
-        if re.match("^[0-9]+$", name):
-            raise ValueError, "Domain name must not be numeric only"
-        if re.match("^[a-zA-Z0-9_-]+$", name) == None:
-            raise ValueError, "Domain name must be alphanumeric or _ or -"
-        if len(name) > 50:
-            raise ValueError, "Domain name must be less than or equal to 50 characters"
-        if type(name) != type("string"):
-            raise ValueError, "Domain name must be a string"
+        try:
+            self._valid_guest.set_name(clone_name)
+        except ValueError, e:
+            raise ValueError, _("Invalid name for new guest: %s") % (str(e),)
         self._clone_name = name
     clone_name = property(get_clone_name, set_clone_name)
 
     def set_clone_uuid(self, uuid):
-        # need better validation
-        form = re.match("[a-fA-F0-9]{8}[-]([a-fA-F0-9]{4}[-]){3}[a-fA-F0-9]{12}$", uuid)
-        if form is None:
-            form=re.match("[a-fA-F0-9]{32}$", uuid)
-            if form is None:
-                raise ValueError, "UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
-            else:
-                uuid=uuid[0:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:32]
+        try:
+            self._valid_guest.set_uuid(uuid)
+        except ValueError, e:
+            raise ValueError, _("Invalid uuid for new guest: %s") % (str(e),)
         self._clone_uuid = uuid
     def get_clone_uuid(self):
         return self._clone_uuid
@@ -101,16 +105,14 @@ class CloneDesign(object):
 
     def set_clone_devices(self, devices):
         if len(devices) == 0:
-            raise ValueError, "New file to use disk image must be needed"
+            raise ValueError, _("New file to use for disk image is required")
         self._clone_devices.append(devices)
     def get_clone_devices(self):
         return self._clone_devices
     clone_devices = property(get_clone_devices)
 
     def set_clone_mac(self, mac):
-        form = re.match("^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$", str(mac))
-        if form is None:
-            raise ValueError, "Invalid value for MAC address"
+        Guest.VirtualNetworkInterface(mac)
         self._clone_mac.append(mac)
     def get_clone_mac(self):
         return self._clone_mac
@@ -174,7 +176,7 @@ class CloneDesign(object):
         try:
             self._original_dom = self._hyper_conn.lookupByName(self._original_guest)
         except libvirt.libvirtError, e:
-            raise RuntimeError,  "Domain %s is not found" % self._original_guest
+            raise RuntimeError, _("Domain %s is not found") % self._original_guest
 
         #
         # store the xml as same as original xml still setup_clone_xml
@@ -191,14 +193,14 @@ class CloneDesign(object):
         status = self._original_dom.info()[0]
         logging.debug("original guest status: %s" % (status))
         if status != libvirt.VIR_DOMAIN_SHUTOFF:
-            raise RuntimeError, "Domain status must be shutoff"
+            raise RuntimeError, _("Domain status must be SHUTOFF")
 
         #
         # check existing
         #
         try:
             if self._hyper_conn.lookupByName(self._clone_name) is not None:
-                raise RuntimeError, "Domain %s already exists" % self._clone_name
+                raise RuntimeError, _("Domain %s already exists") % self._clone_name
         except libvirt.libvirtError:
             pass
 
@@ -207,7 +209,7 @@ class CloneDesign(object):
         # random uuid check is done in start_duplicate function
         #
         if self._check_uuid(self._clone_uuid) == True:
-            raise RuntimeError, "The UUID you entered is already in use by another guest!"
+            raise RuntimeError, _("The UUID you entered is already in use by another guest!")
 
         #
         # check used mac
@@ -251,7 +253,7 @@ class CloneDesign(object):
             try:
                 node.setContent(clone_devices.next())
             except Exception, e:
-                raise ValueError, "Missing new file to use disk image for %s" % node.getContent()
+                raise ValueError, _("Missing new file to use disk image for %s") % node.getContent()
 
         # changing uuid
         node = ctx.xpathEval("/domain/uuid")
@@ -329,9 +331,9 @@ class CloneDesign(object):
     def _check_mac(self, mac):
 
         msg0=""
-        msg1="The MAC address you entered conflicts with the physical NIC."
-        msg2="The MAC address you entered is already in use by another guest!"
-        msg3="The MAC address you entered is already in use by another inactive guest!" 
+        msg1=_("The MAC address you entered conflicts with the physical NIC.")
+        msg2=_("The MAC address you entered is already in use by another guest!")
+        msg3=_("The MAC address you entered is already in use by another inactive guest!")
 
         # get Running Domains
         ids = self._hyper_conn.listDomainsID();
@@ -559,8 +561,9 @@ def _do_duplicate(design):
 
             size = dst_siz
             meter = progress.TextMeter()
-            print "Cloning from %s to %s" % (src_dev, dst_dev)
-            meter.start(size=size, text="Cloning domain...")
+            print _("Cloning from %(src)s to %(dst)s") % {'src' : src_dev, \
+                                                       'dst' : dst_dev}
+            meter.start(size=size, text=_("Cloning domain..."))
 
             # skip
             if src_dev == "/dev/null" or src_dev == dst_dev:

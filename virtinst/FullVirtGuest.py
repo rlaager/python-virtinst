@@ -19,6 +19,7 @@ import util
 import DistroManager
 import logging
 import time
+from virtinst import _virtinst as _
 
 
 class FullVirtGuest(Guest.XenGuest):
@@ -117,7 +118,7 @@ class FullVirtGuest(Guest.XenGuest):
         if FullVirtGuest.OS_TYPES.has_key(val):
             self._os_type = val
         else:
-            raise RuntimeError, "OS type %s does not exist in our dictionary" % val
+            raise ValueError, _("OS type %s does not exist in our dictionary") % val
     os_type = property(get_os_type, set_os_type)
 
     def get_os_variant(self):
@@ -126,7 +127,7 @@ class FullVirtGuest(Guest.XenGuest):
         if FullVirtGuest.OS_TYPES[self._os_type]["variants"].has_key(val):
             self._os_variant = val
         else:
-            raise RuntimeError, "OS variant %s does not exist in our dictionary for OS type %s" % (val, self._os_type)
+            raise ValueError, _("OS variant %(var)s does not exist in our dictionary for OS type %(type)s") % {'var' : val, 'type' : self._os_type}
     os_variant = property(get_os_variant, set_os_variant)
 
     def set_os_type_parameters(self, os_type, os_variant):
@@ -177,7 +178,7 @@ class FullVirtGuest(Guest.XenGuest):
 
     def validate_parms(self):
         if not self.location:
-            raise RuntimeError, "A CD must be specified to boot from"
+            raise ValueError, _("A CD must be specified to boot from")
         self.set_os_type_parameters(self.os_type, self.os_variant)
         Guest.Guest.validate_parms(self)
 
@@ -208,7 +209,7 @@ class FullVirtGuest(Guest.XenGuest):
         meter.start(size=None, text="Starting domain...")
         self.domain = self.conn.createLinux(install_xml, 0)
         if self.domain is None:
-            raise RuntimeError, "Unable to start domain for guest, aborting installation!"
+            raise RuntimeError, _("Unable to start domain for guest, aborting installation!")
         meter.end(0)
 
         self.connect_console(consolecb)
@@ -235,7 +236,7 @@ class FullVirtGuest(Guest.XenGuest):
                 else:
                     continue
             if count > 4:
-                raise ValueError, "Can't use more than 4 disks on an HVM guest"
+                raise ValueError, _("Can't use more than 4 disks on an HVM guest")
             if d.device == Guest.VirtualDisk.DEVICE_CDROM and count != 2:
                 disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + 2 }
             else:

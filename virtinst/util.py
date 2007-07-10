@@ -15,6 +15,7 @@
 import random
 import os.path
 from sys import stderr
+from virtinst import _virtinst as _
 
 def default_route():
     route_file = "/proc/net/route"
@@ -24,8 +25,8 @@ def default_route():
     for line in d.xreadlines():
         info = line.split()
         if (len(info) != 11): # 11 = typlical num of fields in the file
-            print >> stderr, "Invalid line lenght while parsing %s."%(route_file)
-            print >> stderr, " Defaulting bridge to xenbr%d"%(defn)
+            print >> stderr, _("Invalid line length while parsing %s.") %(route_file)
+            print >> stderr, _("Defaulting bridge to xenbr%d") % (defn)
             break
         try:
             route = int(info[1],16)
@@ -182,7 +183,7 @@ def get_max_vcpus(conn):
     """@conn libvirt connection to poll for max possible vcpus"""
     try:
         max = conn.getMaxVcpus(conn.getType())
-    except:
-        print >> stderr, "Couldn't determine max vcpus. Using 32."
+    except Exception, e:
+        print >> stderr, _("Couldn't determine max vcpus. Using 32.")
         max = 32
     return max

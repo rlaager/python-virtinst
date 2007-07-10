@@ -13,6 +13,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import libxml2
+from virtinst import _virtinst as _
 
 class CapabilitiesParserException(Exception):
     def __init__(self, msg):

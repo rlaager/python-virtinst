@@ -16,6 +16,7 @@ import os
 
 import Guest
 import CapabilitiesParser
+from virtinst import _virtinst as _
 
 class LiveCDInstallerException(Exception):
     def __init__(self, msg):
@@ -29,7 +30,7 @@ class LiveCDInstaller(Guest.Installer):
         self.cleanup()
 
         if not os.path.exists(self.location):
-            raise LiveCDInstallerException("LiveCD image '%s' does not exist" % self.location)
+            raise LiveCDInstallerException(_("LiveCD image '%s' does not exist") % self.location)
 
         capabilities = CapabilitiesParser.parse(guest.conn.getCapabilities())
 
@@ -40,7 +41,7 @@ class LiveCDInstaller(Guest.Installer):
                 break
 
         if not found:
-            raise LiveCDInstallerException("HVM virtualisation not supported; cannot boot LiveCD")
+            raise LiveCDInstallerException(_("HVM virtualisation not supported; cannot boot LiveCD"))
 
         disk = Guest.VirtualDisk(self.location,
                                  device = Guest.VirtualDisk.DEVICE_CDROM,

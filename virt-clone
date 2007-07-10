@@ -29,6 +29,13 @@ import libvirt
 import virtinst
 import virtinst.CloneManager as clmgr
 
+import gettext
+import locale
+
+locale.setlocale(locale.LC_ALL, '')
+gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
+gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
+
 MIN_RAM = 256
 MAX_LOGSIZE   = 1024 * 1024  # 1MB
 ROTATE_NUM    = 5
@@ -45,7 +52,7 @@ if not os.access(vi_dir,os.W_OK):
     try:
         os.mkdir(vi_dir)
     except IOError, e:
-        raise RuntimeError, "Could not create %d directory: " % vi_dir, e
+        raise RuntimeError, _("Could not create %d directory: ") % vi_dir, e
 
 filename = "%s/%s" % (vi_dir, FILE_NAME)
 rootLogger = logging.getLogger()
@@ -65,22 +72,22 @@ def prompt_for_input(prompt = "", val = None):
 ### General input gathering functions
 def get_clone_name(new_name, design):
     while 1:
-        new_name = prompt_for_input("What is the name for the cloned virtual machine?", new_name)
+        new_name = prompt_for_input(_("What is the name for the cloned virtual machine?"), new_name)
         try:
             design.clone_name = new_name
             break
         except (ValueError, RuntimeError), e:
-            print "ERROR: ", e
+            print _("ERROR: "), e
             new_name = None
 
 def get_original_guest(guest, design):
     while 1:
-        guest = prompt_for_input("What is the name or uuid of the original virtual machine?", guest)
+        guest = prompt_for_input(_("What is the name or uuid of the original virtual machine?"), guest)
         try:
             design.original_guest = guest
             break
         except (ValueError, RuntimeError), e:
-            print "ERROR: ", e
+            print _("ERROR: "), e
             guest = None
 
 def get_clone_macaddr(new_mac, design):
@@ -98,7 +105,7 @@ def get_clone_uuid(new_uuid, design):
 
 def get_clone_diskfile(new_diskfile, design):
     if new_diskfile is None:
-        raise ValueError, "A new disk image file for the cloned guest is required"
+        raise ValueError, _("A new disk image file for the cloned guest is required")
     for i in new_diskfile:
         design.set_clone_devices(i) 
 
@@ -119,12 +126,12 @@ def get_force_target(target, design):
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):
     if len(value) == 0:
-        raise OptionValueError, "%s option requires an argument" %opt_str
+        raise OptionValueError, _("%s option requires an argument") %opt_str
     setattr(parser.values, option.dest, value)
 
 def check_before_append(option, opt_str, value, parser):
     if len(value) == 0:
-        raise OptionValueError, "%s option requires an argument" %opt_str
+        raise OptionValueError, _("%s option requires an argument") %opt_str
     parser.values.ensure_value(option.dest, []).append(value)
 
 def parse_args():
@@ -133,50 +140,50 @@ def parse_args():
     # original name
     parser.add_option("-o", "--original", type="string", dest="original_guest",
                       action="callback", callback=check_before_store,
-                      help="Name or uuid for the original guest; The status must be shut off")
+                      help=_("Name or uuid for the original guest; The status must be shut off"))
     # clone new name
     parser.add_option("-n", "--name", type="string", dest="new_name",
                       action="callback", callback=check_before_store,
-                      help="New name for the clone guest")
+                      help=_("Name for the new guest"))
 
     # clone new uuid
     parser.add_option("-u", "--uuid", type="string",
                       dest="new_uuid", action="callback", callback=check_before_store,
-                      help="New UUID for the clone guest; if none is given a random UUID will be generated")
+                      help=_("New UUID for the clone guest; Default is a randomly generated UUID"))
 
     # clone new macs
     parser.add_option("-m", "--mac", type="string",
                       dest="new_mac", action="callback", callback=check_before_append,
-                      help="New fixed MAC address for the clone guest; if none or RANDOM is given a random address will be used")
+                      help=_("New fixed MAC address for the clone guest. Default is a randomly generated MAC"))
 
     # clone new disks 
     parser.add_option("-f", "--file", type="string",
                       dest="new_diskfile", action="callback", callback=check_before_append,
-                      help="New file to use as the disk image for the clone guest")
+                      help=_("New file to use as the disk image for the new guest"))
     # connect
     parser.add_option("", "--connect", type="string",
                       dest="connect", action="callback", callback=check_before_store,
-                      help="Connect to hypervisor with URI",
+                      help=_("Connect to hypervisor with URI"),
                       default=virtinst.util.default_connection())
 
     # target
     parser.add_option("", "--force-copy", type="string",
                       dest="target", action="callback", callback=check_before_append,
-                      help="Force to copy devices (eg, if 'hdc' is a readonly cdrom device or shareable any devices, --force-copy=hdc)")
+                      help=_("Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-copy=hdc)"))
 
     # non sparse
     parser.add_option("", "--nonsparse", action="store_false",
                       default=True, dest="sparse",
-                      help="Don't use sparse files for the disk images for the clone guest")
+                      help=_("Do not use a sparse file for the clone's disk image"))
 
     # preserve
     parser.add_option("", "--preserve-data", action="store_false",
                       default=True, dest="preserve",
-                      help="Preserve a new file to use as the disk image for the clone guest")
+                      help=_("Preserve a new file to use as the disk image for the new guest"))
 
     # Misc options
     parser.add_option("-d", "--debug", action="store_true", dest="debug",
-                      help="Print debugging information") 
+                      help=_("Print debugging information"))
 
     (options,args) = parser.parse_args()
     return options
@@ -197,7 +204,7 @@ def main():
 
     if options.connect is None or options.connect.lower()[0:3] == "xen":
         if os.geteuid() != 0:
-            print >> sys.stderr, "Must be root to clone Xen guests"
+            print >> sys.stderr, _("Must be root to clone Xen guests")
             sys.exit(1)
 
     conn = libvirt.open(options.connect)

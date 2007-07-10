@@ -17,12 +17,17 @@ import stat, sys, time
 import re
 import libxml2
 import urlgrabber.progress as progress
-
-import libvirt
-
 import util
+import libvirt
+from virtinst import _virtinst as _
 
 import logging
+
+
+#print "YO %s" % (virtinst.gettext_virtinst("YO"))
+
+#def _(msg):
+#    gettext_virtinst(msg)
 
 class VirtualDisk:
     DRIVER_FILE = "file"
@@ -50,11 +55,11 @@ class VirtualDisk:
 
         if os.path.isdir(self.path):
             raise ValueError, \
-                "The disk path must be a file/device, not a directory"
+                _("The disk path must be a file or a device, not a directory")
 
         if not self.path.startswith("/"):
             raise ValueError, \
-                "The disk path must be an absolute path location, beginning with '/'"
+                _("The disk path must be an absolute path location, beginning with '/'")
 
         if type is None:
             if not os.path.exists(self.path):
@@ -73,15 +78,15 @@ class VirtualDisk:
         if self._type == VirtualDisk.TYPE_FILE:
             if size is None and not os.path.exists(self.path):
                 raise ValueError, \
-                    "A size must be provided for non-existent disks"
+                    _("A size must be provided for non-existent disks")
             if size is not None and size <= 0:
                 raise ValueError, \
-                    "The size of the disk image must be greater than 0"
+                    _("The size of the disk image must be greater than 0")
         elif self._type == VirtualDisk.TYPE_BLOCK:
             if not os.path.exists(self.path):
-                raise ValueError, "The specified block device does not exist." 
+                raise ValueError, _("The specified block device does not exist.")
             if not stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                raise ValueError, "The specified path is not a block device."
+                raise ValueError, _("The specified path is not a block device.")
 
         self._readOnly = readOnly
         self._device = device
@@ -116,7 +121,7 @@ class VirtualDisk:
         if self._type == VirtualDisk.TYPE_FILE and not os.path.exists(self.path):
             size_bytes = long(self.size * 1024L * 1024L * 1024L)
             progresscb.start(filename=self.path,size=long(size_bytes), \
-                             text="Creating storage file...")
+                             text=_("Creating storage file..."))
             fd = None
             try: 
                 fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
@@ -206,26 +211,26 @@ class VirtualNetworkInterface:
         if macaddr is not None:
             form = re.match("^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",macaddr)
             if form is None:
-                raise ValueError("MAC address must be of the format AA:BB:CC:DD:EE:FF")
+                raise ValueError(_("MAC address must be of the format AA:BB:CC:DD:EE:FF"))
         self.macaddr = macaddr
         self.type = type
         self.bridge = bridge
         self.network = network
         if self.type == "network":
             if network is None:
-                raise ValueError, "No network name provided"
+                raise ValueError, _("A network name was not provided")
             if bridge != None:
-                raise ValueError, "Bridge name is not required for type=network"
+                raise ValueError, _("Bridge name is not required for %s") % ("type=network",)
         elif self.type == "bridge":
             if network != None:
-                raise ValueError, "Network name is not required for type=bridge"
+                raise ValueError, _("Network name is not required for %s") % ("type=bridge",)
         elif self.type == "user":
             if network != None:
-                raise ValueError, "Network name is not required for type=bridge"
+                raise ValueError, _("Network name is not required for %s") % ("type=bridge",)
             if bridge != None:
-                raise ValueError, "Bridge name is not required for type=network"
+                raise ValueError, _("Bridge name is not required for %s") % ("type=network",)
         else:
-            raise ValueError, "Unknown network type %s" % (type)
+            raise ValueError, _("Unknown network type %s") % (type,)
 
     def setup(self, conn):
         # get Running Domains
@@ -254,12 +259,12 @@ class VirtualNetworkInterface:
                     break
         else:
             if self.countMACaddr(vms) > 0:
-                raise RuntimeError, "The MAC address you entered is already in use by another guest!"
+                raise RuntimeError, _("The MAC address you entered is already in use by another virtual machine!")
             for (dummy, dummy, dummy, dummy, host_macaddr) in hostdevs:
                 if self.macaddr.upper() == host_macaddr.upper():
-                    raise RuntimeError, "The MAC address you entered conflicts with the physical NIC."
+                    raise RuntimeError, _("The MAC address you entered conflicts with the physical NIC.")
             if self.countMACaddr(inactive_vm) > 0:
-                msg = "The MAC address you entered is already in use by another inactive guest!"
+                msg = _("The MAC address you entered is already in use by another inactive virtual machine!")
                 print >> sys.stderr, msg
                 logging.warning(msg)
 
@@ -329,7 +334,7 @@ class VNCVirtualGraphics(XenGraphics):
         self.name = "vnc"
         if len(args) >= 1 and not args[0] is None:
             if args[0] < 5900:
-                raise ValueError, "Invalid value for vncport, port number must be greater than or equal to 5900"
+                raise ValueError, _("Invalid value for vnc port, port number must be greater than or equal to 5900")
             self.port = args[0]
         else:
             self.port = -1
@@ -409,16 +414,16 @@ class Installer(object):
     def set_boot(self, val):
         if type(val) == tuple:
             if len(val) != 2:
-                raise ValueError, "Must pass both a kernel and initrd"
+                raise ValueError, _("Must pass both a kernel and initrd")
             (k, i) = val
             self._boot = {"kernel": k, "initrd": i}
         elif type(val) == dict:
             if not val.has_key("kernel") or not val.has_key("initrd"):
-                raise ValueError, "Must pass both a kernel and initrd"
+                raise ValueError, _("Must pass both a kernel and initrd")
             self._boot = val
         elif type(val) == list:
             if len(val) != 2:
-                raise ValueError, "Must pass both a kernel and initrd"
+                raise ValueError, _("Must pass both a kernel and initrd")
             self._boot = {"kernel": val[0], "initrd": val[1]}
     boot = property(get_boot, set_boot)
 
@@ -447,7 +452,7 @@ class Guest(object):
         if self.conn == None:
             self.conn = libvirt.open(hypervisorURI)
         if self.conn == None:
-            raise RuntimeError, "Unable to connect to hypervisor, aborting installation!"
+            raise RuntimeError, _("Unable to connect to hypervisor, aborting installation!")
 
         self.disknode = None # this needs to be set in the subclass
 
@@ -468,13 +473,13 @@ class Guest(object):
         return self._name
     def set_name(self, val):
         if len(val) > 50 or len(val) == 0:
-            raise ValueError, "System name must be greater than 0 and no more than 50 characters"
+            raise ValueError, _("System name must be greater than 0 and no more than 50 characters")
         if re.match("^[0-9]+$", val):
-            raise ValueError, "System name must not be only numeric characters"
+            raise ValueError, _("System name must not be only numeric characters")
         if re.match("^[a-zA-Z0-9._-]+$", val) == None:
-            raise ValueError, "System name can only contain alphanumeric, '_', '.', or '-' characters"
+            raise ValueError, _("System name can only contain alphanumeric, '_', '.', or '-' characters")
         if type(val) != type("string"):
-            raise ValueError, "System name must be a string"
+            raise ValueError, _("System name must be a string")
         self._name = val
     name = property(get_name, set_name)
 
@@ -484,7 +489,7 @@ class Guest(object):
         return self._memory
     def set_memory(self, val):
         if (type(val) is not type(1) or val < 0):
-            raise ValueError, "Memory value must be an integer greater than 0"
+            raise ValueError, _("Memory value must be an integer greater than 0")
         self._memory = val
         if self._maxmemory is None or self._maxmemory < val:
             self._maxmemory = val
@@ -495,7 +500,7 @@ class Guest(object):
         return self._maxmemory
     def set_maxmemory(self, val):
         if (type(val) is not type(1) or val < 0):
-            raise ValueError, "Max Memory value must be an integer greater than 0"
+            raise ValueError, _("Max Memory value must be an integer greater than 0")
         self._maxmemory = val
     maxmemory = property(get_maxmemory, set_maxmemory)
 
@@ -509,9 +514,7 @@ class Guest(object):
         if form is None:
             form = re.match("[a-fA-F0-9]{32}$", val)
             if form is None:
-                raise ValueError, "UUID must be a 32-digit hexadecimal " + \
-                      "number. It may take the form XXXXXXXX-XXXX-XXXX-" + \
-                      "XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
+                raise ValueError, _("UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether.")
 
             else:   # UUID had no dashes, so add them in
                 val=val[0:8] + "-" + val[8:12] + "-" + val[12:16] + \
@@ -527,7 +530,7 @@ class Guest(object):
         maxvcpus = util.get_max_vcpus(self.conn)
         if val < 1 or val > maxvcpus:
             raise ValueError, \
-                  "Number of vcpus must be in the range of 1-%d" % (maxvcpus,)
+                  _("Number of vcpus must be in the range of 1-%d") % (maxvcpus,)
         self._vcpus = val
     vcpus = property(get_vcpus, set_vcpus)
 
@@ -540,18 +543,18 @@ class Guest(object):
             if not keymap:
                 return keymap
             if type(keymap) != type("string"):
-                raise ValueError, "Keymap must be a string"
+                raise ValueError, _("Keymap must be a string")
             if len(keymap) > 16:
-                raise ValueError, "Keymap must be less than 16 characters"
+                raise ValueError, _("Keymap must be less than 16 characters")
             if re.match("^[a-zA-Z0-9_-]*$", keymap) == None:
-                raise ValueError, "Keymap must be alphanumeric, _, or -"
+                raise ValueError, _("Keymap can only contain alphanumeric, '_', or '-' characters")
             return keymap
 
         opts = None
         t = None
         if type(val) == dict:
             if not val.has_key("enabled"):
-                raise ValueError, "Must specify whether graphics are enabled"
+                raise ValueError, _("Must specify whether graphics are enabled")
             self._graphics["enabled"] = val["enabled"]
             if val.has_key("type"):
                 t = val["type"]
@@ -570,7 +573,7 @@ class Guest(object):
                 self._graphics["enabled"] = val
 
         if self._graphics["enabled"] not in (True, False):
-            raise ValueError, "Graphics enabled must be True or False"
+            raise ValueError, _("Graphics enabled must be True or False")
 
         if self._graphics["enabled"] == True:
             if t == "vnc":
@@ -581,7 +584,7 @@ class Guest(object):
             elif t == "sdl":
                 gt = SDLVirtualGraphics(opts)
             else:
-                raise ValueError, "Unknown graphics type"
+                raise ValueError, _("Unknown graphics type")
             self._graphics["type"] = gt
 
     graphics = property(get_graphics, set_graphics)
@@ -617,9 +620,9 @@ class Guest(object):
         return None
     def set_cdrom(self, val):
         if val is None or len(val) == 0:
-            raise ValueError, "You must specify an ISO or CD-ROM location for the guest installation"
+            raise ValueError, _("You must specify an ISO or CD-ROM location for the installation")
         if not os.path.exists(val):
-            raise ValueError, "The specified media path does not exist."
+            raise ValueError, _("The specified media path does not exist.")
         self._installer.location = os.path.abspath(val)
     cdrom = property(get_cdrom, set_cdrom)
 
@@ -709,7 +712,7 @@ class Guest(object):
     def _do_install(self, consolecb, meter):
         try:
             if self.conn.lookupByName(self.name) is not None:
-                raise RuntimeError, "Domain named %s already exists!" %(self.name,)
+                raise RuntimeError, _("Domain named %s already exists!") %(self.name,)
         except libvirt.libvirtError:
             pass
 
@@ -718,10 +721,10 @@ class Guest(object):
         install_xml = self.get_config_xml()
         if install_xml:
             logging.debug("Creating guest from '%s'" % ( install_xml ))
-            meter.start(size=None, text="Creating domain...")
+            meter.start(size=None, text=_("Creating domain..."))
             self.domain = self.conn.createLinux(install_xml, 0)
             if self.domain is None:
-                raise RuntimeError, "Unable to create domain for guest, aborting installation!"
+                raise RuntimeError, _("Unable to create domain for the guest, aborting installation!")
             meter.end(0)
 
             logging.debug("Created guest, looking to see if it is running")
@@ -741,7 +744,7 @@ class Guest(object):
                 time.sleep(0.25)
 
             if d is None:
-                raise RuntimeError, "It appears that your installation has crashed.  You should be able to find more information in the logs"
+                raise RuntimeError, _("It appears that your installation has crashed.  You should be able to find more information in the logs")
 
             if consolecb:
                 logging.debug("Launching console callback")
@@ -787,9 +790,9 @@ class Guest(object):
             time.sleep(0.25)
 
         if self.domain is None:
-            raise RuntimeError, "Domain has not existed.  You should be able to find more information in the logs"
+            raise RuntimeError, _("Domain has not existed.  You should be able to find more information in the logs")
         elif self.domain.ID() == -1:
-            raise RuntimeError, "Domain has not run yet.  You should be able to find more information in the logs"
+            raise RuntimeError, _("Domain has not run yet.  You should be able to find more information in the logs")
 
         child = None
         if consolecb:
@@ -804,7 +807,7 @@ class Guest(object):
 
     def validate_parms(self):
         if self.domain is not None:
-            raise RuntimeError, "Domain already started!"
+            raise RuntimeError, _("Domain has already been started!")
         self._set_defaults()
 
     def _set_defaults(self):
@@ -815,15 +818,16 @@ class Guest(object):
                     if self.conn.lookupByUUIDString(self.uuid) is not None:
                         continue
                     else:
-                        # libvirt probably shouldn't throw an error on a non-matching UUID,
-                        # so do the right thing on a None return value with no error
+                        # libvirt probably shouldn't throw an error on a 
+                        # non-matching UUID, so do the right thing on a 
+                        # None return value with no error
                         break
                 except libvirt.libvirtError:
                     break
         else:
             try:
                 if self.conn.lookupByUUIDString(self.uuid) is not None:
-                    raise RuntimeError, "The UUID you entered is already in use by another guest!"
+                    raise RuntimeError, _("The UUID you entered is already in use by another guest!")
                 else:
                     pass
             except libvirt.libvirtError:
@@ -831,7 +835,7 @@ class Guest(object):
         if self.vcpus is None:
             self.vcpus = 1
         if self.name is None or self.memory is None:
-            raise RuntimeError, "Name and memory must be specified for all guests!"
+            raise RuntimeError, _("Name and memory must be specified for all guests!")
 
 # Back compat class to avoid ABI break
 class XenGuest(Guest):
