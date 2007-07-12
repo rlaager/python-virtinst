@@ -184,6 +184,6 @@ def get_max_vcpus(conn):
     try:
         max = conn.getMaxVcpus(conn.getType())
     except Exception, e:
-        print >> stderr, _("Couldn't determine max vcpus. Using 32.")
+        #print >> stderr, _("Couldn't determine max vcpus. Using 32.")
         max = 32
     return max
