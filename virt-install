@@ -18,12 +18,12 @@ import os, sys, string
 from optparse import OptionParser, OptionValueError
 import subprocess
 import logging
-import logging.handlers
 import libxml2
 import urlgrabber.progress as progress
 
 import libvirt
 import virtinst
+import virtinst.cli as cli
 
 import gettext
 import locale
@@ -32,129 +32,31 @@ locale.setlocale(locale.LC_ALL, '')
 gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
 gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
 
-MIN_RAM = 256
-MAX_LOGSIZE   = 1024 * 1024  # 1MB
-ROTATE_NUM    = 5
-DIR_NAME      = ".virtinst"
-FILE_NAME     = "virt-install.log"
-FILE_MODE     = 'a'
-FILE_FORMAT   = "[%(asctime)s virt-install %(process)d] %(levelname)s (%(module)s:%(lineno)d) %(message)s"
-STREAM_FORMAT = "%(asctime)s %(levelname)-8s %(message)s"
-DATEFMT       = "%a, %d %b %Y %H:%M:%S"
-
-# set up logging
-vi_dir = os.path.expanduser("~/%s" % DIR_NAME)
-if not os.access(vi_dir,os.W_OK):
-    try:
-        os.mkdir(vi_dir)
-    except IOError, e:
-        raise RuntimeError, _("Could not create %d directory: ") % vi_dir, e
-
-filename = "%s/%s" % (vi_dir, FILE_NAME)
-rootLogger = logging.getLogger()
-rootLogger.setLevel(logging.DEBUG)
-fileHandler = logging.handlers.RotatingFileHandler(filename, FILE_MODE, MAX_LOGSIZE, ROTATE_NUM)
-fileHandler.setFormatter(logging.Formatter(FILE_FORMAT, DATEFMT))
-rootLogger.addHandler(fileHandler)
-
-errstr = _("ERROR: ")
-
-### Utility functions
-def yes_or_no(s):
-    s = s.lower()
-    if s in ("y", "yes", "1", "true", "t"):
-        return True
-    elif s in ("n", "no", "0", "false", "f"):
-        return False
-    raise ValueError, _("A yes or no response is required")
-
-def prompt_for_input(prompt = "", val = None):
-    if val is not None:
-        return val
-    print prompt + " ", 
-    return sys.stdin.readline().strip()
-
-
 ### General input gathering functions
 def get_full_virt():
     while 1:
-        res = prompt_for_input(_("Would you like a fully virtualized guest (yes or no)?  This will allow you to run unmodified operating systems."))
+        res = cli.prompt_for_input(_("Would you like a fully virtualized guest (yes or no)?  This will allow you to run unmodified operating systems."))
         try:
-            return yes_or_no(res)
+            return cli.yes_or_no(res)
         except ValueError, e:
-            print errstr, e
+            print _("ERROR: "), e
 
-def get_name(name, guest):
-    while 1:
-        name = prompt_for_input(_("What is the name of your virtual machine?"), name)
-        try:
-            guest.name = name
-            break
-        except ValueError, e:
-            print errstr, e            
-            name = None
-
-def get_memory(memory, guest):
-    while 1:
-        try:
-            memory = int(prompt_for_input(_("How much RAM should be allocated (in megabytes)?"), memory))
-            if memory < MIN_RAM:
-                print _("ERROR: Installs currently require %d megs of RAM.") %(MIN_RAM,)
-                print ""
-                memory = None
-                continue
-            guest.memory = memory
-            break
-        except ValueError, e:
-            print errstr, e
-            memory = None
-
-def get_uuid(uuid, guest):
-    if uuid: 
-        try:
-            guest.uuid = uuid
-        except ValueError, e:
-            print errstr, e
-            sys.exit(1)
-
-def get_vcpus(vcpus, check_cpu, guest, conn):
-    while 1:
-        if check_cpu is None:
-            break
-        hostinfo = conn.getInfo()
-        cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
-        if vcpus <= cpu_num:
-            break
-        res = prompt_for_input(_("You have asked for more virtual CPUs (%(vcpu)d) than there are physical CPUs (%(phys)d) on the host. This will work, but performance will be poor. Are you sure? (yes or no)") % {'vcpu' : vcpus, 'phys' : cpu_num})
-        try:
-            if yes_or_no(res):
-                break
-            vcpus = int(prompt_for_input(_("How many VCPUs should be attached?")))
-        except ValueError, e:
-            print errstr, e
-    if vcpus:
-        try:
-            guest.vcpus = vcpus
-        except ValueError, e:
-            print errstr, e
-            
 
 def get_disk(disk, size, sparse, guest, hvm, conn):
-    # FIXME: need to handle a list of disks at some point
     while 1:
         msg = _("What would you like to use as the disk (path)?")
         if not size is None:
             msg = _("Please enter the path to the file you would like to use for storage. It will have size %sGB.") %(size,)
-        disk = prompt_for_input(msg, disk)
+        disk = cli.prompt_for_input(msg, disk)
         while 1:
             if os.path.exists(disk):
                 break
-            size = prompt_for_input(_("How large would you like the disk (%s) to be (in gigabytes)?") %(disk,), size)
+            size = cli.prompt_for_input(_("How large would you like the disk (%s) to be (in gigabytes)?") %(disk,), size)
             try:
                 size = float(size)
                 break
             except Exception, e:
-                print errstr, e
+                print _("ERROR: "), e
                 size = None
 
         try:
@@ -163,15 +65,15 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
                 while 1:
                     retryFlg = False
                     warnmsg = _("Disk %s is already in use by another guest!") % disk
-                    res = prompt_for_input(warnmsg + _("  Do you really want to use the disk (yes or no)? "))
+                    res = cli.prompt_for_input(warnmsg + _("  Do you really want to use the disk (yes or no)? "))
                     try:
-                        if yes_or_no(res) is True:
+                        if cli.yes_or_no(res) is True:
                             break
                         else:
                             retryFlg = True
                             break
                     except ValueError, e:
-                        print errstr, e
+                        print _("ERROR: "), e
                         continue
                 if retryFlg is True:
                     disk = size = None
@@ -179,7 +81,7 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
             if d.type == virtinst.VirtualDisk.TYPE_FILE and not(hvm) and virtinst.util.is_blktap_capable():
                 d.driver_name = virtinst.VirtualDisk.DRIVER_TAP
         except ValueError, e:
-            print errstr, e
+            print _("ERROR: "), e
             disk = size = None
             continue
 
@@ -210,99 +112,21 @@ def get_disks(disk, size, sparse, nodisks, guest, hvm, conn):
     else:
         get_disk(disk, size, sparse, guest, hvm, conn)
 
-def get_network(mac, network, guest):
-    if mac == "RANDOM":
-        mac = None
-    if network == "user":
-        n = virtinst.VirtualNetworkInterface(mac, type="user")
-    elif network[0:6] == "bridge":
-        n = virtinst.VirtualNetworkInterface(mac, type="bridge", bridge=network[7:])
-    elif network[0:7] == "network":
-        n = virtinst.VirtualNetworkInterface(mac, type="network", network=network[8:])
-    else:
-        print >> sys.stderr, _("Unknown network type ") + network
-        sys.exit(1)
-    guest.nics.append(n)
-
 def get_networks(macs, bridges, networks, guest):
-    if type(bridges) != list and bridges != None:
-        bridges = [ bridges ]
+    (macs, networks) = cli.digest_networks(macs, bridges, networks)
+    map(lambda m, n: cli.get_network(m, n, guest), macs, networks)
 
-    if type(macs) != list and macs != None:
-        macs = [ macs ]
-
-    if type(networks) != list and networks != None:
-        networks = [ networks ]
-
-    if bridges is not None and networks != None:
-        print >> sys.stderr, _("Cannot mix both --bridge and --network arguments")
-        sys.exit(1)
-
-    # ensure we have equal length lists
-    if bridges != None:
-        networks = map(lambda b: "bridge:" + b, bridges)
-
-    if networks != None:
-        if macs != None:
-            if len(macs) != len(networks):
-                print >> sys.stderr, _("Need to pass equal numbers of networks & mac addresses")
-                sys.exit(1)
-        else:
-            macs = [ None ] * len(networks)
-    else:
-        if os.getuid() == 0:
-            net = virtinst.util.default_network()
-            networks = [net[0] + ":" + net[1]]
-        else:
-            networks = ["user"]
-        if macs != None:
-            if len(macs) > 1:
-                print >> sys.stderr, _("Need to pass equal numbers of networks & mac addresses")
-                sys.exit(1)
-        else:
-            macs = [ None ]
-
-    map(lambda m, n: get_network(m, n, guest), macs, networks)
-
-def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
-    if vnc and nographics:
-        raise ValueError, _("Can't do both VNC graphics and nographics")
-    elif vnc and sdl:
-        raise ValueError, _("Can't do both VNC graphics and SDL")
-    elif sdl and nographics:
-        raise ValueError, _("Can't do both SDL and nographics")
-    if nographics:
-        guest.graphics = False
-        return
-    if vnc is not None:
-        guest.graphics = (True, "vnc", vncport, keymap)
-        return
-    if sdl is not None:
-        guest.graphics = (True, "sdl")
-        return
-    while 1:
-        res = prompt_for_input(_("Would you like to enable graphics support? (yes or no)"))
-        try:
-            vnc = yes_or_no(res)
-        except ValueError, e:
-            print errstr, e
-            continue
-        if vnc:
-            guest.graphics = (True, "vnc", vncport, keymap)
-        else:
-            guest.graphics = False
-        break
 
 
 ### Paravirt input gathering functions
 def get_paravirt_install(src, guest):
     while 1:
-        src = prompt_for_input(_("What is the install location?"), src)
+        src = cli.prompt_for_input(_("What is the install location?"), src)
         try:
             guest.location = src
             break
         except ValueError, e:
-            print errstr, e
+            print _("ERROR: "), e
             src = None
 
 def get_paravirt_extraargs(extra, guest):
@@ -315,12 +139,12 @@ def get_fullvirt_cdrom(cdpath, location, guest):
         cdpath = location
 
     while 1:
-        cdpath = prompt_for_input(_("What is the virtual CD image, CD device or install location?"), cdpath)
+        cdpath = cli.prompt_for_input(_("What is the virtual CD image, CD device or install location?"), cdpath)
         try:
             guest.location = cdpath
             break
         except ValueError, e:
-            print errstr, e
+            print _("ERROR: "), e
             cdpath = None
 
 ### Option parsing
@@ -337,12 +161,12 @@ def check_before_append(option, opt_str, value, parser):
 def parse_args():
     parser = OptionParser()
     parser.add_option("-n", "--name", type="string", dest="name",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("Name of the guest instance"))
     parser.add_option("-r", "--ram", type="int", dest="memory",
                       help=_("Memory to allocate for guest instance in megabytes"))
     parser.add_option("-u", "--uuid", type="string", dest="uuid",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("UUID for the guest; if none is given a random UUID will be generated. If you specify UUID, you should use a 32-digit hexadecimal number."))
     parser.add_option("", "--vcpus", type="int", dest="vcpus",
                       help=_("Number of vcpus to configure for your guest"))
@@ -351,7 +175,7 @@ def parse_args():
 
     # disk options
     parser.add_option("-f", "--file", type="string",
-                      dest="diskfile", action="callback", callback=check_before_append,
+                      dest="diskfile", action="callback", callback=cli.check_before_append,
                       help=_("File to use as the disk image"))
     parser.add_option("-s", "--file-size", type="float",
                       action="append", dest="disksize",
@@ -364,13 +188,13 @@ def parse_args():
     
     # network options
     parser.add_option("-m", "--mac", type="string",
-                      dest="mac", action="callback", callback=check_before_append,
+                      dest="mac", action="callback", callback=cli.check_before_append,
                       help=_("Fixed MAC address for the guest; if none or RANDOM is given a random address will be used"))
     parser.add_option("-b", "--bridge", type="string",
-                      dest="bridge", action="callback", callback=check_before_append,
+                      dest="bridge", action="callback", callback=cli.check_before_append,
                       help=_("Bridge to connect guest NIC to; if none given, will try to determine the default"))
     parser.add_option("-w", "--network", type="string",
-                      dest="network", action="callback", callback=check_before_append,
+                      dest="network", action="callback", callback=cli.check_before_append,
                       help=_("Connect the guest to a virtual network, forwarding to the physical network with NAT"))
 
     # graphics options
@@ -387,42 +211,42 @@ def parse_args():
                       help=_("Don't automatically try to connect to the guest console"))
 
     parser.add_option("-k", "--keymap", type="string", dest="keymap",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("set up keymap for a graphical console"))
 
     parser.add_option("", "--accelerate", action="store_true", dest="accelerate",
                       help=_("Use kernel acceleration capabilities"))
     parser.add_option("", "--connect", type="string", dest="connect",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("Connect to hypervisor with URI"),
                       default=virtinst.util.default_connection())
     parser.add_option("", "--installer", type="string", dest="installer",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("Specify the installation method to use e.g. 'distro', ..."))
 
     # fullvirt options
     parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
                       help=_("This guest should be a fully virtualized guest"))
     parser.add_option("-c", "--cdrom", type="string", dest="cdrom",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("File to use a virtual CD-ROM device for fully virtualized guests"))
     parser.add_option("", "--os-type", type="string", dest="os_type",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"))
     parser.add_option("", "--os-variant", type="string", dest="os_variant",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k', 'vista'"))
     parser.add_option("", "--noapic", action="store_true", dest="noapic", help=_("Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
     parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help=_("Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
     parser.add_option("", "--arch", type="string", dest="arch",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("The CPU architecture to simulate"))
     
     # paravirt options
     parser.add_option("-p", "--paravirt", action="store_false", dest="paravirt",
                       help=_("This guest should be a paravirtualized guest"))
     parser.add_option("-l", "--location", type="string", dest="location",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("Installation source for paravirtualized guest (eg, nfs:host:/path, http://host/path, ftp://host/path)"))
     parser.add_option("-x", "--extra-args", type="string",
                       dest="extra", default="",
@@ -514,20 +338,8 @@ def show_console(dom):
 def main():
     options = parse_args()
 
-    streamHandler = logging.StreamHandler(sys.stderr)
-    streamHandler.setFormatter(logging.Formatter(STREAM_FORMAT, DATEFMT))
-    if options.debug:
-        streamHandler.setLevel(logging.DEBUG)
-    else:
-        streamHandler.setLevel(logging.ERROR)
-    rootLogger.addHandler(streamHandler)
-
-    if options.connect is None or options.connect.lower()[0:3] == "xen":
-        if os.geteuid() != 0:
-            print >> sys.stderr, _("Must be root to clone Xen guests")
-            sys.exit(1)
-
-    conn = libvirt.open(options.connect)
+    cli.setupLogging("virt-install", options.debug)
+    conn = cli.getConnection(options.connect)
     type = None
 
     # first things first, are we trying to create a fully virt guest?
@@ -572,10 +384,10 @@ def main():
         guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
 
     # now let's get some of the common questions out of the way
-    get_name(options.name, guest)
-    get_memory(options.memory, guest)
-    get_uuid(options.uuid, guest)
-    get_vcpus(options.vcpus, options.check_cpu, guest, conn)
+    cli.get_name(options.name, guest)
+    cli.get_memory(options.memory, guest)
+    cli.get_uuid(options.uuid, guest)
+    cli.get_vcpus(options.vcpus, options.check_cpu, guest, conn)
 
     # set up disks
     get_disks(options.diskfile, options.disksize, options.sparse, options.nodisks,
@@ -585,7 +397,7 @@ def main():
     get_networks(options.mac, options.bridge, options.network, guest)
 
     # set up graphics information
-    get_graphics(options.vnc, options.vncport, options.nographics, options.sdl, options.keymap, guest)
+    cli.get_graphics(options.vnc, options.vncport, options.nographics, options.sdl, options.keymap, guest)
 
     # and now for the full-virt vs paravirt specific questions
     if not hvm: # paravirt
@@ -643,7 +455,7 @@ def main():
         dom.create()
         guest.connect_console(conscb)
     except RuntimeError, e:
-        print >> sys.stderr, errstr, e
+        print >> sys.stderr, _("ERROR: "), e
         sys.exit(1)
     except Exception, e:
         print _("Domain installation may not have been\n successful.  If it was, you can restart your domain\n by running 'virsh start %s'; otherwise, please\n restart your installation.") %(guest.name,)

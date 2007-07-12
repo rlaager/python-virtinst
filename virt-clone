@@ -24,55 +24,22 @@ from optparse import OptionParser, OptionValueError
 import subprocess
 import libxml2
 import logging
-import logging.handlers
 import libvirt
 import virtinst
 import virtinst.CloneManager as clmgr
 
 import gettext
 import locale
+import virtinst.cli as cli
 
 locale.setlocale(locale.LC_ALL, '')
 gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
 gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
 
-MIN_RAM = 256
-MAX_LOGSIZE   = 1024 * 1024  # 1MB
-ROTATE_NUM    = 5
-DIR_NAME      = ".virtinst"
-FILE_NAME     = "virt-clone.log"
-FILE_MODE     = 'a'
-FILE_FORMAT   = "[%(asctime)s virt-clone %(process)d] %(levelname)s (%(module)s:%(lineno)d) %(message)s"
-STREAM_FORMAT = "%(asctime)s %(levelname)-8s %(message)s"
-DATEFMT       = "%a, %d %b %Y %H:%M:%S"
-
-# set up logging
-vi_dir = os.path.expanduser("~/%s" % DIR_NAME)
-if not os.access(vi_dir,os.W_OK):
-    try:
-        os.mkdir(vi_dir)
-    except IOError, e:
-        raise RuntimeError, _("Could not create %d directory: ") % vi_dir, e
-
-filename = "%s/%s" % (vi_dir, FILE_NAME)
-rootLogger = logging.getLogger()
-rootLogger.setLevel(logging.DEBUG)
-fileHandler = logging.handlers.RotatingFileHandler(filename, FILE_MODE, MAX_LOGSIZE, ROTATE_NUM)
-fileHandler.setFormatter(logging.Formatter(FILE_FORMAT, DATEFMT))
-rootLogger.addHandler(fileHandler)
-
-
-### Utility functions
-def prompt_for_input(prompt = "", val = None):
-    if val is not None:
-        return val
-    print prompt + " ",
-    return sys.stdin.readline().strip()
-
 ### General input gathering functions
 def get_clone_name(new_name, design):
     while 1:
-        new_name = prompt_for_input(_("What is the name for the cloned virtual machine?"), new_name)
+        new_name = cli.prompt_for_input(_("What is the name for the cloned virtual machine?"), new_name)
         try:
             design.clone_name = new_name
             break
@@ -82,7 +49,7 @@ def get_clone_name(new_name, design):
 
 def get_original_guest(guest, design):
     while 1:
-        guest = prompt_for_input(_("What is the name or uuid of the original virtual machine?"), guest)
+        guest = cli.prompt_for_input(_("What is the name or uuid of the original virtual machine?"), guest)
         try:
             design.original_guest = guest
             break
@@ -123,52 +90,41 @@ def get_force_target(target, design):
         for i in target:
             design.set_force_target(i)
 
-### Option parsing
-def check_before_store(option, opt_str, value, parser):
-    if len(value) == 0:
-        raise OptionValueError, _("%s option requires an argument") %opt_str
-    setattr(parser.values, option.dest, value)
-
-def check_before_append(option, opt_str, value, parser):
-    if len(value) == 0:
-        raise OptionValueError, _("%s option requires an argument") %opt_str
-    parser.values.ensure_value(option.dest, []).append(value)
-
 def parse_args():
     parser = OptionParser()
 
     # original name
     parser.add_option("-o", "--original", type="string", dest="original_guest",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("Name or uuid for the original guest; The status must be shut off"))
     # clone new name
     parser.add_option("-n", "--name", type="string", dest="new_name",
-                      action="callback", callback=check_before_store,
+                      action="callback", callback=cli.check_before_store,
                       help=_("Name for the new guest"))
 
     # clone new uuid
     parser.add_option("-u", "--uuid", type="string",
-                      dest="new_uuid", action="callback", callback=check_before_store,
+                      dest="new_uuid", action="callback", callback=cli.check_before_store,
                       help=_("New UUID for the clone guest; Default is a randomly generated UUID"))
 
     # clone new macs
     parser.add_option("-m", "--mac", type="string",
-                      dest="new_mac", action="callback", callback=check_before_append,
+                      dest="new_mac", action="callback", callback=cli.check_before_append,
                       help=_("New fixed MAC address for the clone guest. Default is a randomly generated MAC"))
 
     # clone new disks 
     parser.add_option("-f", "--file", type="string",
-                      dest="new_diskfile", action="callback", callback=check_before_append,
+                      dest="new_diskfile", action="callback", callback=cli.check_before_append,
                       help=_("New file to use as the disk image for the new guest"))
     # connect
     parser.add_option("", "--connect", type="string",
-                      dest="connect", action="callback", callback=check_before_store,
+                      dest="connect", action="callback", callback=cli.check_before_store,
                       help=_("Connect to hypervisor with URI"),
                       default=virtinst.util.default_connection())
 
     # target
     parser.add_option("", "--force-copy", type="string",
-                      dest="target", action="callback", callback=check_before_append,
+                      dest="target", action="callback", callback=cli.check_before_append,
                       help=_("Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-copy=hdc)"))
 
     # non sparse
@@ -192,13 +148,7 @@ def parse_args():
 def main():
     options = parse_args()
 
-    streamHandler = logging.StreamHandler(sys.stderr)
-    streamHandler.setFormatter(logging.Formatter(STREAM_FORMAT, DATEFMT))
-    if options.debug:
-        streamHandler.setLevel(logging.DEBUG)
-    else:
-        streamHandler.setLevel(logging.ERROR)
-    rootLogger.addHandler(streamHandler)
+    cli.setupLogging("virt-clone", options.debug)
 
     logging.debug("start clone with HV " + options.connect)
 
@@ -207,7 +157,7 @@ def main():
             print >> sys.stderr, _("Must be root to clone Xen guests")
             sys.exit(1)
 
-    conn = libvirt.open(options.connect)
+    conn = cli.getConnection(options.connect)
     design = clmgr.CloneDesign(connection=conn)
 
     try:    
