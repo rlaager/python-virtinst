@@ -220,26 +220,11 @@ If running on a bare metal kernel as non-root
 It is only neccessary to provide the C<--connect> argument if this default
 prioritization is incorrect, eg if wanting to use QEMU while on a Xen kernel.
 
-=item  --installer=INSTALLER
+=item  --livecd
 
-Tailor the guest configuration to suit a specific installation method. There
-are two supported installers:
-
-=over 4
-
-=item distro
-
-This is the default installer. Paravirtualized guests will be started with a
-a kernel+initrd pair, and after installation will use the C<pygrub> bootloader.
-Fullyvirtualized guests will be started with a CDROM device attached, and after
-installation will revert to booting off the primary harddisk.
-
-=item livecd
-
-This is only available for fullyvirtualized guests. The guest wil be permanently
-configured to boot off the CDROM device.
-
-=back
+Specify that the installation media is a live CD and thus the guest
+needs to be configured to boot off the CDROM device permanently. It
+may be desirable to also use the C<--nodisks> flag in combination.
 
 =item  -v, --hvm             This guest should be a fully virtualized guest
 

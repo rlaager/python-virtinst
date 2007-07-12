@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2007-05-21" "perl v5.8.8" "User Contributed Perl Documentation"
+.TH VIRT-INSTALL 1 "2007-07-12" "perl v5.8.8" "User Contributed Perl Documentation"
 .SH "NAME"
 virt\-install \- provision new virtual machines
 .SH "SYNOPSIS"
@@ -316,24 +316,11 @@ If running on a bare metal kernel as non-root
 It is only neccessary to provide the \f(CW\*(C`\-\-connect\*(C'\fR argument if this default
 prioritization is incorrect, eg if wanting to use \s-1QEMU\s0 while on a Xen kernel.
 .RE
-.IP "\-\-installer=INSTALLER" 4
-.IX Item "--installer=INSTALLER"
-Tailor the guest configuration to suit a specific installation method. There
-are two supported installers:
-.RS 4
-.IP "distro" 4
-.IX Item "distro"
-This is the default installer. Paravirtualized guests will be started with a
-a kernel+initrd pair, and after installation will use the \f(CW\*(C`pygrub\*(C'\fR bootloader.
-Fullyvirtualized guests will be started with a \s-1CDROM\s0 device attached, and after
-installation will revert to booting off the primary harddisk.
-.IP "livecd" 4
-.IX Item "livecd"
-This is only available for fullyvirtualized guests. The guest wil be permanently
-configured to boot off the \s-1CDROM\s0 device.
-.RE
-.RS 4
-.RE
+.IP "\-\-livecd" 4
+.IX Item "--livecd"
+Specify that the installation media is a live \s-1CD\s0 and thus the guest
+needs to be configured to boot off the \s-1CDROM\s0 device permanently. It
+may be desirable to also use the \f(CW\*(C`\-\-nodisks\*(C'\fR flag in combination.
 .IP "\-v, \-\-hvm             This guest should be a fully virtualized guest" 4
 .IX Item "-v, --hvm             This guest should be a fully virtualized guest"
 Request the use of full virtualization, if both para & full virtualization are

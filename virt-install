@@ -220,9 +220,8 @@ def parse_args():
                       action="callback", callback=cli.check_before_store,
                       help=_("Connect to hypervisor with URI"),
                       default=virtinst.util.default_connection())
-    parser.add_option("", "--installer", type="string", dest="installer",
-                      action="callback", callback=cli.check_before_store,
-                      help=_("Specify the installation method to use e.g. 'distro', ..."))
+    parser.add_option("", "--livecd", action="store_true", dest="livecd",
+                      help=_("Specify the CDROM media is a LiveCD"))
 
     # fullvirt options
     parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
@@ -370,13 +369,13 @@ def main():
             elif virtinst.util.is_kqemu_capable():
                 type = "kqemu"
 
-    if not options.installer or options.installer == "distro":
-        installer = virtinst.DistroInstaller(type = type)
-    elif options.installer == "livecd":
+    if options.livecd:
+        if not hvm:
+            print >> sys.stderr, _("LiveCD installations are not supported for paravirt guests")
+            sys.exit(1)
         installer = virtinst.LiveCDInstaller(type = type)
     else:
-        print >> sys.stderr, _("Unknown installer type '%s'") % options.installer
-        sys.exit(1)
+        installer = virtinst.DistroInstaller(type = type)
 
     if hvm:
         guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=options.arch)
