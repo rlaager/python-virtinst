@@ -2,6 +2,7 @@ import string
 import unittest
 import virtinst
 import os
+import libvirt
 import urlgrabber.progress as progress
 
 class TestXMLConfig(unittest.TestCase):
@@ -24,7 +25,8 @@ class TestXMLConfig(unittest.TestCase):
             xenguest._installer.cleanup()
 
     def _get_basic_paravirt_guest(self):
-        g = virtinst.ParaVirtGuest(hypervisorURI="test:///default", type="xen")
+        conn = libvirt.openReadOnly("test:///default")
+        g = virtinst.ParaVirtGuest(connection=conn, type="xen")
         g.name = "TestGuest"
         g.memory = int(200)
         g.maxmemory = int(400)
@@ -35,7 +37,8 @@ class TestXMLConfig(unittest.TestCase):
         return g
 
     def _get_basic_fullyvirt_guest(self):
-        g = virtinst.FullVirtGuest(hypervisorURI="test:///default", type="xen",
+        conn = libvirt.openReadOnly("test:///default")
+        g = virtinst.FullVirtGuest(connection=conn, type="xen",
                                    emulator="/usr/lib/xen/bin/qemu-dm")
         g.name = "TestGuest"
         g.memory = int(200)
