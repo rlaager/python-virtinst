@@ -87,7 +87,7 @@ class CloneDesign(object):
         return self._clone_name
     def set_clone_name(self, name):
         try:
-            self._valid_guest.set_name(clone_name)
+            self._valid_guest.set_name(name)
         except ValueError, e:
             raise ValueError, _("Invalid name for new guest: %s") % (str(e),)
         self._clone_name = name
