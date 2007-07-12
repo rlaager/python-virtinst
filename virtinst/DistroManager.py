@@ -625,7 +625,8 @@ class DistroInstaller(Guest.Installer):
 
         guest.disks.append(Guest.VirtualDisk(cdrom,
                                              device=Guest.VirtualDisk.DEVICE_CDROM,
-                                             readOnly=True))
+                                             readOnly=True,
+                                             transient=True))
 
     def _prepare_kernel_and_initrd(self, guest, distro, meter):
         if self.boot is not None:
