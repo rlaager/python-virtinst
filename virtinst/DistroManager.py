@@ -96,7 +96,7 @@ class URIImageFetcher(ImageFetcher):
             tmpfile = self.acquireFile(filename, progresscb)
             os.unlink(tmpfile)
             return True
-        except RuntimeError, e:
+        except Exception, e:
             logging.debug("Cannot find file %s" % filename)
             return False
 
@@ -626,9 +626,6 @@ class DistroInstaller(Guest.Installer):
         guest.disks.append(Guest.VirtualDisk(cdrom,
                                              device=Guest.VirtualDisk.DEVICE_CDROM,
                                              readOnly=True))
-        # think we can keep the cdrom attached now since anyone
-        # can detach it with virsh or virt-manager
-        #                                     transient=True))
 
     def _prepare_kernel_and_initrd(self, guest, distro, meter):
         if self.boot is not None:
