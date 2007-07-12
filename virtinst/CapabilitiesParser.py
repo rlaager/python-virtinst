@@ -39,7 +39,9 @@ features_map = {
 
 NUM_FEATURES = len(features_map)
 
-def _parse_features(self, node):
+def parse_features(node):
+    """Convert the children of NODE into a bitmask of features. The child
+    nodes should have names in FEATURES_MAP"""
     features = 0
 
     child = node.children
@@ -74,7 +76,7 @@ class Host(object):
                 if n.name == "arch":
                     self.arch = n.content
                 elif n.name == "features":
-                    self.features |= _parse_features(self, n)
+                    self.features |= parse_features(n)
                 n = n.next
 
             child = child.next
@@ -102,7 +104,7 @@ class Guest(object):
             if child.name == "os_type":
                 self.os_type = child.content
             elif child.name == "features":
-                self.features |= _parse_features(self, child)
+                self.features |= parse_features(child)
             elif child.name == "arch":
                 self.arch = child.prop("name")
                 n = child.children
