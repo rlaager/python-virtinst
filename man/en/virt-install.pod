@@ -512,7 +512,7 @@ Run a Live CD image under Xen fullyvirt, in diskless environment
        --name demo \
        --ram 500 \
        --nodisk \
-       --installer livecd \
+       --livecd \
        --vnc \
        --location /root/fedora7live.iso
 
