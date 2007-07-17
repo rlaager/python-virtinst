@@ -42,7 +42,7 @@ class ParaVirtGuest(Guest.XenGuest):
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
-        self._installer.prepare(guest = self, need_bootdev = False, meter = meter)
+        self._installer.prepare(guest = self, meter = meter)
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
