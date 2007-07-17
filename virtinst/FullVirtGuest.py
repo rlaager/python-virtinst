@@ -222,7 +222,8 @@ class FullVirtGuest(Guest.XenGuest):
         for d in self.disks:
             backup_path = None
             if d.transient and not install:
-                if d.device == Guest.VirtualDisk.DEVICE_CDROM:
+                # Libvirt can't handle QEMU having an empty disk path
+                if d.device == Guest.VirtualDisk.DEVICE_CDROM and self.type == "xen":
                     backup_path = d.path
                     d.path = None
                 else:
