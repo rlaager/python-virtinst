@@ -636,12 +636,15 @@ class DistroInstaller(Guest.Installer):
             if not self.extraargs is None:
                 self.install["extraargs"] = self.extraargs
         else:
+            ostype = None
+            if self.type == "xen":
+                ostype = "xen"
             # Need to fetch the kernel & initrd from a remote site, or
             # out of a loopback mounted disk image/device
             (kernelfn, initrdfn, args) = acquireKernel(self.location,
                                                        meter,
                                                        scratchdir = self.scratchdir,
-                                                       type = self.type,
+                                                       type = ostype,
                                                        distro = distro)
             self.install["kernel"] = kernelfn
             self.install["initrd"] = initrdfn
