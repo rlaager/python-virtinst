@@ -462,13 +462,18 @@ def main():
     except RuntimeError, e:
         print >> sys.stderr, _("ERROR: "), e
         sys.exit(1)
+    except SystemExit, e:
+        sys.exit(e.code)
     except Exception, e:
+        print str(e)
         print _("Domain installation may not have been\n successful.  If it was, you can restart your domain\n by running 'virsh start %s'; otherwise, please\n restart your installation.") %(guest.name,)
         raise
 
 if __name__ == "__main__":
     try:
         main()
+    except SystemExit, e:
+        sys.exit(e.code)
     except Exception, e:
         logging.exception(e)
 
