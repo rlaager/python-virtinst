@@ -370,6 +370,7 @@ class Installer(object):
         self._location = None
         self._extraargs = None
         self._boot = None
+        self._cdrom = False
 
         if type is None:
             type = "xen"
@@ -402,6 +403,12 @@ class Installer(object):
         return "/var/tmp"
     scratchdir = property(get_scratchdir)
 
+    def get_cdrom(self):
+        return self._cdrom
+    def set_cdrom(self, enable):
+        self._cdrom = enable
+    cdrom = property(get_cdrom, set_cdrom)
+
     def get_location(self):
         return self._location
     def set_location(self, val):
@@ -412,6 +419,7 @@ class Installer(object):
     def get_boot(self):
         return self._boot
     def set_boot(self, val):
+        self.cdrom = False
         if type(val) == tuple:
             if len(val) != 2:
                 raise ValueError, _("Must pass both a kernel and initrd")
@@ -614,16 +622,10 @@ class Guest(object):
     extraargs = property(get_extraargs, set_extraargs)
 
     def get_cdrom(self):
-        if self._installer.location is not None and \
-           self._installer.location.startswith("/"):
-            return self._installer.location
-        return None
+        return self.location
     def set_cdrom(self, val):
-        if val is None or len(val) == 0:
-            raise ValueError, _("You must specify an ISO or CD-ROM location for the installation")
-        if not os.path.exists(val):
-            raise ValueError, _("The specified media path does not exist.")
-        self._installer.location = os.path.abspath(val)
+        self.location = val
+        self._installer.cdrom = True
     cdrom = property(get_cdrom, set_cdrom)
 
 

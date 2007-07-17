@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2007-07-12" "perl v5.8.8" "User Contributed Perl Documentation"
+.TH VIRT-INSTALL 1 "2007-07-15" "perl v5.8.8" "User Contributed Perl Documentation"
 .SH "NAME"
 virt\-install \- provision new virtual machines
 .SH "SYNOPSIS"
@@ -330,8 +330,11 @@ parameter is implied if connecting to a \s-1QEMU\s0 based hypervisor.
 .IP "\-c \s-1CDROM\s0, \-\-cdrom=CDROM" 4
 .IX Item "-c CDROM, --cdrom=CDROM"
 File to use a virtual CD-ROM device for fully virtualized guests. It can be
-path to an \s-1ISO\s0 image, or to a \s-1CDROM\s0 device. This parameter is deprecated, with 
-the \f(CW\*(C`\-\-location\*(C'\fR parameter as the recommended replacement.
+path to an \s-1ISO\s0 image, or to a \s-1CDROM\s0 device. It can also be a \s-1URL\s0 from which
+to fetch/access a minimal boot \s-1ISO\s0 image. The URLs take the same format as
+described for the \f(CW\*(C`\-\-location\*(C'\fR argument. If this parameter is omitted then
+the \f(CW\*(C`\-\-location\*(C'\fR argument must be given to specify a location for the kernel
+and initrd.
 .IP "\-\-os\-type=OS_TYPE" 4
 .IX Item "--os-type=OS_TYPE"
 Optimize the guest configuration for a type of operating system. This will
@@ -484,40 +487,31 @@ para & full virtualization, and neither this parameter nor the \f(CW\*(C`\-\-hvm
 are specified, this will be prompted for interactively.
 .IP "\-l \s-1LOCATION\s0, \-\-location=LOCATION" 4
 .IX Item "-l LOCATION, --location=LOCATION"
-Installation source for guest virtual machine. The type of media required
-depends on the installer being used. A paravirtualized guest typically
-boots from a kernel+initrd pair, while a fullyvirtualized guest will 
-boot off an \s-1CDROM\s0. The \f(CW\*(C`LOCATION\*(C'\fR can take one of the following forms:
+Installation source for guest virtual machine kernel+initrd pair. This
+is required for paravirtualized guests. Fully virtualized guests must
+use either \f(CW\*(C`\-\-location\*(C'\fR to specify a kernel+initrd, or the \f(CW\*(C`\-\-cdrom\*(C'\fR
+parameter to specify an \s-1ISO/CDROM\s0 image. The \f(CW\*(C`LOCATION\*(C'\fR can take one 
+of the following forms:
 .RS 4
-.IP "\s-1DEVICE\s0" 4
-.IX Item "DEVICE"
-Path to a \s-1CDROM\s0 device for fullyvirtualized guests
-.IP "\s-1FILE\s0" 4
-.IX Item "FILE"
-Path to an \s-1ISO\s0 image for fullyvirtualized guests
 .IP "\s-1DIRECTORY\s0" 4
 .IX Item "DIRECTORY"
-Path a directory containing an installable distribution image for either
-full or paravirtualized guests
+Path to a local directory containing an installable distribution image
 .IP "nfs:host:/path" 4
 .IX Item "nfs:host:/path"
-An \s-1NFS\s0 server location containing an installable distribution image for
-either full or paravirtualized guests.
+An \s-1NFS\s0 server location containing an installable distribution image
 .IP "http://host/path" 4
 .IX Item "http://host/path"
-An \s-1HTTP\s0 server location containing an installable distribution image for
-either full or paravirtualized guests.
+An \s-1HTTP\s0 server location containing an installable distribution image
 .IP "ftp://host/path" 4
 .IX Item "ftp://host/path"
-An \s-1FTP\s0 server location containing an installable distribution image for
-either full or paravirtualized guests.
+An \s-1FTP\s0 server location containing an installable distribution image
 .RE
 .RS 4
 .RE
 .IP "\-x \s-1EXTRA\s0, \-\-extra\-args=EXTRA" 4
 .IX Item "-x EXTRA, --extra-args=EXTRA"
 Additional kernel command line arguments to pass to the installer when
-performing a paravirtualized guest install
+performing a guest install from a kernel+initrd.
 .IP "\-d, \-\-debug" 4
 .IX Item "-d, --debug"
 Print debugging information to the terminal when running the install process.
@@ -536,11 +530,11 @@ Fedora Core 6 from a web server, in text-only mode:
 \&       --file /var/lib/xen/images/demo.img \e
 \&       --file-size 6 \e
 \&       --nographics \e
-\&       --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/ \e
+\&       --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 .Ve
 .PP
 Install a \s-1QEMU\s0 guest, with a real partition, for a different architecture
-using \s-1SDL\s0 graphics:
+using \s-1SDL\s0 graphics, using a local \s-1ISO\s0 image:
 .PP
 .Vb 9
 \&  # virt-install \e
@@ -551,7 +545,22 @@ using \s-1SDL\s0 graphics:
 \&       --network bridge:eth1 \e
 \&       --arch ppc64 \e
 \&       --sdl \e
-\&       --location /root/boot.iso
+\&       --cdrom /root/boot.iso
+.Ve
+.PP
+Install a \s-1QEMU\s0 guest, with a real partition, for a different architecture
+using \s-1SDL\s0 graphics, using a remote kernel and initrd pair:
+.PP
+.Vb 9
+\&  # virt-install \e
+\&       --connect qemu:///system \e
+\&       --name demo \e
+\&       --ram 500 \e
+\&       --file /dev/hdc \e
+\&       --network bridge:eth1 \e
+\&       --arch ppc64 \e
+\&       --sdl \e
+\&       --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 .Ve
 .PP
 Install a \s-1KVM\s0 guest, using \s-1LVM\s0 partition, virtual networking, booting from
@@ -566,7 +575,7 @@ the host \s-1CDROM\s0, using \s-1VNC\s0 server/viewer
 \&       --network network:default \e
 \&       --accelerate \e
 \&       --vnc \e
-\&       --location /dev/cdrom
+\&       --cdrom /dev/cdrom
 .Ve
 .PP
 Run a Live \s-1CD\s0 image under Xen fullyvirt, in diskless environment
@@ -579,7 +588,7 @@ Run a Live \s-1CD\s0 image under Xen fullyvirt, in diskless environment
 \&       --nodisk \e
 \&       --livecd \e
 \&       --vnc \e
-\&       --location /root/fedora7live.iso
+\&       --cdrom /root/fedora7live.iso
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"

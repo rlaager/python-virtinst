@@ -13,7 +13,6 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import os
-
 import Guest
 import CapabilitiesParser
 from virtinst import _virtinst as _
@@ -26,7 +25,7 @@ class LiveCDInstaller(Guest.Installer):
     def __init__(self, type = "xen", location = None):
         Guest.Installer.__init__(self, type, location)
 
-    def prepare(self, guest, need_bootdev, meter, distro = None):
+    def prepare(self, guest, meter, distro = None):
         self.cleanup()
 
         if not os.path.exists(self.location):

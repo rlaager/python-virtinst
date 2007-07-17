@@ -183,15 +183,7 @@ class FullVirtGuest(Guest.XenGuest):
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
-        need_bootdev = True
-
-        # Hmm, qemu ought to be able to boot off a kernel/initrd but
-        # for some reason it often fails, hence disabled here..
-        if self.type == "qemuXXX":
-            need_bootdev = False
-
         self._installer.prepare(guest = self,
-                                need_bootdev = need_bootdev,
                                 meter = meter,
                                 distro = self.os_distro)
 

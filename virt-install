@@ -135,13 +135,15 @@ def get_paravirt_extraargs(extra, guest):
 
 ### fullvirt input gathering functions
 def get_fullvirt_cdrom(cdpath, location, guest):
-    if cdpath is None and location is not None:
-        cdpath = location
+    # Got a location, then ignore CDROM
+    if location is not None:
+        guest.location = location
+        return
 
     while 1:
         cdpath = cli.prompt_for_input(_("What is the virtual CD image, CD device or install location?"), cdpath)
         try:
-            guest.location = cdpath
+            guest.cdrom = cdpath
             break
         except ValueError, e:
             print _("ERROR: "), e
@@ -378,6 +380,9 @@ def main():
         installer = virtinst.DistroInstaller(type = type)
 
     if hvm:
+        # Xen only supports CDROM
+        if type == "xen":
+            installer.cdrom = True
         guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=options.arch)
     else:
         guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)

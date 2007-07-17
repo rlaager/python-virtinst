@@ -236,8 +236,11 @@ parameter is implied if connecting to a QEMU based hypervisor.
 =item  -c CDROM, --cdrom=CDROM
 
 File to use a virtual CD-ROM device for fully virtualized guests. It can be
-path to an ISO image, or to a CDROM device. This parameter is deprecated, with 
-the C<--location> parameter as the recommended replacement.
+path to an ISO image, or to a CDROM device. It can also be a URL from which
+to fetch/access a minimal boot ISO image. The URLs take the same format as
+described for the C<--location> argument. If this parameter is omitted then
+the C<--location> argument must be given to specify a location for the kernel
+and initrd.
 
 =item  --os-type=OS_TYPE
 
@@ -415,47 +418,36 @@ are specified, this will be prompted for interactively.
 
 =item  -l LOCATION, --location=LOCATION
 
-Installation source for guest virtual machine. The type of media required
-depends on the installer being used. A paravirtualized guest typically
-boots from a kernel+initrd pair, while a fullyvirtualized guest will 
-boot off an CDROM. The C<LOCATION> can take one of the following forms:
+Installation source for guest virtual machine kernel+initrd pair. This
+is required for paravirtualized guests. Fully virtualized guests must
+use either C<--location> to specify a kernel+initrd, or the C<--cdrom>
+parameter to specify an ISO/CDROM image. The C<LOCATION> can take one 
+of the following forms:
 
 =over 4
 
-=item DEVICE
-
-Path to a CDROM device for fullyvirtualized guests
-
-=item FILE
-
-Path to an ISO image for fullyvirtualized guests
-
 =item DIRECTORY
 
-Path a directory containing an installable distribution image for either
-full or paravirtualized guests
+Path to a local directory containing an installable distribution image
 
 =item nfs:host:/path
 
-An NFS server location containing an installable distribution image for
-either full or paravirtualized guests.
+An NFS server location containing an installable distribution image
 
 =item http://host/path
 
-An HTTP server location containing an installable distribution image for
-either full or paravirtualized guests.
+An HTTP server location containing an installable distribution image
 
 =item ftp://host/path
 
-An FTP server location containing an installable distribution image for
-either full or paravirtualized guests.
+An FTP server location containing an installable distribution image
 
 =back
 
 =item  -x EXTRA, --extra-args=EXTRA
 
 Additional kernel command line arguments to pass to the installer when
-performing a paravirtualized guest install
+performing a guest install from a kernel+initrd.
 
 =item  -d, --debug
 
@@ -477,10 +469,10 @@ Fedora Core 6 from a web server, in text-only mode:
        --file /var/lib/xen/images/demo.img \
        --file-size 6 \
        --nographics \
-       --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/ \
+       --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 
 Install a QEMU guest, with a real partition, for a different architecture
-using SDL graphics:
+using SDL graphics, using a local ISO image:
 
   # virt-install \
        --connect qemu:///system \
@@ -490,7 +482,20 @@ using SDL graphics:
        --network bridge:eth1 \
        --arch ppc64 \
        --sdl \
-       --location /root/boot.iso
+       --cdrom /root/boot.iso
+
+Install a QEMU guest, with a real partition, for a different architecture
+using SDL graphics, using a remote kernel and initrd pair:
+
+  # virt-install \
+       --connect qemu:///system \
+       --name demo \
+       --ram 500 \
+       --file /dev/hdc \
+       --network bridge:eth1 \
+       --arch ppc64 \
+       --sdl \
+       --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 
 Install a KVM guest, using LVM partition, virtual networking, booting from
 the host CDROM, using VNC server/viewer
@@ -503,7 +508,7 @@ the host CDROM, using VNC server/viewer
        --network network:default \
        --accelerate \
        --vnc \
-       --location /dev/cdrom 
+       --cdrom /dev/cdrom 
 
 Run a Live CD image under Xen fullyvirt, in diskless environment
 
@@ -514,7 +519,7 @@ Run a Live CD image under Xen fullyvirt, in diskless environment
        --nodisk \
        --livecd \
        --vnc \
-       --location /root/fedora7live.iso
+       --cdrom /root/fedora7live.iso
 
 =head1 AUTHOR
 

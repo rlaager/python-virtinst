@@ -612,7 +612,7 @@ class DistroInstaller(Guest.Installer):
     location = property(get_location, set_location)
 
     def _prepare_cdrom(self, guest, distro, meter):
-        if self.location.startswith("/"):
+        if self.location.startswith("/") and os.path.exists(location):
             # Huzzah, a local file/device
             cdrom = self.location
         else:
@@ -660,7 +660,7 @@ class DistroInstaller(Guest.Installer):
                                                  readOnly=True,
                                                  transient=True))
 
-    def prepare(self, guest, need_bootdev, meter, distro = None):
+    def prepare(self, guest, meter, distro = None):
         self.cleanup()
 
         self.install = {
@@ -669,7 +669,7 @@ class DistroInstaller(Guest.Installer):
             "extraargs" : "",
         }
 
-        if need_bootdev:
+        if self.cdrom:
             self._prepare_cdrom(guest, distro, meter)
         else:
             self._prepare_kernel_and_initrd(guest, distro, meter)
