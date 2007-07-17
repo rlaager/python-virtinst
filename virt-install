@@ -240,6 +240,7 @@ def parse_args():
     parser.add_option("", "--noapic", action="store_true", dest="noapic", help=_("Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
     parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help=_("Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
     parser.add_option("", "--arch", type="string", dest="arch",
+                      default=virtinst.util.get_default_arch(),
                       action="callback", callback=cli.check_before_store,
                       help=_("The CPU architecture to simulate"))
     
