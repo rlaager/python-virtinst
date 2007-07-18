@@ -44,8 +44,12 @@ class FullVirtGuest(Guest.XenGuest):
                               "acpi": True, \
                               "apic": True, \
                               "continue": True, \
-                              "variants": { "winxp": { "label": "Microsoft Windows XP" }, \
-                                            "win2k": { "label": "Microsoft Windows 2000" }, \
+                              "variants": { "winxp": { "label": "Microsoft Windows XP", \
+                                                       "acpi": False, \
+                                                       "apic": False }, \
+                                            "win2k": { "label": "Microsoft Windows 2000", \
+                                                       "acpi": False, \
+                                                       "apic": False }, \
                                             "win2k3": { "label": "Microsoft Windows 2003" }, \
                                             "vista": { "label": "Microsoft Windows Vista" }, \
                                             }, \
@@ -64,7 +68,9 @@ class FullVirtGuest(Guest.XenGuest):
                             "acpi": True,
                             "apic": True,
                             "continue": False,
-                            "variants": { "msdos": { "label": "MS-DOS" }, \
+                            "variants": { "msdos": { "label": "MS-DOS", \
+                                                     "acpi": False, \
+                                                     "apic": False }, \
                                           "netware4": { "label": "Novell Netware 4" }, \
                                           "netware5": { "label": "Novell Netware 5" }, \
                                           "netware6": { "label": "Novell Netware 6" }, \
@@ -137,12 +143,18 @@ class FullVirtGuest(Guest.XenGuest):
                 self.features["acpi"] = FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant]["acpi"]
             else:
                 self.features["acpi"] = FullVirtGuest.OS_TYPES[os_type]["acpi"]
+        elif self.features["acpi"] is None:
+            # default for acpi should be "true", but we can't set that until we get here
+            self.features["acpi"] = True
 
         if self.features["apic"] is None and os_type is not None:
             if os_variant is not None and FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant].has_key("apic"):
                 self.features["apic"] = FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant]["apic"]
             else:
                 self.features["apic"] = FullVirtGuest.OS_TYPES[os_type]["apic"]
+        elif self.features["apic"] is None:
+            # default for apic should be "true", but we can't set that until we get here
+            self.features["apic"] = True
 
     def get_os_distro(self):
         if self.os_type is not None and self.os_variant is not None and "distro" in FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant]:
