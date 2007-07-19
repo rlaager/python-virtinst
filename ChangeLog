@@ -1,80 +1,705 @@
-2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+2007-07-18  "Daniel P. Berrange  <berrange@redhat.com>
 
-	This patch adds a LiveCDInstaller class which has the simple
+	* setup.py:
+	Fixed typo in __init__.py name
+	[342281abfd7a] [tip]
+
+	* setup.py:
+	Exit with non-zero status for test failures
+	[46192a3d444b]
+
+	* setup.py, virtinst/__init__.py, virtinst/__init__.py.in:
+	Rename __init__py.in back to __init__.py to make tests work reliably
+	[7343e5251c3f]
+
+	* virtinst/DistroManager.py:
+	Fixed variable name
+	[677dabc13e19]
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml:
+	Fixed test for CDROM device with empty source
+	[50100848408d]
+
+2007-07-18  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/FullVirtGuest.py:
+	Fixes BZ 248487, which was preventing many fullvirt guests (any that
+	required acpi and apic on) from installing successfully unless those
+	options were explicitly supplied. Also sets the default for acpi and
+	apic back to 'off' for win2k and winxp guests.
+	[0515a38b27e9]
+
+2007-07-17  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install:
+	Deal with SystemExit exception quietly
+	[de5dab60001c]
+
+	* virtinst/ParaVirtGuest.py:
+	Remove bogus need_bootdev arg
+	[4b1ffe4235cb]
+
+2007-07-17  berrange  <berrange@pumpkin.virt.boston.redhat.com>
+
+	* virtinst/Guest.py:
+	Always include a <source> tag, but use empty path for transient
+	CDROM
+	[ef95c44a16b4]
+
+2007-07-17  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/FullVirtGuest.py:
+	Don't create an empty CDROM with QEMU
+	[967601d94edb]
+
+	* virtinst/DistroManager.py:
+	Fix ostype for fetching non-Xen kernels
+	[6bd4aa523508]
+
+	* virt-install, virtinst/util.py:
+	Pick sane default arch
+	[9e80dade15a3]
+
+	* man/en/virt-install.1, man/en/virt-install.pod, virt-install,
+	virtinst/DistroManager.py, virtinst/FullVirtGuest.py,
+	virtinst/Guest.py, virtinst/LiveCDInstaller.py:
+	Re-work way installer chooses between kernel+initrd vs cdrom. Always
+	use cdrom with Xen HV. If --location is used prefer kernel+initrd,
+	or --cdrom is used, prefer ISO
+	[303c7bc574d5]
+
+2007-07-15  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* man/en/virt-install.1, man/en/virt-install.pod:
+	Fixed docs about --livecd
+	[b6a8ef48c88b]
+
+2007-07-12  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/CapabilitiesParser.py:
+	Make parse_features method for capabilities public
+	[5ca9f240b398]
+
+	* man/en/virt-install.1, man/en/virt-install.pod, virt-install:
+	Replace generic --installer option with specific --livecd option
+	[83bdc16fa84f]
+
+	* virtinst/DistroManager.py:
+	Revert to using transient flag, so CDROM device is still attached
+	post boot, but with no media loaded
+	[f73e4df030d6]
+
+	* virtinst/DistroManager.py:
+	Catch Exception instead of RuntimeError since the former deals with
+	404 condition better
+	[1714008a10b5]
+
+	* virt-clone, virt-install, virtinst/cli.py:
+	Refactor common command line processing code into virtinst/cli
+	[02aefa186801]
+
+	* virtinst/util.py:
+	Comment out annoying error message about max vcpus
+	[3d47bd1146dc]
+
+	* virtinst/CloneManager.py:
+	Fixed variable name refernce
+	[683d00512ec3]
+
+	* setup.py:
+	Add build/lib to test path, so that tests use generated script
+	[6d4342892563]
+
+	* tests/xmlconfig.py:
+	Explicitly do a readonly connection, though technically it should be
+	read/write, readonly works better in test suite
+	[9fb19a6802a2]
+
+2007-07-09  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/CloneManager.py:
+	Fixed hardcoded use of Xen connection when cloning
+	[422e2f7d56a2]
+
+	* virt-clone, virt-install, virtinst/CapabilitiesParser.py,
+	virtinst/CloneManager.py, virtinst/DistroManager.py,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/LiveCDInstaller.py, virtinst/ParaVirtGuest.py,
+	virtinst/util.py:
+	Ensure all strings are translated with gettext Cole Robinson
+	[9d8165be6060]
+
+	* MANIFEST.in, po/virtinst.pot, python-virtinst.spec.in, setup.py,
+	virtinst/__init__.py, virtinst/__init__.py.in:
+	Initial infrastructure for building/installing po files Cole
+	Robinson
+	[231578c9223a]
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/boot-paravirt-disk-block.xml, tests/boot-paravirt-
+	disk-drv-phy.xml, tests/boot-paravirt-many-disks.xml, tests/install-
+	fullyvirt-disk-block.xml, tests/install-paravirt-disk-block.xml,
+	tests/install-paravirt-disk-drv-phy.xml, tests/install-paravirt-
+	many-disks.xml, tests/xmlconfig.py:
+	Fixed test suite to pass with latest validation rules
+	[14215b6a5caf]
+
+2007-07-04  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* man/en/virt-clone.1, man/en/virt-clone.pod:
+	Fixed man page typos (Atsushi SAKAI)
+	[77f6b840cf40]
+
+2007-06-22  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* AUTHORS:
+	Previous changeset courtesy Cole Robinson -- thanks Cole\!
+	[65ea24a40b29]
+
+	* virt-install, virtinst/DistroManager.py, virtinst/Guest.py,
+	virtinst/util.py:
+	Clean up validation messages and export them to virtinst. First step
+	in eliminating virt-manager and virtinst duplicate validation
+	issues.
+	[1a95d8dd8d12]
+
+2007-06-14  Saori Fukuta  <fukuta.saori@jp.fujitsu.com>
+
+	* virtinst/Guest.py:
+	[et-mgmt-tools] [PATCH] checking for busy disk Hi,
+
+	The virt-install & virt-manager are checking if the physical device
+	has been using by other domain. But they does not check, when the
+	device is file or tap.
+
+	So I add to check it.
+
+	Signed-off-by: Saori Fukuta <fukuta.saori@jp.fujitsu.com>
+
+	Thanks, Saori Fukuta
+	[3e2bf458732a]
+
+2007-06-13  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/DistroManager.py:
+	Leave the cdrom device attached to a guest after install, since it
+	is now easy for the operator to detach it from virsh or virt-
+	manager.
+	[633d1d187b69]
+
+2007-06-13  Saori Fukuta  <fukuta.saori@jp.fujitsu.com>
+
+	* virtinst/Guest.py:
+	[et-mgmt-tools] [PATCH] checking for file-size Hi,
+
+	I add to check for the file-size of the disk. If the file-size is
+	less than or equal to 0, it will show the following message:
+	ERROR: Size of the disk image must be greater than 0 and ask again.
+
+	Signed-off-by: Saori Fukuta <fukuta.saori@jp.fujitsu.com>
+
+	Thanks, Saori Fukuta
+	[e5fa6869b1c6]
+
+2007-06-13  Masayuki Sunou  <fj1826dm@aa.jp.fujitsu.com>
+
+	* virt-install:
+	[et-mgmt-tools] [PATCH] Fix memory check in interactive mode Hi
+
+	When memory is interactively input to virt-install, memory is not
+	checked.
+
+	------------------------------------------------------------ How
+	much RAM should be allocated (in megabytes)? 1 What would you like
+	to use as the disk (path)?
+	------------------------------------------------------------
+
+	This patch fixes it.
+
+	 Signed-off-by: Masayuki Sunou <fj1826dm@aa.jp.fujitsu.com>
+
+	Thanks, Masayuki Sunou.
+
+	--------------------------------------------------------------------
+	-----------
+	[2c69f8de0756]
+
+	* virtinst/FullVirtGuest.py:
+	[et-mgmt-tools] [PATCH] Fixes the error when Windows is installed
+	with "-- os-variant" option Hi
+
+	When I install Windows with "-- os-variant" option, virt-install
+	outputs the following errors.
+
+	--------------------------------------------------------------------
+	------------
+	 --os-type="windows" --os-variant="win2k" --file /dev/sda8
+
+	Starting install... libvir: Xen Daemon error : GET operation failed:
+	Domain installation may not have been successful. If it was, you
+	can restart your domain by running 'virsh start TEST'; otherwise,
+	please restart your installation. Wed, 30 May 2007 13:05:57 ERROR
+	'distro' Traceback (most recent call last): File "/usr/bin/virt-
+	install", line 647, in <module> main() File "/usr/bin/virt-
+	install", line 607, in main dom =
+	guest.start_install(conscb,progresscb) File "/usr/lib/python2.5
+	/site-packages/virtinst/Guest.py", line 668, in start_install
+	self._prepare_install(meter) File "/usr/lib/python2.5/site-
+	packages/virtinst/FullVirtGuest.py", line 195, in _prepare_install
+	distro = self.os_distro) File "/usr/lib/python2.5/site-
+	packages/virtinst/FullVirtGuest.py", line 148, in get_os_distro
+	return FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_vari
+	ant]["distro""] KeyError: 'distro'
+	---------------------------------------------------------------------
+	-----------
+
+	This patch fixes it.
+
+	 Signed-off-by: Masayuki Sunou <fj1826dm@aa.jp.fujitsu.com>
+
+	Thanks, Masayuki Sunou.
+
+	--------------------------------------------------------------------
+	-----------
+	[fc9321965c89]
+
+2007-06-05  Nobuhiro Itou  <fj0873gn@aa.jp.fujitsu.com>
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py:
+	Re: [et-mgmt-tools] [PATCH] [RESEND] Fix continue to install Windows
+	Hi,
+
+	Would you give me a comment on this patch? If not, please apply it.
+
+	> I can't continue to install Windows HVM domain after first
+	restart. > After the restarting, /dev/cdrom (or ISO path) has not
+	been attached to the domain. > The attached patch solves this
+	problem. > > Signed-off-by: Nobuhiro Itou
+	<fj0873gn@aa.jp.fujitsu.com>
+
+	 Thanks, Nobuhiro Itou.
+	[109f14bcae2b]
+
+2007-05-31  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-clone:
+	Merge patches
+	[797e92fd5e0d]
+
+	* virtinst/CloneManager.py:
+	Handle storage other than read-write hard disks better. Signed-off-
+	by: Kazuki Mizushima <mizushima.kazuk@jp.fujitsu.com>
+	[6bba9515ea3f]
+
+	* virt-clone:
+	Add option to copy clone without copying the contents of its
+	storage. Signed-off-by: Kazuki Mizushima
+	<mizushima.kazuk@jp.fujitsu.com>
+	[40fdca283185]
+
+	* virtinst/CloneManager.py:
+	Add option to copy clone without copying the contents of its
+	storage. Signed-off-by: Kazuki Mizushima
+	<mizushima.kazuk@jp.fujitsu.com>
+	[63ea0658cd14]
+
+	* virtinst/CloneManager.py:
+	revert 192 -- applied patches in wrong order
+	[19bd362f3ae1]
+
+	* virtinst/CloneManager.py:
+	Clone a guest's configuration without actually cloning its storage.
+	Signed-off-by: Kazuki Mizushima <mizushima.kazuk@jp.fujitsu.com>.
+	[51e81b866a2a]
+
+2007-05-25  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* Merge heads
+	[7fd35e3303c6]
+
+2007-05-24  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml:
+	Update tests to deal with new cdrom xml
+	[6bb44f72be68]
+
+	* virtinst/Guest.py:
+	keymap validation should allow hyphens as well as underscores
+	[308a1de5ee61]
+
+2007-05-25  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-clone, virtinst/CloneManager.py:
+	Added support for sparse file cloning
+	[08500047b222]
+
+	* python-virtinst.spec.in, setup.py:
+	Move virt-install & virt-clone to /usr/bin instead of sbin since
+	QEMU driver can be used as non-root
+	[409e69a6a428]
+
+2007-05-24  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* Merge heads
+	[e0111ead3258]
+
+	* virtinst/DistroManager.py:
+	Fixed reference to acquireBootDisk method
+	[f61c8ea6c168]
+
+2007-05-23  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py:
+	Hi,
+
+	I made the patch that the HVM domain after install has non-source
+	virtual CD-ROM device.
+
+	The effect of this patch is the following.
+	- Users doesn't need attach virtual CD-ROM device to install software
+	and driver after installing the domain.
+	- CD-ROM can be used only by executing xm block-configure.
+
+	Could you apply this correction?
+
+	Signed-off-by: Nobuhiro Itou <fj0873gn@aa.jp.fujitsu.com>
+
+	 Thanks, Nobuhiro Itou.
+
+
+	-----------------------------------------------------------
+	[e65a50d9998b]
+
+2007-05-21  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* man/en/virt-install.1:
+	Unbreak generated man page after previous commit
+	[b5297ff8ca09]
+
+	* man/en/virt-clone.1, man/en/virt-clone.pod, man/en/virt-install.1,
+	man/en/virt-install.pod, python-virtinst.spec.in, setup.py:
+	Added man page for virt-clone too
+	[4e080aaf967d]
+
+	* virt-clone:
+	Added persistent logging as per virt-install
+	[c80495d19e38]
+
+	* virt-install:
+	Move logs into $HOME/.virtinst & fix Xen UID check
+	[73bffb584a87]
+
+	* MANIFEST.in, man/en/virt-install.1, man/en/virt-install.pod, python-
+	virtinst.spec.in, setup.py:
+	Added manual page for virt-install
+	[234996fe2993]
+
+2007-05-18  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-clone, virtinst/CloneManager.py:
+	Allow use as non-root & auto-guess HV
+	[dedaa6808d0d]
+
+2007-05-18  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* AUTHORS, virt-clone, virtinst/CloneManager.py:
+	Initial commit for vm cloning. The virt-clone command will clone
+	shut down VMs, including their storage. virt-clone --help describes
+	the command set. Many thanks to Kazuki Mizushima.
+	[c360c836131e]
+
+2007-05-18  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install:
+	Added persistent logging ( Nobuhiro Itou )
+	[e11462a77df5]
+
+	* virtinst/ParaVirtGuest.py:
+	Replace xm console with virsh console
+	[0ad5a9b32957]
+
+2007-05-17  Mark McLoughlin  <markmc@redhat.com>
+
+	* ChangeLog, virt-install, virtinst/LiveCDInstaller.py,
+	virtinst/__init__.py:
+	2007-04-17 Mark McLoughlin <markmc@redhat.com>
+
+	 This patch adds a LiveCDInstaller class which has the simple
 	job of setting up the cdrom disk and returning the appropriate
 	<os> blob to boot from it.
-	
-	* virt-install: add livecd installer type.
 
-	* virtinst/LiveCDInstaller.py: add LiveCDInstaller
+	 * virt-install: add livecd installer type.
 
-	* virtinst/__init__.py: expose it here
-	
-2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+	 * virtinst/LiveCDInstaller.py: add LiveCDInstaller
 
-	* virtinst/CapabilitiesParser.py: adds a simple module
+	 * virtinst/__init__.py: expose it here
+	[85efaff7a0a6]
+
+	* ChangeLog, tests/capabilities-qemu.xml, tests/capabilities-test.xml,
+	tests/capabilities-xen.xml, tests/capabilities.py,
+	virtinst/CapabilitiesParser.py:
+	2007-04-17 Mark McLoughlin <markmc@redhat.com>
+
+	 * virtinst/CapabilitiesParser.py: adds a simple module
 	for parsing libvirt's getCapabilities() XML.
 
-	* tests/capabilities.py: add some tests for the parser
-	
-2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+	 * tests/capabilities.py: add some tests for the parser
+	[e858508b7ec4]
 
-	* virt-install: add two new options to virt-install:
-	  --nodisks - if creating a VM to run a livecd or a prebuilt
-	  system image, it is not neccessary to create another disk
-	  for the VM
-	  --installer - this option allows the user to choose the
-	  installer type
-	
-2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+	* ChangeLog, virt-install:
+	2007-04-17 Mark McLoughlin <markmc@redhat.com>
 
-	Not all installer types need the VM to be executed twice
-	- i.e. the "install" phase may not need the VM to be run,
-	and we only start the VM post-install.
+	 * virt-install: add two new options to virt-install:
+	          --nodisks - if creating a VM to run a livecd or a prebuilt
+	system image, it is not neccessary to create another disk
+	for the VM
+	          --installer - this option allows the user to choose the
+	installer type
+	[2e8e15ff6314]
 
-	* virtinst/Guest.py: allow get_config_xml(install=True)
+	* ChangeLog, virtinst/Guest.py:
+	2007-04-17 Mark McLoughlin <markmc@redhat.com>
+
+	 Not all installer types need the VM to be executed twice
+	        - i.e. the "install" phase may not need the VM to be run, and
+	we only start the VM post-install.
+
+	 * virtinst/Guest.py: allow get_config_xml(install=True)
 	to return None, causing the first VM run to be skipped.
-	
-2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+	[fd1dddbdc59f]
 
-	* virt-install: clean up the two similar "start guest,
+	* ChangeLog, virt-install:
+	2007-04-17 Mark McLoughlin <markmc@redhat.com>
+
+	 * virt-install: clean up the two similar "start guest,
 	check to see if it succeeded" code paths into a single code
 	path.
-	
-2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+	[ac952c4dd0eb]
 
-	* virt-install, virtinst/DistroManager.py, virtinst/Guest.py:
-	The existing heuristic we use in virt-install to detect whether
-	an install has completed successfully is dependant on the type
-	of installer being used - i.e. if you create a VM with a livecd
-	or a raw ext3 image, there may be no disk with an MBR at the end.
-	Move the post-install logic into a new DistroInstaller method.
-	
-2007-04-17  Mark McLoughlin  <markmc@redhat.com>
+	* ChangeLog, virt-install, virtinst/DistroManager.py,
+	virtinst/Guest.py:
+	2007-04-17 Mark McLoughlin <markmc@redhat.com>
 
-	* virtinst/Guest.py: introduce a new Installer class which
-	encapsulates the notion of how to install a guest, the
-	idea being that we can install a guest using e.g. a distro
+	 * virt-install, virtinst/DistroManager.py,
+	virtinst/Guest.py: The existing heuristic we use in virt-
+	install to detect whether an install has completed
+	successfully is dependant on the type of installer being
+	used - i.e. if you create a VM with a livecd or a raw ext3
+	image, there may be no disk with an MBR at the end. Move the
+	post-install logic into a new DistroInstaller method.
+	[bd03309508aa]
+
+	* ChangeLog, virt-install:
+	2007-04-17 Mark McLoughlin <markmc@redhat.com>
+
+	 * virt-install: instantiate the appropriate guest type
+	with a DistroInstaller instance. This should be the same as
+	passing installer=None to the guest constructors.
+	[c025506e430d]
+
+	* ChangeLog, tests/xmlconfig.py, virtinst/DistroManager.py,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py, virtinst/__init__.py:
+	Add Installer and re-factor existing code into DistroInstaller
+
+	 This patch re-factors things so as to introduce the concept of an
+	"installer type". The idea is that we can create a VM using not only
+	a typical distribution installer, but also e.g. a livecd installer
+	or just a pre-built system image.
+
+	To that end an Installer class is added which is orthogonal to the
+	existing Guest class - i.e. the choice of installer is independant
+	of the choice of fully virt vs. paravirt.
+
+	In more detail the patch does the following:
+
+	 + Adds the Installer base class - sub-classes are expected to
+	implement the prepare() and get_os_blob() methods
+
+	 + Moves the Guest type, scratchdir, boot, extraargs, location,
+	and cdrom properties to the installer, but chains the original
+	properties to the installer in order to maintain compatibility
+
+	 + Rather than having Guest sub-classes implement get_runtime_xml()
+	and get_install_xml(), they now implement get_osblob() and chain
+	up to Installer.get_osblob() passing the installer parameters
+	like hvm or arch
+
+	 + Likewise, Guest sub-class implement a prepare_install() method
+	which chains up to Installer.prepare() passing it parameters
+	like need_bootdev and guest
+
+	 + All the existing prepare() and get_osblob() logic from
+	FullyVirtGuest and ParaVirtGuest is consolidated in a single
+	DistroInstaller class
+
+	 + In FullyVirtGuest we append the features XML to the osblob
+	returned by the installer
+
+	 + If ParaVirtGuest or FullyVirtGuest is not passed an installer
+	instance, they create a DistroInstaller instance as a fallback
+
+	 2007-04-17 Mark McLoughlin <markmc@redhat.com>
+
+	 * virtinst/Guest.py: introduce a new Installer class which
+	encapsulates the notion of how to install a guest, the idea
+	being that we can install a guest using e.g. a distro
 	installer, livecd or pre-built image.
 
-	* virtinst/FullVirtGuest.py, virtinst/ParaVirtGuest.py:
+	 * virtinst/FullVirtGuest.py, virtinst/ParaVirtGuest.py:
 	re-factor out the prepare_install_location() and get_config_xml()
 	stuff and chain up to the installer for it
 
-	* virtinst/DistroManager.py: add DistroInstaller which
+	 * virtinst/DistroManager.py: add DistroInstaller which
 	knows how to install using a distro iso or install tree
 
-	* virtinst/__init__.py: expose DistroManager
+	 * virtinst/__init__.py: expose DistroManager
 
-	* tests/xmlconfig.py: update to use installer
+	 * tests/xmlconfig.py: update to use installer
+	[b14c4d6a1744]
+
+2007-05-01  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/DistroManager.py:
+	Added logic to detect RHEL5 client distro flavour
+	[42e9479fa521]
+
+	* virt-install, virtinst/util.py:
+	Automatically pick sensible default networking if no arg is listed,
+	rather than defaulting to xenbr0. Pick sensible connect URI based on
+	host OS
+	[5b37d71c88b6]
+
+2007-04-30  Mark McLoughlin  <markmc@redhat.com>
+
+	* virt-install, virtinst/Guest.py:
+	[et-mgmt-tools] [patch 4/4] Remove the unused Guest.keymap property
+	The Guest keymap property turns out to be unused, the keymap in the
+	graphics property is what is actually used.
+
+	Remove the property and move the keymap validation into the graphics
+	property setter.
+
+	Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+	[cdbbe109cf8d]
+
+	* virt-install:
+	[et-mgmt-tools] [patch 3/4] Remove duplicate call to FullVirtGuest()
+	constructor Simple patch which makes use of the fact passing
+	arch=None to the FullVirtGuest() constructor is perfectly valid.
+	Remove one of the calls to the constructor.
+
+	Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+	[21ba48e47d9c]
+
+	* virtinst/FullVirtGuest.py:
+	[et-mgmt-tools] [patch 2/4] Fix typo in hvm kernel/initrd XML Fixes
+	a minor typo in the libvirt XML we output when booting qemu with a
+	kernel/initrd - the <features> block should be outside the <os>
+	block.
+
+	Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+	[ba44389ce195]
+
+	* virt-install:
+	[et-mgmt-tools] [patch 1/4] Typo in kvm support Patch from David
+	Lutterkort
+
+	Fixes a minor type in kvm support where we reference a non-existent
+	module.
+
+	Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+	[00984cdd0c55]
+
+2007-04-25  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/Guest.py:
+	Add change to Guest.py left out of last commit; Check number of
+	vbds; can't be greater than 16. Thanks to Shigeki Sakamoto.
+	[71f2046b9805]
+
+	* virtinst/FullVirtGuest.py, virtinst/ParaVirtGuest.py:
+	Check number of vbds; can't be greater than 16. Thanks to Shigeki
+	Sakamoto.
+	[25c7a1e8e7f1]
+
+2007-04-24  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/Guest.py:
+	Fixed progress bar import
+	[3a8d4b7d2fdb]
+
+2007-04-17  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/Guest.py:
+	Add console reconnect patch and merge heads
+	[31a333a9a5ba]
+
+2007-04-17  Nobuhiro Itou  <fj0873gn@aa.jp.fujitsu.com>
+
+	* virtinst/Guest.py:
+	[et-mgmt-tools] [PATCH] Fix connecting console at domain restarting
+	Hi,
+
+	When I execute virt-install --paravirt --nographics, the serial
+	console isn't connected after the domain restarting. The attached
+	patch adds to solve this problem.
+
+	Signed-off-by: Nobuhiro Itou <fj0873gn@aa.jp.fujitsu.com>
+
+	 Thanks, Nobuhiro Itou.
+	[f2564287112a]
+
+2007-04-16  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* tests/xmlconfig.py:
+	Fixed tests
+	[3e881ff1f44c]
+
+	* .hgtags:
+	Added tag virtinst-0_103_0 for changeset 8fd89884ebf7
+	[a95e91ce2fa0]
+
+	* virtinst/Guest.py:
+	Wait for domain to restart before trying console connection (
+	Nobuhiro Itou)
+	[8fd89884ebf7] [virtinst-0_103_0]
 
 2007-04-15  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* Merge heads
+	[27692467016b]
+
+2007-04-13  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/boot-paravirt-disk-block.xml, tests/boot-paravirt-
+	disk-drv-file.xml, tests/boot-paravirt-disk-drv-phy.xml, tests/boot-
+	paravirt-disk-drv-tap-qcow.xml, tests/boot-paravirt-disk-drv-
+	tap.xml, tests/boot-paravirt-disk-file.xml, tests/boot-paravirt-
+	many-disks.xml, tests/install-fullyvirt-disk-block.xml, tests
+	/install-fullyvirt-disk-file.xml, tests/install-paravirt-disk-
+	block.xml, tests/install-paravirt-disk-drv-file.xml, tests/install-
+	paravirt-disk-drv-phy.xml, tests/install-paravirt-disk-drv-tap-
+	qcow.xml, tests/install-paravirt-disk-drv-tap.xml, tests/install-
+	paravirt-disk-file.xml, tests/install-paravirt-many-disks.xml,
+	tests/xmlconfig.py:
+	Fixed test suite UUID
+	[c5d674528d03]
+
+2007-04-15  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* ChangeLog, NEWS, README, setup.py:
+	Update for 0.103.0 release
+	[f67a3a87b022]
 
 	* virt-install, virtinst/FullVirtGuest.py:
 	Change OS distro/variant type so that command line can give a short
 	version instead of long label. Include OS distro key for image
 	fetcher support
-	[33d3330b538f] [tip]
+	[33d3330b538f]
 
 	* virtinst/DistroManager.py:
 	Change way Red Hat distro detection works to avoid GPG key name

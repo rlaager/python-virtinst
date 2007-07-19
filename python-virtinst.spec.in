@@ -58,6 +58,19 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-clone
 
 %changelog
+* Tue Jul 18 2007 Daniel P. Berrange <berrange@redhat.com> - 0.200.0-1
+- Updated to 0.200.0
+- Added virt-clone tool
+- Added manual pages
+
+* Tue Jun 05 2007 Daniel P. Berrange <berrange@redhat.com> - 0.103.0-1
+- Updated to 0.103.0 release
+- Fixed module import when using --accelerate
+- Fixed detection of RHEL5 client distro
+- Fixed default 'network's selection & default URI choice to
+  not be Xen specific
+- Fixed features XML when using initrd for fullvirt
+
 * Tue Mar 20 2007 Daniel P. Berrange <berrange@redhat.com> - 0.102.0-1
 - Updated to 0.102.0 release
 

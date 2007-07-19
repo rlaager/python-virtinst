@@ -107,7 +107,7 @@ class install_data(_install_data):
         _install_data.run(self)
 
 setup(name='virtinst',
-      version='0.103.0',
+      version='0.200.0',
       description='Virtual machine installation',
       author='Jeremy Katz',
       author_email='katzj@redhat.com',

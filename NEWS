@@ -1,6 +1,18 @@
    Virt Install News
    =================
 
+Release 0.200.0
+---------------
+
+This release introduces the virt-clone tool which provides the
+ability to clone an existing inactive guest. The disk images
+will be copied, new MAC address, UUID and name will be given to
+the guest. Documentation is improved with the addition of manual
+pages for both virt-install and virt-clone. Validation of input
+parameters has been further enhanced, and re-factored to allow
+sharing with virt-manager. The virt-install tool can be used to
+boot live CD images, with or without underlying storage.
+
 Release 0.103.0
 ---------------
 
