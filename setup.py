@@ -38,8 +38,12 @@ class TestCommand(Command):
         t = TextTestRunner(verbosity = 1)
         coverage.erase()
         coverage.start()
-        t.run(tests)
+        result = t.run(tests)
         coverage.stop()
+        if len(result.failures) > 0 or len(result.errors) > 0:
+            sys.exit(1)
+        else:
+            sys.exit(0)
 
 class build(_build):
     """ custom build command to compile i18n files"""
