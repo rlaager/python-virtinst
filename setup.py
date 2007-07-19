@@ -82,7 +82,7 @@ class install_lib(_install_lib):
 
     def run(self):
         tmplocale = locale.replace("/", "\/") # Escape path to call sed
-        cmd = "sed -e \"s/::LOCALEDIR::/%s/\" < virtinst/__init.py > " % tmplocale +\
+        cmd = "sed -e \"s/::LOCALEDIR::/%s/\" < virtinst/__init__.py > " % tmplocale +\
               "%s/virtinst/__init__.py" % builddir
         os.system(cmd)
         _install_lib.run(self)
