@@ -612,7 +612,7 @@ class DistroInstaller(Guest.Installer):
     location = property(get_location, set_location)
 
     def _prepare_cdrom(self, guest, distro, meter):
-        if self.location.startswith("/") and os.path.exists(location):
+        if self.location.startswith("/") and os.path.exists(self.location):
             # Huzzah, a local file/device
             cdrom = self.location
         else:
