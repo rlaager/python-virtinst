@@ -29,7 +29,6 @@ class TestCommand(Command):
         Finds all the tests modules in tests/, and runs them.
         '''
         testfiles = [ ]
-        sys.path.insert(0, "build/lib")
         for t in glob(pjoin(self._dir, 'tests', '*.py')):
             if not t.endswith('__init__.py'):
                 testfiles.append('.'.join(
@@ -79,8 +78,7 @@ class install_lib(_install_lib):
 
     def run(self):
         tmplocale = locale.replace("/", "\/") # Escape path to call sed
-        cmd = "cat virtinst/__init__.py.in | " +\
-              "sed -e \"s/::LOCALEDIR::/%s/\" > " % tmplocale +\
+        cmd = "sed -e \"s/::LOCALEDIR::/%s/\" < virtinst/__init.py > " % tmplocale +\
               "%s/virtinst/__init__.py" % builddir
         os.system(cmd)
         _install_lib.run(self)
