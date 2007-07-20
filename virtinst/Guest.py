@@ -436,9 +436,9 @@ class Installer(object):
     boot = property(get_boot, set_boot)
 
     # extra arguments to pass to the guest installer
-    def get_extraargs(self):
+    def get_extra_args(self):
         return self._extraargs
-    def set_extraargs(self, val):
+    def set_extra_args(self, val):
         self._extraargs = val
     extraargs = property(get_extraargs, set_extraargs)
 
