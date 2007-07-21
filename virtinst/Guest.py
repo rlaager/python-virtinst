@@ -440,7 +440,7 @@ class Installer(object):
         return self._extraargs
     def set_extra_args(self, val):
         self._extraargs = val
-    extraargs = property(get_extraargs, set_extraargs)
+    extraargs = property(get_extra_args, set_extra_args)
 
 class Guest(object):
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
