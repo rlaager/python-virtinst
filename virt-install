@@ -48,6 +48,23 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
         if not size is None:
             msg = _("Please enter the path to the file you would like to use for storage. It will have size %sGB.") %(size,)
         disk = cli.prompt_for_input(msg, disk)
+        if os.path.exists(disk) and os.path.isfile(disk):
+            while 1:
+                retryFlg = False
+                warnmsg = _("You are going to overwrite file '%s'!\n") % disk
+                res = cli.prompt_for_input(warnmsg + _("Do you really want to use the file (yes or no)? "))
+                try:
+                    if cli.yes_or_no(res) is True:
+                        break
+                    else:
+                        retryFlg = True
+                        break
+                except ValueError, e:
+                    print _("ERROR: "), e
+                    continue
+            if retryFlg is True:
+                disk = None
+                continue
         while 1:
             if os.path.exists(disk):
                 break
@@ -64,8 +81,8 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
             if d.is_conflict_disk(conn) is True:
                 while 1:
                     retryFlg = False
-                    warnmsg = _("Disk %s is already in use by another guest!") % disk
-                    res = cli.prompt_for_input(warnmsg + _("  Do you really want to use the disk (yes or no)? "))
+                    warnmsg = _("Disk %s is already in use by another guest!\n") % disk
+                    res = cli.prompt_for_input(warnmsg + _("Do you really want to use the disk (yes or no)? "))
                     try:
                         if cli.yes_or_no(res) is True:
                             break
