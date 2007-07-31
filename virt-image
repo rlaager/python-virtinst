@@ -225,8 +225,5 @@ def main():
             raise
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception, e:
-        logging.exception(e)
+    main()
 
