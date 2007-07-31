@@ -136,25 +136,23 @@ class FullVirtGuest(Guest.XenGuest):
             raise ValueError, _("OS variant %(var)s does not exist in our dictionary for OS type %(type)s") % {'var' : val, 'type' : self._os_type}
     os_variant = property(get_os_variant, set_os_variant)
 
-    def set_os_type_parameters(self, os_type, os_variant):
+    def os_features(self):
+        """Determine the guest features, based on explicit settings in FEATURES
+        and the OS_TYPE and OS_VARIANT. FEATURES takes precedence over the OS
+        preferences"""
+        if self.features is None:
+            return None
+        os_type = self.os_type
+        os_variant = self.os_variant
         # explicitly disabling apic and acpi will override OS_TYPES values
-        if self.features["acpi"] is None and os_type is not None:
-            if os_variant is not None and FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant].has_key("acpi"):
-                self.features["acpi"] = FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant]["acpi"]
-            else:
-                self.features["acpi"] = FullVirtGuest.OS_TYPES[os_type]["acpi"]
-        elif self.features["acpi"] is None:
-            # default for acpi should be "true", but we can't set that until we get here
-            self.features["acpi"] = True
-
-        if self.features["apic"] is None and os_type is not None:
-            if os_variant is not None and FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant].has_key("apic"):
-                self.features["apic"] = FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant]["apic"]
-            else:
-                self.features["apic"] = FullVirtGuest.OS_TYPES[os_type]["apic"]
-        elif self.features["apic"] is None:
-            # default for apic should be "true", but we can't set that until we get here
-            self.features["apic"] = True
+        features = dict(self.features)
+        for f in ["acpi", "apic"]:
+            if features[f] is None and os_type is not None:
+                if os_variant is not None and FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant].has_key(f):
+                    features[f] = FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant][f]
+                else:
+                    features[f] = FullVirtGuest.OS_TYPES[os_type][f]
+        return features
 
     def get_os_distro(self):
         if self.os_type is not None and self.os_variant is not None and "distro" in FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant]:
@@ -164,10 +162,12 @@ class FullVirtGuest(Guest.XenGuest):
 
     def _get_features_xml(self):
         ret = "<features>\n"
-        if self.features:
+        features = self.os_features()
+        if features:
             ret += "    "
-            for (k, v) in self.features.items():
-                ret += "<%s/>" %(k,)
+            for (k, v) in features.items():
+                if v:
+                    ret += "<%s/>" %(k,)
             ret += "\n"
         return ret + "  </features>"
 
@@ -189,9 +189,8 @@ class FullVirtGuest(Guest.XenGuest):
         Guest.Guest._get_device_xml(self, install)
 
     def validate_parms(self):
-        if not self.location:
-            raise ValueError, _("A CD must be specified to boot from")
-        self.set_os_type_parameters(self.os_type, self.os_variant)
+        #if not self.location:
+        #    raise ValueError, _("A CD must be specified to boot from")
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
@@ -230,27 +229,44 @@ class FullVirtGuest(Guest.XenGuest):
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
         ret = ""
-        count = 0
+        nodes = {}
+        for i in range(4):
+            n = "%s%c" % (self.disknode, ord('a') + i)
+            nodes[n] = None
+        cdroms = []
+        hds = []
         for d in self.disks:
-            backup_path = None
-            if d.transient and not install:
-                # Libvirt can't handle QEMU having an empty disk path
-                if d.device == Guest.VirtualDisk.DEVICE_CDROM and self.type == "xen":
-                    backup_path = d.path
-                    d.path = None
-                else:
-                    continue
-            if count > 4:
-                raise ValueError, _("Can't use more than 4 disks on an HVM guest")
-            if d.device == Guest.VirtualDisk.DEVICE_CDROM and count != 2:
-                disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + 2 }
+            if d.device == Guest.VirtualDisk.DEVICE_CDROM:
+                cdroms.append(d)
             else:
-               if count == 2 and d.device != Guest.VirtualDisk.DEVICE_CDROM:
-                   # skip "hdc"
-                   count += 1
-               disknode = "%(disknode)s%(dev)c" % { "disknode": self.disknode, "dev": ord('a') + count }
-            ret += d.get_xml_config(disknode)
-            if backup_path:
-                d.path = backup_path
-            count += 1
+                hds.append(d)
+
+        # CDROM gets special treatment
+        cdnode = self.disknode + "c"
+        if len(cdroms) > 1:
+            raise ValueError, _("Can only use one CDROM")
+        elif len(cdroms) == 1:
+            cdrom = cdroms[0]
+            cdrom_path = cdrom.path
+            # Libvirt can't handle QEMU having an empty disk path
+            if cdrom.transient and not install and self.type == "xen":
+                cdrom.path = None
+            if cdrom.target and cdrom.target != cdnode:
+                raise ValueError, "The CDROM must be device %s" % cdnode
+            ret += cdrom.get_xml_config(cdnode)
+            cdrom.path = cdrom_path
+        nodes[cdnode] = True
+
+        # Normal disks
+        for d in hds:
+            target = d.target
+            if target is None:
+                for t in sorted(nodes.keys()):
+                    if nodes[t] is None:
+                        target = t
+                        break
+            if target is None or nodes[target] is not None:
+                raise ValueError, _("Can't use more than 4 disks on a HVM guest")
+            nodes[target] = True
+            ret += d.get_xml_config(target)
         return ret

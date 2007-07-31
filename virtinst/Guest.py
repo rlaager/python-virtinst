@@ -92,6 +92,7 @@ class VirtualDisk:
         self._device = device
         self._driverName = driverName
         self._driverType = driverType
+        self.target = None
 
     def get_type(self):
         return self._type
@@ -155,6 +156,8 @@ class VirtualDisk:
             ret += "      <source %(typeattr)s=''/>\n" % { "typeattr": typeattr }
         else:
             ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": self.path }
+        if self.target is not None:
+            disknode = self.target
         ret += "      <target dev='%(disknode)s'/>\n" % { "disknode": disknode }
         if self.read_only:
             ret += "      <readonly/>\n"

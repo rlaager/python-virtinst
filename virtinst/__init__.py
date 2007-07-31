@@ -14,3 +14,4 @@ from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
 from DistroManager import DistroInstaller
 from LiveCDInstaller import LiveCDInstaller
+from ImageManager import ImageInstaller

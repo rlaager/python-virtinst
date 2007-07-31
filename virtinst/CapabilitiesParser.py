@@ -19,47 +19,72 @@ class CapabilitiesParserException(Exception):
     def __init__(self, msg):
         Exception.__init__(self, msg)
 
-FEATURE_ACPI    = 0x01
-FEATURE_APIC    = 0x02
-FEATURE_PAE     = 0x04
-FEATURE_NONPAE  = 0x08
-FEATURE_VMX     = 0x10
-FEATURE_SVM     = 0x20
-FEATURE_IA64_BE = 0x40
+# Whether a guest can be created with a certain feature on resp. off
+FEATURE_ON      = 0x01
+FEATURE_OFF     = 0x02
 
-features_map = {
-    "acpi"    : FEATURE_ACPI,
-    "apic"    : FEATURE_APIC,
-    "pae"     : FEATURE_PAE,
-    "nonpae"  : FEATURE_NONPAE,
-    "vmx"     : FEATURE_VMX,
-    "svm"     : FEATURE_SVM,
-    "ia64_be" : FEATURE_IA64_BE
-}
+class Features(object):
+    """Represent a set of features. For each feature, store a bit mask of
+       FEATURE_ON and FEATURE_OFF to indicate whether the feature can
+       be turned on or off. For features for which toggling doesn't make sense
+       (e.g., 'vmx') store FEATURE_ON when the feature is present."""
 
-NUM_FEATURES = len(features_map)
+    def __init__(self, node = None):
+        self.features = {}
+        if node is not None:
+            self.parseXML(node)
 
-def parse_features(node):
-    """Convert the children of NODE into a bitmask of features. The child
-    nodes should have names in FEATURES_MAP"""
-    features = 0
+    def __getitem__(self, feature):
+        if self.features.has_key(feature):
+            return self.features[feature]
+        return 0
 
-    child = node.children
-    while child:
-        if child.name in features_map:
-            features |= features_map[child.name]
+    def names(self):
+        return self.features.keys()
 
-        child = child.next
+    def parseXML(self, node):
+        d = self.features
+        for n in node.xpathEval("*"):
+            feature = n.name
+            if not d.has_key(feature):
+                d[feature] = 0
 
-    return features
+            self._extractFeature(feature, d, n)
+
+    def _extractFeature(self, feature, dict, node):
+        """Extract the value of FEATURE from NODE and set DICT[FEATURE] to
+        its value. Abstract method, must be overridden"""
+        raise NotImplementedError("Abstract base class")
+
+class CapabilityFeatures(Features):
+    def __init__(self, node = None):
+        Features.__init__(self, node)
+
+    def _extractFeature(self, feature, d, n):
+        default = xpathString(n, "@default")
+        toggle = xpathString(n, "@toggle")
+
+        if default is not None:
+            if default == "on":
+                d[feature] = FEATURE_ON
+            elif default == "off":
+                d[feature] = FEATURE_OFF
+            else:
+                raise CapabilitiesParserException("Feature %s: value of default must be 'on' or 'off', but is '%s'" % (feature, default))
+            if toggle == "yes":
+                d[feature] |= d[feature] ^ (FEATURE_ON|FEATURE_OFF)
+        else:
+            if feature == "nonpae":
+                d["pae"] |= FEATURE_OFF
+            else:
+                d[feature] |= FEATURE_ON
 
 class Host(object):
     def __init__(self, node = None):
         # e.g. "i686" or "x86_64"
         self.arch = None
 
-        # e.g. FEATURE_HVM|FEATURE_ACPI
-        self.features = 0
+        self.features = CapabilityFeatures()
 
         if not node is None:
             self.parseXML(node)
@@ -76,7 +101,7 @@ class Host(object):
                 if n.name == "arch":
                     self.arch = n.content
                 elif n.name == "features":
-                    self.features |= parse_features(n)
+                    self.features = CapabilityFeatures(n)
                 n = n.next
 
             child = child.next
@@ -92,8 +117,7 @@ class Guest(object):
         # e.g. "i686" or "x86_64"
         self.arch = None
 
-        # e.g. FEATURE_HVM|FEATURE_ACPI
-        self.features = 0
+        self.features = CapabilityFeatures()
 
         if not node is None:
             self.parseXML(node)
@@ -104,7 +128,7 @@ class Guest(object):
             if child.name == "os_type":
                 self.os_type = child.content
             elif child.name == "features":
-                self.features |= parse_features(child)
+                self.features = CapabilityFeatures(child)
             elif child.name == "arch":
                 self.arch = child.prop("name")
                 n = child.children
@@ -156,10 +180,16 @@ def parse(xml):
     try:
         root = doc.getRootElement()
         if root.name != "capabilities":
-            raise CapabilitiesParserException("Root element is not 'capabilties'")
+            raise CapabilitiesParserException("Root element is not 'capabilities'")
 
         capabilities = Capabilities(root)
     finally:
         doc.freeDoc()
 
     return capabilities
+
+def xpathString(node, path, default = None):
+    result = node.xpathEval("string(%s)" % path)
+    if len(result) == 0:
+        result = default
+    return result
