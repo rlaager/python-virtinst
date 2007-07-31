@@ -62,7 +62,7 @@ class Domain:
 
     def parseXML(self, node):
         self.boots = [ Boot(b) for b in node.xpathEval("boot") ]
-        self.vcpu = xpathString(node, "devices/vcpu")
+        self.vcpu = xpathString(node, "devices/vcpu", 1)
         self.memory = xpathString(node, "devices/memory")
         self.interface = node.xpathEval("count(devices/interface)") > 0
         self.graphics = node.xpathEval("count(devices/graphics)") > 0
@@ -104,8 +104,7 @@ class Boot:
         self.cmdline = None
         self.disks = []
         self.arch = None
-        # A CapabilitiesParser.Features object
-        self.features = None
+        self.features = ImageFeatures()
         if not node is None:
             self.parseXML(node)
 
@@ -119,9 +118,10 @@ class Boot:
         self.arch = xpathString(node, "guest/arch")
 
         fl = node.xpathEval("guest/features")
-        if len(fl) != 1:
-            raise ParseException("Expected exactly one <features> element in %s boot descriptor for %s", (self.type, self.arch))
-        self.features = ImageFeatures(fl[0])
+        if len(fl) > 1:
+            raise ParserException("Expected at most one <features> element in %s boot descriptor for %s" % (self.type, self.arch))
+        elif len(fl) == 1:
+            self.features = ImageFeatures(fl[0])
 
         for d in node.xpathEval("drive"):
             self.disks.append(Drive(d))
