@@ -114,9 +114,6 @@ def parse_args():
                       action="callback", callback=cli.check_before_store,
                       help=_("Connect to hypervisor with URI"),
                       default=virtinst.util.default_connection())
-    parser.add_option("", "--installer", type="string", dest="installer",
-                      action="callback", callback=cli.check_before_store,
-                      help=_("Specify the installation method to use e.g. 'distro', ..."))
 
     # fullvirt options
     parser.add_option("", "--noapic", action="store_true", dest="noapic", help=_("Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
