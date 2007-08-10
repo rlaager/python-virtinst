@@ -11,11 +11,9 @@
       <os>
         <loader>pygrub</loader>
       </os>
-      <disks>
-        <map file="root.raw" target="xvda"/>
-        <map file="data.raw" target="xvdb"/>
-        <map file="scratch.raw" target="xvdc"/>
-      </disks>
+      <drive disk="root.raw" target="xvda"/>
+      <drive disk="data.raw" target="xvdb"/>
+      <drive disk="scratch.raw" target="xvdc"/>
     </boot>
     <boot type="hvm">
       <guest>
@@ -26,11 +24,9 @@
         <type>hvm</type>
         <loader dev="hd"/>
       </os>
-      <disks>
-        <map file="root.raw" target="hda"/>
-        <map file="data.raw" target="hdb"/>
-        <map file="scratch.raw" target="hdd"/>
-      </disks>
+      <drive disk="root.raw" target="hda"/>
+      <drive disk="data.raw" target="hdb"/>
+      <drive disk="scratch.raw" target="hdd"/>
     </boot>
     <vcpu>7</vcpu>
     <memory>262144</memory>
