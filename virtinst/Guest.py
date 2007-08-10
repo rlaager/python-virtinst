@@ -654,11 +654,18 @@ class Guest(object):
         gt = self.graphics["type"]
         return gt.get_xml_config()
 
+    def _get_input_xml(self, install = True):
+        """Get the input device config in libvirt XML format."""
+        (type,bus) = self.get_input_device()
+        return "    <input type='%s' bus='%s'/>" % (type, bus)
+
     def _get_device_xml(self, install = True):
         return """%(disks)s
 %(networks)s
+%(input)s
 %(graphics)s""" % { "disks": self._get_disk_xml(install), \
         "networks": self._get_network_xml(install), \
+        "input": self._get_input_xml(install), \
         "graphics": self._get_graphics_xml(install) }
 
     def get_config_xml(self, install = True, disk_boot = False):

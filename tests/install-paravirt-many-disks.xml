@@ -29,6 +29,7 @@
     </disk>
 
 
+    <input type='mouse' bus='xen'/>
     <graphics type='vnc' port='-1' keymap='ja' />
   </devices>
 </domain>

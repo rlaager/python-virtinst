@@ -36,6 +36,9 @@ class ParaVirtGuest(Guest.XenGuest):
             os._exit(1)
         return child
 
+    def get_input_device(self):
+        return ("mouse", "xen")
+
     def validate_parms(self):
         if not self.location and not self.boot:
             raise ValueError, _("A location must be specified to install from")

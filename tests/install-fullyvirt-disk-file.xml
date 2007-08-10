@@ -29,6 +29,7 @@
     </disk>
 
 
+    <input type='tablet' bus='usb'/>
     <graphics type='sdl'/>
   </devices>
 </domain>

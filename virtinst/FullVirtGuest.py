@@ -160,6 +160,9 @@ class FullVirtGuest(Guest.XenGuest):
         return None
     os_distro = property(get_os_distro)
 
+    def get_input_device(self):
+        return ("tablet", "usb")
+
     def _get_features_xml(self):
         ret = "<features>\n"
         features = self.os_features()
