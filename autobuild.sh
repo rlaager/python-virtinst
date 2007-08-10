@@ -1,5 +1,8 @@
 #!/bin/sh
 
+set -v
+set -e
+
 rm -rf build dist python-virtinst.spec
 
 python setup.py build
