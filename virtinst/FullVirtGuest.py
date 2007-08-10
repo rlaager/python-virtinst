@@ -31,10 +31,10 @@ class FullVirtGuest(Guest.XenGuest):
                                           "rhel3": { "label": "Red Hat Enterprise Linux 3", "distro": "rhel" }, \
                                           "rhel4": { "label": "Red Hat Enterprise Linux 4", "distro": "rhel" }, \
                                           "rhel5": { "label": "Red Hat Enterprise Linux 5", "distro": "rhel" }, \
-                                          "centos5": { "label": "Cent OS 5", "distro": "centos" }, \
                                           "fedora5": { "label": "Fedora Core 5", "distro": "fedora" }, \
                                           "fedora6": { "label": "Fedora Core 6", "distro": "fedora" }, \
                                           "fedora7": { "label": "Fedora 7", "distro": "fedora" }, \
+                                          "fedora8": { "label": "Fedora 7", "distro": "fedora" }, \
                                           "sles10": { "label": "Suse Linux Enterprise Server", "distro": "suse" }, \
                                           "generic24": { "label": "Generic 2.4.x kernel" }, \
                                           "generic26": { "label": "Generic 2.6.x kernel" }, \
@@ -165,7 +165,8 @@ class FullVirtGuest(Guest.XenGuest):
         features = self.os_features()
         if features:
             ret += "    "
-            for (k, v) in features.items():
+            for k in sorted(features.keys()):
+                v = features[k]
                 if v:
                     ret += "<%s/>" %(k,)
             ret += "\n"
@@ -233,40 +234,49 @@ class FullVirtGuest(Guest.XenGuest):
         for i in range(4):
             n = "%s%c" % (self.disknode, ord('a') + i)
             nodes[n] = None
-        cdroms = []
-        hds = []
+
+        # First assign CDROM device nodes, since they're scarce resource
+        cdnode = self.disknode + "c"
+        for d in self.disks:
+            if d.device != Guest.VirtualDisk.DEVICE_CDROM:
+                continue
+
+            if d.target:
+                if d.target != cdnode:
+                    raise ValueError, "The CDROM must be device %s" % cdnode
+            else:
+                d.target = cdnode
+
+            if nodes[d.target] != None:
+                raise ValueError, "The CDROM device %s is already used" % d.target
+            nodes[d.target] = d
+
+        # Now assign regular disk node with remainder
         for d in self.disks:
             if d.device == Guest.VirtualDisk.DEVICE_CDROM:
-                cdroms.append(d)
-            else:
-                hds.append(d)
+                continue
 
-        # CDROM gets special treatment
-        cdnode = self.disknode + "c"
-        if len(cdroms) > 1:
-            raise ValueError, _("Can only use one CDROM")
-        elif len(cdroms) == 1:
-            cdrom = cdroms[0]
-            cdrom_path = cdrom.path
-            # Libvirt can't handle QEMU having an empty disk path
-            if cdrom.transient and not install and self.type == "xen":
-                cdrom.path = None
-            if cdrom.target and cdrom.target != cdnode:
-                raise ValueError, "The CDROM must be device %s" % cdnode
-            ret += cdrom.get_xml_config(cdnode)
-            cdrom.path = cdrom_path
-        nodes[cdnode] = True
-
-        # Normal disks
-        for d in hds:
-            target = d.target
-            if target is None:
-                for t in sorted(nodes.keys()):
-                    if nodes[t] is None:
-                        target = t
+            if d.target is None: # Auto-assign disk
+                for n in sorted(nodes.keys()):
+                    if nodes[n] is None:
+                        d.target = n
+                        nodes[d.target] = d
                         break
-            if target is None or nodes[target] is not None:
-                raise ValueError, _("Can't use more than 4 disks on a HVM guest")
-            nodes[target] = True
-            ret += d.get_xml_config(target)
+            else:
+                if nodes[d.target] != None: # Verify pre-assigned
+                    raise ValueError, "The disk device %s is already used" % d.target
+                nodes[d.target] = d
+
+        for d in self.disks:
+            saved_path = None
+            if d.device == Guest.VirtualDisk.DEVICE_CDROM and d.transient and not install:
+                # XXX hack. libvirt can't currently handle QEMU having an empty disk path
+                if self.type == "xen":
+                    saved_path = d.path
+                    d.path = None
+
+            ret += d.get_xml_config(d.target)
+            if saved_path != None:
+                d.path = saved_path
+
         return ret
