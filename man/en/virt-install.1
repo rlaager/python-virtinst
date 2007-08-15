@@ -137,7 +137,7 @@ virt\-install \- provision new virtual machines
 \&\fBvirt-install\fR [\s-1OPTION\s0]...
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBvirt-install\fR is a command line tool for provisoning new virtual machines
+\&\fBvirt-install\fR is a command line tool for provisioning new virtual machines
 using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library. The tool supports both
 text based & graphical installations, using serial console, \s-1SDL\s0 graphics 
 or a \s-1VNC\s0 client/server pair. The guest can be configured with one or more
@@ -145,18 +145,18 @@ virtual disks and network interfaces plumbed through to the host.
 .PP
 The installation media can be held locally or remotely on \s-1NFS\s0, \s-1HTTP\s0, \s-1FTP\s0
 servers. In the latter case \f(CW\*(C`virt\-install\*(C'\fR will fetch the minimal files
-neccessary to kick off the installation process, allowing the guest
+necessary to kick off the installation process, allowing the guest
 to fetch the rest of the \s-1OS\s0 distribution as needed.
 .PP
 Given suitable command line arguments, \f(CW\*(C`virt\-install\*(C'\fR is capable of running
 completely unattended, with the guest 'kickstarting' itself too. This allows
 for easy automation of guest installs. A companion tool \f(CW\*(C`virt\-clone(1)\*(C'\fR is
-provided for cloning pre-existing guests if their instalation cannot be easily
+provided for cloning pre-existing guests if their installation cannot be easily
 automated from pristine media.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 Any of the options can be omitted, in which case \f(CW\*(C`virt\-install\*(C'\fR will run
-interactivately prompting for input as required.
+interactively prompting for input as required.
 .IP "\-h, \-\-help" 4
 .IX Item "-h, --help"
 Show the help message and exit
@@ -294,7 +294,7 @@ keyboard layout.
 .IX Item "--accelerate"
 When installing a \s-1QEMU\s0 guest, make use of the \s-1KVM\s0 or \s-1KQEMU\s0 kernel acceleration
 capabilities if available. Use of this option is recommended unless a guest
-\&\s-1OS\s0 is known to be incompatiable with the accelerators. The \s-1KVM\s0 accelerator is
+\&\s-1OS\s0 is known to be incompatible with the accelerators. The \s-1KVM\s0 accelerator is
 preferred over \s-1KQEMU\s0 if both are available.
 .IP "\-\-connect=CONNECT     Connect to hypervisor with \s-1URI\s0" 4
 .IX Item "--connect=CONNECT     Connect to hypervisor with URI"
@@ -313,7 +313,7 @@ If running on a bare metal kernel as non-root
 .RE
 .RS 4
 .Sp
-It is only neccessary to provide the \f(CW\*(C`\-\-connect\*(C'\fR argument if this default
+It is only necessary to provide the \f(CW\*(C`\-\-connect\*(C'\fR argument if this default
 prioritization is incorrect, eg if wanting to use \s-1QEMU\s0 while on a Xen kernel.
 .RE
 .IP "\-\-livecd" 4
@@ -324,7 +324,7 @@ may be desirable to also use the \f(CW\*(C`\-\-nodisks\*(C'\fR flag in combinati
 .IP "\-v, \-\-hvm             This guest should be a fully virtualized guest" 4
 .IX Item "-v, --hvm             This guest should be a fully virtualized guest"
 Request the use of full virtualization, if both para & full virtualization are
-availalble on the host. This parameter may not be available if connecting to a
+available on the host. This parameter may not be available if connecting to a
 Xen hypervisor on a machine without hardware virtualization support. This 
 parameter is implied if connecting to a \s-1QEMU\s0 based hypervisor.
 .IP "\-c \s-1CDROM\s0, \-\-cdrom=CDROM" 4
@@ -339,7 +339,7 @@ and initrd.
 .IX Item "--os-type=OS_TYPE"
 Optimize the guest configuration for a type of operating system. This will
 attempt to pick the most suitable \s-1ACPI\s0 & \s-1APIC\s0 settings, optimally supported
-mouse drivers and generally accomodate other operating system quirks. The
+mouse drivers and generally accommodate other operating system quirks. The
 valid operating system types are
 .RS 4
 .IP "linux" 4
@@ -478,7 +478,7 @@ virtualized guest.
 .IX Item "--arch=ARCH"
 Request a non-native \s-1CPU\s0 architecture for the guest virtual machine.
 The option is only currently available with \s-1QEMU\s0 guests, and will not
-enable use of acceleration. If omited, the host \s-1CPU\s0 architecture will
+enable use of acceleration. If omitted, the host \s-1CPU\s0 architecture will
 be used in the guest.
 .IP "\-p, \-\-paravirt" 4
 .IX Item "-p, --paravirt"
@@ -592,7 +592,7 @@ Run a Live \s-1CD\s0 image under Xen fullyvirt, in diskless environment
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-Writen by Daniel P. Berrange, Hugh Brock, Jeremy Katz and a team of many
+Written by Daniel P. Berrange, Hugh Brock, Jeremy Katz and a team of many
 other contributors. See the \s-1AUTHORS\s0 file in the source distribution for
 the complete list of credits.
 .SH "BUGS"
@@ -602,7 +602,7 @@ or directly to BugZilla \f(CW\*(C`http://bugzilla.redhat.com/bugzilla/\*(C'\fR a
 \&\f(CW\*(C`Fedora\*(C'\fR product, and the \f(CW\*(C`python\-virtinst\*(C'\fR component.
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
-Copright (C) 2006\-2007 Red Hat, Inc, and various contributors. 
+Copyright (C) 2006\-2007 Red Hat, Inc, and various contributors. 
 This is free software. You may redistribute copies of it under the terms of the \s-1GNU\s0 General 
 Public License \f(CW\*(C`http://www.gnu.org/licenses/gpl.html\*(C'\fR. There is \s-1NO\s0 \s-1WARRANTY\s0, to the extent 
 permitted by law.

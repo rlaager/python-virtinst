@@ -10,7 +10,7 @@ B<virt-install> [OPTION]...
 
 =head1 DESCRIPTION
 
-B<virt-install> is a command line tool for provisoning new virtual machines
+B<virt-install> is a command line tool for provisioning new virtual machines
 using the C<libvirt> hypervisor management library. The tool supports both
 text based & graphical installations, using serial console, SDL graphics 
 or a VNC client/server pair. The guest can be configured with one or more
@@ -18,19 +18,19 @@ virtual disks and network interfaces plumbed through to the host.
 
 The installation media can be held locally or remotely on NFS, HTTP, FTP
 servers. In the latter case C<virt-install> will fetch the minimal files
-neccessary to kick off the installation process, allowing the guest
+necessary to kick off the installation process, allowing the guest
 to fetch the rest of the OS distribution as needed.
 
 Given suitable command line arguments, C<virt-install> is capable of running
 completely unattended, with the guest 'kickstarting' itself too. This allows
 for easy automation of guest installs. A companion tool C<virt-clone(1)> is
-provided for cloning pre-existing guests if their instalation cannot be easily
+provided for cloning pre-existing guests if their installation cannot be easily
 automated from pristine media.
 
 =head1 OPTIONS
 
 Any of the options can be omitted, in which case C<virt-install> will run
-interactivately prompting for input as required.
+interactively prompting for input as required.
 
 =over 4
 
@@ -193,7 +193,7 @@ keyboard layout.
 
 When installing a QEMU guest, make use of the KVM or KQEMU kernel acceleration
 capabilities if available. Use of this option is recommended unless a guest
-OS is known to be incompatiable with the accelerators. The KVM accelerator is
+OS is known to be incompatible with the accelerators. The KVM accelerator is
 preferred over KQEMU if both are available.
 
 =item  --connect=CONNECT     Connect to hypervisor with URI
@@ -217,7 +217,7 @@ If running on a bare metal kernel as non-root
 
 =back
 
-It is only neccessary to provide the C<--connect> argument if this default
+It is only necessary to provide the C<--connect> argument if this default
 prioritization is incorrect, eg if wanting to use QEMU while on a Xen kernel.
 
 =item  --livecd
@@ -229,7 +229,7 @@ may be desirable to also use the C<--nodisks> flag in combination.
 =item  -v, --hvm             This guest should be a fully virtualized guest
 
 Request the use of full virtualization, if both para & full virtualization are
-availalble on the host. This parameter may not be available if connecting to a
+available on the host. This parameter may not be available if connecting to a
 Xen hypervisor on a machine without hardware virtualization support. This 
 parameter is implied if connecting to a QEMU based hypervisor.
 
@@ -246,7 +246,7 @@ and initrd.
 
 Optimize the guest configuration for a type of operating system. This will
 attempt to pick the most suitable ACPI & APIC settings, optimally supported
-mouse drivers and generally accomodate other operating system quirks. The
+mouse drivers and generally accommodate other operating system quirks. The
 valid operating system types are
 
 =over 4
@@ -407,7 +407,7 @@ virtualized guest.
 
 Request a non-native CPU architecture for the guest virtual machine.
 The option is only currently available with QEMU guests, and will not
-enable use of acceleration. If omited, the host CPU architecture will
+enable use of acceleration. If omitted, the host CPU architecture will
 be used in the guest.
 
 =item  -p, --paravirt
@@ -523,7 +523,7 @@ Run a Live CD image under Xen fullyvirt, in diskless environment
 
 =head1 AUTHOR
 
-Writen by Daniel P. Berrange, Hugh Brock, Jeremy Katz and a team of many
+Written by Daniel P. Berrange, Hugh Brock, Jeremy Katz and a team of many
 other contributors. See the AUTHORS file in the source distribution for
 the complete list of credits.
 
@@ -535,7 +535,7 @@ C<Fedora> product, and the C<python-virtinst> component.
 
 =head1 COPYRIGHT
 
-Copright (C) 2006-2007 Red Hat, Inc, and various contributors. 
+Copyright (C) 2006-2007 Red Hat, Inc, and various contributors. 
 This is free software. You may redistribute copies of it under the terms of the GNU General 
 Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent 
 permitted by law.
