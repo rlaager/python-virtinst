@@ -29,6 +29,7 @@ import util
 import commands
 import libvirt
 import Guest
+import cli
 from virtinst import _virtinst as _
 
 #
@@ -106,6 +107,13 @@ class CloneDesign(object):
     def set_clone_devices(self, devices):
         if len(devices) == 0:
             raise ValueError, _("New file to use for disk image is required")
+        cdev      = []
+        cdev_size = []
+        cdev_type = []
+        cdev.append(devices)
+        cdev_size,\
+        cdev_type = self._get_clone_devices_info(cdev)
+        devices = self._check_file(self._hyper_conn, devices, cdev_size)
         self._clone_devices.append(devices)
     def get_clone_devices(self):
         return self._clone_devices
@@ -320,6 +328,45 @@ class CloneDesign(object):
             except libvirt.libvirtError, e:
                 pass
         return check
+
+    #
+    # check used file func
+    # ret : Use File Path
+    #
+    def _check_file(self, conn, disk, size):
+        retryFlg = False
+        while 1:
+            if disk == None:
+                msg = _("What would you like to use as the disk (path)?")
+                disk = cli.prompt_for_input(msg, disk)
+
+            try:
+                d = Guest.VirtualDisk(disk, size)
+                if d.is_conflict_disk(conn) is True:
+                    while 1:
+                        retryFlg = False
+                        warnmsg = _("Disk %s is already in use by another guest!\n") % disk
+                        res = cli.prompt_for_input(warnmsg + _("Do you really want to use the disk (yes or no)? "))
+                        try:
+                            if cli.yes_or_no(res) is True:
+                                break
+                            else:
+                                retryFlg = True
+                                break
+                        except ValueError, e:
+                            print _("ERROR: "), e
+                            continue
+                    if retryFlg is True:
+                        disk = None
+                        continue
+            except ValueError, e:
+                print _("ERROR: "), e
+                disk = None
+                continue
+
+            break
+
+        return disk
 
     #
     # check used mac func
