@@ -302,56 +302,29 @@ def get_xml_string(dom, path):
         doc.freeDoc()
         return None
 
-def vnc_console(dom):
-    import time;
-    num = 0
-    while num < ( 40 / 0.25 ): # 40 seconds, .25 second sleeps
-        vncport = get_xml_string(dom,
-                                 "/domain/devices/graphics[@type='vnc']/@port")
-        if vncport == '-1':
-            num += 1
-            time.sleep(0.25)
-        else:
-            break
-    if vncport == '-1' or vncport is None:
-        print >> sys.stderr, _("Unable to connect to graphical console; vnc port number not found.")
-        return None
-    vncport = int(vncport)
-    vnchost = "localhost"
-    if not os.path.exists("/usr/bin/vncviewer"):
-        print >> sys.stderr, _("Unable to connect to graphical console; vncviewer not installed.  Please connect to %(serv)s:%(port)d") % \
-            {'serv' : vnchost, 'port' : vncport}
-        return None
-    if not os.environ.has_key("DISPLAY"):
-        print >> sys.stderr, _("Unable to connect to graphical console; vncviewer not installed.  Please connect to %(serv)s:%(port)d") % \
-            {'serv' : vnchost, 'port' : vncport}
-    logging.debug("VNC Port: %d; VNC host: %s" % (vncport, vnchost))
-
+def vnc_console(dom, uri):
+    args = ["/usr/bin/virt-viewer"]
+    if uri is not None and uri != "":
+        args = args + [ "--connect", uri]
+    args = args + [ "--wait", "%s" % dom.ID()]
     child = os.fork()
     if not child:
-        os.execvp("/usr/bin/vncviewer", ["/usr/bin/vncviewer",
-                                         "%s:%d" %(vnchost, vncport) ])
+        os.execvp(args[0], args)
         os._exit(1)
 
     return child
 
-def txt_console(dom):
-    tty = get_xml_string(dom, "/domain/devices/console/@tty")
-    if tty is None or not os.access(tty, os.R_OK | os.W_OK):
-        return None
+def txt_console(dom, uri):
+    args = ["/usr/bin/virsh"]
+    if uri is not None and uri != "":
+        args = args + [ "--connect", uri]
+    args = args + [ "console", "%s" % dom.ID()]
     child = os.fork()
     if not child:
-        os.execvp("/usr/sbin/xm",
-                  ["/usr/sbin/xm", "console", "%s" %(dom.ID(),)])
+        os.execvp(args[0], args)
         os._exit(1)
 
     return child
-
-def show_console(dom):
-    gfxtype = get_xml_string(dom, "/domain/devices/graphics/@type")
-    if gfxtype == "vnc":
-        return vnc_console(dom)
-    return txt_console(dom)
 
 ### Let's do it!
 def main():
@@ -437,7 +410,16 @@ def main():
             if options.os_variant is not None:
                 guest.set_os_variant(options.os_variant)
         continue_inst = guest.get_continue_inst()
-        
+
+    def show_console(dom):
+        if guest.graphics["enabled"]:
+            if guest.graphics["type"].name == "vnc":
+                return vnc_console(dom, options.connect)
+            else:
+                return None # SDL needs no viewer app
+        else:
+            return txt_console(dom, options.connect)
+
     if options.autoconsole is False:
         conscb = None
     else:
