@@ -692,7 +692,7 @@ class DistroInstaller(Guest.Installer):
             else:
                 osblob += "    <type>%s</type>\n" % type
 
-            if self.install["kernel"]:
+            if install and self.install["kernel"]:
                 osblob += "    <kernel>%s</kernel>\n"   % self.install["kernel"]
                 osblob += "    <initrd>%s</initrd>\n"   % self.install["initrd"]
                 osblob += "    <cmdline>%s</cmdline>\n" % self.install["extraargs"]
