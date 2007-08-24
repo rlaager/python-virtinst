@@ -6,8 +6,11 @@ include tests/*.xml
 include tests/*.py
 include virt-install
 include virt-clone
+include virt-image
 include autobuild.sh
+include doc/*
 include man/*/*.1
+include man/*/*.5
 include man/*/*.pod
 include po/*.po
 include po/*.pot

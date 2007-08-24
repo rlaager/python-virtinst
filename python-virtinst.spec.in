@@ -50,13 +50,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f %{appname}.lang
 %defattr(-,root,root)
-%doc README AUTHORS ChangeLog NEWS
+%doc README AUTHORS ChangeLog NEWS doc/image.rng doc/example1.xml
 %dir %{python_sitelib}/%{appname}
 %{python_sitelib}/%{appname}/*
-%{_mandir}/man1/virt-install.1*
-%{_mandir}/man1/virt-clone.1*
+%{_mandir}/man1/*
+%{_mandir}/man5/*
 %{_bindir}/virt-install
 %{_bindir}/virt-clone
+%{_bindir}/virt-image
 
 %changelog
 * Tue Jul 18 2007 Daniel P. Berrange <berrange@redhat.com> - 0.200.0-1

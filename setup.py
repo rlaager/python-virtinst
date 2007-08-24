@@ -10,8 +10,10 @@ import os, sys
 import tests.coverage as coverage
 
 pkgs = ['virtinst']
-datafiles = [('share/man/man1', ['man/en/virt-install.1', \
-                                 'man/en/virt-clone.1'])]
+datafiles = [('share/man/man1', ['man/en/virt-install.1',
+                                 'man/en/virt-clone.1',
+                                 'man/en/virt-image.1']),
+             ('share/man/man5', ['man/en/virt-image.5'])]
 locale = None
 builddir = None
 
@@ -113,7 +115,7 @@ setup(name='virtinst',
       author_email='katzj@redhat.com',
       license='GPL',
       package_dir={'virtinst': 'virtinst'},
-      scripts = ["virt-install","virt-clone"],
+      scripts = ["virt-install","virt-clone", "virt-image"],
       packages=pkgs,
       data_files = datafiles,
       cmdclass = { 'test': TestCommand, 'build': build, \
