@@ -10,4 +10,4 @@ clean:
 	pod2man --center=$(CENTER) $< $@
 
 virt-image.5: virt-image-xml.pod
-	pod2man --center=$(CENTER) $< $@
+	pod2man --center=$(CENTER) --section=5 --name=virt-image $< $@
