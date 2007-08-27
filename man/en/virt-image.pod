@@ -25,7 +25,7 @@ disks.
 =head1 OPTIONS
 
 Any of the options can be omitted, in which case B<virt-image> will either
-use defaults from the XML descriptor or interactivately prompt for input as
+use defaults from the XML descriptor or interactively prompt for input as
 required. When defaults are taken from the XML descriptor, they are
 indicated below as a path.
 
@@ -136,7 +136,7 @@ do not create or start a virtual machine:
 
 =head1 AUTHOR
 
-Writen by David Lutterkort. See the AUTHORS file in the source distribution for
+Written by David Lutterkort. See the AUTHORS file in the source distribution for
 the complete list of credits.
 
 =head1 BUGS
@@ -147,7 +147,7 @@ C<Fedora> product, and the C<python-virtinst> component.
 
 =head1 COPYRIGHT
 
-Copright (C) 2006-2007 Red Hat, Inc, and various contributors. 
+Copyright (C) 2006-2007 Red Hat, Inc, and various contributors. 
 This is free software. You may redistribute copies of it under the terms of the GNU General 
 Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent 
 permitted by law.

@@ -6,7 +6,7 @@ virt-image - Format of the virtual image XML descriptor
 
 =head1 DESCRIPTION
 
-L<virt-image(1)> relies on an XML descriptior to create virtual machines from
+L<virt-image(1)> relies on an XML descriptor to create virtual machines from
 virtual machine images. In general, a virtual machine image consists of the
 XML descriptor (usually in a file F<image.xml>) and a number of files for
 the virtual machine's disks.
@@ -87,13 +87,13 @@ recommended number of virtual CPU's in the B<vcpu> element and the
 recommended amount of memory in kB in the B<memory> element. It also
 indicates whether the virtual machine should have a network interface
 through the I<interface> element and whether the virtual machine has a
-grphical interface through the I<graphics> element.
+graphical interface through the I<graphics> element.
 
 =head2 BOOT
 
 Each B<boot> descriptor details how the virtual machine should be started
 on a certain hypervisor. The B<type> attribute of the B<boot> element,
-which can either be C<xen> or C<hvm>, dpeending on whether the boot
+which can either be C<xen> or C<hvm>, depending on whether the boot
 descriptor is for a paravirtualized Xen(tm) guest or a fully-virtualized
 guest.
 
@@ -141,7 +141,7 @@ elements appear, skipping already assigned devices.
 
 =head1 STORAGE
 
-The B<storage> element lists the disk image files that are part ofthe
+The B<storage> element lists the disk image files that are part of the
 virtual machine image in a list of one or more B<disk> elements. Each
 B<disk> element can contain the following attributes:
 
@@ -149,7 +149,7 @@ B<disk> element can contain the following attributes:
 
 =item *
 
-the B<file> attribute givingthe name of the disk file
+the B<file> attribute giving the name of the disk file
 
 =item *
 
@@ -217,7 +217,7 @@ To create a virtual machine, save the above XML in F<image.xml> and run:
 
 =head1 AUTHOR
 
-Writen by David Lutterkort. See the AUTHORS file in the source distribution for
+Written by David Lutterkort. See the AUTHORS file in the source distribution for
 the complete list of credits.
 
 =head1 BUGS
@@ -228,7 +228,7 @@ C<Fedora> product, and the C<python-virtinst> component.
 
 =head1 COPYRIGHT
 
-Copright (C) 2006-2007 Red Hat, Inc, and various contributors. 
+Copyright (C) 2006-2007 Red Hat, Inc, and various contributors. 
 This is free software. You may redistribute copies of it under the terms of the GNU General 
 Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent 
 permitted by law.

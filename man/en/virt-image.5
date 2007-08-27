@@ -134,7 +134,7 @@
 virt\-image \- Format of the virtual image XML descriptor
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fIvirt\-image\fR\|(1) relies on an \s-1XML\s0 descriptior to create virtual machines from
+\&\fIvirt\-image\fR\|(1) relies on an \s-1XML\s0 descriptor to create virtual machines from
 virtual machine images. In general, a virtual machine image consists of the
 \&\s-1XML\s0 descriptor (usually in a file \fIimage.xml\fR) and a number of files for
 the virtual machine's disks.
@@ -197,12 +197,12 @@ recommended number of virtual \s-1CPU\s0's in the \fBvcpu\fR element and the
 recommended amount of memory in kB in the \fBmemory\fR element. It also
 indicates whether the virtual machine should have a network interface
 through the \fIinterface\fR element and whether the virtual machine has a
-grphical interface through the \fIgraphics\fR element.
+graphical interface through the \fIgraphics\fR element.
 .Sh "\s-1BOOT\s0"
 .IX Subsection "BOOT"
 Each \fBboot\fR descriptor details how the virtual machine should be started
 on a certain hypervisor. The \fBtype\fR attribute of the \fBboot\fR element,
-which can either be \f(CW\*(C`xen\*(C'\fR or \f(CW\*(C`hvm\*(C'\fR, dpeending on whether the boot
+which can either be \f(CW\*(C`xen\*(C'\fR or \f(CW\*(C`hvm\*(C'\fR, depending on whether the boot
 descriptor is for a paravirtualized Xen(tm) guest or a fully-virtualized
 guest.
 .PP
@@ -242,11 +242,11 @@ omitted. device names are assigned in the order in which the \fBdrive\fR
 elements appear, skipping already assigned devices.
 .SH "STORAGE"
 .IX Header "STORAGE"
-The \fBstorage\fR element lists the disk image files that are part ofthe
+The \fBstorage\fR element lists the disk image files that are part of the
 virtual machine image in a list of one or more \fBdisk\fR elements. Each
 \&\fBdisk\fR element can contain the following attributes:
 .IP "\(bu" 4
-the \fBfile\fR attribute givingthe name of the disk file
+the \fBfile\fR attribute giving the name of the disk file
 .IP "\(bu" 4
 the \fBuse\fR attribute indicating whether the disk file is a \f(CW\*(C`system\*(C'\fR,
 \&\f(CW\*(C`user\*(C'\fR, or \f(CW\*(C`scratch\*(C'\fR disk. The \fBuse\fR attribute differentiates disk files
@@ -308,7 +308,7 @@ To create a virtual machine, save the above \s-1XML\s0 in \fIimage.xml\fR and ru
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-Writen by David Lutterkort. See the \s-1AUTHORS\s0 file in the source distribution for
+Written by David Lutterkort. See the \s-1AUTHORS\s0 file in the source distribution for
 the complete list of credits.
 .SH "BUGS"
 .IX Header "BUGS"
@@ -317,7 +317,7 @@ or directly to BugZilla \f(CW\*(C`http://bugzilla.redhat.com/bugzilla/\*(C'\fR a
 \&\f(CW\*(C`Fedora\*(C'\fR product, and the \f(CW\*(C`python\-virtinst\*(C'\fR component.
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
-Copright (C) 2006\-2007 Red Hat, Inc, and various contributors. 
+Copyright (C) 2006\-2007 Red Hat, Inc, and various contributors. 
 This is free software. You may redistribute copies of it under the terms of the \s-1GNU\s0 General 
 Public License \f(CW\*(C`http://www.gnu.org/licenses/gpl.html\*(C'\fR. There is \s-1NO\s0 \s-1WARRANTY\s0, to the extent 
 permitted by law.
