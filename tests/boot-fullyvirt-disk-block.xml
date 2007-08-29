@@ -23,7 +23,6 @@
       <target dev='hda'/>
     </disk>
     <disk type='block' device='cdrom'>
-      <source dev=''/>
       <target dev='hdc'/>
       <readonly/>
     </disk>
