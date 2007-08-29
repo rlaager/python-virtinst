@@ -1,8 +1,181 @@
+2007-08-29  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* NEWS, README, python-virtinst.spec.in, setup.py:
+	Prep for release 0.300.0
+	[52429e371a1e] [tip]
+
+	* merge heads
+	[7fe6f95d3f0e]
+
+2007-08-28  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/Guest.py:
+	Fixed bug 260981 with empty cdrom source path
+	[3ea0c5d79b6a]
+
+2007-08-27  David Lutterkort  <dlutter@redhat.com>
+
+	* man/en/virt-image-xml.pod, man/en/virt-image.1, man/en/virt-image.5,
+	man/en/virt-image.pod:
+	Fix typos (patch by Atsushi SAKAI sakaia at jp dot fujitsu dot com
+	[6905717ca5a3]
+
+2007-08-24  David Lutterkort  <dlutter@redhat.com>
+
+	* MANIFEST.in, python-virtinst.spec.in, setup.py:
+	Include virt-image and related files in distribution
+	[c14c186fadd3]
+
+	* man/en/Makefile, man/en/virt-image.5:
+	Put virt-image(5) into the right section
+	[bfb10b7d7e74]
+
+	* man/en/Makefile:
+	Makefile to recreate amn pages from pod
+	[aac773a54c1e]
+
+	* man/en/virt-image-xml.pod, man/en/virt-image.1, man/en/virt-image.5,
+	man/en/virt-image.pod:
+	Man pages for virt-image tool and XML format
+	[f0033422f18c]
+
+	* doc/example1.xml, doc/image.rng:
+	Relax-NG for image XML and a simple example
+	[c520b0a3ce5b]
+
+	* virt-image:
+	Make the image.xml an argument, not a mandatory option
+	[163c319ba5c5]
+
+2007-08-21  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/DistroManager.py:
+	Fixed XML generated for kernel/initrd installs of KVM
+	[b33e850305be]
+
+	* python-virtinst.spec.in, virt-install:
+	Use virt-viewer & virsh console instead of vncviewer & xm console
+	[7220fc5059e4]
+
+2007-08-16  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/CloneManager.py:
+	Added checks for duplicate disks (Shigeki Sakamoto.)
+	[c97e58a859b1]
+
+2007-08-15  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* man/en/virt-install.1, man/en/virt-install.pod:
+	Fixed a number of typos in manual page (Atsushi SAKAI)
+	[baab5cd7705e]
+
+2007-08-10  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/boot-paravirt-disk-block.xml, tests/boot-paravirt-
+	disk-drv-file.xml, tests/boot-paravirt-disk-drv-phy.xml, tests/boot-
+	paravirt-disk-drv-tap-qcow.xml, tests/boot-paravirt-disk-drv-
+	tap.xml, tests/boot-paravirt-disk-file.xml, tests/boot-paravirt-
+	many-disks.xml, tests/install-fullyvirt-disk-block.xml, tests
+	/install-fullyvirt-disk-file.xml, tests/install-paravirt-disk-
+	block.xml, tests/install-paravirt-disk-drv-file.xml, tests/install-
+	paravirt-disk-drv-phy.xml, tests/install-paravirt-disk-drv-tap-
+	qcow.xml, tests/install-paravirt-disk-drv-tap.xml, tests/install-
+	paravirt-disk-file.xml, tests/install-paravirt-many-disks.xml,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Configure a USB tablet for fullyvirt guests
+	[a641904a933e]
+
+	* autobuild.sh:
+	Abort build on test failures
+	[dc3676ce9eb0]
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/install-fullyvirt-disk-block.xml, tests/install-
+	fullyvirt-disk-file.xml, virtinst/FullVirtGuest.py:
+	Sorted features alphabetically in XML. Keep disks in device node
+	order
+	[093eb8d83108]
+
+	* tests/xmlconfig.py:
+	Fixed up for change in os type API
+	[9fdcdd35a9b2]
+
+	* tests/image.xml:
+	Fixed up XML for recent changes to disk mapping format
+	[6380fdd9b0e4]
+
+	* tests/capabilities.py:
+	Fixed up test for changes in capabilities API
+	[2833dc3c35b9]
+
+2007-07-31  David Lutterkort  <dlutter@redhat.com>
+
+	* virtinst/ImageParser.py:
+	Set some defaults to avoid blowups with degenrate image descriptors
+	[36b32b6d8fa2]
+
+	* virt-image:
+	Don't catch an exception raised by main - that leads to complaints
+	when using --help in Python 2.4
+	[d28efcfac6aa]
+
+	* virt-image:
+	Remove phony --installer option
+	[dfef12e146c5]
+
+2007-07-31  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* tests/image.py, tests/image.xml, virtinst/ImageManager.py,
+	virtinst/ImageParser.py:
+	And the other files I neglected to add...
+	[31f5c8b8990e]
+
+	* virt-image:
+	Forgot to add the new file, doh...
+	[5e4a87d3eff5]
+
+	* virtinst/CapabilitiesParser.py, virtinst/FullVirtGuest.py,
+	virtinst/Guest.py, virtinst/ParaVirtGuest.py, virtinst/__init__.py:
+	First go-round for virt-image capability, which lets you install a
+	VM as a self-contained image. http://people.redhat.com/dlutter/virt-
+	image/ documents usage, until man pages arrive. Thanks to David
+	Lutterkort <dlutter-at-redhat-dot-com>
+	[83d4113b2c43]
+
+2007-07-30  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install:
+	Warn if creating the guest would overwrite an existing storage file
+	[4d1113860fab]
+
+2007-07-21  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/Guest.py:
+	One more spot for extra_args, whoops.
+	[645217bda13b]
+
+2007-07-20  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virtinst/Guest.py:
+	Revert well intentioned property method cleanup by markmc to avoid
+	breaking legacy koan code.
+	[ae644a861029]
+
 2007-07-18  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_200_0 for changeset 3b135bf61760
+	[90eae7c33d0d]
+
+	* ChangeLog, NEWS, python-virtinst.spec.in, setup.py:
+	Update for 0.200.0 release
+	[3b135bf61760] [virtinst-0_200_0]
 
 	* setup.py:
 	Fixed typo in __init__.py name
-	[342281abfd7a] [tip]
+	[342281abfd7a]
 
 	* setup.py:
 	Exit with non-zero status for test failures
@@ -318,6 +491,15 @@
 	* Merge heads
 	[7fd35e3303c6]
 
+	* virt-clone, virtinst/CloneManager.py:
+	Added support for sparse file cloning
+	[08500047b222]
+
+	* python-virtinst.spec.in, setup.py:
+	Move virt-install & virt-clone to /usr/bin instead of sbin since
+	QEMU driver can be used as non-root
+	[409e69a6a428]
+
 2007-05-24  "Hugh O. Brock  <hbrock@redhat.com>
 
 	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
@@ -328,17 +510,6 @@
 	* virtinst/Guest.py:
 	keymap validation should allow hyphens as well as underscores
 	[308a1de5ee61]
-
-2007-05-25  "Daniel P. Berrange  <berrange@redhat.com>
-
-	* virt-clone, virtinst/CloneManager.py:
-	Added support for sparse file cloning
-	[08500047b222]
-
-	* python-virtinst.spec.in, setup.py:
-	Move virt-install & virt-clone to /usr/bin instead of sbin since
-	QEMU driver can be used as non-root
-	[409e69a6a428]
 
 2007-05-24  "Daniel P. Berrange  <berrange@redhat.com>
 
@@ -672,6 +843,21 @@
 	* Merge heads
 	[27692467016b]
 
+	* ChangeLog, NEWS, README, setup.py:
+	Update for 0.103.0 release
+	[f67a3a87b022]
+
+	* virt-install, virtinst/FullVirtGuest.py:
+	Change OS distro/variant type so that command line can give a short
+	version instead of long label. Include OS distro key for image
+	fetcher support
+	[33d3330b538f]
+
+	* virtinst/DistroManager.py:
+	Change way Red Hat distro detection works to avoid GPG key name
+	randomness
+	[8dbe844c683c]
+
 2007-04-13  "Daniel P. Berrange  <berrange@redhat.com>
 
 	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
@@ -688,23 +874,6 @@
 	tests/xmlconfig.py:
 	Fixed test suite UUID
 	[c5d674528d03]
-
-2007-04-15  "Daniel P. Berrange  <berrange@redhat.com>
-
-	* ChangeLog, NEWS, README, setup.py:
-	Update for 0.103.0 release
-	[f67a3a87b022]
-
-	* virt-install, virtinst/FullVirtGuest.py:
-	Change OS distro/variant type so that command line can give a short
-	version instead of long label. Include OS distro key for image
-	fetcher support
-	[33d3330b538f]
-
-	* virtinst/DistroManager.py:
-	Change way Red Hat distro detection works to avoid GPG key name
-	randomness
-	[8dbe844c683c]
 
 2007-04-12  "Daniel P. Berrange  <berrange@redhat.com>
 
@@ -1130,13 +1299,6 @@
 	Merge heads
 	[a55969f95cb6]
 
-2007-02-27  "Hugh O. Brock  <hbrock@redhat.com>
-
-	* AUTHORS, virtinst/Guest.py:
-	Validate mac address if it is provided. Patch from Saori Fukuta
-	<fukuta-dot-saori-at-jp-dot-fujitsu-dot-com>
-	[57dbbb69dea0]
-
 2007-02-23  "Daniel P. Berrange  <berrange@redhat.com>
 
 	* AUTHORS, virtinst/Guest.py:
@@ -1146,6 +1308,13 @@
 	* virtinst/Guest.py:
 	Tweak error message at suggestion from Saori Fukuta
 	[fe6b999dd8c8]
+
+2007-02-27  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* AUTHORS, virtinst/Guest.py:
+	Validate mac address if it is provided. Patch from Saori Fukuta
+	<fukuta-dot-saori-at-jp-dot-fujitsu-dot-com>
+	[57dbbb69dea0]
 
 2007-02-21  "Daniel P. Berrange  <berrange@redhat.com>
 
@@ -1245,15 +1414,6 @@
 	Enable code coverage for unit tests
 	[882e19f29564]
 
-2007-02-13  "Hugh O. Brock  <hbrock@redhat.com>
-
-	* virt-install, virtinst/FullVirtGuest.py:
-	Add an OS dictionary for full-virt guests so callers can specify an
-	os-type and os-variant, which will in turn correctly set apic and
-	acpi for the guest. Also allow callers to set --noapic and --noacpi
-	directly
-	[23382c1d1495]
-
 2007-02-01  "Daniel P. Berrange  <berrange@redhat.com>
 
 	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
@@ -1270,6 +1430,15 @@
 	tests/xmlconfig.py, virtinst/Guest.py:
 	Added support for setting maximum memory for boot
 	[c0fb121cdf62]
+
+2007-02-13  "Hugh O. Brock  <hbrock@redhat.com>
+
+	* virt-install, virtinst/FullVirtGuest.py:
+	Add an OS dictionary for full-virt guests so callers can specify an
+	os-type and os-variant, which will in turn correctly set apic and
+	acpi for the guest. Also allow callers to set --noapic and --noacpi
+	directly
+	[23382c1d1495]
 
 2007-01-29  "Daniel P. Berrange  <berrange@redhat.com>
 
