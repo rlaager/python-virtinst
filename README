@@ -12,4 +12,5 @@ This library currently requires
 
     libvirt >= 0.2.1
     python >= 2.4 / 2.5
+    virt-viewer >= 0.0.1
 

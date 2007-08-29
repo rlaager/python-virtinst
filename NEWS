@@ -1,6 +1,21 @@
    Virt Install News
    =================
 
+Release 0.300.0
+---------------
+
+This release introduces the virt-image tool which provides the
+ability to create guests based on a pre-define image. The image
+provides metadata describing the required host virtualization
+capabilities, the recommend resource allocations and one or more
+pre-installed disk templates. From this is can instantiate new
+guests on any suitable hypervisor supported by libvirt. With
+the virt-install tool, all new fullyvirtualized guests now get
+a USB tablet device configured providing an easier to use pointer.
+Further improvements are made to input validation to catch user
+errors earlier. Use of the 'xm console' and 'vncviewer' external
+programs has been replaced with 'virsh console' and 'virt-viewer'
+
 Release 0.200.0
 ---------------
 

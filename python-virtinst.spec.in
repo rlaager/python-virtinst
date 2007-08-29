@@ -60,6 +60,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-image
 
 %changelog
+* Wed Aug 29 2007 Daniel P. Berrange <berrange@redhat.com> - 0.300.0-1
+- Updated to 0.300.0
+- Added virt-image tool
+- Switched to calling virsh console and virt-viewer
+- Improved user input validation
+
 * Tue Jul 18 2007 Daniel P. Berrange <berrange@redhat.com> - 0.200.0-1
 - Updated to 0.200.0
 - Added virt-clone tool
