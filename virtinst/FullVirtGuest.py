@@ -34,7 +34,7 @@ class FullVirtGuest(Guest.XenGuest):
                                           "fedora5": { "label": "Fedora Core 5", "distro": "fedora" }, \
                                           "fedora6": { "label": "Fedora Core 6", "distro": "fedora" }, \
                                           "fedora7": { "label": "Fedora 7", "distro": "fedora" }, \
-                                          "fedora8": { "label": "Fedora 7", "distro": "fedora" }, \
+                                          "fedora8": { "label": "Fedora 8", "distro": "fedora" }, \
                                           "sles10": { "label": "Suse Linux Enterprise Server", "distro": "suse" }, \
                                           "generic24": { "label": "Generic 2.4.x kernel" }, \
                                           "generic26": { "label": "Generic 2.6.x kernel" }, \
