@@ -12,6 +12,6 @@ import util
 from Guest import Guest, VirtualDisk, VirtualNetworkInterface, XenGuest, XenDisk, XenNetworkInterface
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
-from DistroManager import DistroInstaller
+from DistroManager import DistroInstaller, PXEInstaller
 from LiveCDInstaller import LiveCDInstaller
 from ImageManager import ImageInstaller

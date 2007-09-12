@@ -240,7 +240,14 @@ path to an ISO image, or to a CDROM device. It can also be a URL from which
 to fetch/access a minimal boot ISO image. The URLs take the same format as
 described for the C<--location> argument. If this parameter is omitted then
 the C<--location> argument must be given to specify a location for the kernel
-and initrd.
+and initrd, or the C<--pxe> argument used to install from the network.
+
+=item  --pxe
+
+Use the PXE boot protocol to load the initial ramdisk and kernel for starting
+the guest installation process. If this parameter is omitted then either the
+C<--location> or C<--cdrom> arguments must be given to specify a location for
+the kernel and initrd.
 
 =item  --os-type=OS_TYPE
 

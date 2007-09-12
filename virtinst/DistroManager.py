@@ -720,3 +720,49 @@ class DistroInstaller(Guest.Installer):
         buf = os.read(fd, 512)
         os.close(fd)
         return len(buf) == 512 and struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,)
+
+
+
+class PXEInstaller(Guest.Installer):
+    def __init__(self, type = "xen", location = None, boot = None, extraargs = None):
+        Guest.Installer.__init__(self, type, location, boot, extraargs)
+
+    def prepare(self, guest, meter, distro = None):
+        pass
+
+    def _get_osblob(self, install, hvm, arch = None, loader = None):
+        osblob = ""
+        if install or hvm:
+            osblob = "<os>\n"
+
+            if hvm:
+                type = "hvm"
+            else:
+                type = "linux"
+
+            if arch:
+                osblob += "    <type arch='%s'>%s</type>\n" % (arch, type)
+            else:
+                osblob += "    <type>%s</type>\n" % type
+
+            if loader:
+                osblob += "    <loader>%s</loader>\n" % loader
+
+            if install:
+                osblob += "    <boot dev='network'/>\n"
+            else:
+                osblob += "    <boot dev='hd'/>\n"
+
+            osblob += "  </os>"
+        else:
+            osblob += "<bootloader>/usr/bin/pygrub</bootloader>"
+
+        return osblob
+
+    def post_install_check(self, guest):
+        # Check for the 0xaa55 signature at the end of the MBR
+        fd = os.open(guest.disks[0].path, os.O_RDONLY)
+        buf = os.read(fd, 512)
+        os.close(fd)
+        return len(buf) == 512 and struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,)
+

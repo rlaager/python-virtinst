@@ -248,6 +248,8 @@ def parse_args():
     parser.add_option("-c", "--cdrom", type="string", dest="cdrom",
                       action="callback", callback=cli.check_before_store,
                       help=_("File to use a virtual CD-ROM device for fully virtualized guests"))
+    parser.add_option("", "--pxe", action="store_true", dest="pxe",
+                      help=_("Boot an installer from the network using the PXE boot protocol"))
     parser.add_option("", "--os-type", type="string", dest="os_type",
                       action="callback", callback=cli.check_before_store,
                       help=_("The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"))
@@ -367,8 +369,14 @@ def main():
             print >> sys.stderr, _("LiveCD installations are not supported for paravirt guests")
             sys.exit(1)
         installer = virtinst.LiveCDInstaller(type = type)
+    elif options.pxe:
+        installer = virtinst.PXEInstaller(type = type)
     else:
         installer = virtinst.DistroInstaller(type = type)
+
+    if (options.pxe and options.location) or (options.location and options.cdrom) or (options.cdrom and options.pxe):
+        print >> sys.stderr, _("Only one of --pxe, --location and --cdrom can be used")
+        sys.exit(1)
 
     if hvm:
         # Xen only supports CDROM
@@ -376,6 +384,9 @@ def main():
             installer.cdrom = True
         guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=options.arch)
     else:
+        if options.pxe:
+            print >> sys.stderr, _("Network PXE boot is not support for paravirtualized guests")
+            sys.exit(1)
         guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
 
     # now let's get some of the common questions out of the way
@@ -400,7 +411,8 @@ def main():
         get_paravirt_extraargs(options.extra, guest)
         continue_inst = False
     else:
-        get_fullvirt_cdrom(options.cdrom, options.location, guest)
+        if not options.pxe:
+            get_fullvirt_cdrom(options.cdrom, options.location, guest)
         if options.noacpi:
             guest.features["acpi"] = False
         if options.noapic:

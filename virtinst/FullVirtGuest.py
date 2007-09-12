@@ -198,9 +198,10 @@ class FullVirtGuest(Guest.XenGuest):
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
-        self._installer.prepare(guest = self,
-                                meter = meter,
-                                distro = self.os_distro)
+        if self.location or self.cdrom:
+            self._installer.prepare(guest = self,
+                                    meter = meter,
+                                    distro = self.os_distro)
 
     def get_continue_inst(self):
         if self.os_type is not None:

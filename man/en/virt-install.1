@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2007-07-15" "perl v5.8.8" "User Contributed Perl Documentation"
+.TH VIRT-INSTALL 1 "2007-09-11" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
 virt\-install \- provision new virtual machines
 .SH "SYNOPSIS"
@@ -334,7 +334,13 @@ path to an \s-1ISO\s0 image, or to a \s-1CDROM\s0 device. It can also be a \s-1U
 to fetch/access a minimal boot \s-1ISO\s0 image. The URLs take the same format as
 described for the \f(CW\*(C`\-\-location\*(C'\fR argument. If this parameter is omitted then
 the \f(CW\*(C`\-\-location\*(C'\fR argument must be given to specify a location for the kernel
-and initrd.
+and initrd, or the \f(CW\*(C`\-\-pxe\*(C'\fR argument used to install from the network.
+.IP "\-\-pxe" 4
+.IX Item "--pxe"
+Use the \s-1PXE\s0 boot protocol to load the initial ramdisk and kernel for starting
+the guest installation process. If this parameter is omitted then either the
+\&\f(CW\*(C`\-\-location\*(C'\fR or \f(CW\*(C`\-\-cdrom\*(C'\fR arguments must be given to specify a location for
+the kernel and initrd.
 .IP "\-\-os\-type=OS_TYPE" 4
 .IX Item "--os-type=OS_TYPE"
 Optimize the guest configuration for a type of operating system. This will
