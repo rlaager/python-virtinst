@@ -124,7 +124,7 @@ def get_default_arch():
     arch = os.uname()[4]
     if arch == "x86_64":
         return "x86_64"
-    return "i386"
+    return "i686"
 
 # this function is directly from xend/server/netif.py and is thus
 # available under the LGPL,
