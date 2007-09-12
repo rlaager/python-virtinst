@@ -467,7 +467,9 @@ class Guest(object):
 
     def get_installer(self):
         return self._installer
-    installer = property(get_installer)
+    def set_installer(self, val):
+        self._installer = val
+    installer = property(get_installer, set_installer)
 
 
     def get_type(self):
