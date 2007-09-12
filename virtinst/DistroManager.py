@@ -210,6 +210,9 @@ class RedHatImageStore(ImageStore):
 # Fedora distro check
 class FedoraImageStore(RedHatImageStore):
     def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile("fedora.css", progresscb):
+            logging.debug("Detected a Fedora distro")
+            return True
         if fetcher.hasFile("Fedora", progresscb):
             logging.debug("Detected a Fedora distro")
             return True
