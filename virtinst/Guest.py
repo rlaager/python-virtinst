@@ -45,19 +45,23 @@ class VirtualDisk:
     TYPE_FILE = "file"
     TYPE_BLOCK = "block"
 
-    def __init__(self, path, size = None, transient=False, type=None, device=DEVICE_DISK, driverName=None, driverType=None, readOnly=False, sparse=True):
+    def __init__(self, path = None, size = None, transient=False, type=None, device=DEVICE_DISK, driverName=None, driverType=None, readOnly=False, sparse=True):
         """@path is the path to the disk image.
            @size is the size of the disk image in gigabytes."""
         self.size = size
         self.sparse = sparse
         self.transient = transient
-        self.path = os.path.abspath(path)
-
-        if os.path.isdir(self.path):
+        if path != None:
+            self.path = os.path.abspath(path)
+        else:
+            self.path = None
+            type  = "VirtualDisk.TYPE_FILE" # Arbitrary choice but avoids the null-path null-type case
+            
+        if self.path != None and os.path.isdir(self.path):
             raise ValueError, \
                 _("The disk path must be a file or a device, not a directory")
 
-        if not self.path.startswith("/"):
+        if self.path != None and not self.path.startswith("/"):
             raise ValueError, \
                 _("The disk path must be an absolute path location, beginning with '/'")
 
@@ -75,7 +79,7 @@ class VirtualDisk:
         else:
             self._type = type
 
-        if self._type == VirtualDisk.TYPE_FILE:
+        if self._type == VirtualDisk.TYPE_FILE and self.path != None:
             if size is None and not os.path.exists(self.path):
                 raise ValueError, \
                     _("A size must be provided for non-existent disks")
