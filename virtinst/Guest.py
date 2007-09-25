@@ -55,7 +55,7 @@ class VirtualDisk:
             self.path = os.path.abspath(path)
         else:
             self.path = None
-            type  = "VirtualDisk.TYPE_FILE" # Arbitrary choice but avoids the null-path null-type case
+            type  = VirtualDisk.TYPE_FILE # Arbitrary choice but avoids the null-path null-type case
             
         if self.path != None and os.path.isdir(self.path):
             raise ValueError, \
