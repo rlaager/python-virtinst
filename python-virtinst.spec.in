@@ -60,6 +60,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-image
 
 %changelog
+* Tue Sep 25 2007 Daniel P. Berrange <berrange@redhat.com> - 0.300.1-1
+- Fixed default architecture on 32-bit
+- Fixed QEMU guest installs from remote architectures
+- Added support for PXE installs of fullyvirtualized guests
+- Fixed Fedora distro detection
+
 * Wed Aug 29 2007 Daniel P. Berrange <berrange@redhat.com> - 0.300.0-1
 - Updated to 0.300.0
 - Added virt-image tool

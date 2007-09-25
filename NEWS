@@ -1,6 +1,15 @@
    Virt Install News
    =================
 
+Release 0.300.1
+---------------
+
+This release fixes a couple of minor bugs. The detection of new
+Fedora distros is fixed. The ability to PXE boot install fully
+virtualized guests is enabled. Installation of QEMU guests from
+remote ISO images is fixed. Choice of default architecture is
+fixed on 32-bit.
+
 Release 0.300.0
 ---------------
 
