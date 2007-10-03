@@ -19,15 +19,10 @@ import libxml2
 import urlgrabber.progress as progress
 import util
 import libvirt
+import __builtin__
 from virtinst import _virtinst as _
 
 import logging
-
-
-#print "YO %s" % (virtinst.gettext_virtinst("YO"))
-
-#def _(msg):
-#    gettext_virtinst(msg)
 
 class VirtualDisk:
     DRIVER_FILE = "file"
@@ -51,21 +46,24 @@ class VirtualDisk:
         self.size = size
         self.sparse = sparse
         self.transient = transient
-        if path != None:
-            self.path = os.path.abspath(path)
+        self.path = path
+       
+        if self.path is not None:
+            if __builtin__.type(self.path) is not __builtin__.type("string"):
+                raise ValueError, _("The disk path must be a string or None.")
+            self.path = os.path.abspath(self.path)
+
+            if self.path != None and os.path.isdir(self.path):
+                raise ValueError, _("The disk path must be a file or a device, not a directory")
+
+            if not os.path.exists(os.path.dirname(self.path)):
+                raise ValueError, _("The specified path's root directory must exist.")
         else:
-            self.path = None
-            type  = VirtualDisk.TYPE_FILE # Arbitrary choice but avoids the null-path null-type case
-            
-        if self.path != None and os.path.isdir(self.path):
-            raise ValueError, \
-                _("The disk path must be a file or a device, not a directory")
+            if device is not self.DEVICE_FLOPPY and \
+               device is not self.DEVICE_CDROM:
+                raise ValueError, _("Disk type '%s' requires a path") % device 
 
-        if self.path != None and not self.path.startswith("/"):
-            raise ValueError, \
-                _("The disk path must be an absolute path location, beginning with '/'")
-
-        if type is None:
+        if type is None and self.path is not None:
             if not os.path.exists(self.path):
                 logging.debug("Disk path not found: Assuming file disk type.");
                 self._type = VirtualDisk.TYPE_FILE
@@ -79,13 +77,16 @@ class VirtualDisk:
         else:
             self._type = type
 
-        if self._type == VirtualDisk.TYPE_FILE and self.path != None:
-            if size is None and not os.path.exists(self.path):
+        if self._type == VirtualDisk.TYPE_FILE and self.path is not None:
+            if self.size is None and not os.path.exists(self.path):
                 raise ValueError, \
                     _("A size must be provided for non-existent disks")
-            if size is not None and size <= 0:
-                raise ValueError, \
-                    _("The size of the disk image must be greater than 0")
+            if self.size is not None and \
+               (__builtin__.type(self.size) is not __builtin__.type(1) and \
+                __builtin__.type(self.size) is not __builtin__.type(1.0)):
+                raise ValueError, _("Disk size must be an int or a float.")
+            if self.size <= 0 and self.size is not None:
+                raise ValueError, _("Disk size must be greater than 0.")
         elif self._type == VirtualDisk.TYPE_BLOCK:
             if not os.path.exists(self.path):
                 raise ValueError, _("The specified block device does not exist.")
@@ -123,7 +124,8 @@ class VirtualDisk:
     read_only = property(get_read_only)
 
     def setup(self, progresscb):
-        if self._type == VirtualDisk.TYPE_FILE and not os.path.exists(self.path):
+        if self._type == VirtualDisk.TYPE_FILE and self.path is not None \
+           and not os.path.exists(self.path):
             size_bytes = long(self.size * 1024L * 1024L * 1024L)
             progresscb.start(filename=self.path,size=long(size_bytes), \
                              text=_("Creating storage file..."))
@@ -213,10 +215,15 @@ class XenDisk(VirtualDisk):
 class VirtualNetworkInterface:
     def __init__(self, macaddr = None, type="bridge", bridge = None, network=None):
 
+        if macaddr is not None and \
+           __builtin__.type(macaddr) is not __builtin__.type("string"):
+            raise ValueError, "MAC address must be a string."
+
         if macaddr is not None:
             form = re.match("^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",macaddr)
             if form is None:
-                raise ValueError(_("MAC address must be of the format AA:BB:CC:DD:EE:FF"))
+                raise ValueError, \
+                    _("MAC address must be of the format AA:BB:CC:DD:EE:FF")
         self.macaddr = macaddr
         self.type = type
         self.bridge = bridge
@@ -411,6 +418,8 @@ class Installer(object):
     def get_cdrom(self):
         return self._cdrom
     def set_cdrom(self, enable):
+        if __builtin__.type(enable) is not __builtin__.type(True):
+            raise ValueError, _("Guest.cdrom must be a boolean type")
         self._cdrom = enable
     cdrom = property(get_cdrom, set_cdrom)
 
@@ -438,6 +447,8 @@ class Installer(object):
             if len(val) != 2:
                 raise ValueError, _("Must pass both a kernel and initrd")
             self._boot = {"kernel": val[0], "initrd": val[1]}
+        else:
+            raise ValueError, _("Kernel and initrd must be specified by a list, dict, or tuple.")
     boot = property(get_boot, set_boot)
 
     # extra arguments to pass to the guest installer
@@ -487,14 +498,12 @@ class Guest(object):
     def get_name(self):
         return self._name
     def set_name(self, val):
-        if len(val) > 50 or len(val) == 0:
-            raise ValueError, _("System name must be greater than 0 and no more than 50 characters")
+        if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
+            raise ValueError, _("System name must be a string greater than 0 and no more than 50 characters")
         if re.match("^[0-9]+$", val):
             raise ValueError, _("System name must not be only numeric characters")
         if re.match("^[a-zA-Z0-9._-]+$", val) == None:
             raise ValueError, _("System name can only contain alphanumeric, '_', '.', or '-' characters")
-        if type(val) != type("string"):
-            raise ValueError, _("System name must be a string")
         self._name = val
     name = property(get_name, set_name)
 
@@ -503,7 +512,7 @@ class Guest(object):
     def get_memory(self):
         return self._memory
     def set_memory(self, val):
-        if (type(val) is not type(1) or val < 0):
+        if (type(val) is not type(1) or val <= 0):
             raise ValueError, _("Memory value must be an integer greater than 0")
         self._memory = val
         if self._maxmemory is None or self._maxmemory < val:
@@ -514,7 +523,7 @@ class Guest(object):
     def get_maxmemory(self):
         return self._maxmemory
     def set_maxmemory(self, val):
-        if (type(val) is not type(1) or val < 0):
+        if (type(val) is not type(1) or val <= 0):
             raise ValueError, _("Max Memory value must be an integer greater than 0")
         self._maxmemory = val
     maxmemory = property(get_maxmemory, set_maxmemory)
@@ -525,6 +534,9 @@ class Guest(object):
         return self._uuid
     def set_uuid(self, val):
         # need better validation
+        if type(val) is not type("string"):
+            raise ValueError, _("UUID must be a string.")
+
         form = re.match("[a-fA-F0-9]{8}[-]([a-fA-F0-9]{4}[-]){3}[a-fA-F0-9]{12}$", val)
         if form is None:
             form = re.match("[a-fA-F0-9]{32}$", val)
@@ -533,7 +545,7 @@ class Guest(object):
 
             else:   # UUID had no dashes, so add them in
                 val=val[0:8] + "-" + val[8:12] + "-" + val[12:16] + \
-                "-" + val[16:20] + "-" + val[20:32]
+                    "-" + val[16:20] + "-" + val[20:32]
         self._uuid = val
     uuid = property(get_uuid, set_uuid)
 
@@ -629,9 +641,13 @@ class Guest(object):
     extraargs = property(get_extraargs, set_extraargs)
 
     def get_cdrom(self):
-        return self.location
+        return self._installer.location
     def set_cdrom(self, val):
-        self.location = val
+        if val is None or type(val) is not type("string") or len(val) == 0:
+            raise ValueError, _("You must specify a valid ISO or CD-ROM location for the installation")
+        if not os.path.exists(val):
+            raise ValueError, _("The specified media path does not exist.")
+        self._installer.location = os.path.abspath(val)
         self._installer.cdrom = True
     cdrom = property(get_cdrom, set_cdrom)
 

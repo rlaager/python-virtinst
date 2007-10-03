@@ -15,7 +15,7 @@
   <vcpu>5</vcpu>
   <devices>
     <disk type='file' device='disk'>
-      <source file='/xen/test.img'/>
+      <source file='/etc/test.img'/>
       <target dev='xvda'/>
     </disk>
 

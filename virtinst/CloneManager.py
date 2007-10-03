@@ -70,7 +70,7 @@ class CloneDesign(object):
     def get_original_guest(self):
         return self._original_guest
     def set_original_guest(self, original_guest):
-        if len(original_guest) == 0:
+        if type(original_guest) is not type("str") or len(original_guest)==0:
            raise ValueError, _("Name or UUID of guest to clone is required")
 
         try:
@@ -102,7 +102,7 @@ class CloneDesign(object):
         self._clone_uuid = uuid
     def get_clone_uuid(self):
         return self._clone_uuid
-    clone_uuid = property(get_clone_uuid)
+    clone_uuid = property(get_clone_uuid, set_clone_uuid)
 
     def set_clone_devices(self, devices):
         if len(devices) == 0:
@@ -117,14 +117,14 @@ class CloneDesign(object):
         self._clone_devices.append(devices)
     def get_clone_devices(self):
         return self._clone_devices
-    clone_devices = property(get_clone_devices)
+    clone_devices = property(get_clone_devices, set_clone_devices)
 
     def set_clone_mac(self, mac):
         Guest.VirtualNetworkInterface(mac)
         self._clone_mac.append(mac)
     def get_clone_mac(self):
         return self._clone_mac
-    clone_mac = property(get_clone_mac)
+    clone_mac = property(get_clone_mac, set_clone_mac)
 
     def get_clone_bs(self):
         return self._clone_bs
