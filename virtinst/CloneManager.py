@@ -422,12 +422,14 @@ class CloneDesign(object):
             except:
                 continue
             ctx = doc.xpathNewContext()
+            mac_index = (str(doc).upper()).find(mac.upper())
+            if mac_index == -1:
+                continue
+            mac_comp = str(doc)[mac_index:mac_index+17]
             try:
                 try:
                     count += ctx.xpathEval("count(/domain/devices/interface/mac[@address='%s'])"
-                                           % mac.upper())
-                    count += ctx.xpathEval("count(/domain/devices/interface/mac[@address='%s'])"
-                                           % mac.lower())
+                                           % mac_comp)
                 except:
                     continue
             finally:
