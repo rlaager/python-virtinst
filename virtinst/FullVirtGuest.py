@@ -27,6 +27,7 @@ class FullVirtGuest(Guest.XenGuest):
                             "acpi": True, \
                             "apic": True, \
                             "continue": False, \
+                            "input": [ "mouse", "ps2"],
                             "variants": { "rhel2.1": { "label": "Red Hat Enterprise Linux 2.1", "distro": "rhel" }, \
                                           "rhel3": { "label": "Red Hat Enterprise Linux 3", "distro": "rhel" }, \
                                           "rhel4": { "label": "Red Hat Enterprise Linux 4", "distro": "rhel" }, \
@@ -44,6 +45,7 @@ class FullVirtGuest(Guest.XenGuest):
                               "acpi": True, \
                               "apic": True, \
                               "continue": True, \
+                              "input": [ "tablet", "usb"],
                               "variants": { "winxp": { "label": "Microsoft Windows XP", \
                                                        "acpi": False, \
                                                        "apic": False }, \
@@ -58,6 +60,7 @@ class FullVirtGuest(Guest.XenGuest):
                            "acpi": True,
                            "apic": True,
                            "continue": False, \
+                           "input": [ "mouse", "ps2"],
                            "variants": { "solaris9": { "label": "Sun Solaris 9" }, \
                                          "solaris10": { "label": "Sun Solaris 10" }, \
                                          "freebsd6": { "label": "Free BSD 6.x" }, \
@@ -68,6 +71,7 @@ class FullVirtGuest(Guest.XenGuest):
                             "acpi": True,
                             "apic": True,
                             "continue": False,
+                            "input": [ "mouse", "ps2"],
                             "variants": { "msdos": { "label": "MS-DOS", \
                                                      "acpi": False, \
                                                      "apic": False }, \
@@ -161,7 +165,10 @@ class FullVirtGuest(Guest.XenGuest):
     os_distro = property(get_os_distro)
 
     def get_input_device(self):
-        return ("tablet", "usb")
+        if self.os_type is None or not FullVirtGuest.OS_TYPES.has_key(self.os_type):
+            return ("mouse", "ps2")
+        input = FullVirtGuest.OS_TYPES[self.os_type]["input"]
+        return (input[0], input[1])
 
     def _get_features_xml(self):
         ret = "<features>\n"

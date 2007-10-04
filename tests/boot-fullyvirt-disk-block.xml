@@ -28,7 +28,7 @@
     </disk>
 
 
-    <input type='tablet' bus='usb'/>
+    <input type='mouse' bus='ps2'/>
     <graphics type='sdl'/>
   </devices>
 </domain>
