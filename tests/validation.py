@@ -1,6 +1,7 @@
 import virtinst
 import unittest
 import traceback
+import os
 
 # Template for adding arguments to test
 #      { 'label'    : { 'VAR'       : { 'invalid' : [param],\
@@ -152,6 +153,9 @@ class TestValidation(unittest.TestCase):
                 
             for val in args[name][paramname]['valid']:
                 try:
+                    # Skip NFS test as non-root
+                    if name == "distroinstaller" and paramname == "location" and val[0:3] == "nfs" and os.geteuid() != 0:
+                        continue
                     if paramname is '__init__':
                         testclass(*(), **val)                    
                     else:
