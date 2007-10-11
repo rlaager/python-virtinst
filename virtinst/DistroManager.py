@@ -161,7 +161,7 @@ class MountedImageFetcher(ImageFetcher):
             if tmpfile is not None:
                 os.unlink(tmpfile)
             return True
-        except RuntimeError, e:
+        except Exception, e:
             logging.debug("Cannot find file %s" % filename)
             return False
 
