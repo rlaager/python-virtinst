@@ -131,16 +131,19 @@ class VirtualDisk:
                              text=_("Creating storage file..."))
             fd = None
             try: 
-                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
-                if self.sparse:
-                    os.lseek(fd, size_bytes, 0)
-                    os.write(fd, '\x00')
-                    progresscb.update(self.size)
-                else:
-                    buf = '\x00' * 1024 * 1024 # 1 meg of nulls
-                    for i in range(0, long(self.size * 1024L)):
-                        os.write(fd, buf)
-                        progresscb.update(long(i * 1024L * 1024L))
+                try:
+                    fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+                    if self.sparse:
+                        os.lseek(fd, size_bytes, 0)
+                        os.write(fd, '\x00')
+                        progresscb.update(self.size)
+                    else:
+                        buf = '\x00' * 1024 * 1024 # 1 meg of nulls
+                        for i in range(0, long(self.size * 1024L)):
+                            os.write(fd, buf)
+                            progresscb.update(long(i * 1024L * 1024L))
+                except OSError, detail:
+                    raise RuntimeError, "Error creating diskimage " + self.path + ": " + detail.strerror
             finally:
                 if fd is not None:
                     os.close(fd)
