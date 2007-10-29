@@ -160,11 +160,17 @@ def get_fullvirt_cdrom(cdpath, location, guest):
     while 1:
         cdpath = cli.prompt_for_input(_("What is the virtual CD image, CD device or install location?"), cdpath)
         try:
+            # Build a throwaway disk to reuse its validation
+            cddisk = virtinst.VirtualDisk(path=cdpath, 
+                                          transient=True,
+                                          device=virtinst.VirtualDisk.DEVICE_CDROM,
+                                          readOnly=True)
             guest.cdrom = cdpath
             break
         except ValueError, e:
             print _("ERROR: "), e
             cdpath = None
+
 
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):

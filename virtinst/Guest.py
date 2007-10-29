@@ -50,11 +50,11 @@ class VirtualDisk:
        
         if self.path is not None:
             if __builtin__.type(self.path) is not __builtin__.type("string"):
-                raise ValueError, _("The disk path must be a string or None.")
+                raise ValueError, _("The %s path must be a string or None.") % device
             self.path = os.path.abspath(self.path)
 
             if self.path != None and os.path.isdir(self.path):
-                raise ValueError, _("The disk path must be a file or a device, not a directory")
+                raise ValueError, _("The %s path must be a file or a device, not a directory") % device
 
             if not os.path.exists(os.path.dirname(self.path)):
                 raise ValueError, _("The specified path's root directory must exist.")
