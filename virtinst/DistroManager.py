@@ -83,7 +83,8 @@ class URIImageFetcher(ImageFetcher):
                                        progress_obj = progresscb, \
                                        text = _("Retrieving file %s...") % base)
             except IOError, e:
-                raise ValueError, _("Invalid URL location given: ") + str(e)
+                raise ValueError, _("Invalid URL location given: %s %s") %\
+                                  ((self.location + "/" + filename), str(e))
             tmpname = self.saveTemp(file, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
             return tmpname
@@ -445,7 +446,7 @@ class SuseImageStore(ImageStore):
                 ignore = fetcher.acquireFile("directory.yast", progresscb)
                 logging.debug("Detected a Suse distro")
                 return True
-            except RuntimeError, e:
+            except ValueError, e:
                 logging.debug("Doesn't look like a Suse distro " + str(e))
                 pass
         finally:
@@ -464,7 +465,7 @@ class DebianImageStore(ImageStore):
         try:
             try:
                 file = fetcher.acquireFile("current/images/MANIFEST", progresscb)
-            except RuntimeError, e:
+            except ValueError, e:
                 logging.debug("Doesn't look like a Debian distro " + str(e))
                 return False
             f = open(file, "r")
