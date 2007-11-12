@@ -386,6 +386,7 @@ class Installer(object):
         self._extraargs = None
         self._boot = None
         self._cdrom = False
+        self._install_disk = None   # VirtualDisk that contains install media
 
         if type is None:
             type = "xen"
@@ -405,6 +406,10 @@ class Installer(object):
             logging.debug("Removing " + f)
             os.unlink(f)
         self._tmpfiles = []
+
+    def get_install_disk(self):
+        return self._install_disk
+    install_disk = property(get_install_disk)
 
     def get_type(self):
         return self._type
@@ -464,8 +469,6 @@ class Installer(object):
 class Guest(object):
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
         self._installer = installer
-        self.disks = []
-        self.nics = []
         self._name = None
         self._uuid = None
         self._memory = None
@@ -473,6 +476,14 @@ class Guest(object):
         self._vcpus = None
         self._graphics = { "enabled": False }
         self._keymap = None
+        
+        # Public device lists unaltered by install process
+        self.disks = []
+        self.nics = []
+
+        # Device lists to use/alter during install process
+        self._install_disks = []
+        self._install_nics = []
 
         self.domain = None
         self.conn = connection
@@ -657,9 +668,9 @@ class Guest(object):
 
     def _create_devices(self,progresscb):
         """Ensure that devices are setup"""
-        for disk in self.disks:
+        for disk in self._install_disks:
             disk.setup(progresscb)
-        for nic in self.nics:
+        for nic in self._install_nics:
             nic.setup(self.conn)
 
     def _get_network_xml(self, install = True):
@@ -743,6 +754,10 @@ class Guest(object):
             return self._do_install(consolecb, meter)
         finally:
             self._installer.cleanup()
+
+    def _prepare_install(self, meter):
+        self._install_disks = self.disks[:]
+        self._install_nics = self.nics[:]
 
     def _do_install(self, consolecb, meter):
         try:

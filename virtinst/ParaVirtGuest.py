@@ -45,7 +45,11 @@ class ParaVirtGuest(Guest.XenGuest):
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
+        Guest.Guest._prepare_install(self, meter)
         self._installer.prepare(guest = self, meter = meter)
+        if self._installer.install_disk is not None:
+            self._install_disks.append(self._installer.install_disk)
+
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
@@ -54,7 +58,7 @@ class ParaVirtGuest(Guest.XenGuest):
         for i in range(16):
             n = "%s%c" % (self.disknode, ord('a') + i)
             nodes[n] = None
-        for d in self.disks:
+        for d in self._install_disks:
             if d.transient and not install:
                 continue
             target = d.target

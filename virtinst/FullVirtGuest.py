@@ -205,10 +205,13 @@ class FullVirtGuest(Guest.XenGuest):
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
+        Guest.Guest._prepare_install(self, meter)
         if self.location or self.cdrom:
             self._installer.prepare(guest = self,
                                     meter = meter,
                                     distro = self.os_distro)
+        if self._installer.install_disk is not None:
+            self._install_disks.append(self._installer.install_disk)
 
     def get_continue_inst(self):
         if self.os_type is not None:
@@ -248,7 +251,7 @@ class FullVirtGuest(Guest.XenGuest):
 
         # First assign CDROM device nodes, since they're scarce resource
         cdnode = self.disknode + "c"
-        for d in self.disks:
+        for d in self._install_disks:
             if d.device != Guest.VirtualDisk.DEVICE_CDROM:
                 continue
 
@@ -263,7 +266,7 @@ class FullVirtGuest(Guest.XenGuest):
             nodes[d.target] = d
 
         # Now assign regular disk node with remainder
-        for d in self.disks:
+        for d in self._install_disks:
             if d.device == Guest.VirtualDisk.DEVICE_CDROM:
                 continue
 
@@ -278,7 +281,7 @@ class FullVirtGuest(Guest.XenGuest):
                     raise ValueError, "The disk device %s is already used" % d.target
                 nodes[d.target] = d
 
-        for d in self.disks:
+        for d in self._install_disks:
             saved_path = None
             if d.device == Guest.VirtualDisk.DEVICE_CDROM and d.transient and not install:
                 # XXX hack. libvirt can't currently handle QEMU having an empty disk path..
