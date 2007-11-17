@@ -27,7 +27,7 @@ args = { 'guest'    : { \
                                                     (True, 'sdl', '',\
                                                     'key_map-2'),\
                                                     {'enabled' : True, \
-                                                     'type':'vnc', 'opts':'o'}\
+                                                     'type':'vnc', 'opts':5900}\
                                                     ]},\
                         'type'      : { 'invalid' : [], \
                                         'valid'   : ['sometype'] }, \
