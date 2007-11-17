@@ -9,7 +9,7 @@
     <boot dev='hd'/>
   </os>
   <features>
-    <acpi/><apic/><pae/>
+    <acpi/><apic/>
   </features>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>

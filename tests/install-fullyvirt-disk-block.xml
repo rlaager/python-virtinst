@@ -9,7 +9,7 @@
     <boot dev='cdrom'/>
   </os>
   <features>
-    <acpi/><apic/><pae/>
+    <acpi/><apic/>
   </features>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>destroy</on_reboot>
@@ -19,11 +19,11 @@
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <console device='pty'/>
     <disk type='block' device='disk'>
-      <source dev='/dev/root'/>
+      <source dev='/dev/loop0'/>
       <target dev='hda'/>
     </disk>
     <disk type='block' device='cdrom'>
-      <source dev='/dev/cdrom'/>
+      <source dev='/dev/loop0'/>
       <target dev='hdc'/>
       <readonly/>
     </disk>

@@ -19,7 +19,7 @@
       <target dev='xvdb'/>
     </disk>
     <disk type='block' device='disk'>
-      <source dev='/dev/root'/>
+      <source dev='/dev/loop0'/>
       <target dev='xvdc'/>
     </disk>
 

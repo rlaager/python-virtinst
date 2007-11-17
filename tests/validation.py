@@ -32,7 +32,7 @@ args = { 'guest'    : { \
                         'type'      : { 'invalid' : [], \
                                         'valid'   : ['sometype'] }, \
                         'cdrom'     : { 'invalid' : ['', 0, '/somepath'],\
-                                        'valid'   : ['/dev/root']}\
+                                        'valid'   : ['/dev/loop0']}\
                       },\
          'fvguest'  : { \
                         'os_type'   : { 'invalid' : ['notpresent',0,''],\
@@ -56,7 +56,7 @@ args = { 'guest'    : { \
                                                      { 'path' :'/dev/null',\
                                                        'type' : virtinst.VirtualDisk.TYPE_BLOCK},
                                                      { 'path' : None}],\
-                                        'valid'   : [{ 'path' : '/dev/root'},\
+                                        'valid'   : [{ 'path' : '/dev/loop0'},\
                                                      { 'path' : 'nonexist', \
                                                        'size' : 10}, \
                                                      { 'path' :'/dev/null'},
@@ -177,7 +177,7 @@ class TestValidation(unittest.TestCase):
         self._testArgs(PVGuest, virtinst.Guest, 'guest')
 
     def testDiskValidation(self):
-        disk = virtinst.VirtualDisk("/dev/root")
+        disk = virtinst.VirtualDisk("/dev/loop0")
         self._testArgs(disk, virtinst.VirtualDisk, 'disk')
 
     def testFVGuestValidation(self):
