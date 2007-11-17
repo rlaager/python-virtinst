@@ -50,11 +50,11 @@ class VirtualDisk:
        
         if self.path is not None:
             if __builtin__.type(self.path) is not __builtin__.type("string"):
-                raise ValueError, _("The disk path must be a string or None.")
+                raise ValueError, _("The %s path must be a string or None.") % device
             self.path = os.path.abspath(self.path)
 
             if self.path != None and os.path.isdir(self.path):
-                raise ValueError, _("The disk path must be a file or a device, not a directory")
+                raise ValueError, _("The %s path must be a file or a device, not a directory") % device
 
             if not os.path.exists(os.path.dirname(self.path)):
                 raise ValueError, _("The specified path's root directory must exist.")
@@ -131,16 +131,19 @@ class VirtualDisk:
                              text=_("Creating storage file..."))
             fd = None
             try: 
-                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
-                if self.sparse:
-                    os.lseek(fd, size_bytes, 0)
-                    os.write(fd, '\x00')
-                    progresscb.update(self.size)
-                else:
-                    buf = '\x00' * 1024 * 1024 # 1 meg of nulls
-                    for i in range(0, long(self.size * 1024L)):
-                        os.write(fd, buf)
-                        progresscb.update(long(i * 1024L * 1024L))
+                try:
+                    fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+                    if self.sparse:
+                        os.lseek(fd, size_bytes, 0)
+                        os.write(fd, '\x00')
+                        progresscb.update(self.size)
+                    else:
+                        buf = '\x00' * 1024 * 1024 # 1 meg of nulls
+                        for i in range(0, long(self.size * 1024L)):
+                            os.write(fd, buf)
+                            progresscb.update(long(i * 1024L * 1024L))
+                except OSError, detail:
+                    raise RuntimeError, "Error creating diskimage " + self.path + ": " + detail.strerror
             finally:
                 if fd is not None:
                     os.close(fd)
@@ -345,8 +348,8 @@ class VNCVirtualGraphics(XenGraphics):
     def __init__(self, *args):
         self.name = "vnc"
         if len(args) >= 1 and not args[0] is None:
-            if args[0] < 5900:
-                raise ValueError, _("Invalid value for vnc port, port number must be greater than or equal to 5900")
+            if args[0] < 5900 or args[0] > 65535:
+                raise ValueError, _("Invalid value for vnc port, port number must be in between 5900 and 65535")
             self.port = args[0]
         else:
             self.port = -1
@@ -383,6 +386,7 @@ class Installer(object):
         self._extraargs = None
         self._boot = None
         self._cdrom = False
+        self._install_disk = None   # VirtualDisk that contains install media
 
         if type is None:
             type = "xen"
@@ -402,6 +406,10 @@ class Installer(object):
             logging.debug("Removing " + f)
             os.unlink(f)
         self._tmpfiles = []
+
+    def get_install_disk(self):
+        return self._install_disk
+    install_disk = property(get_install_disk)
 
     def get_type(self):
         return self._type
@@ -461,8 +469,6 @@ class Installer(object):
 class Guest(object):
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
         self._installer = installer
-        self.disks = []
-        self.nics = []
         self._name = None
         self._uuid = None
         self._memory = None
@@ -470,6 +476,14 @@ class Guest(object):
         self._vcpus = None
         self._graphics = { "enabled": False }
         self._keymap = None
+        
+        # Public device lists unaltered by install process
+        self.disks = []
+        self.nics = []
+
+        # Device lists to use/alter during install process
+        self._install_disks = []
+        self._install_nics = []
 
         self.domain = None
         self.conn = connection
@@ -654,9 +668,9 @@ class Guest(object):
 
     def _create_devices(self,progresscb):
         """Ensure that devices are setup"""
-        for disk in self.disks:
+        for disk in self._install_disks:
             disk.setup(progresscb)
-        for nic in self.nics:
+        for nic in self._install_nics:
             nic.setup(self.conn)
 
     def _get_network_xml(self, install = True):
@@ -740,6 +754,10 @@ class Guest(object):
             return self._do_install(consolecb, meter)
         finally:
             self._installer.cleanup()
+
+    def _prepare_install(self, meter):
+        self._install_disks = self.disks[:]
+        self._install_nics = self.nics[:]
 
     def _do_install(self, consolecb, meter):
         try:

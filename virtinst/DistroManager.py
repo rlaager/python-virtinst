@@ -83,7 +83,8 @@ class URIImageFetcher(ImageFetcher):
                                        progress_obj = progresscb, \
                                        text = _("Retrieving file %s...") % base)
             except IOError, e:
-                raise ValueError, _("Invalid URL location given: ") + str(e)
+                raise ValueError, _("Invalid URL location given: %s %s") %\
+                                  ((self.location + "/" + filename), str(e))
             tmpname = self.saveTemp(file, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
             return tmpname
@@ -445,7 +446,7 @@ class SuseImageStore(ImageStore):
                 ignore = fetcher.acquireFile("directory.yast", progresscb)
                 logging.debug("Detected a Suse distro")
                 return True
-            except RuntimeError, e:
+            except ValueError, e:
                 logging.debug("Doesn't look like a Suse distro " + str(e))
                 pass
         finally:
@@ -464,7 +465,7 @@ class DebianImageStore(ImageStore):
         try:
             try:
                 file = fetcher.acquireFile("current/images/MANIFEST", progresscb)
-            except RuntimeError, e:
+            except ValueError, e:
                 logging.debug("Doesn't look like a Debian distro " + str(e))
                 return False
             f = open(file, "r")
@@ -626,10 +627,10 @@ class DistroInstaller(Guest.Installer):
                                     distro = distro)
             self._tmpfiles.append(cdrom)
 
-        guest.disks.append(Guest.VirtualDisk(cdrom,
-                                             device=Guest.VirtualDisk.DEVICE_CDROM,
-                                             readOnly=True,
-                                             transient=True))
+        self._install_disk = Guest.VirtualDisk(cdrom,
+                                               device=Guest.VirtualDisk.DEVICE_CDROM,
+                                               readOnly=True,
+                                               transient=True)
 
     def _prepare_kernel_and_initrd(self, guest, distro, meter):
         if self.boot is not None:
@@ -662,9 +663,9 @@ class DistroInstaller(Guest.Installer):
         # If they're installing off a local file/device, we map it
         # through to a virtual harddisk
         if self.location is not None and self.location.startswith("/"):
-            guest.disks.append(Guest.VirtualDisk(self.location,
-                                                 readOnly=True,
-                                                 transient=True))
+            self._install_disk = Guest.VirtualDisk(self.location,
+                                                   readOnly=True,
+                                                   transient=True)
 
     def prepare(self, guest, meter, distro = None):
         self.cleanup()
@@ -716,7 +717,7 @@ class DistroInstaller(Guest.Installer):
 
     def post_install_check(self, guest):
         # Check for the 0xaa55 signature at the end of the MBR
-        fd = os.open(guest.disks[0].path, os.O_RDONLY)
+        fd = os.open(guest._install_disks[0].path, os.O_RDONLY)
         buf = os.read(fd, 512)
         os.close(fd)
         return len(buf) == 512 and struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,)
@@ -761,7 +762,7 @@ class PXEInstaller(Guest.Installer):
 
     def post_install_check(self, guest):
         # Check for the 0xaa55 signature at the end of the MBR
-        fd = os.open(guest.disks[0].path, os.O_RDONLY)
+        fd = os.open(guest._install_disks[0].path, os.O_RDONLY)
         buf = os.read(fd, 512)
         os.close(fd)
         return len(buf) == 512 and struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,)
