@@ -1,4 +1,4 @@
-include README AUTHORS NEWS ChangeLog
+include README AUTHORS NEWS ChangeLog COPYING
 include *.py
 include virtinst/*.py
 include virtinst/*.in

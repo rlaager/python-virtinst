@@ -14,7 +14,7 @@ Name: python-%{appname}
 Version: ::VERSION::
 Release: 1%{_extra_release}
 Source0: http://virt-manager.et.redhat.com/download/sources/%{appname}/%{appname}-%{version}.tar.gz
-License: GPL
+License: GPLv2+
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
@@ -50,7 +50,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f %{appname}.lang
 %defattr(-,root,root)
-%doc README AUTHORS ChangeLog NEWS doc/image.rng doc/example1.xml
+%doc README COPYING AUTHORS ChangeLog NEWS doc/image.rng doc/example1.xml
 %dir %{python_sitelib}/%{appname}
 %{python_sitelib}/%{appname}/*
 %{_mandir}/man1/*
