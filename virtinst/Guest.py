@@ -55,51 +55,55 @@ class VirtualDisk:
         self.sparse = sparse
         self.transient = transient
         self.path = path
+        self._type = type
        
         if self.path is not None:
+            # Check that the basics are valid
             if __builtin__.type(self.path) is not __builtin__.type("string"):
                 raise ValueError, _("The %s path must be a string or None.") % device
             self.path = os.path.abspath(self.path)
-
-            if self.path != None and os.path.isdir(self.path):
+            if os.path.isdir(self.path):
                 raise ValueError, _("The %s path must be a file or a device, not a directory") % device
-
             if not os.path.exists(os.path.dirname(self.path)):
                 raise ValueError, _("The specified path's root directory must exist.")
-        else:
-            if device is not self.DEVICE_FLOPPY and \
-               device is not self.DEVICE_CDROM:
-                raise ValueError, _("Disk type '%s' requires a path") % device 
 
-        if type is None and self.path is not None:
-            if not os.path.exists(self.path):
-                logging.debug("Disk path not found: Assuming file disk type.");
-                self._type = VirtualDisk.TYPE_FILE
-            else:
-                if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+            # If no disk type specified, attempt to determine from path
+            if type is None:
+                if not os.path.exists(self.path):
                     logging.debug(\
-                        "Path is block file: Assuming Block disk type.");
-                    self._type = VirtualDisk.TYPE_BLOCK
-                else:
+                        "Disk path not found: Assuming file disk type.");
                     self._type = VirtualDisk.TYPE_FILE
-        else:
-            self._type = type
+                else:
+                    if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                        logging.debug(\
+                            "Path is block file: Assuming Block disk type.");
+                        self._type = VirtualDisk.TYPE_BLOCK
+                    else:
+                        self._type = VirtualDisk.TYPE_FILE
+        
+            if self._type == VirtualDisk.TYPE_FILE:
+                if self.size is None and not os.path.exists(self.path):
+                    raise ValueError, \
+                        _("A size must be provided for non-existent disks")
+                if self.size is not None and \
+                   (__builtin__.type(self.size) is not __builtin__.type(1) and __builtin__.type(self.size) is not __builtin__.type(1.0)):
+                    raise ValueError, _("Disk size must be an int or a float.")
+                if self.size < 0 and self.size is not None:
+                    raise ValueError, _("Disk size must not be less than 0.")
+            elif self._type == VirtualDisk.TYPE_BLOCK:
+                if not os.path.exists(self.path):
+                    raise ValueError, \
+                          _("The specified block device does not exist.")
+                if not stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                    raise ValueError, \
+                          _("The specified path is not a block device.")
 
-        if self._type == VirtualDisk.TYPE_FILE and self.path is not None:
-            if self.size is None and not os.path.exists(self.path):
-                raise ValueError, \
-                    _("A size must be provided for non-existent disks")
-            if self.size is not None and \
-               (__builtin__.type(self.size) is not __builtin__.type(1) and \
-                __builtin__.type(self.size) is not __builtin__.type(1.0)):
-                raise ValueError, _("Disk size must be an int or a float.")
-            if self.size <= 0 and self.size is not None:
-                raise ValueError, _("Disk size must be greater than 0.")
-        elif self._type == VirtualDisk.TYPE_BLOCK:
-            if not os.path.exists(self.path):
-                raise ValueError, _("The specified block device does not exist.")
-            if not stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                raise ValueError, _("The specified path is not a block device.")
+        else:
+            # Only floppy or cdrom can be created w/o media
+            if device != self.DEVICE_FLOPPY and \
+               device != self.DEVICE_CDROM:
+                raise ValueError, _("Disk type '%s' requires a path") % device
+
 
         self._readOnly = readOnly
         self._device = device
