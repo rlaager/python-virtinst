@@ -56,19 +56,28 @@ class VirtualDisk:
         self.transient = transient
         self.path = path
         self._type = type
+        self._readOnly = readOnly
+        self._device = device
+        self._driverName = driverName
+        self._driverType = driverType
+        self.target = None
        
         if self.path is not None:
             # Check that the basics are valid
             if __builtin__.type(self.path) is not __builtin__.type("string"):
-                raise ValueError, _("The %s path must be a string or None.") % device
+                raise ValueError, _("The %s path must be a string or None.") % self._device
             self.path = os.path.abspath(self.path)
             if os.path.isdir(self.path):
-                raise ValueError, _("The %s path must be a file or a device, not a directory") % device
+                raise ValueError, _("The %s path must be a file or a device, not a directory") % self._device
             if not os.path.exists(os.path.dirname(self.path)):
                 raise ValueError, _("The specified path's root directory must exist.")
 
+            if self._device == self.DEVICE_FLOPPY or \
+               self._device == self.DEVICE_CDROM:
+                raise ValueError, _("The %s path must exist.") % self._device
+
             # If no disk type specified, attempt to determine from path
-            if type is None:
+            if self._type is None:
                 if not os.path.exists(self.path):
                     logging.debug(\
                         "Disk path not found: Assuming file disk type.");
@@ -103,13 +112,6 @@ class VirtualDisk:
             if device != self.DEVICE_FLOPPY and \
                device != self.DEVICE_CDROM:
                 raise ValueError, _("Disk type '%s' requires a path") % device
-
-
-        self._readOnly = readOnly
-        self._device = device
-        self._driverName = driverName
-        self._driverType = driverType
-        self.target = None
 
     def get_type(self):
         return self._type
