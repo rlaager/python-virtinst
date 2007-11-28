@@ -72,8 +72,9 @@ class VirtualDisk:
             if not os.path.exists(os.path.dirname(self.path)):
                 raise ValueError, _("The specified path's root directory must exist.")
 
-            if self._device == self.DEVICE_FLOPPY or \
-               self._device == self.DEVICE_CDROM:
+            if (self._device == self.DEVICE_FLOPPY or \
+                self._device == self.DEVICE_CDROM) and \
+               not os.path.exists(self.path):
                 raise ValueError, _("The %s path must exist.") % self._device
 
             # If no disk type specified, attempt to determine from path
