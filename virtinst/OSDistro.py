@@ -31,7 +31,7 @@ from ImageFetcher import ImageFetcher
 
 # An image store is a base class for retrieving either a bootable
 # ISO image, or a kernel+initrd  pair for a particular OS distribution
-class ImageStore:
+class Distro:
 
     def __init__(self, uri, type=None, scratchdir=None):
         self.uri = uri
@@ -50,7 +50,7 @@ class ImageStore:
 
 # Base image store for any Red Hat related distros which have
 # a common layout
-class RedHatImageStore(ImageStore):
+class RedHatDistro(Distro):
 
     def acquireKernel(self, fetcher, progresscb):
         if self.type is None:
@@ -71,7 +71,7 @@ class RedHatImageStore(ImageStore):
         return fetcher.acquireFile("images/boot.iso", progresscb)
 
 # Fedora distro check
-class FedoraImageStore(RedHatImageStore):
+class FedoraDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
         if fetcher.hasFile("fedora.css", progresscb):
             logging.debug("Detected a Fedora distro")
@@ -82,7 +82,7 @@ class FedoraImageStore(RedHatImageStore):
         return False
 
 # Fedora distro check
-class RHELImageStore(RedHatImageStore):
+class RHELDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
         if fetcher.hasFile("Server", progresscb):
             logging.debug("Detected a RHEL 5 Server distro")
@@ -96,7 +96,7 @@ class RHELImageStore(RedHatImageStore):
         return False
 
 # CentOS distro check
-class CentOSImageStore(RedHatImageStore):
+class CentOSDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
         if fetcher.hasFile("CentOS", progresscb):
             logging.debug("Detected a CentOS distro")
@@ -107,7 +107,7 @@ class CentOSImageStore(RedHatImageStore):
 
 # Suse  image store is harder - we fetch the kernel RPM and a helper
 # RPM and then munge bits together to generate a initrd
-class SuseImageStore(ImageStore):
+class SuseDistro(Distro):
     def acquireBootDisk(self, fetcher, progresscb):
         return fetcher.acquireFile("boot/boot.iso", progresscb)
 
@@ -317,7 +317,7 @@ class SuseImageStore(ImageStore):
         return False
 
 
-class DebianImageStore(ImageStore):
+class DebianDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
         if self.type is not None:
@@ -351,21 +351,21 @@ class DebianImageStore(ImageStore):
         return fetcher.acquireFile("current/images/netboot/mini.iso", progresscb)
 
 
-class UbuntuImageStore(ImageStore):
+class UbuntuDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
         if self.type is not None:
             return False
         return False
 
-class GentooImageStore(ImageStore):
+class GentooDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
         if self.type is not None:
             return False
         return False
 
-class MandrivaImageStore(ImageStore):
+class MandrivaDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
         if self.type is not None:

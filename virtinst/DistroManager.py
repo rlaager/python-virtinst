@@ -33,14 +33,14 @@ from virtinst import _virtinst as _
 from ImageFetcher import MountedImageFetcher
 from ImageFetcher import URIImageFetcher
 
-from OSDistro import FedoraImageStore
-from OSDistro import RHELImageStore
-from OSDistro import CentOSImageStore
-from OSDistro import SuseImageStore
-from OSDistro import DebianImageStore
-from OSDistro import UbuntuImageStore
-from OSDistro import GentooImageStore
-from OSDistro import MandrivaImageStore
+from OSDistro import FedoraDistro
+from OSDistro import RHELDistro
+from OSDistro import CentOSDistro
+from OSDistro import SuseDistro
+from OSDistro import DebianDistro
+from OSDistro import UbuntuDistro
+from OSDistro import GentooDistro
+from OSDistro import MandrivaDistro
 
 def _fetcherForURI(uri, scratchdir=None):
     if uri.startswith("http://") or uri.startswith("ftp://"):
@@ -51,21 +51,21 @@ def _fetcherForURI(uri, scratchdir=None):
 def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=None):
     stores = []
     if distro == "fedora" or distro is None:
-        stores.append(FedoraImageStore(baseuri, type, scratchdir))
+        stores.append(FedoraDistro(baseuri, type, scratchdir))
     if distro == "rhel" or distro is None:
-        stores.append(RHELImageStore(baseuri, type, scratchdir))
+        stores.append(RHELDistro(baseuri, type, scratchdir))
     if distro == "centos" or distro is None:
-        stores.append(CentOSImageStore(baseuri, type, scratchdir))
+        stores.append(CentOSDistro(baseuri, type, scratchdir))
     if distro == "suse" or distro is None:
-        stores.append(SuseImageStore(baseuri, type, scratchdir))
+        stores.append(SuseDistro(baseuri, type, scratchdir))
     if distro == "debian" or distro is None:
-        stores.append(DebianImageStore(baseuri, type, scratchdir))
+        stores.append(DebianDistro(baseuri, type, scratchdir))
     if distro == "ubuntu" or distro is None:
-        stores.append(UbuntuImageStore(baseuri, type, scratchdir))
+        stores.append(UbuntuDistro(baseuri, type, scratchdir))
     if distro == "gentoo" or distro is None:
-        stores.append(GentooImageStore(baseuri, type, scratchdir))
+        stores.append(GentooDistro(baseuri, type, scratchdir))
     if distro == "mandriva" or distro is None:
-        stores.append(MandrivaImageStore(baseuri, type, scratchdir))
+        stores.append(MandrivaDistro(baseuri, type, scratchdir))
 
     for store in stores:
         if store.isValidStore(fetcher, progresscb):
