@@ -24,8 +24,6 @@ import CapabilitiesParser as Cap
 import os
 import util
 
-import pdb
-
 class ImageInstallerException(RuntimeError):
     def __init__(self, msg):
         Exception.__init__(self, msg)
@@ -94,7 +92,7 @@ class ImageInstaller(Guest.Installer):
                 d.driver_name = Guest.VirtualDisk.DRIVER_TAP
             d.target = m.target
 
-            guest.disks.append(d)
+            guest._install_disks.append(d)
 
     def _get_osblob(self, install, hvm, arch = None, loader = None):
         osblob = "<os>\n"

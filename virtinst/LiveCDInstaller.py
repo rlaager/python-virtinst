@@ -53,7 +53,7 @@ class LiveCDInstaller(Guest.Installer):
         disk = Guest.VirtualDisk(self.location,
                                  device = Guest.VirtualDisk.DEVICE_CDROM,
                                  readOnly = True)
-        guest.disks.insert(0, disk)
+        guest._install_disks.insert(0, disk)
 
     def _get_osblob(self, install, hvm, arch = None, loader = None):
         if install:

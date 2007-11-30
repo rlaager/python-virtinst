@@ -214,10 +214,9 @@ class FullVirtGuest(Guest.XenGuest):
 
     def _prepare_install(self, meter):
         Guest.Guest._prepare_install(self, meter)
-        if self.location or self.cdrom:
-            self._installer.prepare(guest = self,
-                                    meter = meter,
-                                    distro = self.os_distro)
+        self._installer.prepare(guest = self,
+                                meter = meter,
+                                distro = self.os_distro)
         if self._installer.install_disk is not None:
             self._install_disks.append(self._installer.install_disk)
 
