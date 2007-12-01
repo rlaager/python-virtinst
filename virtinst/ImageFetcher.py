@@ -104,45 +104,19 @@ class URIImageFetcher(ImageFetcher):
             logging.debug("Cannot find file %s" % filename)
             return False
 
-# This is a fetcher capable of extracting files from a NFS server
-# or loopback mounted file, or local CDROM device
-class MountedImageFetcher(ImageFetcher):
 
-    def prepareLocation(self, progresscb):
-        cmd = None
-        self.mntdir = tempfile.mkdtemp(prefix="virtinstmnt.", dir=self.scratchdir)
-        logging.debug("Preparing mount at " + self.mntdir)
-        if self.location.startswith("nfs:"):
-            cmd = ["mount", "-o", "ro", self.location[4:], self.mntdir]
-        else:
-            if stat.S_ISBLK(os.stat(self.location)[stat.ST_MODE]):
-                cmd = ["mount", "-o", "ro", self.location, self.mntdir]
-            else:
-                cmd = ["mount", "-o", "ro,loop", self.location, self.mntdir]
-        ret = subprocess.call(cmd)
-        if ret != 0:
-            self.cleanupLocation()
-            logging.debug("Mounting location %s failed" % (self.location,))
-            raise ValueError(_("Mounting location %s failed") % (self.location))
-            return False
-        return True
+class LocalImageFetcher(ImageFetcher):
 
-    def cleanupLocation(self):
-        logging.debug("Cleaning up mount at " + self.mntdir)
-        cmd = ["umount", self.mntdir]
-        ret = subprocess.call(cmd)
-        try:
-            os.rmdir(self.mntdir)
-        except:
-            pass
+    def __init__(self, location, scratchdir, srcdir=None):
+        ImageFetcher.__init__(self, location, scratchdir)
 
     def acquireFile(self, filename, progresscb):
         file = None
         try:
-            logging.debug("Acquiring file from " + self.mntdir + "/" + filename)
+            logging.debug("Acquiring file from " + self.srcdir + "/" + filename)
             base = os.path.basename(filename)
             try:
-                src = self.mntdir + "/" + filename
+                src = self.srcdir + "/" + filename
                 if stat.S_ISDIR(os.stat(src)[stat.ST_MODE]):
                     logging.debug("Found a directory")
                     return None
@@ -168,4 +142,43 @@ class MountedImageFetcher(ImageFetcher):
         except Exception, e:
             logging.debug("Cannot find file %s" % filename)
             return False
+
+# This is a fetcher capable of extracting files from a NFS server
+# or loopback mounted file, or local CDROM device
+class MountedImageFetcher(LocalImageFetcher):
+
+    def prepareLocation(self, progresscb):
+        cmd = None
+        self.srcdir = tempfile.mkdtemp(prefix="virtinstmnt.", dir=self.scratchdir)
+        logging.debug("Preparing mount at " + self.srcdir)
+        if self.location.startswith("nfs:"):
+            cmd = ["mount", "-o", "ro", self.location[4:], self.srcdir]
+        elif self.location.startswith("nfs://"):
+            cmd = ["mount", "-o", "ro", self.location[6:], self.srcdir]
+        else:
+            if stat.S_ISBLK(os.stat(self.location)[stat.ST_MODE]):
+                cmd = ["mount", "-o", "ro", self.location, self.srcdir]
+            else:
+                cmd = ["mount", "-o", "ro,loop", self.location, self.srcdir]
+        ret = subprocess.call(cmd)
+        if ret != 0:
+            self.cleanupLocation()
+            logging.debug("Mounting location %s failed" % (self.location,))
+            raise ValueError(_("Mounting location %s failed") % (self.location))
+            return False
+        return True
+
+    def cleanupLocation(self):
+        logging.debug("Cleaning up mount at " + self.srcdir)
+        cmd = ["umount", self.srcdir]
+        ret = subprocess.call(cmd)
+        try:
+            os.rmdir(self.srcdir)
+        except:
+            pass
+
+class DirectImageFetcher(LocalImageFetcher):
+
+    def prepareLocation(self, progresscb):
+        self.srcdir = self.location
 

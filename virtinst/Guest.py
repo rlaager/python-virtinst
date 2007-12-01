@@ -191,13 +191,21 @@ class VirtualDisk:
         # get working domain's name
         ids = conn.listDomainsID();
         for id in ids:
-            vm = conn.lookupByID(id)
-            vms.append(vm)
+            try:
+                vm = conn.lookupByID(id)
+                vms.append(vm)
+            except libvirt.libvirtError:
+                # guest probably in process of dieing
+                logging.warn("Failed to lookup domain id %d" % id)
         # get defined domain
         names = conn.listDefinedDomains()
         for name in names:
-            vm = conn.lookupByName(name)
-            vms.append(vm)
+            try:
+                vm = conn.lookupByName(name)
+                vms.append(vm)
+            except libvirt.libvirtError:
+                # guest probably in process of dieing
+                logging.warn("Failed to lookup domain name %s" % name)
 
         count = 0
         for vm in vms:
@@ -674,9 +682,13 @@ class Guest(object):
     def set_cdrom(self, val):
         if val is None or type(val) is not type("string") or len(val) == 0:
             raise ValueError, _("You must specify a valid ISO or CD-ROM location for the installation")
-        if not os.path.exists(val):
-            raise ValueError, _("The specified media path does not exist.")
-        self._installer.location = os.path.abspath(val)
+        if val.startswith("/"):
+            if not os.path.exists(val):
+                raise ValueError, _("The specified media path does not exist.")
+            self._installer.location = os.path.abspath(val)
+        else:
+            # Assume its a http/nfs/ftp style path
+            self._installer.location = val
         self._installer.cdrom = True
     cdrom = property(get_cdrom, set_cdrom)
 

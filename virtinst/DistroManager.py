@@ -32,6 +32,7 @@ from virtinst import _virtinst as _
 
 from ImageFetcher import MountedImageFetcher
 from ImageFetcher import URIImageFetcher
+from ImageFetcher import DirectImageFetcher
 
 from OSDistro import FedoraDistro
 from OSDistro import RHELDistro
@@ -45,8 +46,13 @@ from OSDistro import MandrivaDistro
 def _fetcherForURI(uri, scratchdir=None):
     if uri.startswith("http://") or uri.startswith("ftp://"):
         return URIImageFetcher(uri, scratchdir)
-    else:
+    elif uri.startswith("nfs://"):
         return MountedImageFetcher(uri, scratchdir)
+    else:
+        if os.path.isdir(uri):
+            return DirectImageFetcher(uri, scratchdir)
+        else:
+            return MountedImageFetcher(uri, scratchdir)
 
 def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=None):
     stores = []
@@ -113,10 +119,13 @@ class DistroInstaller(Guest.Installer):
     def get_location(self):
         return self._location
     def set_location(self, val):
+        # Canonicalize nfs: URIs to be RFC compliant
+        if val.startswith("nfs:") and not val.startswith("nfs://"):
+            val = "nfs://" + val[4:]
         if not (val.startswith("http://") or val.startswith("ftp://") or
-                val.startswith("nfs:") or val.startswith("/")):
+                val.startswith("nfs://") or val.startswith("/")):
             raise ValueError(_("Install location must be an NFS, HTTP or FTP network install source, or local file/device"))
-        if os.geteuid() != 0 and val.startswith("nfs:"):
+        if os.geteuid() != 0 and val.startswith("nfs://"):
             raise ValueError(_("NFS installations are only supported as root"))
         self._location = val
     location = property(get_location, set_location)
@@ -168,7 +177,7 @@ class DistroInstaller(Guest.Installer):
 
         # If they're installing off a local file/device, we map it
         # through to a virtual harddisk
-        if self.location is not None and self.location.startswith("/"):
+        if self.location is not None and self.location.startswith("/") and not os.path.isdir(self.location):
             self._install_disk = Guest.VirtualDisk(self.location,
                                                    readOnly=True,
                                                    transient=True)
