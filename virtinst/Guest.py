@@ -674,9 +674,13 @@ class Guest(object):
     def set_cdrom(self, val):
         if val is None or type(val) is not type("string") or len(val) == 0:
             raise ValueError, _("You must specify a valid ISO or CD-ROM location for the installation")
-        if not os.path.exists(val):
-            raise ValueError, _("The specified media path does not exist.")
-        self._installer.location = os.path.abspath(val)
+        if val.startswith("/"):
+            if not os.path.exists(val):
+                raise ValueError, _("The specified media path does not exist.")
+            self._installer.location = os.path.abspath(val)
+        else:
+            # Assume its a http/nfs/ftp style path
+            self._installer.location = val
         self._installer.cdrom = True
     cdrom = property(get_cdrom, set_cdrom)
 
