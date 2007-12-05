@@ -134,7 +134,7 @@ elements inside the B<boot> element. Each B<drive> element references the
 name of a disk file from the L</STORAGE> section through its B<disk>
 attribute and can optionally specify as what device that disk file should
 appear in the guest through its I<target> attribute. If the I<target> is
-omitted. device names are assigned in the order in which the B<drive>
+omitted, device names are assigned in the order in which the B<drive>
 elements appear, skipping already assigned devices.
 
 =back
@@ -150,6 +150,12 @@ B<disk> element can contain the following attributes:
 =item *
 
 the B<file> attribute giving the name of the disk file
+
+=item *
+
+an optional I<id> attribute. The name given with that attribute is used to
+reference the disk from the B<drive> element of a B<boot> descriptor. If
+the I<id> attribute is missing, it defaults to the B<file> attribute.
 
 =item *
 
@@ -196,7 +202,7 @@ you only need the ISO image from the System Rescue CD website.
             <loader dev="cdrom"/>
           </os>
           <drive disk="root.raw" target="hda"/>
-          <drive disk="systemrescuecd.iso"/>
+          <drive disk="sysresc"/>
         </boot>
         <devices>
           <vcpu>1</vcpu>
@@ -207,7 +213,8 @@ you only need the ISO image from the System Rescue CD website.
       </domain>
       <storage>
         <disk file="root.raw" use="scratch" size="100" format="raw"/>
-        <disk file="systemrescuecd.iso" use="system" format="iso"/>
+        <disk id="sysresc" file="isos/systemrescuecd.iso" 
+              use="system" format="iso"/>
       </storage>
     </image>
 

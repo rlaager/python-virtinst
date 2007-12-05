@@ -46,11 +46,12 @@ class Image:
         for d in node.xpathEval("storage/disk"):
             disk = Disk(d)
             if disk.file is None:
+                disk.id = "disk%d.img" % len(self.storage)
                 disk.file = "disk%d.img" % (len(self.storage) + 1)
-            if self.storage.has_key(disk.file):
+            if self.storage.has_key(disk.id):
                 raise ParserException("Disk file '%s' defined twice"
                                            % disk.file)
-            self.storage[disk.file] = disk
+            self.storage[disk.id] = disk
         lm = node.xpathEval("domain")
         if len(lm) == 1:
             self.domain = Domain(lm[0])
@@ -176,6 +177,7 @@ class Disk:
     USE_SCRATCH = "scratch"
 
     def __init__(self, node = None):
+        self.id = None
         self.file = None
         self.format = None
         self.size = None
@@ -185,6 +187,7 @@ class Disk:
 
     def parseXML(self, node):
         self.file = xpathString(node, "@file")
+        self.id = xpathString(node, "@id", self.file)
         self.format = xpathString(node, "@format", Disk.FORMAT_RAW)
         self.size = xpathString(node, "@size")
         self.use = xpathString(node, "@use", Disk.USE_SYSTEM)

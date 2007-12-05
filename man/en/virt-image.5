@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "virt-image 5"
-.TH virt-image 5 "2007-08-24" "perl v5.8.8" "Virtual Machine Install Tools"
+.TH virt-image 5 "2007-12-04" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
 virt\-image \- Format of the virtual image XML descriptor
 .SH "DESCRIPTION"
@@ -238,7 +238,7 @@ elements inside the \fBboot\fR element. Each \fBdrive\fR element references the
 name of a disk file from the \*(L"\s-1STORAGE\s0\*(R" section through its \fBdisk\fR
 attribute and can optionally specify as what device that disk file should
 appear in the guest through its \fItarget\fR attribute. If the \fItarget\fR is
-omitted. device names are assigned in the order in which the \fBdrive\fR
+omitted, device names are assigned in the order in which the \fBdrive\fR
 elements appear, skipping already assigned devices.
 .SH "STORAGE"
 .IX Header "STORAGE"
@@ -247,6 +247,10 @@ virtual machine image in a list of one or more \fBdisk\fR elements. Each
 \&\fBdisk\fR element can contain the following attributes:
 .IP "\(bu" 4
 the \fBfile\fR attribute giving the name of the disk file
+.IP "\(bu" 4
+an optional \fIid\fR attribute. The name given with that attribute is used to
+reference the disk from the \fBdrive\fR element of a \fBboot\fR descriptor. If
+the \fIid\fR attribute is missing, it defaults to the \fBfile\fR attribute.
 .IP "\(bu" 4
 the \fBuse\fR attribute indicating whether the disk file is a \f(CW\*(C`system\*(C'\fR,
 \&\f(CW\*(C`user\*(C'\fR, or \f(CW\*(C`scratch\*(C'\fR disk. The \fBuse\fR attribute differentiates disk files
@@ -272,7 +276,7 @@ The image descriptor below can be used to create a virtual machine running
 the System Rescue \s-1CD\s0 (\f(CW\*(C`http://www.sysresccd.org/\*(C'\fR) Besides the descriptor,
 you only need the \s-1ISO\s0 image from the System Rescue \s-1CD\s0 website.
 .PP
-.Vb 26
+.Vb 27
 \&    <?xml version="1.0" encoding="UTF-8"?>
 \&    <image>
 \&      <name>sysresccd</name>
@@ -285,7 +289,7 @@ you only need the \s-1ISO\s0 image from the System Rescue \s-1CD\s0 website.
 \&            <loader dev="cdrom"/>
 \&          </os>
 \&          <drive disk="root.raw" target="hda"/>
-\&          <drive disk="systemrescuecd.iso"/>
+\&          <drive disk="sysresc"/>
 \&        </boot>
 \&        <devices>
 \&          <vcpu>1</vcpu>
@@ -296,7 +300,8 @@ you only need the \s-1ISO\s0 image from the System Rescue \s-1CD\s0 website.
 \&      </domain>
 \&      <storage>
 \&        <disk file="root.raw" use="scratch" size="100" format="raw"/>
-\&        <disk file="systemrescuecd.iso" use="system" format="iso"/>
+\&        <disk id="sysresc" file="isos/systemrescuecd.iso" 
+\&              use="system" format="iso"/>
 \&      </storage>
 \&    </image>
 .Ve

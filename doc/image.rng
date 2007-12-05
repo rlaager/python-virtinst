@@ -150,8 +150,12 @@
   <define name="storage">
     <oneOrMore>
       <!-- A disk for mapping into a virtual machine
-           file: file name (file must be in the same dir as the
-                            image descriptor)
+           id:   a shorthand for referencing the disk. If this is missing,
+                 the value of the file attribute is used to reference  the
+                 disk
+           file: file name, must be a legal Unix path name. Only relative 
+                 paths are allowed, and they are interpreted relative to the 
+                 location of the image descriptor.
            use:  only important for updating existing images
                  through replacement of entire disks
            size: size of the disk in MB, needed only for user and scratch
@@ -161,6 +165,9 @@
                    iso for an ISO
       -->
       <element name="disk">
+        <optional>
+          <attribute name="id"><data type="ID"/></attribute>
+        </optional>
         <attribute name="file"><ref name="relFilePath"/></attribute>
         <attribute name="use">
           <choice>
