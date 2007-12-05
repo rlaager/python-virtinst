@@ -41,6 +41,11 @@ gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
 
 ### General input gathering functions
 
+def get_name(name, image_name, guest):
+    if name is None:
+        name = image_name
+    cli.get_name(name, guest)
+
 def get_memory(memory, image_memory, guest):
     if memory is None and image_memory is not None:
         memory = int(image_memory)/1024
@@ -72,6 +77,8 @@ def get_graphics(domain, vnc, vncport, nographics, sdl, keymap, guest):
         guest.graphics = False
         return
     else:
+        if not vnc and not sdl:
+            vnc = True
         cli.get_graphics(vnc, vncport, nographics, sdl, keymap, guest)
 
 ### Option parsing
@@ -186,7 +193,7 @@ def main():
         guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
 
     # now let's get some of the common questions out of the way
-    cli.get_name(options.name, guest)
+    get_name(options.name, image.name, guest)
     get_memory(options.memory, image.domain.memory, guest)
     cli.get_uuid(options.uuid, guest)
     get_vcpus(options.vcpus, image.domain.vcpu, options.check_cpu,
