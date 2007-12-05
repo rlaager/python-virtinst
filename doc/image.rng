@@ -116,9 +116,9 @@
              Boot a kernel/initrd contained in the image
         -->
         <group>
-          <element name="kernel"><ref name="fileName"/></element>
+          <element name="kernel"><ref name="relFilePath"/></element>
           <optional>
-            <element name="initrd"><ref name="fileName"/></element>
+            <element name="initrd"><ref name="relFilePath"/></element>
           </optional>
           <optional>
             <element name="cmdline"><text/></element>
@@ -135,7 +135,7 @@
     -->
     <oneOrMore>
       <element name="drive">
-        <attribute name="disk"><ref name="fileName"/></attribute>
+        <attribute name="disk"><ref name="relFilePath"/></attribute>
         <optional>
           <attribute name="target"><ref name="deviceName"/></attribute>
         </optional>
@@ -161,7 +161,7 @@
                    iso for an ISO
       -->
       <element name="disk">
-        <attribute name="file"><ref name="fileName"/></attribute>
+        <attribute name="file"><ref name="relFilePath"/></attribute>
         <attribute name="use">
           <choice>
             <value>system</value>
@@ -227,6 +227,11 @@
   <define name='fileName'>
     <data type='string'>
       <param name="pattern">[^/]+</param>
+    </data>
+  </define>
+  <define name='relFilePath'>
+    <data type='string'>
+      <param name="pattern">[a-zA-Z0-9_\+\-%.][a-zA-Z0-9_\+\-%./]*</param>
     </data>
   </define>
   <define name='deviceName'>
