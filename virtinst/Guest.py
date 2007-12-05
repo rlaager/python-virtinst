@@ -246,7 +246,7 @@ class VirtualNetworkInterface:
             raise ValueError, "MAC address must be a string."
 
         if macaddr is not None:
-            form = re.match("^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",macaddr)
+            form = re.match("^([0-9a-fA-F]{1,2}:){5}[0-9a-fA-F]{1,2}$",macaddr)
             if form is None:
                 raise ValueError, \
                     _("MAC address must be of the format AA:BB:CC:DD:EE:FF")
