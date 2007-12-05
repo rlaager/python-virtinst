@@ -60,8 +60,8 @@ class Image:
         for boot in self.domain.boots:
             for d in boot.disks:
                 if not self.storage.has_key(d.disk_id):
-                    raise ParserException(_("Disk '%s' not found")
-                                               % d.file)
+                    raise ParserException(_("Disk entry for '%s' not found")
+                                               % d.disk_id)
                 d.disk = self.storage[d.disk_id]
 
 class Domain:
