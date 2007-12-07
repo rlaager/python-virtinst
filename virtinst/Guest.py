@@ -497,6 +497,7 @@ class Guest(object):
         self._memory = None
         self._maxmemory = None
         self._vcpus = None
+        self._cpuset = None
         self._graphics = { "enabled": False }
         self._keymap = None
         
@@ -598,6 +599,28 @@ class Guest(object):
         self._vcpus = val
     vcpus = property(get_vcpus, set_vcpus)
 
+    # set phy-cpus for the guest
+    def get_cpuset(self):
+        return self._cpuset
+    def set_cpuset(self, val):
+        if type(val) is not type("string") or len(val) == 0:
+            raise ValueError, _("cpuset must be string")
+        if re.match("^[0-9,-]*$", val) is None:
+            raise ValueError, _("cpuset can only contain numeric, ',', or '-' characters")
+
+        pcpus = util.get_phy_cpus(self.conn)
+        for c in val.split(','):
+            if c.find('-') != -1:
+                (x, y) = c.split('-')
+                if int(x) > int(y):
+                    raise ValueError, _("cpuset contains invalid format.")
+                if int(x) >= pcpus or int(y) >= pcpus:
+                    raise ValueError, _("cpuset's pCPU numbers must be less than pCPUs.")
+            else:
+                if int(c) >= pcpus:
+                    raise ValueError, _("cpuset's pCPU numbers must be less than pCPUs.")
+        self._cpuset = val
+    cpuset = property(get_cpuset, set_cpuset)
 
     # graphics setup
     def get_graphics(self):
@@ -743,6 +766,11 @@ class Guest(object):
         if not osblob:
             return None
 
+        if self.cpuset is not None:
+            cpuset = " cpuset='" + self.cpuset + "'"
+        else:
+            cpuset = ""
+
         return """<domain type='%(type)s'>
   <name>%(name)s</name>
   <currentMemory>%(ramkb)s</currentMemory>
@@ -752,7 +780,7 @@ class Guest(object):
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>%(action)s</on_reboot>
   <on_crash>%(action)s</on_crash>
-  <vcpu>%(vcpus)d</vcpu>
+  <vcpu%(cpuset)s>%(vcpus)d</vcpu>
   <devices>
 %(devices)s
   </devices>
@@ -760,6 +788,7 @@ class Guest(object):
 """ % { "type": self.type,
         "name": self.name, \
         "vcpus": self.vcpus, \
+        "cpuset": cpuset, \
         "uuid": self.uuid, \
         "ramkb": self.memory * 1024, \
         "maxramkb": self.maxmemory * 1024, \

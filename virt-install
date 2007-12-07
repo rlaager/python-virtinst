@@ -205,6 +205,9 @@ def parse_args():
                       help=_("Number of vcpus to configure for your guest"))
     parser.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
                       help=_("Check that vcpus do not exceed physical CPUs and warn if they do."))
+    parser.add_option("", "--cpuset", type="string", dest="cpuset",
+                      action="callback", callback=cli.check_before_store,
+                      help=_("Set which physical CPUs Domain can use."))
 
     # disk options
     parser.add_option("-f", "--file", type="string",
@@ -408,6 +411,10 @@ def main():
     cli.get_memory(options.memory, guest)
     cli.get_uuid(options.uuid, guest)
     cli.get_vcpus(options.vcpus, options.check_cpu, guest, conn)
+
+    # set up cpuset
+    if type == "xen":
+        cli.get_cpuset(options.cpuset, guest)
 
     # set up disks
     get_disks(options.diskfile, options.disksize, options.sparse, options.nodisks,

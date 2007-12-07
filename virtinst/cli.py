@@ -150,6 +150,10 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
         except ValueError, e:
             print _("ERROR: "), e
 
+def get_cpuset(cpuset, guest):
+    if cpuset:
+        guest.cpuset = cpuset
+
 def get_network(mac, network, guest):
     if mac == "RANDOM":
         mac = None

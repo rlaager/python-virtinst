@@ -200,3 +200,9 @@ def get_max_vcpus(conn):
         #print >> stderr, _("Couldn't determine max vcpus. Using 32.")
         max = 32
     return max
+
+def get_phy_cpus(conn):
+    """Get number of physical CPUs."""
+    hostinfo = conn.getInfo()
+    pcpus = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
+    return pcpus
