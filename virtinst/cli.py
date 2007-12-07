@@ -22,6 +22,7 @@
 import os, sys
 import logging
 import logging.handlers
+from optparse import OptionValueError
 
 import libvirt
 import util
