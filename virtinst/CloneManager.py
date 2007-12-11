@@ -651,9 +651,9 @@ def _do_duplicate(design):
                     os.lseek(dst_fd, s, 1)
                 else:
                     b = os.write(dst_fd, l)
-                if s != b:
-                    meter.end(i)
-                    break
+                    if s != b:
+                        meter.end(i)
+                        break
                 i += s
                 if i < size:
                     meter.update(i)
