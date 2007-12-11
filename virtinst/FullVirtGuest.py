@@ -45,6 +45,8 @@ class FullVirtGuest(Guest.XenGuest):
                                           "fedora7": { "label": "Fedora 7", "distro": "fedora" }, \
                                           "fedora8": { "label": "Fedora 8", "distro": "fedora" }, \
                                           "sles10": { "label": "Suse Linux Enterprise Server", "distro": "suse" }, \
+                                          "debianEtch": { "label": "Debian Etch", "distro": "debian" }, \
+                                          "debianLenny": { "label": "Debian Lenny", "distro": "debian" }, \
                                           "generic24": { "label": "Generic 2.4.x kernel" }, \
                                           "generic26": { "label": "Generic 2.6.x kernel" }, \
                                           }, \
