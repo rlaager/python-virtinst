@@ -34,6 +34,7 @@ class FullVirtGuest(Guest.XenGuest):
     OS_TYPES = { "linux": { "label": "Linux", \
                             "acpi": True, \
                             "apic": True, \
+                            "clock": "utc",\
                             "continue": False, \
                             "input": [ "mouse", "ps2"],
                             "variants": { "rhel2.1": { "label": "Red Hat Enterprise Linux 2.1", "distro": "rhel" }, \
@@ -54,6 +55,7 @@ class FullVirtGuest(Guest.XenGuest):
                  "windows": { "label": "Windows", \
                               "acpi": True, \
                               "apic": True, \
+                              "clock": "localtime",\
                               "continue": True, \
                               "input": [ "tablet", "usb"],
                               "variants": { "winxp": { "label": "Microsoft Windows XP", \
@@ -69,6 +71,7 @@ class FullVirtGuest(Guest.XenGuest):
                  "unix": { "label": "UNIX", \
                            "acpi": True,
                            "apic": True,
+                           "clock": "utc",\
                            "continue": False, \
                            "input": [ "mouse", "ps2"],
                            "variants": { "solaris9": { "label": "Sun Solaris 9" }, \
@@ -80,6 +83,7 @@ class FullVirtGuest(Guest.XenGuest):
                  "other": { "label": "Other", \
                             "acpi": True,
                             "apic": True,
+                            "clock": "utc",
                             "continue": False,
                             "input": [ "mouse", "ps2"],
                             "variants": { "msdos": { "label": "MS-DOS", \
@@ -197,7 +201,20 @@ class FullVirtGuest(Guest.XenGuest):
         if osblob is None:
             return None
 
-        return "%s\n  %s" % (osblob, self._get_features_xml())
+        clockxml = self._get_clock_xml()
+        if clockxml is not None:
+            return "%s\n  %s\n  %s" % (osblob, self._get_features_xml(), \
+                                       clockxml)
+        else:
+            return "%s\n  %s" % (osblob, self._get_features_xml())
+
+    def _get_clock_xml(self):
+        if self.os_type is not None and \
+           FullVirtGuest.OS_TYPES[self.os_type].has_key("clock"):
+            return "<clock offset=\"%s\"/>" % \
+                   FullVirtGuest.OS_TYPES[self.os_type]["clock"]
+        else:
+            return None
 
     def _get_device_xml(self, install = True):
         if self.emulator is None:
