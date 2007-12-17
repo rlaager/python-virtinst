@@ -22,6 +22,7 @@ Url: http://virt-manager.et.redhat.com
 Requires: libvirt-python >= 0.2.0
 Requires: virt-viewer
 Requires: urlgrabber
+Requires: libxml2-python
 BuildRequires: python-devel
 
 %description
