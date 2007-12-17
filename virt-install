@@ -168,11 +168,13 @@ def get_fullvirt_cdrom(cdpath, location, guest):
         cdpath = cli.prompt_for_input(_("What is the virtual CD image, CD device or install location?"), cdpath)
         try:
             # Build a throwaway disk to reuse its validation for local CDs only
-            if cdpath.startswith("/"):
+            if os.path.exists(os.path.abspath(cdpath)):
                 cddisk = virtinst.VirtualDisk(path=cdpath, 
                                               transient=True,
                                               device=virtinst.VirtualDisk.DEVICE_CDROM,
                                               readOnly=True)
+                cdpath = os.path.abspath(cdpath)
+
             guest.cdrom = cdpath
             break
         except ValueError, e:
