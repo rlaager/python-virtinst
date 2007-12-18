@@ -119,12 +119,19 @@ class DistroInstaller(Guest.Installer):
     def get_location(self):
         return self._location
     def set_location(self, val):
-        # Canonicalize nfs: URIs to be RFC compliant
-        if val.startswith("nfs:") and not val.startswith("nfs://"):
+        # 'location' is kind of overloaded: it can be a local file or device
+        # (for a boot.iso), local directory (for a tree), or an http, ftp, or 
+        # nfs for an iso or a tree
+        if os.path.exists(os.path.abspath(val)):
+            val = os.path.abspath(val)
+            logging.debug("DistroInstaller location is a local file/path: %s"\
+                          % val)
+        elif val.startswith("nfs:") and not val.startswith("nfs://"):
+            # Canonicalize nfs: URIs to be RFC compliant
             val = "nfs://" + val[4:]
-        if not (val.startswith("http://") or val.startswith("ftp://") or
-                val.startswith("nfs://") or val.startswith("/")):
-            raise ValueError(_("Install location must be an NFS, HTTP or FTP network install source, or local file/device"))
+        elif not (val.startswith("http://") or val.startswith("ftp://") or
+                  val.startswith("nfs://")):
+            raise ValueError(_("Install media location must be an NFS, HTTP or FTP network install source, or an existing local file/device"))
         if os.geteuid() != 0 and val.startswith("nfs://"):
             raise ValueError(_("NFS installations are only supported as root"))
         self._location = val
