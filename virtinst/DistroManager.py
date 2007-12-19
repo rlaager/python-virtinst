@@ -77,7 +77,7 @@ def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=
         if store.isValidStore(fetcher, progresscb):
             return store
 
-    raise ValueError, _("Could not find an installable distribution the install location")
+    raise ValueError, _("Could not find an installable distribution at '%s'" % baseuri) 
 
 
 # Method to fetch a krenel & initrd pair for a particular distro / HV type

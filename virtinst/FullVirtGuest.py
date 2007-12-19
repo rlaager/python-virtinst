@@ -148,6 +148,8 @@ class FullVirtGuest(Guest.XenGuest):
     def get_os_variant(self):
         return self._os_variant
     def set_os_variant(self, val):
+        if not self._os_type:
+            raise ValueError, _("An OS type must be specified before a variant.")
         if FullVirtGuest.OS_TYPES[self._os_type]["variants"].has_key(val):
             self._os_variant = val
         else:

@@ -95,6 +95,9 @@ class VirtualDisk:
                 if self.size is None and not os.path.exists(self.path):
                     raise ValueError, \
                         _("A size must be provided for non-existent disks")
+                if os.path.exists(self.path) and \
+                   stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                    raise ValueError, _("The specified path is a block device, not a regular file.")
                 if self.size is not None and \
                    (__builtin__.type(self.size) is not __builtin__.type(1) and __builtin__.type(self.size) is not __builtin__.type(1.0)):
                     raise ValueError, _("Disk size must be an int or a float.")
