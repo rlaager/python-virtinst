@@ -22,6 +22,7 @@
 # MA 02110-1301 USA.
 
 import os, sys, string
+import errno
 from optparse import OptionParser, OptionValueError
 import subprocess
 import logging
@@ -330,7 +331,15 @@ def vnc_console(dom, uri):
     args = args + [ "--wait", "%s" % dom.ID()]
     child = os.fork()
     if not child:
-        os.execvp(args[0], args)
+        try:
+            os.execvp(args[0], args)
+        except OSError, (err, msg):
+            if err == errno.ENOENT:
+                print _("Unable to connect to graphical console: virt-viewer not installed. Please install the 'virt-viewer' package.")
+            else: 
+                raise OSError, (err, msg)
+        except e:
+            raise
         os._exit(1)
 
     return child
