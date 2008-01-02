@@ -97,7 +97,7 @@ args = { 'guest'    : { \
          'distroinstaller' : { \
                         'location'  : { 'invalid' : ['nogood', \
                                                      'http:/nogood'],\
-                                        'valid'   : ['/file',\
+                                        'valid'   : ['/dev/null',\
                                                      'http://web',\
                                                      'ftp://ftp',\
                                                      'nfs:nfsserv']}\
