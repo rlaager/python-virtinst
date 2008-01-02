@@ -186,10 +186,11 @@ def get_host_network_devices():
         except IOError:
             continue
         for line in pipe:
-            words = line.lower().split()
-            for i in range(len(words)):
-                if words[i] == "hwaddr":
-                    device.append(words)
+            if line.find("encap:Ethernet") > 0:
+                words = line.lower().split()
+                for i in range(len(words)):
+                    if words[i] == "hwaddr":
+                        device.append(words)
     return device
 
 def get_max_vcpus(conn):
