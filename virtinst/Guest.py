@@ -180,7 +180,8 @@ class VirtualDisk:
             else:
                 ret += "      <driver name='%(name)s' type='%(type)s'/>\n" % { "name": self.driver_name, "type": self.driver_type }
         if self.path is not None:
-            ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": self.path }
+            path = self.path.replace("'", "&apos;")
+            ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": path }
         if self.target is not None:
             disknode = self.target
         ret += "      <target dev='%(disknode)s'/>\n" % { "disknode": disknode }

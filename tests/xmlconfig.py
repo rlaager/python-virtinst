@@ -180,6 +180,11 @@ class TestXMLConfig(unittest.TestCase):
         self._compare(g, "install-fullyvirt-disk-block", True)
 
 
+    def testXMLEscaping(self):
+        g = self._get_basic_fullyvirt_guest()
+        g.disks.append(virtinst.VirtualDisk("/ISO's", type=virtinst.VirtualDisk.TYPE_FILE, size=5))
+        self._compare(g, "misc-xml-escaping", True)
+
 
 if __name__ == "__main__":
     unittest.main()
