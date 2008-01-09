@@ -108,9 +108,9 @@ class ImageInstaller(Guest.Installer):
             osblob += "    <type>%s</type>\n" % type
 
         if self.boot.kernel:
-            osblob += "    <kernel>%s</kernel>\n"   % self._abspath(self.boot.kernel)
-            osblob += "    <initrd>%s</initrd>\n"   % self._abspath(self.boot.initrd)
-            osblob += "    <cmdline>%s</cmdline>\n" % self.boot.cmdline
+            osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self._abspath(self.boot.kernel))
+            osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(self._abspath(self.boot.initrd))
+            osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(self.boot.cmdline)
             osblob += "  </os>"
         elif hvm:
             if loader:

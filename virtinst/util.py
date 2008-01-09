@@ -207,3 +207,12 @@ def get_phy_cpus(conn):
     hostinfo = conn.getInfo()
     pcpus = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
     return pcpus
+
+def xml_escape(str):
+    """Replaces chars ' " < > & with xml safe counterparts"""
+    str.replace("&", "&amp;")
+    str.replace("'", "&apos;")
+    str.replace("\"", "&quot;")
+    str.replace("<", "&lt;")
+    str.replace(">", "&gt;")
+    return str

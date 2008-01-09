@@ -27,6 +27,7 @@ import gzip
 import re
 import struct
 import tempfile
+import util
 import Guest
 from virtinst import _virtinst as _
 
@@ -219,9 +220,9 @@ class DistroInstaller(Guest.Installer):
                 osblob += "    <type>%s</type>\n" % type
 
             if install and self.install["kernel"]:
-                osblob += "    <kernel>%s</kernel>\n"   % self.install["kernel"]
-                osblob += "    <initrd>%s</initrd>\n"   % self.install["initrd"]
-                osblob += "    <cmdline>%s</cmdline>\n" % self.install["extraargs"]
+                osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self.install["kernel"])
+                osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(self.install["initrd"])
+                osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(self.install["extraargs"])
             else:
                 if loader:
                     osblob += "    <loader>%s</loader>\n" % loader
