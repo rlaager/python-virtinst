@@ -210,9 +210,9 @@ def get_phy_cpus(conn):
 
 def xml_escape(str):
     """Replaces chars ' " < > & with xml safe counterparts"""
-    str.replace("&", "&amp;")
-    str.replace("'", "&apos;")
-    str.replace("\"", "&quot;")
-    str.replace("<", "&lt;")
-    str.replace(">", "&gt;")
+    str = str.replace("&", "&amp;")
+    str = str.replace("'", "&apos;")
+    str = str.replace("\"", "&quot;")
+    str = str.replace("<", "&lt;")
+    str = str.replace(">", "&gt;")
     return str
