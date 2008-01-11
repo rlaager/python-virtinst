@@ -61,6 +61,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-image
 
 %changelog
+* Thu Jan 10 2008 Daniel P. Berrange <berrange@redhat.com> - 0.300.2-1
+- Escape paths in XML
+- Add --cpuset to pin vCPUs at install time
+- Automatically set windows guests to localtime
+- Improved input validation
+- Fix virt-image bugs
+
 * Tue Sep 25 2007 Daniel P. Berrange <berrange@redhat.com> - 0.300.1-1
 - Fixed default architecture on 32-bit
 - Fixed QEMU guest installs from remote architectures
