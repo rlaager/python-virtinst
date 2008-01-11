@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # Fullly virtualized guest support
 #

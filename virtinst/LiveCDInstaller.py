@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # An installer class for LiveCD images
 #

@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # Copyright(c) FUJITSU Limited 2007.
 #

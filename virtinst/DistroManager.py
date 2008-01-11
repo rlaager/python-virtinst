@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # Convenience module for fetching/creating kernel/initrd files
 # or bootable CD images.

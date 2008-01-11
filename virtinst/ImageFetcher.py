@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # Convenience module for fetching files from a network source
 #

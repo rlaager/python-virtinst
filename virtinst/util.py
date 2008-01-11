@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # Utility functions used for guest installation
 #

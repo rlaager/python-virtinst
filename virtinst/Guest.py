@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # Common code for all guests
 #

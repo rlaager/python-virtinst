@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # Represents OS distribution specific install data
 #

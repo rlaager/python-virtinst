@@ -1,5 +1,4 @@
-#!/usr/bin/python -tt
-
+#
 # Some code for parsing libvirt's capabilities XML
 #
 # Copyright 2007  Red Hat, Inc.
