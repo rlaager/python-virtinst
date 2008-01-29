@@ -22,6 +22,7 @@
 
 import logging
 import os
+import errno
 import gzip
 import re
 import struct
@@ -239,7 +240,14 @@ class DistroInstaller(Guest.Installer):
 
     def post_install_check(self, guest):
         # Check for the 0xaa55 signature at the end of the MBR
-        fd = os.open(guest._install_disks[0].path, os.O_RDONLY)
+        try:
+            fd = os.open(guest._install_disks[0].path, os.O_RDONLY)
+        except OSError, (err, msg):
+            logging.debug("Failed to open guest disk: %s" % msg)
+            if err == errno.EACCES and os.geteuid() != 0:
+                return True # non root might not have access to block devices
+            else:
+                raise
         buf = os.read(fd, 512)
         os.close(fd)
         return len(buf) == 512 and struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,)
@@ -284,7 +292,14 @@ class PXEInstaller(Guest.Installer):
 
     def post_install_check(self, guest):
         # Check for the 0xaa55 signature at the end of the MBR
-        fd = os.open(guest._install_disks[0].path, os.O_RDONLY)
+        try:
+            fd = os.open(guest._install_disks[0].path, os.O_RDONLY)
+        except OSError, (err, msg):
+            logging.debug("Failed to open guest disk: %s" % msg)
+            if err == errno.EACCES and os.geteuid() != 0:
+                return True # non root might not have access to block devices
+            else:
+                raise
         buf = os.read(fd, 512)
         os.close(fd)
         return len(buf) == 512 and struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,)
