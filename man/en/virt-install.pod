@@ -330,6 +330,14 @@ Fedora 7
 
 Suse Linux Enterprise Server 10.x
 
+=item debianEtch
+
+Debian 4.0 (Etch)
+
+=item debianLenny
+
+Debian Lenny
+
 =item generic26
 
 Generic Linux 2.6.x kernel
