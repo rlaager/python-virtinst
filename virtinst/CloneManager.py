@@ -113,7 +113,7 @@ class CloneDesign(object):
         cdev.append(devices)
         cdev_size,\
         cdev_type = self._get_clone_devices_info(cdev)
-        devices = self._check_file(self._hyper_conn, devices, cdev_size)
+        devices = self._check_file(self._hyper_conn, devices, cdev_size[0])
         self._clone_devices.append(devices)
     def get_clone_devices(self):
         return self._clone_devices
