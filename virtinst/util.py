@@ -123,7 +123,7 @@ def is_blktap_capable():
     lines = f.readlines()
     f.close()
     for line in lines:
-        if line.startswith("blktap "):
+        if line.startswith("blktap ") or line.startswith("xenblktap "):
             return True
     return False
 
