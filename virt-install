@@ -519,4 +519,5 @@ if __name__ == "__main__":
         sys.exit(e.code)
     except Exception, e:
         logging.exception(e)
+        sys.exit(1)
 
