@@ -32,7 +32,8 @@ import Guest
 from virtinst import _virtinst as _
 
 from ImageFetcher import MountedImageFetcher
-from ImageFetcher import URIImageFetcher
+from ImageFetcher import FTPImageFetcher
+from ImageFetcher import HTTPImageFetcher
 from ImageFetcher import DirectImageFetcher
 
 from OSDistro import FedoraDistro
@@ -45,8 +46,10 @@ from OSDistro import GentooDistro
 from OSDistro import MandrivaDistro
 
 def _fetcherForURI(uri, scratchdir=None):
-    if uri.startswith("http://") or uri.startswith("ftp://"):
-        return URIImageFetcher(uri, scratchdir)
+    if uri.startswith("http://"): 
+        return HTTPImageFetcher(uri, scratchdir)
+    elif uri.startswith("ftp://"):
+        return FTPImageFetcher(uri, scratchdir)
     elif uri.startswith("nfs://"):
         return MountedImageFetcher(uri, scratchdir)
     else:
@@ -57,6 +60,7 @@ def _fetcherForURI(uri, scratchdir=None):
 
 def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=None):
     stores = []
+    logging.debug("Attempting to detect distro:")
     if distro == "fedora" or distro is None:
         stores.append(FedoraDistro(baseuri, type, scratchdir))
     if distro == "rhel" or distro is None:
@@ -81,7 +85,7 @@ def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=
     raise ValueError, _("Could not find an installable distribution at '%s'" % baseuri) 
 
 
-# Method to fetch a krenel & initrd pair for a particular distro / HV type
+# Method to fetch a kernel & initrd pair for a particular distro / HV type
 def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None, distro=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
     

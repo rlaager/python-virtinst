@@ -25,6 +25,9 @@ import stat
 import subprocess
 import urlgrabber.grabber as grabber
 import urlgrabber.progress as progress
+import urllib2
+import urlparse
+import ftplib
 import tempfile
 from virtinst import _virtinst as _
 
@@ -58,10 +61,10 @@ class ImageFetcher:
     def acquireFile(self, src, progresscb):
         raise "Must be implemented in subclass"
 
-    def hasFile(self, src, progresscb):
+    def hasFile(self, src):
         raise "Must be implemented in subclass"
 
-# This is a fetcher capable of downloading from FTP / HTTP
+# Base class for downloading from FTP / HTTP
 class URIImageFetcher(ImageFetcher):
 
     def prepareLocation(self, progresscb):
@@ -72,7 +75,8 @@ class URIImageFetcher(ImageFetcher):
             return True
         except IOError, e:
             logging.debug("Opening URL %s failed." % (self.location,) + " " + str(e))
-            raise ValueError(_("Opening URL %s failed.") % (self.location,))
+            raise ValueError(_("Opening URL %s failed: %s") % \
+                              (self.location, e))
             return False
 
     def acquireFile(self, filename, progresscb):
@@ -85,7 +89,7 @@ class URIImageFetcher(ImageFetcher):
                                        progress_obj = progresscb, \
                                        text = _("Retrieving file %s...") % base)
             except IOError, e:
-                raise ValueError, _("Invalid URL location given: %s %s") %\
+                raise ValueError, _("Couldn't aquire file %s: %s") %\
                                   ((self.location + "/" + filename), str(e))
             tmpname = self.saveTemp(file, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
@@ -94,15 +98,35 @@ class URIImageFetcher(ImageFetcher):
             if file:
                 file.close()
 
-    def hasFile(self, filename, progresscb):
+class HTTPImageFetcher(URIImageFetcher):
+    
+    def hasFile(self, filename):
         try:
-            tmpfile = self.acquireFile(filename, progresscb)
-            os.unlink(tmpfile)
-            return True
+            request = urllib2.Request(self.location + "/" + filename)
+            request.get_method = lambda: "HEAD"
+            http_file = urllib2.urlopen(request)
         except Exception, e:
-            logging.debug("Cannot find file %s" % filename)
+            logging.debug("HTTP hasFile: didn't find %s" % \
+                          (self.location + "/" + filename))
             return False
+        return True
 
+class FTPImageFetcher(URIImageFetcher):
+    
+    def hasFile(self, filename):
+        url = urlparse.urlparse(self.location + "/" + filename)
+        try:
+            ftp = ftplib.FTP(url[1])
+            ftp.login()
+            try:
+                ftp.size(url[2])   # If a file
+            except ftplib.all_errors, e:
+                ftp.cwd(url[2])    # If a dir
+        except ftplib.all_errors, e:
+            logging.debug("FTP hasFile: couldn't access %s/%s" % \
+                          (url[1], url[2]))
+            return False
+        return True
 
 class LocalImageFetcher(ImageFetcher):
 
@@ -132,14 +156,12 @@ class LocalImageFetcher(ImageFetcher):
             if file:
                 file.close()
 
-    def hasFile(self, filename, progresscb):
-        try:
-            tmpfile = self.acquireFile(filename, progresscb)
-            if tmpfile is not None:
-                os.unlink(tmpfile)
+    def hasFile(self, filename):
+        if os.path.exists(os.path.abspath(self.srcdir + "/" + filename)):
             return True
-        except Exception, e:
-            logging.debug("Cannot find file %s" % filename)
+        else:
+            logging.debug("local hasFile: Couldn't find %s" % \
+                          (self.srcdir + "/" + filename))
             return False
 
 # This is a fetcher capable of extracting files from a NFS server

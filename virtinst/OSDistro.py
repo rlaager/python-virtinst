@@ -26,7 +26,6 @@ import re
 import tempfile
 
 from virtinst import _virtinst as _
-from ImageFetcher import ImageFetcher
 
 # An image store is a base class for retrieving either a bootable
 # ISO image, or a kernel+initrd  pair for a particular OS distribution
@@ -80,10 +79,10 @@ class RedHatDistro(Distro):
 # Fedora distro check
 class FedoraDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
-        if fetcher.hasFile("fedora.css", progresscb):
+        if fetcher.hasFile("fedora.css"):
             logging.debug("Detected a Fedora distro")
             return True
-        if fetcher.hasFile("Fedora", progresscb):
+        if fetcher.hasFile("Fedora"):
             logging.debug("Detected a Fedora distro")
             return True
         return False
@@ -91,13 +90,13 @@ class FedoraDistro(RedHatDistro):
 # Fedora distro check
 class RHELDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
-        if fetcher.hasFile("Server", progresscb):
+        if fetcher.hasFile("Server"):
             logging.debug("Detected a RHEL 5 Server distro")
             return True
-        if fetcher.hasFile("Client", progresscb):
+        if fetcher.hasFile("Client"):
             logging.debug("Detected a RHEL 5 Client distro")
             return True
-        if fetcher.hasFile("RedHat", progresscb):
+        if fetcher.hasFile("RedHat"):
             logging.debug("Detected a RHEL 4 distro")
             return True
         return False
@@ -105,7 +104,7 @@ class RHELDistro(RedHatDistro):
 # CentOS distro check
 class CentOSDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
-        if fetcher.hasFile("CentOS", progresscb):
+        if fetcher.hasFile("CentOS"):
             logging.debug("Detected a CentOS distro")
             return True
         return False
@@ -186,9 +185,9 @@ class SuseDistro(Distro):
                                 kernelrpm = dir + "/" + filename
 
             if kernelrpm is None:
-                raise _("Unable to determine kernel RPM path")
+                raise Exception(_("Unable to determine kernel RPM path"))
             if installinitrdrpm is None:
-                raise _("Unable to determine install-initrd RPM path")
+                raise Exception(_("Unable to determine install-initrd RPM path"))
             return (kernelrpm, installinitrdrpm)
         finally:
             filelistData.close()
@@ -309,18 +308,9 @@ class SuseDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
         # Suse distros always have a 'directory.yast' file in the top
         # level of install tree, which we use as the magic check
-        ignore = None
-        try:
-            try:
-                ignore = fetcher.acquireFile("directory.yast", progresscb)
-                logging.debug("Detected a Suse distro")
-                return True
-            except ValueError, e:
-                logging.debug("Doesn't look like a Suse distro " + str(e))
-                pass
-        finally:
-            if ignore is not None:
-                os.unlink(ignore)
+        if fetcher.hasFile("directory.yast"):
+            logging.debug("Detected a Suse distro.")
+            return True
         return False
 
 
@@ -333,7 +323,14 @@ class DebianDistro(Distro):
         file = None
         try:
             try:
-                file = fetcher.acquireFile("current/images/MANIFEST", progresscb)
+                file = None
+                if fetcher.hasFile("current/images/MANIFEST"):
+                    file = fetcher.acquireFile("current/images/MANIFEST", 
+                                               progresscb)
+                else:
+                    logging.debug("Doesn't look like a Debian distro.")
+                    return False
+                    
             except ValueError, e:
                 logging.debug("Doesn't look like a Debian distro " + str(e))
                 return False
