@@ -129,15 +129,24 @@ class DistroInstaller(Guest.Installer):
         # nfs for an iso or a tree
         if os.path.exists(os.path.abspath(val)):
             val = os.path.abspath(val)
-            logging.debug("DistroInstaller location is a local file/path: %s"\
-                          % val)
-        elif val.startswith("nfs:") and not val.startswith("nfs://"):
-            # Canonicalize nfs: URIs to be RFC compliant
-            val = "nfs://" + val[4:]
+            logging.debug("DistroInstaller location is a local file/path: %s" % val)
+        elif val.startswith("nfs://"):
+            # Convert RFC compliant NFS      nfs://server/path/to/distro
+            # to what mount/anaconda expect  nfs:server:/path/to/distro
+            # and carry the latter form around internally
+            val = "nfs:" + val[6:]
+
+            # If we need to add the : after the server
+            if (index = val.find("/", 4)) == -1:
+                raise ValueError(_("Invalid NFS format: No path specified."))
+            if val[index - 1] != ":":
+                val = val[:index - 1] + ":" + val[index:] 
+
         elif not (val.startswith("http://") or val.startswith("ftp://") or
-                  val.startswith("nfs://")):
+                  val.startswith("nfs:")):
             raise ValueError(_("Install media location must be an NFS, HTTP or FTP network install source, or an existing local file/device"))
-        if os.geteuid() != 0 and val.startswith("nfs://"):
+
+        if os.geteuid() != 0 and val.startswith("nfs:"):
             raise ValueError(_("NFS installations are only supported as root"))
         self._location = val
     location = property(get_location, set_location)
@@ -147,7 +156,7 @@ class DistroInstaller(Guest.Installer):
             # Huzzah, a local file/device
             cdrom = self.location
         else:
-            # Xen needs a boot.iso if its a http://, ftp://, or nfs:/ url
+            # Xen needs a boot.iso if its a http://, ftp://, or nfs: url
             cdrom = acquireBootDisk(self.location,
                                     meter,
                                     scratchdir = self.scratchdir,

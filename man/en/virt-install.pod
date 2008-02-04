@@ -453,7 +453,7 @@ of the following forms:
 
 Path to a local directory containing an installable distribution image
 
-=item nfs:host:/path
+=item nfs:host:/path or nfs://host/path
 
 An NFS server location containing an installable distribution image
 

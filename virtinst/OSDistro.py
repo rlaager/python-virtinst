@@ -65,11 +65,7 @@ class RedHatDistro(Distro):
                 # Local host path, so can't pass a location to guest for install method
                 return (kernel, initrd, "")
             else:
-                if fetcher.location.startswith("nfs://"):
-                    # Anaconda wants non-RFC compliant nfs: instead of nfs://
-                    return (kernel, initrd, "method=nfs:" + fetcher.location[6:])
-                else:
-                    return (kernel, initrd, "method=" + fetcher.location)
+                return (kernel, initrd, "method=" + fetcher.location)
         except:
             os.unlink(kernel)
 

@@ -172,9 +172,7 @@ class MountedImageFetcher(LocalImageFetcher):
         cmd = None
         self.srcdir = tempfile.mkdtemp(prefix="virtinstmnt.", dir=self.scratchdir)
         logging.debug("Preparing mount at " + self.srcdir)
-        if self.location.startswith("nfs://"):
-            cmd = ["mount", "-o", "ro", self.location[6:], self.srcdir]
-        elif self.location.startswith("nfs:"):
+        if self.location.startswith("nfs:"):
             cmd = ["mount", "-o", "ro", self.location[4:], self.srcdir]
         else:
             if stat.S_ISBLK(os.stat(self.location)[stat.ST_MODE]):
