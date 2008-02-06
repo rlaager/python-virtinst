@@ -137,7 +137,8 @@ class DistroInstaller(Guest.Installer):
             val = "nfs:" + val[6:]
 
             # If we need to add the : after the server
-            if (index = val.find("/", 4)) == -1:
+            index = val.find("/", 4)
+            if index == -1:
                 raise ValueError(_("Invalid NFS format: No path specified."))
             if val[index - 1] != ":":
                 val = val[:index - 1] + ":" + val[index:] 
