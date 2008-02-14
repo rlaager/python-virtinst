@@ -92,6 +92,18 @@ def yes_or_no(s):
         return False
     raise ValueError, "A yes or no response is required"
 
+def prompt_for_yes_or_no(prompt):
+    """catches yes_or_no errors and ensures a valid bool return"""
+    while 1:
+        input = prompt_for_input(prompt, None)
+        try:
+            res = yes_or_no(input)
+            break
+        except ValueError, e:
+            print _("ERROR: "), e
+            continue
+    return res
+
 #
 # Ask for attributes
 #
