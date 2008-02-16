@@ -24,6 +24,7 @@ import os
 import gzip
 import re
 import tempfile
+import ConfigParser
 
 from virtinst import _virtinst as _
 
@@ -49,14 +50,41 @@ class Distro:
 # Base image store for any Red Hat related distros which have
 # a common layout
 class RedHatDistro(Distro):
+    def __init__(self, uri, type=None, scratchdir=None):
+        Distro.__init__(self, uri, type, scratchdir)
+        self.treeinfo = None
+
+    def hasTreeinfo(self, fetcher, progresscb):
+        # all Red Hat based distros should have .treeinfo / execute only once
+        if (self.treeinfo is None):
+            if fetcher.hasFile(".treeinfo"):
+                logging.debug("Detected .treeinfo file")
+                tmptreeinfo = fetcher.acquireFile(".treeinfo", progresscb)
+                self.treeinfo = ConfigParser.SafeConfigParser()
+                self.treeinfo.read(tmptreeinfo)
+                return True
+            else:
+                return False
+        else:
+            return True
 
     def acquireKernel(self, fetcher, progresscb):
-        if self.type is None:
-            kernelpath = "images/pxeboot/vmlinuz"
-            initrdpath = "images/pxeboot/initrd.img"
+        if self.hasTreeinfo(fetcher, progresscb):
+            if self.type is None:
+                arch = self.treeinfo.get("general", "arch")
+            else:
+                arch = self.type
+
+            kernelpath = self.treeinfo.get("images-%s" % arch, "kernel")
+            initrdpath = self.treeinfo.get("images-%s" % arch, "initrd")
         else:
-            kernelpath = "images/%s/vmlinuz" % (self.type)
-            initrdpath = "images/%s/initrd.img" % (self.type)
+            # fall back to old code
+            if self.type is None:
+                kernelpath = "images/pxeboot/vmlinuz"
+                initrdpath = "images/pxeboot/initrd.img"
+            else:
+                kernelpath = "images/%s/vmlinuz" % (self.type)
+                initrdpath = "images/%s/initrd.img" % (self.type)
 
         kernel = fetcher.acquireFile(kernelpath, progresscb)
         try:
@@ -70,40 +98,59 @@ class RedHatDistro(Distro):
             os.unlink(kernel)
 
     def acquireBootDisk(self, fetcher, progresscb):
-        return fetcher.acquireFile("images/boot.iso", progresscb)
+        if self.hasTreeinfo(fetcher, progresscb):
+            arch = self.treeinfo.get("general", "arch")
+            return fetcher.acquireFile(self.treeinfo.get("images-%s" % arch, "boot.iso"), progresscb)
+        else:
+            return fetcher.acquireFile("images/boot.iso", progresscb)
 
 # Fedora distro check
 class FedoraDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
-        if fetcher.hasFile("fedora.css"):
-            logging.debug("Detected a Fedora distro")
-            return True
-        if fetcher.hasFile("Fedora"):
-            logging.debug("Detected a Fedora distro")
-            return True
-        return False
+        if self.hasTreeinfo(fetcher, progresscb):
+            m = re.match(".*Fedora.*", self.treeinfo.get("general", "family"))
+            return (m != None)
+        else:
+            # fall back to old code
+            if fetcher.hasFile("fedora.css"):
+                logging.debug("Detected a Fedora distro")
+                return True
+            if fetcher.hasFile("Fedora"):
+                logging.debug("Detected a Fedora distro")
+                return True
+            return False
 
-# Fedora distro check
+# Red Hat Enterprise Linux distro check
 class RHELDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
-        if fetcher.hasFile("Server"):
-            logging.debug("Detected a RHEL 5 Server distro")
-            return True
-        if fetcher.hasFile("Client"):
-            logging.debug("Detected a RHEL 5 Client distro")
-            return True
-        if fetcher.hasFile("RedHat"):
-            logging.debug("Detected a RHEL 4 distro")
-            return True
-        return False
+        if self.hasTreeinfo(fetcher, progresscb):
+            m = re.match(".*Red Hat Enterprise Linux.*", self.treeinfo.get("general", "family"))
+            return (m != None)
+        else:
+            # fall back to old code
+            if fetcher.hasFile("Server"):
+                logging.debug("Detected a RHEL 5 Server distro")
+                return True
+            if fetcher.hasFile("Client"):
+                logging.debug("Detected a RHEL 5 Client distro")
+                return True
+            if fetcher.hasFile("RedHat"):
+                logging.debug("Detected a RHEL 4 distro")
+                return True
+            return False
 
 # CentOS distro check
 class CentOSDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
-        if fetcher.hasFile("CentOS"):
-            logging.debug("Detected a CentOS distro")
-            return True
-        return False
+        if self.hasTreeinfo(fetcher, progresscb):
+            m = re.match(".*CentOS.*", self.treeinfo.get("general", "family"))
+            return (m != None)
+        else:
+            # fall back to old code
+            if fetcher.hasFile("CentOS"):
+                logging.debug("Detected a CentOS distro")
+                return True
+            return False
 
 
 
