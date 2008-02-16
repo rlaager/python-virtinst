@@ -207,10 +207,23 @@ def main():
         clmgr.start_duplicate(design)
 
         logging.debug("end clone")
+    except RuntimeError, e:
+        print >> sys.stderr, _("ERROR: "), e
+        sys.exit(1)
+    except SystemExit, e:
+        sys.exit(e.code)
     except Exception, e:
         print "ERROR: ", e
         sys.exit(1)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit, e:
+        sys.exit(e.code)
+    except KeyboardInterrupt, e:
+        print >> sys.stderr, _("Installation aborted at user request")
+    except Exception, e:
+        logging.exception(e)
+        sys.exit(1)
 

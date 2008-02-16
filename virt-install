@@ -498,6 +498,8 @@ if __name__ == "__main__":
         main()
     except SystemExit, e:
         sys.exit(e.code)
+    except KeyboardInterrupt, e:
+        print >> sys.stderr, _("Installation aborted at user request")
     except Exception, e:
         logging.exception(e)
         sys.exit(1)
