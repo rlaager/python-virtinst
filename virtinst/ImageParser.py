@@ -171,6 +171,9 @@ class Drive:
 class Disk:
     FORMAT_RAW = "raw"
     FORMAT_ISO = "iso"
+    FORMAT_QCOW = "qcow"
+    FORMAT_QCOW2 = "qcow2"
+    FORMAT_VMDK = "vmdk"
 
     USE_SYSTEM = "system"
     USE_USER = "user"
@@ -192,7 +195,7 @@ class Disk:
         self.size = xpathString(node, "@size")
         self.use = xpathString(node, "@use", Disk.USE_SYSTEM)
 
-        formats = [Disk.FORMAT_RAW, Disk.FORMAT_ISO]
+        formats = [Disk.FORMAT_RAW, Disk.FORMAT_QCOW, Disk.FORMAT_QCOW2, Disk.FORMAT_VMDK, Disk.FORMAT_ISO]
         validate (formats.count(self.format) > 0,
                   _("The format for disk %s must be one of %s") %
                   (self.file, ",".join(formats)))
