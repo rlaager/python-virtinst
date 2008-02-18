@@ -152,6 +152,9 @@ class FullVirtGuest(Guest.XenGuest):
                     features[f] = FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant][f]
                 else:
                     features[f] = FullVirtGuest.OS_TYPES[os_type][f]
+            else:
+                if features[f] is None:
+                    features[f] = True
         return features
 
     def get_os_distro(self):
