@@ -277,6 +277,8 @@ def parse_args():
     # Misc options
     parser.add_option("-d", "--debug", action="store_true", dest="debug", 
                       help=_("Print debugging information"))
+    parser.add_option("", "--noreboot", action="store_true", dest="noreboot",
+                      help=_("Disables the automatic rebooting when the installation is complete."))
 
 
     (options,args) = parser.parse_args()
@@ -480,9 +482,13 @@ def main():
                     print _("Domain installation does not appear to have been\n successful.  If it was, you can restart your domain\n by running 'virsh start %s'; otherwise, please\n restart your installation.") %(guest.name,)
                     sys.exit(0)
 
-        print _("Guest installation complete... restarting guest.")
-        dom.create()
-        guest.connect_console(conscb)
+        if options.noreboot:
+            print _("Guest installation complete... you can restart your domain\n"
+                    "by running 'virsh start %s'") %(guest.name,)
+        else:
+            print _("Guest installation complete... restarting guest.")
+            dom.create()
+            guest.connect_console(conscb)
     except RuntimeError, e:
         print >> sys.stderr, _("ERROR: "), e
         sys.exit(1)
