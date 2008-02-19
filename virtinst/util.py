@@ -195,9 +195,8 @@ def get_host_network_devices():
 def get_max_vcpus(conn):
     """@conn libvirt connection to poll for max possible vcpus"""
     try:
-        max = conn.getMaxVcpus(conn.getType())
+        max = conn.getMaxVcpus(conn.getType().lower())
     except Exception, e:
-        #print >> stderr, _("Couldn't determine max vcpus. Using 32.")
         max = 32
     return max
 
