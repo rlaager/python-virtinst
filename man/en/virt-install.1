@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2007-07-15" "perl v5.8.8" "User Contributed Perl Documentation"
+.TH VIRT-INSTALL 1 "2008-02-04" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
 virt\-install \- provision new virtual machines
 .SH "SYNOPSIS"
@@ -187,6 +187,14 @@ Number of virtual cpus to configure for the guest. Not all hypervisors support
 .IX Item "--check-cpu"
 Check that the number virtual cpus requested does not exceed physical CPUs and warn
 if they do.
+.IP "\-\-cpuset=CPUSET" 4
+.IX Item "--cpuset=CPUSET"
+Set which physical cpus the guest can use. \f(CW\*(C`CPUSET\*(C'\fR is a comma seperated list of numbers, which can also be specified in ranges. Example:
+.Sp
+.Vb 2
+\&    0,2,3,5     : Use processors 0,2,3 and 5
+\&    1-3,5,6-8   : Use processors 1,2,3,5,6,7 and 8
+.Ve
 .IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 4
 .IX Item "-f DISKFILE, --file=DISKFILE"
 Path to the file, disk partition, or logical volume to use as the backing store
@@ -334,7 +342,13 @@ path to an \s-1ISO\s0 image, or to a \s-1CDROM\s0 device. It can also be a \s-1U
 to fetch/access a minimal boot \s-1ISO\s0 image. The URLs take the same format as
 described for the \f(CW\*(C`\-\-location\*(C'\fR argument. If this parameter is omitted then
 the \f(CW\*(C`\-\-location\*(C'\fR argument must be given to specify a location for the kernel
-and initrd.
+and initrd, or the \f(CW\*(C`\-\-pxe\*(C'\fR argument used to install from the network.
+.IP "\-\-pxe" 4
+.IX Item "--pxe"
+Use the \s-1PXE\s0 boot protocol to load the initial ramdisk and kernel for starting
+the guest installation process. If this parameter is omitted then either the
+\&\f(CW\*(C`\-\-location\*(C'\fR or \f(CW\*(C`\-\-cdrom\*(C'\fR arguments must be given to specify a location for
+the kernel and initrd.
 .IP "\-\-os\-type=OS_TYPE" 4
 .IX Item "--os-type=OS_TYPE"
 Optimize the guest configuration for a type of operating system. This will
@@ -394,6 +408,12 @@ Fedora 7
 .IP "sles10" 4
 .IX Item "sles10"
 Suse Linux Enterprise Server 10.x
+.IP "debianEtch" 4
+.IX Item "debianEtch"
+Debian 4.0 (Etch)
+.IP "debianLenny" 4
+.IX Item "debianLenny"
+Debian Lenny
 .IP "generic26" 4
 .IX Item "generic26"
 Generic Linux 2.6.x kernel
@@ -470,8 +490,8 @@ Novell Netware 6
 .IX Item "--noapic"
 Override the \s-1OS\s0 type / variant to disables the \s-1APIC\s0 setting for fully 
 virtualized guest.
-=item  \-\-noacpi
-.Sp
+.IP "\-\-noacpi" 4
+.IX Item "--noacpi"
 Override the \s-1OS\s0 type / variant to disables the \s-1ACPI\s0 setting for fully 
 virtualized guest. 
 .IP "\-\-arch=ARCH" 4
@@ -496,8 +516,8 @@ of the following forms:
 .IP "\s-1DIRECTORY\s0" 4
 .IX Item "DIRECTORY"
 Path to a local directory containing an installable distribution image
-.IP "nfs:host:/path" 4
-.IX Item "nfs:host:/path"
+.IP "nfs:host:/path or nfs://host/path" 4
+.IX Item "nfs:host:/path or nfs://host/path"
 An \s-1NFS\s0 server location containing an installable distribution image
 .IP "http://host/path" 4
 .IX Item "http://host/path"

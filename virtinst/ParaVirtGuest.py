@@ -1,16 +1,23 @@
-#!/usr/bin/python -tt
 #
 # Paravirtualized guest support
 #
 # Copyright 2006-2007  Red Hat, Inc.
 # Jeremy Katz <katzj@redhat.com>
 #
-# This software may be freely redistributed under the terms of the GNU
-# general public license.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free  Software Foundation; either version 2 of the License, or
+# (at your option)  any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
 
 import os
 import libvirt
@@ -45,7 +52,11 @@ class ParaVirtGuest(Guest.XenGuest):
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
+        Guest.Guest._prepare_install(self, meter)
         self._installer.prepare(guest = self, meter = meter)
+        if self._installer.install_disk is not None:
+            self._install_disks.append(self._installer.install_disk)
+
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
@@ -54,7 +65,7 @@ class ParaVirtGuest(Guest.XenGuest):
         for i in range(16):
             n = "%s%c" % (self.disknode, ord('a') + i)
             nodes[n] = None
-        for d in self.disks:
+        for d in self._install_disks:
             if d.transient and not install:
                 continue
             target = d.target

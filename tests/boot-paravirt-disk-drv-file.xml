@@ -11,7 +11,7 @@
   <devices>
     <disk type='file' device='disk'>
       <driver name='file'/>
-      <source file='/xen/test.img'/>
+      <source file='/etc/test.img'/>
       <target dev='xvda'/>
     </disk>
 

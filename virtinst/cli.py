@@ -4,17 +4,25 @@
 # Copyright 2006-2007  Red Hat, Inc.
 # Jeremy Katz <katzj@redhat.com>
 #
-# This software may be freely redistributed under the terms of the GNU
-# general public license.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free  Software Foundation; either version 2 of the License, or
+# (at your option)  any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
 
 import os, sys
 import logging
 import logging.handlers
+from optparse import OptionValueError
 
 import libvirt
 import util
@@ -84,6 +92,18 @@ def yes_or_no(s):
         return False
     raise ValueError, "A yes or no response is required"
 
+def prompt_for_yes_or_no(prompt):
+    """catches yes_or_no errors and ensures a valid bool return"""
+    while 1:
+        input = prompt_for_input(prompt, None)
+        try:
+            res = yes_or_no(input)
+            break
+        except ValueError, e:
+            print _("ERROR: "), e
+            continue
+    return res
+
 #
 # Ask for attributes
 #
@@ -141,6 +161,10 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
             guest.vcpus = vcpus
         except ValueError, e:
             print _("ERROR: "), e
+
+def get_cpuset(cpuset, guest):
+    if cpuset:
+        guest.cpuset = cpuset
 
 def get_network(mac, network, guest):
     if mac == "RANDOM":

@@ -10,16 +10,16 @@
   <vcpu>5</vcpu>
   <devices>
     <disk type='file' device='disk'>
-      <source file='/xen/test1.img'/>
+      <source file='/etc/test1.img'/>
       <target dev='xvda'/>
     </disk>
     <disk type='file' device='disk'>
       <driver name='tap' type='qcow'/>
-      <source file='/xen/test2.img'/>
+      <source file='/etc/test2.img'/>
       <target dev='xvdb'/>
     </disk>
     <disk type='block' device='disk'>
-      <source dev='/dev/root'/>
+      <source dev='/dev/loop0'/>
       <target dev='xvdc'/>
     </disk>
 

@@ -3,6 +3,21 @@
 #
 # Copyright 2007  Red Hat, Inc.
 # David Lutterkort <dlutter@redhat.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free  Software Foundation; either version 2 of the License, or
+# (at your option)  any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
 
 import libxml2
 import CapabilitiesParser
@@ -31,11 +46,12 @@ class Image:
         for d in node.xpathEval("storage/disk"):
             disk = Disk(d)
             if disk.file is None:
+                disk.id = "disk%d.img" % len(self.storage)
                 disk.file = "disk%d.img" % (len(self.storage) + 1)
-            if self.storage.has_key(disk.file):
+            if self.storage.has_key(disk.id):
                 raise ParserException("Disk file '%s' defined twice"
                                            % disk.file)
-            self.storage[disk.file] = disk
+            self.storage[disk.id] = disk
         lm = node.xpathEval("domain")
         if len(lm) == 1:
             self.domain = Domain(lm[0])
@@ -45,8 +61,8 @@ class Image:
         for boot in self.domain.boots:
             for d in boot.disks:
                 if not self.storage.has_key(d.disk_id):
-                    raise ParserException(_("Disk '%s' not found")
-                                               % d.file)
+                    raise ParserException(_("Disk entry for '%s' not found")
+                                               % d.disk_id)
                 d.disk = self.storage[d.disk_id]
 
 class Domain:
@@ -155,12 +171,16 @@ class Drive:
 class Disk:
     FORMAT_RAW = "raw"
     FORMAT_ISO = "iso"
+    FORMAT_QCOW = "qcow"
+    FORMAT_QCOW2 = "qcow2"
+    FORMAT_VMDK = "vmdk"
 
     USE_SYSTEM = "system"
     USE_USER = "user"
     USE_SCRATCH = "scratch"
 
     def __init__(self, node = None):
+        self.id = None
         self.file = None
         self.format = None
         self.size = None
@@ -170,11 +190,12 @@ class Disk:
 
     def parseXML(self, node):
         self.file = xpathString(node, "@file")
+        self.id = xpathString(node, "@id", self.file)
         self.format = xpathString(node, "@format", Disk.FORMAT_RAW)
         self.size = xpathString(node, "@size")
         self.use = xpathString(node, "@use", Disk.USE_SYSTEM)
 
-        formats = [Disk.FORMAT_RAW, Disk.FORMAT_ISO]
+        formats = [Disk.FORMAT_RAW, Disk.FORMAT_QCOW, Disk.FORMAT_QCOW2, Disk.FORMAT_VMDK, Disk.FORMAT_ISO]
         validate (formats.count(self.format) > 0,
                   _("The format for disk %s must be one of %s") %
                   (self.file, ",".join(formats)))

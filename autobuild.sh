@@ -3,7 +3,7 @@
 set -v
 set -e
 
-rm -rf build dist python-virtinst.spec
+rm -rf build dist python-virtinst.spec MANIFEST
 
 python setup.py build
 python tests/coverage.py -e

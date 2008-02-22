@@ -6,24 +6,25 @@
   <os>
     <type>hvm</type>
     <loader>/usr/lib/xen/boot/hvmloader</loader>
-    <boot dev='hd'/>
+    <boot dev='cdrom'/>
   </os>
   <features>
     <acpi/><apic/>
   </features>
   <clock offset="utc"/>
   <on_poweroff>destroy</on_poweroff>
-  <on_reboot>restart</on_reboot>
-  <on_crash>restart</on_crash>
+  <on_reboot>destroy</on_reboot>
+  <on_crash>destroy</on_crash>
   <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <console device='pty'/>
-    <disk type='block' device='disk'>
-      <source dev='/dev/loop0'/>
+    <disk type='file' device='disk'>
+      <source file='/ISO&amp;&apos;&amp;s'/>
       <target dev='hda'/>
     </disk>
     <disk type='block' device='cdrom'>
+      <source dev='/dev/loop0'/>
       <target dev='hdc'/>
       <readonly/>
     </disk>

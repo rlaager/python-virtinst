@@ -1,16 +1,23 @@
-#!/usr/bin/python -tt
 #
 # Common code for all guests
 #
 # Copyright 2006-2007  Red Hat, Inc.
 # Jeremy Katz <katzj@redhat.com>
 #
-# This software may be freely redistributed under the terms of the GNU
-# general public license.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free  Software Foundation; either version 2 of the License, or
+# (at your option)  any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
 
 import os, os.path
 import stat, sys, time
@@ -19,15 +26,10 @@ import libxml2
 import urlgrabber.progress as progress
 import util
 import libvirt
+import __builtin__
 from virtinst import _virtinst as _
 
 import logging
-
-
-#print "YO %s" % (virtinst.gettext_virtinst("YO"))
-
-#def _(msg):
-#    gettext_virtinst(msg)
 
 class VirtualDisk:
     DRIVER_FILE = "file"
@@ -45,54 +47,74 @@ class VirtualDisk:
     TYPE_FILE = "file"
     TYPE_BLOCK = "block"
 
-    def __init__(self, path, size = None, transient=False, type=None, device=DEVICE_DISK, driverName=None, driverType=None, readOnly=False, sparse=True):
+    def __init__(self, path = None, size = None, transient=False, type=None, device=DEVICE_DISK, driverName=None, driverType=None, readOnly=False, sparse=True):
         """@path is the path to the disk image.
            @size is the size of the disk image in gigabytes."""
         self.size = size
         self.sparse = sparse
         self.transient = transient
-        self.path = os.path.abspath(path)
-
-        if os.path.isdir(self.path):
-            raise ValueError, \
-                _("The disk path must be a file or a device, not a directory")
-
-        if not self.path.startswith("/"):
-            raise ValueError, \
-                _("The disk path must be an absolute path location, beginning with '/'")
-
-        if type is None:
-            if not os.path.exists(self.path):
-                logging.debug("Disk path not found: Assuming file disk type.");
-                self._type = VirtualDisk.TYPE_FILE
-            else:
-                if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                    logging.debug(\
-                        "Path is block file: Assuming Block disk type.");
-                    self._type = VirtualDisk.TYPE_BLOCK
-                else:
-                    self._type = VirtualDisk.TYPE_FILE
-        else:
-            self._type = type
-
-        if self._type == VirtualDisk.TYPE_FILE:
-            if size is None and not os.path.exists(self.path):
-                raise ValueError, \
-                    _("A size must be provided for non-existent disks")
-            if size is not None and size <= 0:
-                raise ValueError, \
-                    _("The size of the disk image must be greater than 0")
-        elif self._type == VirtualDisk.TYPE_BLOCK:
-            if not os.path.exists(self.path):
-                raise ValueError, _("The specified block device does not exist.")
-            if not stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                raise ValueError, _("The specified path is not a block device.")
-
+        self.path = path
+        self._type = type
         self._readOnly = readOnly
         self._device = device
         self._driverName = driverName
         self._driverType = driverType
         self.target = None
+       
+        if self.path is not None:
+            # Check that the basics are valid
+            if __builtin__.type(self.path) is not __builtin__.type("string"):
+                raise ValueError, _("The %s path must be a string or None.") % self._device
+            self.path = os.path.abspath(self.path)
+            if os.path.isdir(self.path):
+                raise ValueError, _("The %s path must be a file or a device, not a directory") % self._device
+            if not os.path.exists(os.path.dirname(self.path)):
+                raise ValueError, _("The specified path's root directory must exist.")
+
+            if (self._device == self.DEVICE_FLOPPY or \
+                self._device == self.DEVICE_CDROM) and \
+               not os.path.exists(self.path):
+                raise ValueError, _("The %s path must exist.") % self._device
+
+            # If no disk type specified, attempt to determine from path
+            if self._type is None:
+                if not os.path.exists(self.path):
+                    logging.debug(\
+                        "Disk path not found: Assuming file disk type.");
+                    self._type = VirtualDisk.TYPE_FILE
+                else:
+                    if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                        logging.debug(\
+                            "Path is block file: Assuming Block disk type.");
+                        self._type = VirtualDisk.TYPE_BLOCK
+                    else:
+                        self._type = VirtualDisk.TYPE_FILE
+        
+            if self._type == VirtualDisk.TYPE_FILE:
+                if self.size is None and not os.path.exists(self.path):
+                    raise ValueError, \
+                        _("A size must be provided for non-existent disks")
+                if os.path.exists(self.path) and \
+                   stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                    raise ValueError, _("The specified path is a block device, not a regular file.")
+                if self.size is not None and \
+                   (__builtin__.type(self.size) is not __builtin__.type(1) and __builtin__.type(self.size) is not __builtin__.type(1.0)):
+                    raise ValueError, _("Disk size must be an int or a float.")
+                if self.size < 0 and self.size is not None:
+                    raise ValueError, _("Disk size must not be less than 0.")
+            elif self._type == VirtualDisk.TYPE_BLOCK:
+                if not os.path.exists(self.path):
+                    raise ValueError, \
+                          _("The specified block device does not exist.")
+                if not stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                    raise ValueError, \
+                          _("The specified path is not a block device.")
+
+        else:
+            # Only floppy or cdrom can be created w/o media
+            if device != self.DEVICE_FLOPPY and \
+               device != self.DEVICE_CDROM:
+                raise ValueError, _("Disk type '%s' requires a path") % device
 
     def get_type(self):
         return self._type
@@ -119,22 +141,26 @@ class VirtualDisk:
     read_only = property(get_read_only)
 
     def setup(self, progresscb):
-        if self._type == VirtualDisk.TYPE_FILE and not os.path.exists(self.path):
+        if self._type == VirtualDisk.TYPE_FILE and self.path is not None \
+           and not os.path.exists(self.path):
             size_bytes = long(self.size * 1024L * 1024L * 1024L)
             progresscb.start(filename=self.path,size=long(size_bytes), \
                              text=_("Creating storage file..."))
             fd = None
             try: 
-                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
-                if self.sparse:
-                    os.lseek(fd, size_bytes, 0)
-                    os.write(fd, '\x00')
-                    progresscb.update(self.size)
-                else:
-                    buf = '\x00' * 1024 * 1024 # 1 meg of nulls
-                    for i in range(0, long(self.size * 1024L)):
-                        os.write(fd, buf)
-                        progresscb.update(long(i * 1024L * 1024L))
+                try:
+                    fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+                    if self.sparse:
+                        os.lseek(fd, size_bytes, 0)
+                        os.write(fd, '\x00')
+                        progresscb.update(self.size)
+                    else:
+                        buf = '\x00' * 1024 * 1024 # 1 meg of nulls
+                        for i in range(0, long(self.size * 1024L)):
+                            os.write(fd, buf)
+                            progresscb.update(long(i * 1024L * 1024L))
+                except OSError, detail:
+                    raise RuntimeError, "Error creating diskimage " + self.path + ": " + detail.strerror
             finally:
                 if fd is not None:
                     os.close(fd)
@@ -152,10 +178,9 @@ class VirtualDisk:
                 ret += "      <driver name='%(name)s'/>\n" % { "name": self.driver_name }
             else:
                 ret += "      <driver name='%(name)s' type='%(type)s'/>\n" % { "name": self.driver_name, "type": self.driver_type }
-        if self.path is None:
-            ret += "      <source %(typeattr)s=''/>\n" % { "typeattr": typeattr }
-        else:
-            ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": self.path }
+        if self.path is not None:
+            path = util.xml_escape(self.path)
+            ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": path }
         if self.target is not None:
             disknode = self.target
         ret += "      <target dev='%(disknode)s'/>\n" % { "disknode": disknode }
@@ -169,13 +194,21 @@ class VirtualDisk:
         # get working domain's name
         ids = conn.listDomainsID();
         for id in ids:
-            vm = conn.lookupByID(id)
-            vms.append(vm)
+            try:
+                vm = conn.lookupByID(id)
+                vms.append(vm)
+            except libvirt.libvirtError:
+                # guest probably in process of dieing
+                logging.warn("Failed to lookup domain id %d" % id)
         # get defined domain
         names = conn.listDefinedDomains()
         for name in names:
-            vm = conn.lookupByName(name)
-            vms.append(vm)
+            try:
+                vm = conn.lookupByName(name)
+                vms.append(vm)
+            except libvirt.libvirtError:
+                # guest probably in process of dieing
+                logging.warn("Failed to lookup domain name %s" % name)
 
         count = 0
         for vm in vms:
@@ -211,10 +244,15 @@ class XenDisk(VirtualDisk):
 class VirtualNetworkInterface:
     def __init__(self, macaddr = None, type="bridge", bridge = None, network=None):
 
+        if macaddr is not None and \
+           __builtin__.type(macaddr) is not __builtin__.type("string"):
+            raise ValueError, "MAC address must be a string."
+
         if macaddr is not None:
-            form = re.match("^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",macaddr)
+            form = re.match("^([0-9a-fA-F]{1,2}:){5}[0-9a-fA-F]{1,2}$",macaddr)
             if form is None:
-                raise ValueError(_("MAC address must be of the format AA:BB:CC:DD:EE:FF"))
+                raise ValueError, \
+                    _("MAC address must be of the format AA:BB:CC:DD:EE:FF")
         self.macaddr = macaddr
         self.type = type
         self.bridge = bridge
@@ -336,8 +374,8 @@ class VNCVirtualGraphics(XenGraphics):
     def __init__(self, *args):
         self.name = "vnc"
         if len(args) >= 1 and not args[0] is None:
-            if args[0] < 5900:
-                raise ValueError, _("Invalid value for vnc port, port number must be greater than or equal to 5900")
+            if args[0] < 5900 or args[0] > 65535:
+                raise ValueError, _("Invalid value for vnc port, port number must be in between 5900 and 65535")
             self.port = args[0]
         else:
             self.port = -1
@@ -374,6 +412,7 @@ class Installer(object):
         self._extraargs = None
         self._boot = None
         self._cdrom = False
+        self._install_disk = None   # VirtualDisk that contains install media
 
         if type is None:
             type = "xen"
@@ -394,6 +433,10 @@ class Installer(object):
             os.unlink(f)
         self._tmpfiles = []
 
+    def get_install_disk(self):
+        return self._install_disk
+    install_disk = property(get_install_disk)
+
     def get_type(self):
         return self._type
     def set_type(self, val):
@@ -409,6 +452,8 @@ class Installer(object):
     def get_cdrom(self):
         return self._cdrom
     def set_cdrom(self, enable):
+        if __builtin__.type(enable) is not __builtin__.type(True):
+            raise ValueError, _("Guest.cdrom must be a boolean type")
         self._cdrom = enable
     cdrom = property(get_cdrom, set_cdrom)
 
@@ -436,6 +481,8 @@ class Installer(object):
             if len(val) != 2:
                 raise ValueError, _("Must pass both a kernel and initrd")
             self._boot = {"kernel": val[0], "initrd": val[1]}
+        else:
+            raise ValueError, _("Kernel and initrd must be specified by a list, dict, or tuple.")
     boot = property(get_boot, set_boot)
 
     # extra arguments to pass to the guest installer
@@ -448,15 +495,22 @@ class Installer(object):
 class Guest(object):
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
         self._installer = installer
-        self.disks = []
-        self.nics = []
         self._name = None
         self._uuid = None
         self._memory = None
         self._maxmemory = None
         self._vcpus = None
+        self._cpuset = None
         self._graphics = { "enabled": False }
         self._keymap = None
+        
+        # Public device lists unaltered by install process
+        self.disks = []
+        self.nics = []
+
+        # Device lists to use/alter during install process
+        self._install_disks = []
+        self._install_nics = []
 
         self.domain = None
         self.conn = connection
@@ -469,7 +523,9 @@ class Guest(object):
 
     def get_installer(self):
         return self._installer
-    installer = property(get_installer)
+    def set_installer(self, val):
+        self._installer = val
+    installer = property(get_installer, set_installer)
 
 
     def get_type(self):
@@ -483,14 +539,12 @@ class Guest(object):
     def get_name(self):
         return self._name
     def set_name(self, val):
-        if len(val) > 50 or len(val) == 0:
-            raise ValueError, _("System name must be greater than 0 and no more than 50 characters")
+        if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
+            raise ValueError, _("System name must be a string greater than 0 and no more than 50 characters")
         if re.match("^[0-9]+$", val):
             raise ValueError, _("System name must not be only numeric characters")
         if re.match("^[a-zA-Z0-9._-]+$", val) == None:
             raise ValueError, _("System name can only contain alphanumeric, '_', '.', or '-' characters")
-        if type(val) != type("string"):
-            raise ValueError, _("System name must be a string")
         self._name = val
     name = property(get_name, set_name)
 
@@ -499,7 +553,7 @@ class Guest(object):
     def get_memory(self):
         return self._memory
     def set_memory(self, val):
-        if (type(val) is not type(1) or val < 0):
+        if (type(val) is not type(1) or val <= 0):
             raise ValueError, _("Memory value must be an integer greater than 0")
         self._memory = val
         if self._maxmemory is None or self._maxmemory < val:
@@ -510,7 +564,7 @@ class Guest(object):
     def get_maxmemory(self):
         return self._maxmemory
     def set_maxmemory(self, val):
-        if (type(val) is not type(1) or val < 0):
+        if (type(val) is not type(1) or val <= 0):
             raise ValueError, _("Max Memory value must be an integer greater than 0")
         self._maxmemory = val
     maxmemory = property(get_maxmemory, set_maxmemory)
@@ -521,6 +575,9 @@ class Guest(object):
         return self._uuid
     def set_uuid(self, val):
         # need better validation
+        if type(val) is not type("string"):
+            raise ValueError, _("UUID must be a string.")
+
         form = re.match("[a-fA-F0-9]{8}[-]([a-fA-F0-9]{4}[-]){3}[a-fA-F0-9]{12}$", val)
         if form is None:
             form = re.match("[a-fA-F0-9]{32}$", val)
@@ -529,7 +586,7 @@ class Guest(object):
 
             else:   # UUID had no dashes, so add them in
                 val=val[0:8] + "-" + val[8:12] + "-" + val[12:16] + \
-                "-" + val[16:20] + "-" + val[20:32]
+                    "-" + val[16:20] + "-" + val[20:32]
         self._uuid = val
     uuid = property(get_uuid, set_uuid)
 
@@ -545,6 +602,28 @@ class Guest(object):
         self._vcpus = val
     vcpus = property(get_vcpus, set_vcpus)
 
+    # set phy-cpus for the guest
+    def get_cpuset(self):
+        return self._cpuset
+    def set_cpuset(self, val):
+        if type(val) is not type("string") or len(val) == 0:
+            raise ValueError, _("cpuset must be string")
+        if re.match("^[0-9,-]*$", val) is None:
+            raise ValueError, _("cpuset can only contain numeric, ',', or '-' characters")
+
+        pcpus = util.get_phy_cpus(self.conn)
+        for c in val.split(','):
+            if c.find('-') != -1:
+                (x, y) = c.split('-')
+                if int(x) > int(y):
+                    raise ValueError, _("cpuset contains invalid format.")
+                if int(x) >= pcpus or int(y) >= pcpus:
+                    raise ValueError, _("cpuset's pCPU numbers must be less than pCPUs.")
+            else:
+                if int(c) >= pcpus:
+                    raise ValueError, _("cpuset's pCPU numbers must be less than pCPUs.")
+        self._cpuset = val
+    cpuset = property(get_cpuset, set_cpuset)
 
     # graphics setup
     def get_graphics(self):
@@ -625,18 +704,26 @@ class Guest(object):
     extraargs = property(get_extraargs, set_extraargs)
 
     def get_cdrom(self):
-        return self.location
+        return self._installer.location
     def set_cdrom(self, val):
-        self.location = val
+        if val is None or type(val) is not type("string") or len(val) == 0:
+            raise ValueError, _("You must specify a valid ISO or CD-ROM location for the installation")
+        if val.startswith("/"):
+            if not os.path.exists(val):
+                raise ValueError, _("The specified media path does not exist.")
+            self._installer.location = os.path.abspath(val)
+        else:
+            # Assume its a http/nfs/ftp style path
+            self._installer.location = val
         self._installer.cdrom = True
     cdrom = property(get_cdrom, set_cdrom)
 
 
     def _create_devices(self,progresscb):
         """Ensure that devices are setup"""
-        for disk in self.disks:
+        for disk in self._install_disks:
             disk.setup(progresscb)
-        for nic in self.nics:
+        for nic in self._install_nics:
             nic.setup(self.conn)
 
     def _get_network_xml(self, install = True):
@@ -682,6 +769,11 @@ class Guest(object):
         if not osblob:
             return None
 
+        if self.cpuset is not None:
+            cpuset = " cpuset='" + self.cpuset + "'"
+        else:
+            cpuset = ""
+
         return """<domain type='%(type)s'>
   <name>%(name)s</name>
   <currentMemory>%(ramkb)s</currentMemory>
@@ -691,7 +783,7 @@ class Guest(object):
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>%(action)s</on_reboot>
   <on_crash>%(action)s</on_crash>
-  <vcpu>%(vcpus)d</vcpu>
+  <vcpu%(cpuset)s>%(vcpus)d</vcpu>
   <devices>
 %(devices)s
   </devices>
@@ -699,6 +791,7 @@ class Guest(object):
 """ % { "type": self.type,
         "name": self.name, \
         "vcpus": self.vcpus, \
+        "cpuset": cpuset, \
         "uuid": self.uuid, \
         "ramkb": self.memory * 1024, \
         "maxramkb": self.maxmemory * 1024, \
@@ -720,6 +813,10 @@ class Guest(object):
             return self._do_install(consolecb, meter)
         finally:
             self._installer.cleanup()
+
+    def _prepare_install(self, meter):
+        self._install_disks = self.disks[:]
+        self._install_nics = self.nics[:]
 
     def _do_install(self, consolecb, meter):
         try:

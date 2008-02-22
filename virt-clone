@@ -16,7 +16,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
 
 
 import os, sys, string
@@ -70,11 +71,40 @@ def get_clone_uuid(new_uuid, design):
     if new_uuid is not None:
         design.set_clone_uuid(new_uuid)
 
-def get_clone_diskfile(new_diskfile, design):
-    if new_diskfile is None:
-        raise ValueError, _("A new disk image file for the cloned guest is required")
-    for i in new_diskfile:
-        design.set_clone_devices(i) 
+def get_clone_diskfile(new_diskfiles, design, conn):
+    if new_diskfiles is None:
+        new_diskfiles = [None]
+
+    for i in range(0, len(new_diskfiles)):
+        disk = new_diskfiles[i]
+        while 1:
+            disk = cli.prompt_for_input(_("What would you like to use as the cloned disk (file path)?"), disk)
+
+            # Build disk object for validation
+            try:
+                d = virtinst.VirtualDisk(path=disk, size=0)
+            except ValueError, e:
+                print _("ERROR: "), e
+                disk = None
+                continue
+
+            # Check disk conflicts
+            if d.is_conflict_disk(conn) is True:
+                warnmsg = _("Disk %s is already in use by another guest!\n") % d.path
+                if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the disk (yes or no)? ")):
+                    disk = None
+                    continue
+            # Overwrite disk?
+            elif os.path.exists(d.path) and os.path.isfile(d.path):
+                warnmsg = _("You are going to overwrite file '%s'!\n") % d.path
+                if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the file (yes or no)? ")):
+                    disk = None
+                    continue
+            new_diskfiles[i] = d.path
+            break
+
+    for i in new_diskfiles:
+        design.set_clone_devices(i)
 
 def get_clone_sparse(sparse, design):
     design.set_clone_sparse(sparse)
@@ -160,8 +190,8 @@ def main():
     conn = cli.getConnection(options.connect)
     design = clmgr.CloneDesign(connection=conn)
 
-    try:    
-        get_clone_diskfile(options.new_diskfile, design)
+    try:
+        get_clone_diskfile(options.new_diskfile, design, conn)
         get_clone_macaddr(options.new_mac, design)
         get_original_guest(options.original_guest, design)
         get_clone_name(options.new_name, design)
@@ -177,10 +207,23 @@ def main():
         clmgr.start_duplicate(design)
 
         logging.debug("end clone")
+    except RuntimeError, e:
+        print >> sys.stderr, _("ERROR: "), e
+        sys.exit(1)
+    except SystemExit, e:
+        sys.exit(e.code)
     except Exception, e:
         print "ERROR: ", e
         sys.exit(1)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit, e:
+        sys.exit(e.code)
+    except KeyboardInterrupt, e:
+        print >> sys.stderr, _("Installation aborted at user request")
+    except Exception, e:
+        logging.exception(e)
+        sys.exit(1)
 

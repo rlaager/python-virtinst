@@ -1,4 +1,3 @@
-#!/usr/bin/python -tt
 #
 # Copyright(c) FUJITSU Limited 2007.
 #
@@ -16,7 +15,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
 
 import os
 import sys
@@ -29,7 +29,6 @@ import util
 import commands
 import libvirt
 import Guest
-import cli
 from virtinst import _virtinst as _
 
 #
@@ -70,7 +69,7 @@ class CloneDesign(object):
     def get_original_guest(self):
         return self._original_guest
     def set_original_guest(self, original_guest):
-        if len(original_guest) == 0:
+        if type(original_guest) is not type("str") or len(original_guest)==0:
            raise ValueError, _("Name or UUID of guest to clone is required")
 
         try:
@@ -102,7 +101,7 @@ class CloneDesign(object):
         self._clone_uuid = uuid
     def get_clone_uuid(self):
         return self._clone_uuid
-    clone_uuid = property(get_clone_uuid)
+    clone_uuid = property(get_clone_uuid, set_clone_uuid)
 
     def set_clone_devices(self, devices):
         if len(devices) == 0:
@@ -113,18 +112,18 @@ class CloneDesign(object):
         cdev.append(devices)
         cdev_size,\
         cdev_type = self._get_clone_devices_info(cdev)
-        devices = self._check_file(self._hyper_conn, devices, cdev_size)
+        devices = self._check_file(self._hyper_conn, devices, cdev_size[0])
         self._clone_devices.append(devices)
     def get_clone_devices(self):
         return self._clone_devices
-    clone_devices = property(get_clone_devices)
+    clone_devices = property(get_clone_devices, set_clone_devices)
 
     def set_clone_mac(self, mac):
         Guest.VirtualNetworkInterface(mac)
         self._clone_mac.append(mac)
     def get_clone_mac(self):
         return self._clone_mac
-    clone_mac = property(get_clone_mac)
+    clone_mac = property(get_clone_mac, set_clone_mac)
 
     def get_clone_bs(self):
         return self._clone_bs
@@ -334,39 +333,8 @@ class CloneDesign(object):
     # ret : Use File Path
     #
     def _check_file(self, conn, disk, size):
-        retryFlg = False
-        while 1:
-            if disk == None:
-                msg = _("What would you like to use as the disk (path)?")
-                disk = cli.prompt_for_input(msg, disk)
-
-            try:
-                d = Guest.VirtualDisk(disk, size)
-                if d.is_conflict_disk(conn) is True:
-                    while 1:
-                        retryFlg = False
-                        warnmsg = _("Disk %s is already in use by another guest!\n") % disk
-                        res = cli.prompt_for_input(warnmsg + _("Do you really want to use the disk (yes or no)? "))
-                        try:
-                            if cli.yes_or_no(res) is True:
-                                break
-                            else:
-                                retryFlg = True
-                                break
-                        except ValueError, e:
-                            print _("ERROR: "), e
-                            continue
-                    if retryFlg is True:
-                        disk = None
-                        continue
-            except ValueError, e:
-                print _("ERROR: "), e
-                disk = None
-                continue
-
-            break
-
-        return disk
+        d = Guest.VirtualDisk(disk, size)
+        return d.path
 
     #
     # check used mac func
@@ -422,12 +390,14 @@ class CloneDesign(object):
             except:
                 continue
             ctx = doc.xpathNewContext()
+            mac_index = (str(doc).upper()).find(mac.upper())
+            if mac_index == -1:
+                continue
+            mac_comp = str(doc)[mac_index:mac_index+17]
             try:
                 try:
                     count += ctx.xpathEval("count(/domain/devices/interface/mac[@address='%s'])"
-                                           % mac.upper())
-                    count += ctx.xpathEval("count(/domain/devices/interface/mac[@address='%s'])"
-                                           % mac.lower())
+                                           % mac_comp)
                 except:
                     continue
             finally:
@@ -648,9 +618,9 @@ def _do_duplicate(design):
                     os.lseek(dst_fd, s, 1)
                 else:
                     b = os.write(dst_fd, l)
-                if s != b:
-                    meter.end(i)
-                    break
+                    if s != b:
+                        meter.end(i)
+                        break
                 i += s
                 if i < size:
                     meter.update(i)

@@ -14,7 +14,7 @@ Name: python-%{appname}
 Version: ::VERSION::
 Release: 1%{_extra_release}
 Source0: http://virt-manager.et.redhat.com/download/sources/%{appname}/%{appname}-%{version}.tar.gz
-License: GPL
+License: GPLv2+
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
@@ -22,6 +22,7 @@ Url: http://virt-manager.et.redhat.com
 Requires: libvirt-python >= 0.2.0
 Requires: virt-viewer
 Requires: urlgrabber
+Requires: libxml2-python
 BuildRequires: python-devel
 
 %description
@@ -50,15 +51,35 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f %{appname}.lang
 %defattr(-,root,root)
-%doc README AUTHORS ChangeLog NEWS
+%doc README COPYING AUTHORS ChangeLog NEWS doc/image.rng doc/example1.xml
 %dir %{python_sitelib}/%{appname}
 %{python_sitelib}/%{appname}/*
-%{_mandir}/man1/virt-install.1*
-%{_mandir}/man1/virt-clone.1*
+%{_mandir}/man1/*
+%{_mandir}/man5/*
 %{_bindir}/virt-install
 %{_bindir}/virt-clone
+%{_bindir}/virt-image
 
 %changelog
+* Thu Jan 10 2008 Daniel P. Berrange <berrange@redhat.com> - 0.300.2-1
+- Escape paths in XML
+- Add --cpuset to pin vCPUs at install time
+- Automatically set windows guests to localtime
+- Improved input validation
+- Fix virt-image bugs
+
+* Tue Sep 25 2007 Daniel P. Berrange <berrange@redhat.com> - 0.300.1-1
+- Fixed default architecture on 32-bit
+- Fixed QEMU guest installs from remote architectures
+- Added support for PXE installs of fullyvirtualized guests
+- Fixed Fedora distro detection
+
+* Wed Aug 29 2007 Daniel P. Berrange <berrange@redhat.com> - 0.300.0-1
+- Updated to 0.300.0
+- Added virt-image tool
+- Switched to calling virsh console and virt-viewer
+- Improved user input validation
+
 * Tue Jul 18 2007 Daniel P. Berrange <berrange@redhat.com> - 0.200.0-1
 - Updated to 0.200.0
 - Added virt-clone tool

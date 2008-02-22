@@ -70,6 +70,13 @@ SMP guests, in which case this argument will be silently ignored
 Check that the number virtual cpus requested does not exceed physical CPUs and warn
 if they do.
 
+=item --cpuset=CPUSET
+
+Set which physical cpus the guest can use. C<CPUSET> is a comma seperated list of numbers, which can also be specified in ranges. Example:
+
+    0,2,3,5     : Use processors 0,2,3 and 5
+    1-3,5,6-8   : Use processors 1,2,3,5,6,7 and 8
+
 =item -f DISKFILE, --file=DISKFILE
 
 Path to the file, disk partition, or logical volume to use as the backing store
@@ -240,7 +247,14 @@ path to an ISO image, or to a CDROM device. It can also be a URL from which
 to fetch/access a minimal boot ISO image. The URLs take the same format as
 described for the C<--location> argument. If this parameter is omitted then
 the C<--location> argument must be given to specify a location for the kernel
-and initrd.
+and initrd, or the C<--pxe> argument used to install from the network.
+
+=item  --pxe
+
+Use the PXE boot protocol to load the initial ramdisk and kernel for starting
+the guest installation process. If this parameter is omitted then either the
+C<--location> or C<--cdrom> arguments must be given to specify a location for
+the kernel and initrd.
 
 =item  --os-type=OS_TYPE
 
@@ -315,6 +329,14 @@ Fedora 7
 =item sles10
 
 Suse Linux Enterprise Server 10.x
+
+=item debianEtch
+
+Debian 4.0 (Etch)
+
+=item debianLenny
+
+Debian Lenny
 
 =item generic26
 
@@ -398,6 +420,7 @@ Novell Netware 6
 
 Override the OS type / variant to disables the APIC setting for fully 
 virtualized guest.
+
 =item  --noacpi
 
 Override the OS type / variant to disables the ACPI setting for fully 
@@ -430,7 +453,7 @@ of the following forms:
 
 Path to a local directory containing an installable distribution image
 
-=item nfs:host:/path
+=item nfs:host:/path or nfs://host/path
 
 An NFS server location containing an installable distribution image
 

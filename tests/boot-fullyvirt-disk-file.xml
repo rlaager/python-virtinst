@@ -9,8 +9,9 @@
     <boot dev='hd'/>
   </os>
   <features>
-    <acpi/><apic/><pae/>
+    <acpi/><apic/>
   </features>
+  <clock offset="utc"/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
@@ -19,17 +20,16 @@
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <console device='pty'/>
     <disk type='file' device='disk'>
-      <source file='/xen/test.img'/>
+      <source file='/etc/test.img'/>
       <target dev='hda'/>
     </disk>
     <disk type='block' device='cdrom'>
-      <source dev=''/>
       <target dev='hdc'/>
       <readonly/>
     </disk>
 
 
-    <input type='tablet' bus='usb'/>
+    <input type='mouse' bus='ps2'/>
     <graphics type='sdl'/>
   </devices>
 </domain>

@@ -5,12 +5,20 @@
 # Copyright 2007  Red Hat, Inc.
 # David Lutterkort <dlutter@redhat.com>
 #
-# This software may be freely redistributed under the terms of the GNU
-# general public license.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
 
 import os, sys, string
 from optparse import OptionParser, OptionValueError
@@ -32,6 +40,11 @@ gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
 gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
 
 ### General input gathering functions
+
+def get_name(name, image_name, guest):
+    if name is None:
+        name = image_name
+    cli.get_name(name, guest)
 
 def get_memory(memory, image_memory, guest):
     if memory is None and image_memory is not None:
@@ -64,14 +77,14 @@ def get_graphics(domain, vnc, vncport, nographics, sdl, keymap, guest):
         guest.graphics = False
         return
     else:
+        if not vnc and not sdl:
+            vnc = True
         cli.get_graphics(vnc, vncport, nographics, sdl, keymap, guest)
 
 ### Option parsing
 def parse_args():
     parser = OptionParser()
-    parser.add_option("-i", "--image", type="string", dest="image",
-                      action="callback", callback=cli.check_before_store,
-                      help=_("The XML description of the virtual image"))
+    parser.set_usage("%prog [options] image.xml")
     parser.add_option("-n", "--name", type="string", dest="name",
                       action="callback", callback=cli.check_before_store,
                       help=_("Name of the guest instance"))
@@ -128,6 +141,10 @@ def parse_args():
                       help=_("The zero-based index of the boot record to use"))
 
     (options,args) = parser.parse_args()
+    if len(args) < 1:
+        parser.error(_("You need to provide an image XML descriptor"))
+    options.image = args[0]
+    
     return options
 
 def parse_image_xml(fname):
@@ -176,7 +193,7 @@ def main():
         guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
 
     # now let's get some of the common questions out of the way
-    cli.get_name(options.name, guest)
+    get_name(options.name, image.name, guest)
     get_memory(options.memory, image.domain.memory, guest)
     cli.get_uuid(options.uuid, guest)
     get_vcpus(options.vcpus, image.domain.vcpu, options.check_cpu,
@@ -225,5 +242,13 @@ def main():
             raise
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit, e:
+        sys.exit(e.code)
+    except KeyboardInterrupt, e:
+        print >> sys.stderr, _("Installation aborted at user request")
+    except Exception, e:
+        logging.exception(e)
+        sys.exit(1)
 

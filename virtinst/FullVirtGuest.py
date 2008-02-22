@@ -1,16 +1,23 @@
-#!/usr/bin/python -tt
 #
 # Fullly virtualized guest support
 #
 # Copyright 2006-2007  Red Hat, Inc.
 # Jeremy Katz <katzj@redhat.com>
 #
-# This software may be freely redistributed under the terms of the GNU
-# general public license.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free  Software Foundation; either version 2 of the License, or
+# (at your option)  any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
 
 import os
 import libvirt
@@ -26,7 +33,9 @@ class FullVirtGuest(Guest.XenGuest):
     OS_TYPES = { "linux": { "label": "Linux", \
                             "acpi": True, \
                             "apic": True, \
+                            "clock": "utc",\
                             "continue": False, \
+                            "input": [ "mouse", "ps2"],
                             "variants": { "rhel2.1": { "label": "Red Hat Enterprise Linux 2.1", "distro": "rhel" }, \
                                           "rhel3": { "label": "Red Hat Enterprise Linux 3", "distro": "rhel" }, \
                                           "rhel4": { "label": "Red Hat Enterprise Linux 4", "distro": "rhel" }, \
@@ -34,8 +43,10 @@ class FullVirtGuest(Guest.XenGuest):
                                           "fedora5": { "label": "Fedora Core 5", "distro": "fedora" }, \
                                           "fedora6": { "label": "Fedora Core 6", "distro": "fedora" }, \
                                           "fedora7": { "label": "Fedora 7", "distro": "fedora" }, \
-                                          "fedora8": { "label": "Fedora 7", "distro": "fedora" }, \
+                                          "fedora8": { "label": "Fedora 8", "distro": "fedora" }, \
                                           "sles10": { "label": "Suse Linux Enterprise Server", "distro": "suse" }, \
+                                          "debianEtch": { "label": "Debian Etch", "distro": "debian" }, \
+                                          "debianLenny": { "label": "Debian Lenny", "distro": "debian" }, \
                                           "generic24": { "label": "Generic 2.4.x kernel" }, \
                                           "generic26": { "label": "Generic 2.6.x kernel" }, \
                                           }, \
@@ -43,7 +54,9 @@ class FullVirtGuest(Guest.XenGuest):
                  "windows": { "label": "Windows", \
                               "acpi": True, \
                               "apic": True, \
+                              "clock": "localtime",\
                               "continue": True, \
+                              "input": [ "tablet", "usb"],
                               "variants": { "winxp": { "label": "Microsoft Windows XP", \
                                                        "acpi": False, \
                                                        "apic": False }, \
@@ -57,7 +70,9 @@ class FullVirtGuest(Guest.XenGuest):
                  "unix": { "label": "UNIX", \
                            "acpi": True,
                            "apic": True,
+                           "clock": "utc",\
                            "continue": False, \
+                           "input": [ "mouse", "ps2"],
                            "variants": { "solaris9": { "label": "Sun Solaris 9" }, \
                                          "solaris10": { "label": "Sun Solaris 10" }, \
                                          "freebsd6": { "label": "Free BSD 6.x" }, \
@@ -67,7 +82,9 @@ class FullVirtGuest(Guest.XenGuest):
                  "other": { "label": "Other", \
                             "acpi": True,
                             "apic": True,
+                            "clock": "utc",
                             "continue": False,
+                            "input": [ "mouse", "ps2"],
                             "variants": { "msdos": { "label": "MS-DOS", \
                                                      "acpi": False, \
                                                      "apic": False }, \
@@ -130,6 +147,8 @@ class FullVirtGuest(Guest.XenGuest):
     def get_os_variant(self):
         return self._os_variant
     def set_os_variant(self, val):
+        if not self._os_type:
+            raise ValueError, _("An OS type must be specified before a variant.")
         if FullVirtGuest.OS_TYPES[self._os_type]["variants"].has_key(val):
             self._os_variant = val
         else:
@@ -164,7 +183,10 @@ class FullVirtGuest(Guest.XenGuest):
     os_distro = property(get_os_distro)
 
     def get_input_device(self):
-        return ("tablet", "usb")
+        if self.os_type is None or not FullVirtGuest.OS_TYPES.has_key(self.os_type):
+            return ("mouse", "ps2")
+        input = FullVirtGuest.OS_TYPES[self.os_type]["input"]
+        return (input[0], input[1])
 
     def _get_features_xml(self):
         ret = "<features>\n"
@@ -183,7 +205,20 @@ class FullVirtGuest(Guest.XenGuest):
         if osblob is None:
             return None
 
-        return "%s\n  %s" % (osblob, self._get_features_xml())
+        clockxml = self._get_clock_xml()
+        if clockxml is not None:
+            return "%s\n  %s\n  %s" % (osblob, self._get_features_xml(), \
+                                       clockxml)
+        else:
+            return "%s\n  %s" % (osblob, self._get_features_xml())
+
+    def _get_clock_xml(self):
+        if self.os_type is not None and \
+           FullVirtGuest.OS_TYPES[self.os_type].has_key("clock"):
+            return "<clock offset=\"%s\"/>" % \
+                   FullVirtGuest.OS_TYPES[self.os_type]["clock"]
+        else:
+            return None
 
     def _get_device_xml(self, install = True):
         if self.emulator is None:
@@ -201,9 +236,12 @@ class FullVirtGuest(Guest.XenGuest):
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
+        Guest.Guest._prepare_install(self, meter)
         self._installer.prepare(guest = self,
                                 meter = meter,
                                 distro = self.os_distro)
+        if self._installer.install_disk is not None:
+            self._install_disks.append(self._installer.install_disk)
 
     def get_continue_inst(self):
         if self.os_type is not None:
@@ -243,7 +281,7 @@ class FullVirtGuest(Guest.XenGuest):
 
         # First assign CDROM device nodes, since they're scarce resource
         cdnode = self.disknode + "c"
-        for d in self.disks:
+        for d in self._install_disks:
             if d.device != Guest.VirtualDisk.DEVICE_CDROM:
                 continue
 
@@ -258,7 +296,7 @@ class FullVirtGuest(Guest.XenGuest):
             nodes[d.target] = d
 
         # Now assign regular disk node with remainder
-        for d in self.disks:
+        for d in self._install_disks:
             if d.device == Guest.VirtualDisk.DEVICE_CDROM:
                 continue
 
@@ -273,13 +311,16 @@ class FullVirtGuest(Guest.XenGuest):
                     raise ValueError, "The disk device %s is already used" % d.target
                 nodes[d.target] = d
 
-        for d in self.disks:
+        for d in self._install_disks:
             saved_path = None
             if d.device == Guest.VirtualDisk.DEVICE_CDROM and d.transient and not install:
-                # XXX hack. libvirt can't currently handle QEMU having an empty disk path
+                # XXX hack. libvirt can't currently handle QEMU having an empty disk path..
                 if self.type == "xen":
                     saved_path = d.path
                     d.path = None
+                else:
+                    # .. so simply remove CDROM device completely in non-Xen
+                    continue
 
             ret += d.get_xml_config(d.target)
             if saved_path != None:

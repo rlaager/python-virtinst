@@ -16,7 +16,7 @@
   <devices>
     <disk type='block' device='disk'>
       <driver name='phy'/>
-      <source dev='/dev/root'/>
+      <source dev='/dev/loop0'/>
       <target dev='xvda'/>
     </disk>
 

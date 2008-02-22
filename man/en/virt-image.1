@@ -128,125 +128,122 @@
 .rm #[ #] #H #V #F C
 .\" ========================================================================
 .\"
-.IX Title "VIRT-CLONE 1"
-.TH VIRT-CLONE 1 "2007-11-20" "perl v5.8.8" "Virtual Machine Install Tools"
+.IX Title "VIRT-IMAGE 1"
+.TH VIRT-IMAGE 1 "2007-08-24" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
-virt\-clone \- clone existing virtual machine images
+virt\-image \- create virtual machines from an image descriptor
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBvirt-clone\fR [\s-1OPTION\s0]...
+\&\fBvirt-image\fR [\s-1OPTION\s0]... \s-1IMAGE\s0.XML
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBvirt-clone\fR is a command line tool for cloning existing virtual machine
-images using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library. It will copy
-the disk images of any existing virtual machine, and define a new guest
-with an identical virtual hardware configuration. Elements which require
-uniqueness will be updated to avoid a clash between old and new guests.
+\&\fBvirt-image\fR is a command line tool for creating virtual machines from an
+\&\s-1XML\s0 image descriptor \f(CW\*(C`IMAGE.XML\*(C'\fR (\fIvirt\-image\fR\|(5)). Most attributes of
+the virtual machine are taken from the \s-1XML\s0 descriptor (e.g., where the
+files to back the virtual machine's disks are and how to map them into the
+guest), though certain information must be added on the command line, such
+as the name of the guest. Missing information will be queried
+interactively.
 .PP
-Given suitable command line arguments, \f(CW\*(C`virt\-clone\*(C'\fR is capable of running
-completely unattended, with the guest 'kickstarting' itself too. This allows
-for easy automation of guest installs. A companion tool \f(CW\*(C`virt\-clone(1)\*(C'\fR is
-provided for cloning pre-existing guests if their installation cannot be easily
-automated from pristine media.
+The \s-1XML\s0 descriptor defines most attributes of the guest, making it possible
+to bundle and distribute it together with the files backing the guest's
+disks.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
-Any of the options can be omitted, in which case \f(CW\*(C`virt\-clone\*(C'\fR will run
-interactively prompting for input as required.
+Any of the options can be omitted, in which case \fBvirt-image\fR will either
+use defaults from the \s-1XML\s0 descriptor or interactively prompt for input as
+required. When defaults are taken from the \s-1XML\s0 descriptor, they are
+indicated below as a path.
 .IP "\-h, \-\-help" 4
 .IX Item "-h, --help"
 Show the help message and exit
-.IP "\-o \s-1ORIGINAL_GUEST\s0, \-\-original=ORIGINAL_GUEST" 4
-.IX Item "-o ORIGINAL_GUEST, --original=ORIGINAL_GUEST"
-Name or uuid for the original guest to be cloned. This guest must be shut
-off since it is not possible to safely clone active guests at this time.
 .IP "\-n \s-1NAME\s0, \-\-name=NAME" 4
 .IX Item "-n NAME, --name=NAME"
-Name of the new guest virtual machine instance. This must be unique amongst
-all guests known to the hypervisor on this machine, including those not
-currently active. To re-define an existing guest, use the \f(CWvirsh(1)\fR tool
-to shut it down & delete it prior to running \f(CW\*(C`virt\-clone\*(C'\fR. This parameter
-will be prompted for if omitted on the command line.
+Name of the guest instance
+.IP "\-r \s-1MEMORY\s0, \-\-ram=MEMORY" 4
+.IX Item "-r MEMORY, --ram=MEMORY"
+Memory to allocate for guest instance in megabytes. Defaults to
+\&\f(CW\*(C`/image/devices/memory\*(C'\fR in the \s-1XML\s0 descriptor.
 .IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 4
 .IX Item "-u UUID, --uuid=UUID"
-\&\s-1UUID\s0 for the guest; if none is given a random \s-1UUID\s0 will be generated. If you 
-specify \s-1UUID\s0, you should use a 32\-digit hexadecimal number. \s-1UUID\s0 are intended
-to be unique across the entire data center, and indeed world. Bear this in
-mind if manually specifying a \s-1UUID\s0
-.IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 4
-.IX Item "-f DISKFILE, --file=DISKFILE"
-Path to the file, disk partition, or logical volume to use as the backing store
-for the guest's virtual disk. If the original guest has multiple disks, this 
-parameter must be repeated multiple times, once per disk in the original virtual 
-machine.
+\&\s-1UUID\s0 for the guest; if none is given a random \s-1UUID\s0 will be generated. If
+you specify \s-1UUID\s0, you should use a 32\-digit hexadecimal number.
+.IP "\-\-vcpus=VCPUS" 4
+.IX Item "--vcpus=VCPUS"
+Number of vcpus to configure for your guest. Defaults to
+\&\f(CW\*(C`/image/devices/vcpu\*(C'\fR in the \s-1XML\s0 descriptor.
+.IP "\-\-check\-cpu" 4
+.IX Item "--check-cpu"
+Check that vcpus do not exceed physical CPUs and warn if they do.
 .IP "\-m \s-1MAC\s0, \-\-mac=MAC" 4
 .IX Item "-m MAC, --mac=MAC"
-Fixed \s-1MAC\s0 address for the guest; If this parameter is omitted, or the value
-\&\f(CW\*(C`RANDOM\*(C'\fR is specified a suitable address will be randomly generated. For
-Xen virtual machines it is required that the first 3 pairs in the \s-1MAC\s0 address
-be the sequence '00:16:3e', while for \s-1QEMU\s0 or \s-1KVM\s0 virtual machines it must
-be '54:52:00'.
+Fixed \s-1MAC\s0 address for the guest. See \fIvirt\-install\fR\|(1) for details
+.IP "\-b \s-1BRIDGE\s0, \-\-bridge=BRIDGE" 4
+.IX Item "-b BRIDGE, --bridge=BRIDGE"
+Bridge device to connect the guest \s-1NIC\s0 to. See \fIvirt\-install\fR\|(1) for details
+.IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK" 4
+.IX Item "-w NETWORK, --network=NETWORK"
+Connect the guest to the host network. See \fIvirt\-install\fR\|(1) for details
+.IP "\-\-vnc" 4
+.IX Item "--vnc"
+Setup a virtual console in the guest and export it as a \s-1VNC\s0 server in
+the host. See \fIvirt\-install\fR\|(1) for details
+.IP "\-\-vncport=VNCPORT" 4
+.IX Item "--vncport=VNCPORT"
+Request a permanent, statically assigned port number for the guest \s-1VNC\s0
+console. See \fIvirt\-install\fR\|(1) for details
+.IP "\-\-sdl" 4
+.IX Item "--sdl"
+Setup a virtual console in the guest and display an \s-1SDL\s0 window in the
+host to render the output. See \fIvirt\-install\fR\|(1) for details
+.IP "\-\-nographics" 4
+.IX Item "--nographics"
+Disable all interactive prompts for the guest virtual console. See
+\&\fIvirt\-install\fR\|(1) for details
+.IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 4
+.IX Item "-k KEYMAP, --keymap=KEYMAP"
+Request that the virtual console be configured to run with a non-English
+keyboard layout.
 .IP "\-\-connect=CONNECT     Connect to hypervisor with \s-1URI\s0" 4
 .IX Item "--connect=CONNECT     Connect to hypervisor with URI"
-Connect to a non-default hypervisor. The default connection is chosen based
-on the following rules:
-.RS 4
-.IP "xen" 4
-.IX Item "xen"
-If running on a host with the Xen kernel (checks against /proc/xen)
-.IP "qemu:///system" 4
-.IX Item "qemu:///system"
-If running on a bare metal kernel as root
-.IP "qemu:///session" 4
-.IX Item "qemu:///session"
-If running on a bare metal kernel as non-root
-.RE
-.RS 4
-.Sp
-It is only necessary to provide the \f(CW\*(C`\-\-connect\*(C'\fR argument if this default
-prioritization is incorrect, eg if wanting to use \s-1QEMU\s0 while on a Xen kernel.
-.RE
+Connect to a non-default hypervisor. See \fIvirt\-install\fR\|(1) for details
+.IP "\-\-noapic" 4
+.IX Item "--noapic"
+Disables \s-1APIC\s0 for fully virtualized guest (overrides value in \s-1XML\s0 descriptor)
+.IP "\-\-noacpi" 4
+.IX Item "--noacpi"
+Disables \s-1ACPI\s0 for fully virtualized guest (overrides value in \s-1XML\s0 descriptor)
 .IP "\-d, \-\-debug" 4
 .IX Item "-d, --debug"
-Print debugging information to the terminal when running the install process.
-The debugging information is also stored in \f(CW\*(C`$HOME/.virtinst/virt\-clone.log\*(C'\fR
-even if this parameter is omitted.
+Print debugging information
+.IP "\-p, \-\-print" 4
+.IX Item "-p, --print"
+Print the libvirt \s-1XML\s0, but do not start the guest.
+.IP "\-\-boot=BOOT" 4
+.IX Item "--boot=BOOT"
+The zero-based index of the boot record to use. The \s-1XML\s0 descriptor can
+contain multiple \f(CW\*(C`/image/domain/boot\*(C'\fR elements for use on different
+hypervisors. By default, the one that is most appropriate for the current
+hypervisor is selected.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
-Clone the guest called \f(CW\*(C`demo\*(C'\fR which has a single disk to copy
-.PP
-.Vb 4
-\&  # virt-clone \e
-\&       --original demo \e
-\&       --name newdemo \e
-\&       --file /var/lib/xen/images/newdemo.img
+Create and start a guest called \f(CW\*(C`example\*(C'\fR with a \s-1VNC\s0 console from
+\&\f(CW\*(C`image.xml\*(C'\fR:
+.Sp
+.Vb 1
+\&  # virt-image --name example --vnc -i image.xml
 .Ve
-.PP
-Clone a \s-1QEMU\s0 guest with multiple disks
-.PP
-.Vb 6
-\&  # virt-clone \e
-\&       --connect qemu:///system \e
-\&       --original demo \e
-\&       --name newdemo \e
-\&       --file /var/lib/xen/images/newdemo.img \e
-\&       --file /var/lib/xen/images/newdata.img
-.Ve
-.PP
-Clone a guest to a physical device which is at least as big as the
-original guests disks. If the destination device is bigger, the
-new guest can do a filesystem resize when it boots.
-.PP
-.Vb 5
-\&  # virt-clone \e
-\&       --connect qemu:///system \e
-\&       --name demo \e
-\&       --file /dev/HostVG/DemoVM \e
-\&       --mac 54:52:00:34:11:54
+.Sp
+Print the libvirt \s-1XML\s0 for a guest called \f(CW\*(C`example\*(C'\fR without graphics, but
+do not create or start a virtual machine:
+.Sp
+.Vb 1
+\&  # virt-image --print --name example --nographics --image image.xml
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-Written by Kazuki Mizushima, and a team of many other contributors. See the \s-1AUTHORS\s0 
-file in the source distribution for the complete list of credits.
+Written by David Lutterkort. See the \s-1AUTHORS\s0 file in the source distribution for
+the complete list of credits.
 .SH "BUGS"
 .IX Header "BUGS"
 Report bugs to the mailing list \f(CW\*(C`http://www.redhat.com/mailman/listinfo/et\-mgmt\-tools\*(C'\fR
@@ -254,10 +251,11 @@ or directly to BugZilla \f(CW\*(C`http://bugzilla.redhat.com/bugzilla/\*(C'\fR a
 \&\f(CW\*(C`Fedora\*(C'\fR product, and the \f(CW\*(C`python\-virtinst\*(C'\fR component.
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
-Copyright (C) Fujitsu Limited 2007, and various contributors. 
+Copyright (C) 2006\-2007 Red Hat, Inc, and various contributors. 
 This is free software. You may redistribute copies of it under the terms of the \s-1GNU\s0 General 
 Public License \f(CW\*(C`http://www.gnu.org/licenses/gpl.html\*(C'\fR. There is \s-1NO\s0 \s-1WARRANTY\s0, to the extent 
 permitted by law.
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
-\&\f(CWvirsh(1)\fR, \f(CW\*(C`virt\-install(1)\*(C'\fR, \f(CW\*(C`virt\-manager(1)\*(C'\fR, the project website \f(CW\*(C`http://virt\-manager.org\*(C'\fR
+\&\fIvirt\-image\fR\|(5), \fIvirt\-install\fR\|(1), the project website
+\&\f(CW\*(C`http://virt\-manager.org\*(C'\fR

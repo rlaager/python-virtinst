@@ -1,16 +1,23 @@
-#!/usr/bin/python -tt
 #
 # Utility functions used for guest installation
 #
 # Copyright 2006  Red Hat, Inc.
 # Jeremy Katz <katzj@redhat.com>
 #
-# This software may be freely redistributed under the terms of the GNU
-# general public license.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free  Software Foundation; either version 2 of the License, or
+# (at your option)  any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
 
 import random
 import os.path
@@ -116,7 +123,7 @@ def is_blktap_capable():
     lines = f.readlines()
     f.close()
     for line in lines:
-        if line.startswith("blktap "):
+        if line.startswith("blktap ") or line.startswith("xenblktap "):
             return True
     return False
 
@@ -124,7 +131,7 @@ def get_default_arch():
     arch = os.uname()[4]
     if arch == "x86_64":
         return "x86_64"
-    return "i386"
+    return "i686"
 
 # this function is directly from xend/server/netif.py and is thus
 # available under the LGPL,
@@ -178,10 +185,11 @@ def get_host_network_devices():
         except IOError:
             continue
         for line in pipe:
-            words = line.lower().split()
-            for i in range(len(words)):
-                if words[i] == "hwaddr":
-                    device.append(words)
+            if line.find("encap:Ethernet") > 0:
+                words = line.lower().split()
+                for i in range(len(words)):
+                    if words[i] == "hwaddr":
+                        device.append(words)
     return device
 
 def get_max_vcpus(conn):
@@ -192,3 +200,18 @@ def get_max_vcpus(conn):
         #print >> stderr, _("Couldn't determine max vcpus. Using 32.")
         max = 32
     return max
+
+def get_phy_cpus(conn):
+    """Get number of physical CPUs."""
+    hostinfo = conn.getInfo()
+    pcpus = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
+    return pcpus
+
+def xml_escape(str):
+    """Replaces chars ' " < > & with xml safe counterparts"""
+    str = str.replace("&", "&amp;")
+    str = str.replace("'", "&apos;")
+    str = str.replace("\"", "&quot;")
+    str = str.replace("<", "&lt;")
+    str = str.replace(">", "&gt;")
+    return str
