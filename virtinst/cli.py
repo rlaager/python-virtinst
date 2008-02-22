@@ -66,6 +66,22 @@ def setupLogging(appname, debug=False):
         streamHandler.setLevel(logging.ERROR)
     rootLogger.addHandler(streamHandler)
 
+    # Register libvirt handler
+    def libvirt_callback(ctx, err):
+        if err[3] != libvirt.VIR_ERR_ERROR:
+            # Don't log libvirt errors: global error handler will do that
+            logging.warn("Non-error from libvirt: '%s'" % err[2])
+    libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
+
+    # Register python error handler to log exceptions
+    def exception_log(type, val, tb):
+        import traceback
+        str = traceback.format_exception(type, val, tb)
+        logging.exception("".join(str))
+        sys.__excepthook__(type, val, tb)
+    sys.excepthook = exception_log
+
+
 def getConnection(connect):
     if connect is None or connect.lower()[0:3] == "xen":
         if os.geteuid() != 0:
