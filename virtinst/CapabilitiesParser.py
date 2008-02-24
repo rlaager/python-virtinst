@@ -198,9 +198,9 @@ class Capabilities(object):
 
         self._fixBrokenEmulator()
 
-    def guestForOSType(self, type, arch):
+    def guestForOSType(self, type = None, arch = None):
         for g in self.guests:
-            if g.os_type == type and g.arch == arch:
+            if (type is None or g.os_type == type) and (arch is None or g.arch == arch):
                 return g
         return None
 

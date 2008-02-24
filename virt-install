@@ -31,6 +31,7 @@ import urlgrabber.progress as progress
 
 import libvirt
 import virtinst
+import virtinst.CapabilitiesParser
 import virtinst.cli as cli
 
 import gettext
@@ -260,7 +261,6 @@ def parse_args():
     parser.add_option("", "--noapic", action="store_true", dest="noapic", help=_("Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
     parser.add_option("", "--noacpi", action="store_true", dest="noacpi", help=_("Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
     parser.add_option("", "--arch", type="string", dest="arch",
-                      default=virtinst.util.get_default_arch(),
                       action="callback", callback=cli.check_before_store,
                       help=_("The CPU architecture to simulate"))
     
@@ -345,35 +345,31 @@ def main():
 
     cli.setupLogging("virt-install", options.debug)
     conn = cli.getConnection(options.connect)
-    type = None
+    capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
 
-    # first things first, are we trying to create a fully virt guest?
-    if conn.getType() == "Xen":
-        type = "xen"
-        hvm = options.fullvirt
-        pv  = options.paravirt
-        if virtinst.util.is_hvm_capable():
-            if hvm is not None and pv is not None:
-                print >> sys.stderr, _("Can't do both --hvm and --paravirt")
-                sys.exit(1)
-            elif pv is not None:
-                hvm = False
-        else:
-            if hvm is not None:
-                print >> sys.stderr, _("Can't do --hvm on this system: HVM guest is not supported by your CPU or enabled in your BIOS")
-                sys.exit(1)
-            else:
-                hvm = False
-        if hvm is None:
-            hvm = get_full_virt()
+
+    if options.fullvirt and options.paravirt:
+        print >> sys.stderr, _("Can't do both --hvm and --paravirt")
+
+    if options.fullvirt:
+        osType = "hvm"
+    elif options.paravirt:
+        osType = "xen"
     else:
+        osType = None
+
+    guest = capabilities.guestForOSType(type=osType, arch=options.arch)
+    if guest is None:
+        print >> sys.stderr, _("Unsupported virtualization type")
+        sys.exit(1)
+
+    if guest.os_type == "hvm":
         hvm = True
-        type = "qemu"
-        if options.accelerate:
-            if virtinst.util.is_kvm_capable():
-                type = "kvm"
-            elif virtinst.util.is_kqemu_capable():
-                type = "kqemu"
+    else:
+        hvm = False
+
+    domain = guest.bestDomainType()
+    type = domain.hypervisor_type
 
     if options.livecd:
         if not hvm:
@@ -393,7 +389,7 @@ def main():
         # Xen only supports CDROM
         if type == "xen":
             installer.cdrom = True
-        guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=options.arch)
+        guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=guest.arch)
     else:
         if options.pxe:
             print >> sys.stderr, _("Network PXE boot is not support for paravirtualized guests")
