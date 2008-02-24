@@ -113,16 +113,15 @@ class Host(object):
 
             child = child.next
 
+
 class Guest(object):
     def __init__(self, node = None):
         # e.g. "xen" or "hvm"
         self.os_type = None
-
-        # e.g. "xen", "qemu", "kqemu" or "kvm"
-        self.hypervisor_type = None
-
         # e.g. "i686" or "x86_64"
         self.arch = None
+
+        self.domains = []
 
         self.features = CapabilityFeatures()
 
@@ -138,14 +137,55 @@ class Guest(object):
                 self.features = CapabilityFeatures(child)
             elif child.name == "arch":
                 self.arch = child.prop("name")
+                machines = []
+                emulator = None
+                loader = None
                 n = child.children
                 while n:
-                    # NB. for now, ignoring the rest of arch e.g. wordsize etc.
+                    if n.name == "machine":
+                        machines.append(n.content)
+                    elif n.name == "emulator":
+                        emulator = n.content
+                    elif n.name == "loader":
+                        loader = n.content
+                    n = n.next
+
+                n = child.children
+                while n:
                     if n.name == "domain":
-                        self.hypervisor_type = n.prop("type")
+                        self.domains.append(Domain(n.prop("type"), emulator, loader, machines, n))
                     n = n.next
 
             child = child.next
+
+
+    def bestDomainType(self):
+        # Picking last in list so we favour KVM/KQEMU over QEMU
+        return self.domains[-1]
+
+class Domain(object):
+    def __init__(self, hypervisor_type, emulator = None, loader = None, machines = None, node = None):
+        self.hypervisor_type = hypervisor_type
+        self.emulator = emulator
+        self.loader = loader
+        self.machines = machines
+
+        if node is not None:
+            self.parseXML(node)
+
+
+    def parseXML(self, node):
+        child = node.children
+        machines = []
+        while child:
+            if child.name == "emulator":
+                self.emulator = child.content
+            elif child.name == "machine":
+                machines.append(child.content)
+            child = child.next
+
+        if len(machines) > 0:
+            self.machines = machines
 
 class Capabilities(object):
     def __init__(self, node = None):
@@ -154,6 +194,41 @@ class Capabilities(object):
 
         if not node is None:
             self.parseXML(node)
+
+
+        self._fixBrokenEmulator()
+
+    def guestForOSType(self, type, arch):
+        for g in self.guests:
+            if g.os_type == type and g.arch == arch:
+                return g
+        return None
+
+
+    # 32-bit HVM emulator path, on a 64-bit host is wrong due
+    # to bug in libvirt capabilities. We fix by copying the
+    # 64-bit emualtor path
+    def _fixBrokenEmulator(self):
+        if self.host.arch != "x86_64":
+            return
+
+        fixEmulator = None
+        for g in self.guests:
+            if g.os_type != "hvm" or g.arch != "x86_64":
+                continue
+            for d in g.domains:
+                if d.emulator.find("lib64") != -1:
+                    fixEmulator = d.emulator
+
+        if not fixEmulator:
+            return
+
+        for g in self.guests:
+            if g.os_type != "hvm" or g.arch != "i686":
+                continue
+            for d in g.domains:
+                if d.emulator.find("lib64") == -1:
+                    d.emulator = fixEmulator
 
     def parseXML(self, node):
         child = node.children

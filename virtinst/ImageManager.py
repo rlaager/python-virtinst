@@ -35,28 +35,39 @@ class ImageInstaller(Guest.Installer):
         self._capabilities = capabilities
         self._image = image
         if boot_index is None:
-            self._boot = None
+            self._boot_caps = match_boots(self._capabilities,
+                                     self.image.domain.boots)
+            if self._boot_caps is None:
+                raise ImageInstallerException(_("Could not find suitable boot descriptor for this host"))
         else:
-            self._boot = image.domain.boots[boot_index]
+            self._boot_caps = image.domain.boots[boot_index]
+
+        self._guest = self._capabilities.guestForOSType(self._boot_caps.type, self._boot_caps.arch)
+        if self._guest is None:
+            raise PlatformMatchException(_("Unsupported virtualization type"))
+
+        self._domain = self._guest.bestDomainType()
+        self.type = self._domain.hypervisor_type
+        self.arch = self._guest.arch
+
+    def is_hvm(self):
+        if self._boot_caps.type == "hvm":
+            return True
+        return False
+
+    def get_arch(self):
+        return self._arch
+    def set_arch(self, arch):
+        self._arch = arch
+    arch = property(get_arch, set_arch)
 
     def get_image(self):
         return self._image
     image = property(get_image)
 
-    def get_boot(self):
-        if self._boot is None:
-            self._boot = match_boots(self._capabilities,
-                                     self.image.domain.boots)
-            if self._boot is None:
-                raise ImageInstallerException(_("Could not find suitable boot descriptor for this host"))
-        return self._boot
-    boot = property(get_boot)
-
-    def get_type(self):
-        return domain_type(self._capabilities, self.boot)
-    def set_type(self, t):
-        pass
-    type = property(get_type, set_type)
+    def get_boot_caps(self):
+        return self._boot_caps
+    boot_caps = property(get_boot_caps)
 
     def prepare(self, guest, meter, distro = None):
         self._make_disks(guest)
@@ -64,13 +75,13 @@ class ImageInstaller(Guest.Installer):
         # Ugly: for PV xen, there's no guest.features, and nothing to toggle
         if self.type != "xen":
             for f in ['pae', 'acpi', 'apic']:
-                if self.boot.features[f] & Cap.FEATURE_ON:
+                if self.boot_caps.features[f] & Cap.FEATURE_ON:
                     guest.features[f] = True
-                elif self.boot.features[f] & Cap.FEATURE_OFF:
+                elif self.boot_caps.features[f] & Cap.FEATURE_OFF:
                     guest.features[f] = False
 
     def _make_disks(self, guest):
-        for m in self.boot.disks:
+        for m in self.boot_caps.disks:
             p = self._abspath(m.disk.file)
             s = None
             if m.disk.size is not None:
@@ -88,7 +99,7 @@ class ImageInstaller(Guest.Installer):
             d = Guest.VirtualDisk(p, s,
                                   device = device,
                                   type = Guest.VirtualDisk.TYPE_FILE)
-            if self.boot.type == "xen" and util.is_blktap_capable():
+            if self.boot_caps.type == "xen" and util.is_blktap_capable():
                 d.driver_name = Guest.VirtualDisk.DRIVER_TAP
             d.target = m.target
 
@@ -107,18 +118,18 @@ class ImageInstaller(Guest.Installer):
         else:
             osblob += "    <type>%s</type>\n" % type
 
-        if self.boot.kernel:
-            osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self._abspath(self.boot.kernel))
-            osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(self._abspath(self.boot.initrd))
-            osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(self.boot.cmdline)
+        if self.boot_caps.kernel:
+            osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self._abspath(self.boot_caps.kernel))
+            osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(self._abspath(self.boot_caps.initrd))
+            osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(self.boot_caps.cmdline)
             osblob += "  </os>"
         elif hvm:
             if loader:
                 osblob += "    <loader>%s</loader>\n" % loader
-            if self.boot.bootdev:
-                osblob += "    <boot dev='%s'/>\n" % self.boot.bootdev
+            if self.boot_caps.bootdev:
+                osblob += "    <boot dev='%s'/>\n" % self.boot_caps.bootdev
             osblob += "  </os>"
-        elif self.boot.loader == "pygrub" or (self.boot.loader is None and self.boot.type == "xen"):
+        elif self.boot_caps.loader == "pygrub" or (self.boot_caps.loader is None and self.boot_caps.type == "xen"):
             osblob += "  </os>\n"
             osblob += "  <bootloader>/usr/bin/pygrub</bootloader>"
 
@@ -146,23 +157,3 @@ def match_boots(capabilities, boots):
                 if found:
                     return b
     return None
-
-def domain_type(capabilities, boot):
-    if boot.type == "xen":
-        return "xen"
-    assert boot.type == "hvm"
-
-    types = [ guest.hypervisor_type for guest in capabilities.guests
-                                      if guest.os_type == "hvm" ]
-    # FIXME: The order shouldn't be defined here, it should
-    # somehow come from libvirt
-    order = [ "xen", "kvm", "kqemu", "qemu" ]
-    for o in order:
-        if types.count(o) > 0:
-            return o
-    # None of the known types above was found, return the alphabetically
-    # smallest one arbitrarily
-    types.sort()
-    if len(types) > 0:
-        return types[0]
-    raise PlatformMatchException(_("Insufficient HVM capabilities"))

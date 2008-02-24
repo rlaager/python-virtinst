@@ -179,16 +179,8 @@ def main():
                                         image = image,
                                         capabilities = capabilities)
 
-    try:
-        boot = installer.boot
-    except virtinst.ImageManager.ImageInstallerException, e:
-        print >> sys.stderr, _("ERROR: "), e
-        sys.exit(1)
-
-    hvm = boot.type == "hvm"
-
-    if hvm:
-        guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=boot.arch)
+    if installer.is_hvm():
+        guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=installer.arch)
     else:
         guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
 
@@ -205,7 +197,7 @@ def main():
     get_graphics(image.domain, options.vnc, options.vncport,
                  options.nographics, options.sdl, options.keymap, guest)
 
-    if hvm:
+    if installer.is_hvm():
         if options.noacpi:
             guest.features["acpi"] = False
         if options.noapic:
