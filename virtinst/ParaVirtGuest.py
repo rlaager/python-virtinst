@@ -33,6 +33,9 @@ class ParaVirtGuest(Guest.XenGuest):
         if self.type == "xen":
             self.disknode = "xvd"
         else:
+            # XXX hack for libvirt + xenner limitation - it should
+            # allow xvdNNN, but rejects it. Remove this when
+            # libvirt is fixed
             self.disknode = "hd"
 
     def _get_osblob(self, install):
@@ -47,7 +50,13 @@ class ParaVirtGuest(Guest.XenGuest):
         return child
 
     def get_input_device(self):
-        return ("mouse", "xen")
+        if self.type == "xen":
+            return ("mouse", "xen")
+        else:
+            # XXX hack for libvirt + xenner limitation - it should
+            # allow mouse+xen, but rejects it. Remove this when
+            # libvirt is fixed
+            return ("mouse", "ps2")
 
     def validate_parms(self):
         if not self.location and not self.boot:
