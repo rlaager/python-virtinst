@@ -265,7 +265,7 @@ def parse_args():
                       help=_("The CPU architecture to simulate"))
     
     # paravirt options
-    parser.add_option("-p", "--paravirt", action="store_false", dest="paravirt",
+    parser.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
                       help=_("This guest should be a paravirtualized guest"))
     parser.add_option("-l", "--location", type="string", dest="location",
                       action="callback", callback=cli.check_before_store,
@@ -352,13 +352,13 @@ def main():
         print >> sys.stderr, _("Can't do both --hvm and --paravirt")
 
     if options.fullvirt:
-        osType = "hvm"
+        os_type = "hvm"
     elif options.paravirt:
-        osType = "xen"
+        os_type = "xen"
     else:
-        osType = None
+        os_type = None
 
-    guest = capabilities.guestForOSType(type=osType, arch=options.arch)
+    guest = capabilities.guestForOSType(type=os_type, arch=options.arch)
     if guest is None:
         print >> sys.stderr, _("Unsupported virtualization type")
         sys.exit(1)
@@ -375,11 +375,11 @@ def main():
         if not hvm:
             print >> sys.stderr, _("LiveCD installations are not supported for paravirt guests")
             sys.exit(1)
-        installer = virtinst.LiveCDInstaller(type = type)
+        installer = virtinst.LiveCDInstaller(type = type, os_type = os_type)
     elif options.pxe:
-        installer = virtinst.PXEInstaller(type = type)
+        installer = virtinst.PXEInstaller(type = type, os_type = os_type)
     else:
-        installer = virtinst.DistroInstaller(type = type)
+        installer = virtinst.DistroInstaller(type = type, os_type = os_type)
 
     if (options.pxe and options.location) or (options.location and options.cdrom) or (options.cdrom and options.pxe):
         print >> sys.stderr, _("Only one of --pxe, --location and --cdrom can be used")

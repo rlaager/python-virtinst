@@ -407,11 +407,12 @@ class XenSDLGraphics(SDLVirtualGraphics):
     pass
 
 class Installer(object):
-    def __init__(self, type = "xen", location = None, boot = None, extraargs = None):
+    def __init__(self, type = "xen", location = None, boot = None, extraargs = None, os_type = None):
         self._location = None
         self._extraargs = None
         self._boot = None
         self._cdrom = False
+        self._os_type = os_type
         self._install_disk = None   # VirtualDisk that contains install media
 
         if type is None:
@@ -442,6 +443,12 @@ class Installer(object):
     def set_type(self, val):
         self._type = val
     type = property(get_type, set_type)
+
+    def get_os_type(self):
+        return self._os_type
+    def set_os_type(self, val):
+        self._os_type = val
+    os_type = property(get_os_type, set_os_type)
 
     def get_scratchdir(self):
         if self.type == "xen":
