@@ -30,7 +30,10 @@ class ParaVirtGuest(Guest.XenGuest):
         if not installer:
             installer = DistroManager.DistroInstaller(type = type)
         Guest.Guest.__init__(self, type, connection, hypervisorURI, installer)
-        self.disknode = "xvd"
+        if self.type == "xen":
+            self.disknode = "xvd"
+        else:
+            self.disknode = "hd"
 
     def _get_osblob(self, install):
         return self.installer._get_osblob(install, hvm = False)

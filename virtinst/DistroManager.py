@@ -118,8 +118,8 @@ def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None, distr
         fetcher.cleanupLocation()
 
 class DistroInstaller(Guest.Installer):
-    def __init__(self, type = "xen", location = None, boot = None, extraargs = None):
-        Guest.Installer.__init__(self, type, location, boot, extraargs)
+    def __init__(self, type = "xen", location = None, boot = None, extraargs = None, os_type = None):
+        Guest.Installer.__init__(self, type, location, boot, extraargs, os_type)
 
     def get_location(self):
         return self._location
@@ -177,15 +177,12 @@ class DistroInstaller(Guest.Installer):
             if not self.extraargs is None:
                 self.install["extraargs"] = self.extraargs
         else:
-            ostype = None
-            if self.type == "xen":
-                ostype = "xen"
             # Need to fetch the kernel & initrd from a remote site, or
             # out of a loopback mounted disk image/device
             (kernelfn, initrdfn, args) = acquireKernel(self.location,
                                                        meter,
                                                        scratchdir = self.scratchdir,
-                                                       type = ostype,
+                                                       type = self.os_type,
                                                        distro = distro)
             self.install["kernel"] = kernelfn
             self.install["initrd"] = initrdfn
@@ -223,15 +220,10 @@ class DistroInstaller(Guest.Installer):
         if install or hvm:
             osblob = "<os>\n"
 
-            if hvm:
-                type = "hvm"
-            else:
-                type = "linux"
-
             if arch:
-                osblob += "    <type arch='%s'>%s</type>\n" % (arch, type)
+                osblob += "    <type arch='%s'>%s</type>\n" % (arch, self.os_type)
             else:
-                osblob += "    <type>%s</type>\n" % type
+                osblob += "    <type>%s</type>\n" % self.os_type
 
             if install and self.install["kernel"]:
                 osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self.install["kernel"])
@@ -269,8 +261,8 @@ class DistroInstaller(Guest.Installer):
 
 
 class PXEInstaller(Guest.Installer):
-    def __init__(self, type = "xen", location = None, boot = None, extraargs = None):
-        Guest.Installer.__init__(self, type, location, boot, extraargs)
+    def __init__(self, type = "xen", location = None, boot = None, extraargs = None, os_type = None):
+        Guest.Installer.__init__(self, type, location, boot, extraargs, os_type)
 
     def prepare(self, guest, meter, distro = None):
         pass
@@ -280,15 +272,10 @@ class PXEInstaller(Guest.Installer):
         if install or hvm:
             osblob = "<os>\n"
 
-            if hvm:
-                type = "hvm"
-            else:
-                type = "linux"
-
             if arch:
-                osblob += "    <type arch='%s'>%s</type>\n" % (arch, type)
+                osblob += "    <type arch='%s'>%s</type>\n" % (arch, self.os_type)
             else:
-                osblob += "    <type>%s</type>\n" % type
+                osblob += "    <type>%s</type>\n" % self.os_type
 
             if loader:
                 osblob += "    <loader>%s</loader>\n" % loader
