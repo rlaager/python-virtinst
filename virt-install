@@ -85,12 +85,6 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
             if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the disk (yes or no)? ")):
                 disk = size = None
                 continue
-        # Overwrite disk?
-        elif os.path.exists(d.path) and os.path.isfile(d.path):
-            warnmsg = _("You are going to overwrite file '%s'!\n") % d.path
-            if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the file (yes or no)? ")):
-                disk = None
-                continue
 
         guest.disks.append(d)
         break
