@@ -28,7 +28,7 @@ import libvirt
 import util
 import Guest
 
-MIN_RAM = 256
+MIN_RAM = 64
 
 #
 # Setup helpers
