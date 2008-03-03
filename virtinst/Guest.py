@@ -273,41 +273,66 @@ class VirtualNetworkInterface:
         else:
             raise ValueError, _("Unknown network type %s") % (type,)
 
-    def setup(self, conn):
+    def is_conflict_net(self, conn):
+        """is_conflict_net: determines if mac conflicts with others in system
+
+           returns a two element tuple: 
+               first element is True if fatal collision occured
+               second element is a string description of the collision.
+           Non fatal collisions (mac addr collides with inactive guest) will
+           return (False, "description of collision")"""
         # get Running Domains
         ids = conn.listDomainsID();
         vms = []
         for id in ids:
-            vm = conn.lookupByID(id)
-            vms.append(vm)
+            try:
+                vm = conn.lookupByID(id)
+                vms.append(vm)
+            except libvirt.libvirtError:
+                # guest probably in process of dieing
+                logging.warn("conflict_net: Failed to lookup domain id %d" % id)
         # get inactive Domains
         inactive_vm = []
         names = conn.listDefinedDomains()
         for name in names:
-            vm = conn.lookupByName(name)
-            inactive_vm.append(vm)
+            try:
+                vm = conn.lookupByName(name)
+                inactive_vm.append(vm)
+            except:
+                # guest probably in process of dieing
+                logging.warn("conflict_net: Failed to lookup domain %d" % name)
 
         # get the Host's NIC MACaddress
         hostdevs = util.get_host_network_devices()
+
+        if self.countMACaddr(vms) > 0:
+            return (True, _("The MAC address you entered is already in use by another virtual machine!"))
+        for (dummy, dummy, dummy, dummy, host_macaddr) in hostdevs:
+            if self.macaddr.upper() == host_macaddr.upper():
+                return (True, _("The MAC address you entered conflicts with the physical NIC."))
+        if self.countMACaddr(inactive_vm) > 0:
+            return (False, _("The MAC address you entered is already in use by another inactive virtual machine!"))
+        return (False, None)
+
+    def setup(self, conn):
 
         # check conflict MAC address
         if self.macaddr is None:
             while 1:
                 self.macaddr = util.randomMAC()
-                if self.countMACaddr(vms) > 0:
+                if self.is_conflict_net(conn)[1] is not None:
                     continue
                 else:
                     break
         else:
-            if self.countMACaddr(vms) > 0:
-                raise RuntimeError, _("The MAC address you entered is already in use by another virtual machine!")
-            for (dummy, dummy, dummy, dummy, host_macaddr) in hostdevs:
-                if self.macaddr.upper() == host_macaddr.upper():
-                    raise RuntimeError, _("The MAC address you entered conflicts with the physical NIC.")
-            if self.countMACaddr(inactive_vm) > 0:
-                msg = _("The MAC address you entered is already in use by another inactive virtual machine!")
-                print >> sys.stderr, msg
-                logging.warning(msg)
+            ret, msg = self.is_conflict_net(conn)
+            if msg is not None:
+                # Error message found
+                if ret is False:
+                    # Not fatal
+                    logging.warning(msg)
+                else:
+                    raise RuntimeError(msg)
 
         if not self.bridge and self.type == "bridge":
             self.bridge = util.default_bridge()

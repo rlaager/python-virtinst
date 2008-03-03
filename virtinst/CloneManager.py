@@ -223,13 +223,12 @@ class CloneDesign(object):
         #
         for i in self._clone_mac:
             ret, msg = self._check_mac(i)
-            if ret == 0:
-                continue
-            elif ret == 1 or ret == 2:
-                raise RuntimeError, msg
-            elif ret == 3:
-                print >> sys.stderr, msg
-                logging.warning(msg)
+            if msg is not None:
+                if ret:
+                    raise RuntimeError, msg
+                else:
+                    print >> sys.stderr, msg
+                    logging.warning(msg)
 
         logging.debug("setup_original out")
 
@@ -285,7 +284,7 @@ class CloneDesign(object):
                 while 1:
                     mac = util.randomMAC()
                     ret, msg = self._check_mac(mac)
-                    if ret != 0:
+                    if msg is not None:
                         continue
                     else:
                         break
@@ -338,45 +337,10 @@ class CloneDesign(object):
 
     #
     # check used mac func
-    # 0 : OK
-    # 1 : NG Conflict with the physical NIC
-    # 2 : NG Used by another guest
-    # 3 : NG Used by another inactive guest
     #
     def _check_mac(self, mac):
-
-        msg0=""
-        msg1=_("The MAC address you entered conflicts with the physical NIC.")
-        msg2=_("The MAC address you entered is already in use by another guest!")
-        msg3=_("The MAC address you entered is already in use by another inactive guest!")
-
-        # get Running Domains
-        ids = self._hyper_conn.listDomainsID();
-
-        vms = []
-        for id in ids:
-            vm = self._hyper_conn.lookupByID(id)
-            vms.append(vm)
-        # get inactive Domains
-        inactive_vm = []
-        names = self._hyper_conn.listDefinedDomains()
-
-        for name in names:
-            vm = self._hyper_conn.lookupByName(name)
-            inactive_vm.append(vm)
-
-        # get the Host's NIC MACaddress
-        hostdevs = util.get_host_network_devices()
-
-        if self._count_mac(vms, mac) > 0:
-            return (2, msg2)
-        for (dummy, dummy, dummy, dummy, host_macaddr) in hostdevs:
-            if mac.upper() == host_macaddr.upper():
-               return (1, msg1)
-        if self._count_mac(inactive_vm, mac) > 0:
-            return (3, msg3)
-
-        return (0, msg0)
+        nic = Guest.VirtualNetworkInterface(macaddr=mac)
+        return nic.is_conflict_net(self._hyper_conn)
 
     #
     # get count macaddr
