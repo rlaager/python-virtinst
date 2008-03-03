@@ -602,7 +602,7 @@ class Guest(object):
     def get_vcpus(self):
         return self._vcpus
     def set_vcpus(self, val):
-        maxvcpus = util.get_max_vcpus(self.conn)
+        maxvcpus = util.get_max_vcpus(self.conn, self.type)
         if val < 1 or val > maxvcpus:
             raise ValueError, \
                   _("Number of vcpus must be in the range of 1-%d") % (maxvcpus,)
