@@ -31,7 +31,7 @@ def default_route():
     defn = 0
     for line in d.xreadlines():
         info = line.split()
-        if (len(info) != 11): # 11 = typlical num of fields in the file
+        if (len(info) != 11): # 11 = typical num of fields in the file
             print >> stderr, _("Invalid line length while parsing %s.") %(route_file)
             print >> stderr, _("Defaulting bridge to xenbr%d") % (defn)
             break

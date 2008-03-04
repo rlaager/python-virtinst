@@ -236,7 +236,7 @@ class SuseDistro(Distro):
             filelistData.close()
 
     # We have a kernel RPM and a install-initrd RPM with a generic initrd in it
-    # Now we have to munge the two together to build an initrd capable of
+    # Now we have to merge the two together to build an initrd capable of
     # booting the installer.
     #
     # Yes, this is crazy ass stuff :-)

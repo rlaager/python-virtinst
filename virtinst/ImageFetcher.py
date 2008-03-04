@@ -89,7 +89,7 @@ class URIImageFetcher(ImageFetcher):
                                        progress_obj = progresscb, \
                                        text = _("Retrieving file %s...") % base)
             except IOError, e:
-                raise ValueError, _("Couldn't aquire file %s: %s") %\
+                raise ValueError, _("Couldn't acquire file %s: %s") %\
                                   ((self.location + "/" + filename), str(e))
             tmpname = self.saveTemp(file, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
