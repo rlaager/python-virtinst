@@ -29,6 +29,7 @@ import util
 import Guest
 
 MIN_RAM = 64
+force = False
 
 #
 # Setup helpers
@@ -94,9 +95,15 @@ def getConnection(connect):
 # Prompting
 #
 
+def set_force(val=True):
+    global force
+    force = val
+
 def prompt_for_input(prompt = "", val = None):
     if val is not None:
         return val
+    if force:
+        raise RuntimeError(_("Force flag is set but input was required. Prompt was: %s" % prompt))
     print prompt + " ",
     return sys.stdin.readline().strip()
 
@@ -110,6 +117,10 @@ def yes_or_no(s):
 
 def prompt_for_yes_or_no(prompt):
     """catches yes_or_no errors and ensures a valid bool return"""
+    if force:
+        logging.debug("Forcing return value of True to prompt '%s'")
+        return True
+
     while 1:
         input = prompt_for_input(prompt, None)
         try:

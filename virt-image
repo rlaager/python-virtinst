@@ -139,6 +139,9 @@ def parse_args():
                       help=_("Print the libvirt XML, but do not start the domain"))
     parser.add_option("", "--boot", type="int", dest="boot",
                       help=_("The zero-based index of the boot record to use"))
+    parser.add_option("", "--force", action="store_true", dest="force",
+                      help=_("Do not prompt for input. Answers yes where applicable, terminates for all other prompts"),
+                      default=False)
 
     (options,args) = parser.parse_args()
     if len(args) < 1:
@@ -162,6 +165,7 @@ def main():
     options = parse_args()
 
     cli.setupLogging("virt-image", options.debug)
+    cli.set_force(options.force)
 
     conn = cli.getConnection(options.connect)
     type = None

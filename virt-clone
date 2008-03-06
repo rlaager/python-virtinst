@@ -164,6 +164,9 @@ def parse_args():
     # Misc options
     parser.add_option("-d", "--debug", action="store_true", dest="debug",
                       help=_("Print debugging information"))
+    parser.add_option("", "--force", action="store_true", dest="force",
+                      help=_("Do not prompt for input. Answers yes where applicable, terminates for all other prompts"),
+                      default=False)
 
     (options,args) = parser.parse_args()
     return options
@@ -173,6 +176,7 @@ def main():
     options = parse_args()
 
     cli.setupLogging("virt-clone", options.debug)
+    cli.set_force(options.force)
 
     logging.debug("start clone with HV " + options.connect)
 
