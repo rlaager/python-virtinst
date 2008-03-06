@@ -22,6 +22,8 @@
 import random
 import os.path
 from sys import stderr
+
+import libvirt
 from virtinst import _virtinst as _
 
 def default_route():
@@ -195,6 +197,8 @@ def get_host_network_devices():
 def get_max_vcpus(conn, type=None):
     """@conn libvirt connection to poll for max possible vcpus
        @type optional guest type (kvm, etc.)"""
+    if type is None:
+        type = conn.getType()
     try:
         max = conn.getMaxVcpus(type.lower())
     except libvirt.libvirtError:
