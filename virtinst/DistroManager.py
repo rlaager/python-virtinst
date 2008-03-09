@@ -220,10 +220,15 @@ class DistroInstaller(Guest.Installer):
         if install or hvm:
             osblob = "<os>\n"
 
+            os_type = self.os_type
+            # Hack for older libvirt Xen driver
+            if os_type == "xen" and self.type == "xen":
+                os_type = "linux"
+
             if arch:
-                osblob += "    <type arch='%s'>%s</type>\n" % (arch, self.os_type)
+                osblob += "    <type arch='%s'>%s</type>\n" % (arch, os_type)
             else:
-                osblob += "    <type>%s</type>\n" % self.os_type
+                osblob += "    <type>%s</type>\n" % os_type
 
             if install and self.install["kernel"]:
                 osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self.install["kernel"])
@@ -272,10 +277,15 @@ class PXEInstaller(Guest.Installer):
         if install or hvm:
             osblob = "<os>\n"
 
+            os_type = self.os_type
+            # Hack for older libvirt Xen driver
+            if os_type == "xen" and self.type == "xen":
+                os_type = "linux"
+
             if arch:
-                osblob += "    <type arch='%s'>%s</type>\n" % (arch, self.os_type)
+                osblob += "    <type arch='%s'>%s</type>\n" % (arch, os_type)
             else:
-                osblob += "    <type>%s</type>\n" % self.os_type
+                osblob += "    <type>%s</type>\n" % os_type
 
             if loader:
                 osblob += "    <loader>%s</loader>\n" % loader

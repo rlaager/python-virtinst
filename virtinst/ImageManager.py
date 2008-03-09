@@ -109,14 +109,18 @@ class ImageInstaller(Guest.Installer):
         osblob = "<os>\n"
 
         if hvm:
-            type = "hvm"
+            os_type = "hvm"
         else:
-            type = "linux"
+            # Hack for older libvirt Xen driver
+            if self.type == "xen":
+                os_type = "linux"
+            else:
+                os_type = "xen"
 
         if arch:
-            osblob += "    <type arch='%s'>%s</type>\n" % (arch, type)
+            osblob += "    <type arch='%s'>%s</type>\n" % (arch, os_type)
         else:
-            osblob += "    <type>%s</type>\n" % type
+            osblob += "    <type>%s</type>\n" % os_type
 
         if self.boot_caps.kernel:
             osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self._abspath(self.boot_caps.kernel))

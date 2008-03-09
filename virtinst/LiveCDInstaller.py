@@ -58,8 +58,13 @@ class LiveCDInstaller(Guest.Installer):
         if install:
             return None
 
+        os_type = self.os_type
+        # Hack for older libvirt Xen driver
+        if os_type == "xen" and self.type == "xen":
+            os_type = "linux"
+
         osblob  = "<os>\n"
-        osblob += "      <type>%s</type>\n" % self.os_type
+        osblob += "      <type>%s</type>\n" % os_type
         if loader:
             osblob += "      <loader>%s</loader>\n" % loader
         osblob += "      <boot dev='cdrom'/>\n"
