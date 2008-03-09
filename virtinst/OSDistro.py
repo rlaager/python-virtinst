@@ -70,13 +70,13 @@ class RedHatDistro(Distro):
 
     def acquireKernel(self, fetcher, progresscb):
         if self.hasTreeinfo(fetcher, progresscb):
-            if self.type is None:
-                arch = self.treeinfo.get("general", "arch")
+            if self.type == "xen":
+                type = "xen"
             else:
-                arch = self.type
+                type = self.treeinfo.get("general", "arch")
 
-            kernelpath = self.treeinfo.get("images-%s" % arch, "kernel")
-            initrdpath = self.treeinfo.get("images-%s" % arch, "initrd")
+            kernelpath = self.treeinfo.get("images-%s" % type, "kernel")
+            initrdpath = self.treeinfo.get("images-%s" % type, "initrd")
         else:
             # fall back to old code
             if self.type is None:
@@ -99,8 +99,11 @@ class RedHatDistro(Distro):
 
     def acquireBootDisk(self, fetcher, progresscb):
         if self.hasTreeinfo(fetcher, progresscb):
-            arch = self.treeinfo.get("general", "arch")
-            return fetcher.acquireFile(self.treeinfo.get("images-%s" % arch, "boot.iso"), progresscb)
+            if self.type == "xen":
+                type = "xen"
+            else:
+                type = self.treeinfo.get("general", "arch")
+            return fetcher.acquireFile(self.treeinfo.get("images-%s" % type, "boot.iso"), progresscb)
         else:
             return fetcher.acquireFile("images/boot.iso", progresscb)
 
