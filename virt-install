@@ -230,7 +230,7 @@ def parse_args():
                       help=_("set up keymap for a graphical console"))
 
     parser.add_option("", "--accelerate", action="store_true", dest="accelerate",
-                      help=_("Use kernel acceleration capabilities"))
+                      help=_("Use kernel acceleration capabilities"), default=False)
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=cli.check_before_store,
                       help=_("Connect to hypervisor with URI"),
@@ -351,10 +351,8 @@ def main():
 
     if options.fullvirt:
         os_type = "hvm"
-    elif options.paravirt:
-        os_type = "xen"
     else:
-        os_type = None
+        os_type = "xen"
 
     guest = capabilities.guestForOSType(type=os_type, arch=options.arch)
     if guest is None:
@@ -366,7 +364,7 @@ def main():
     else:
         hvm = False
 
-    domain = guest.bestDomainType()
+    domain = guest.bestDomainType(options.accelerate)
     type = domain.hypervisor_type
 
     if options.livecd:

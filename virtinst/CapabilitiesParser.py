@@ -159,9 +159,23 @@ class Guest(object):
             child = child.next
 
 
-    def bestDomainType(self):
-        # Picking last in list so we favour KVM/KQEMU over QEMU
-        return self.domains[-1]
+    def bestDomainType(self, accelerated=None):
+        if accelerated is None:
+            # Picking last in list so we favour KVM/KQEMU over QEMU
+            return self.domains[-1]
+        else:
+            priority = ["kvm", "xen", "kqemu", "qemu"]
+            if not accelerated:
+                priority.reverse()
+
+            for type in priority:
+                for d in self.domains:
+                    if d.hypervisor_type == type:
+                        return d
+
+            # Fallback, just return last item in list
+            return self.domains[-1]
+
 
 class Domain(object):
     def __init__(self, hypervisor_type, emulator = None, loader = None, machines = None, node = None):
