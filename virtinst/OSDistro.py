@@ -114,10 +114,6 @@ class FedoraDistro(RedHatDistro):
             m = re.match(".*Fedora.*", self.treeinfo.get("general", "family"))
             return (m != None)
         else:
-            # fall back to old code
-            if fetcher.hasFile("fedora.css"):
-                logging.debug("Detected a Fedora distro")
-                return True
             if fetcher.hasFile("Fedora"):
                 logging.debug("Detected a Fedora distro")
                 return True
