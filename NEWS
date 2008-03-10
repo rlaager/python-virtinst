@@ -1,6 +1,30 @@
    Virt Install News
    =================
 
+Release 0.300.3
+---------------
+
+This release addresses a number of major bugs, and optimizes
+aspecst of the installation process. When probing for OS distro
+type it will test file existance, rather than fetching the entire
+file. RFC compliant NFS uris are now accepted & converted where
+needed.  When probing for Red Hat distro variants, look for the
+.treeinfo file to determine initrd/kernel locations. Print user
+friendly error instead of stack traces, and hide bogus libvirt
+error messages from console. Add a --noreboot flag to virt-install
+to prevent the automatic reboot at end of installation. Use the
+libvirt capabilities XML to determine the guest types supported
+by a hypervisor. Add --force option to prevent any interactive
+prompting.
+
+Release 0.300.2
+---------------
+
+This release fixes a couple of minor bugs. XML attributes are
+correctly escaped in the XML. vCPUs can be pinned to pCPUs at
+install time. Windows guests will be automatically configured
+to use localtime. Improved input validation
+
 Release 0.300.1
 ---------------
 
