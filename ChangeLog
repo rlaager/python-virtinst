@@ -1,8 +1,297 @@
+2008-03-10  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* NEWS:
+	Updated NEWS
+	[1c9905817a14] [tip]
+
+	* virtinst/DistroManager.py, virtinst/ImageManager.py:
+	Always include loader tag for HVM guests
+	[46f66904281b]
+
+	* virtinst/OSDistro.py:
+	Remove redundant check for fedora.css, since .treeinfo will always
+	be present for F8
+	[838dd456b7fc]
+
+2008-03-09  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/DistroManager.py, virtinst/ImageManager.py,
+	virtinst/LiveCDInstaller.py:
+	Fix os type for older libvirt Xen driver
+	[9593da24975e]
+
+	* virt-install, virtinst/CapabilitiesParser.py:
+	Fix use of --accelerate argument
+	[944955890db9]
+
+	* virtinst/OSDistro.py:
+	Fix logic for detecting os treeinfo entries based on arch
+	[6d38c4f47aa6]
+
+2008-03-08  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* Merge heads
+	[f44be3a5ef47]
+
+2008-03-06  "Cole Robinson  <crobinso@redhat.com>
+
+	* virt-clone, virt-image, virt-install, virtinst/cli.py:
+	Add --force option to all cmdline utilities.
+
+	Option forces a yes answer where applicable, bails out on any prompt
+	that requires non boolean input.
+	[507a70e9ed10]
+
+	* virtinst/util.py:
+	Fix bug in cset 369 in util.get_max_vcpus. Was breaking virt-manager
+	installs.
+	[f162e1a34ed1]
+
+2008-03-08  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/FullVirtGuest.py, virtinst/ParaVirtGuest.py:
+	Set os_type for installer to fix test suite
+	[4b8fb63b9d9a]
+
+2008-03-04  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* po/fr.po, po/ja.po, po/pl.po, po/virtinst.pot:
+	Refresh po files
+	[faf95c934129]
+
+	* man/en/virt-install.1, man/en/virt-install.pod,
+	virtinst/ImageFetcher.py, virtinst/OSDistro.py, virtinst/util.py:
+	Fix misc typos (Atsushi SAKAI)
+	[486657e437cd]
+
+2008-03-03  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py, virtinst/Guest.py:
+	Add is_conflict_net to NIC class.
+	[6d9b578399a1]
+
+	* virtinst/Guest.py, virtinst/util.py:
+	Pass type to util.get_max_vcpus. Gives accurate value if ex.
+	installing kvm guest on qemu connection.
+	[4b9dbbb59121]
+
+2008-02-27  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/ParaVirtGuest.py:
+	Workaround libvirt bug wrt to Xenner
+	[eb7c2ca2f546]
+
+	* virtinst/cli.py:
+	Reduce min ram to 64 MB instead of 256
+	[b27fa11c302a]
+
+2008-02-26  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* merge heads
+	[5eb071dd36f2]
+
+2008-02-22  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/cli.py:
+	Use libvirt error handlers and custom exception handler.
+
+	The libvirt error handler will ignore all error messages, as these
+	errors should be raised as exceptions anyways and dealt with that
+	way. This prevents a deliberately ignored exception from still
+	dumping a libvirt error to the console (such as during domain create
+	when we would us lookupByName to ensure there wasn't a domain name
+	conflict).
+	[dc3dd659f7df]
+
+2008-02-19  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/util.py:
+	Normalize connection type for get_max_vcpus.
+
+	Fixes bug where getMaxVcpus was expecting qemu but is receiving QEMU
+	[549bd0ef2ef7]
+
+2008-02-26  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-clone, virt-install:
+	Remove check for local file existance since it doesn't work remotely
+	& is causing needless interactive prompts
+	[52f657ebcb4d]
+
+	* virt-install, virtinst/DistroManager.py, virtinst/Guest.py,
+	virtinst/LiveCDInstaller.py, virtinst/ParaVirtGuest.py:
+	Explicitly pass in OS type to distro installer to ensure it picks
+	correct kernel in xenner case, rather than picking kernel based on
+	HV domain type
+	[96a8994ff871]
+
+2008-02-24  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install, virtinst/CapabilitiesParser.py:
+	Use capabilities XML to determine hypervisor capabilities instead of
+	looking at local state
+	[80309228720e]
+
+	* tests/capabilities-kvm.xml, tests/capabilities.py, virt-image,
+	virtinst/CapabilitiesParser.py, virtinst/ImageManager.py:
+	Fix capabilities parser to deal with multiple possible domain types.
+	Fix choosing of architecture for HVM. Added test with KVM
+	capabilities XML
+	[a84b08ecfb37]
+
+2008-02-22  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/FullVirtGuest.py:
+	Merge heads
+	[e12c94673001]
+
+2008-02-18  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/FullVirtGuest.py:
+	Default acpi & apic to be enabled as per previous releases
+	[b931aaa079cd]
+
+2008-02-19  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-install:
+	Add --noreboot flag for virt-install to prevent automatic reboot
+	[a99cfa7d021e]
+
+2008-02-18  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* po/fr.po:
+	Added french translation from Gauthier Ancelin
+	[a407e9b41f34]
+
+2008-02-17  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virtinst/ImageParser.py:
+	Allow use of qcow, qcow2, and vmdk disks
+	[3b2bc0e2b060]
+
+2008-02-16  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* virt-clone, virt-image, virt-install:
+	Print friendly error message with keyboard interrupt, instead of
+	huge stack trace
+	[16b2d153d577]
+
+	* AUTHORS, virtinst/OSDistro.py:
+	Use .treeinfo files for probing Red Hat distro variants (Alexander
+	Todorov)
+	[f22561aac6fc]
+
+2008-02-15  Mark McLoughlin  <markmc@redhat.com>
+
+	* virt-install:
+	Fix virt-install disks typo
+
+	Fixes this traceback:
+
+	 Traceback (most recent call last): File "./virt-install",
+	line 498, in <module> main() File "./virt-install",
+	line 462, in main dom =
+	guest.start_install(conscb,progresscb) File
+	"/home/markmc/projects/virt/virtinst--devel/virtinst/Guest.py", line
+	813, in start_install return self._do_install(consolecb,
+	meter) File "/home/markmc/projects/virt/virtinst--
+	devel/virtinst/Guest.py", line 829, in _do_install
+	self._create_devices(meter) File
+	"/home/markmc/projects/virt/virtinst--devel/virtinst/Guest.py", line
+	725, in _create_devices disk.setup(progresscb)
+	AttributeError: 'str' object has no attribute 'setup'
+
+	Looks to have been introduced by cset 351:07091304b759
+
+	Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+	[fd6a7fa855d1]
+
+2008-02-14  "Cole Robinson  <crobinso@redhat.com>
+
+	* virt-clone, virt-install, virtinst/CloneManager.py:
+	Use new cli yes or no function for install tools. Remove prompting
+	from CloneManager. Fix virt-clone bug where full qualified paths
+	weren't being written to the config. Fix lack of prompt issue when
+	just running 'virt-clone'
+	[07091304b759]
+
+	* virtinst/cli.py:
+	Add simpler prompt for yes or no
+	[d5c41f1ff597]
+
+2008-02-06  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/DistroManager.py:
+	Small fix for nfs rfc format patch.
+	[71ebde48210c]
+
+2008-02-04  "Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.1, man/en/virt-install.pod,
+	virtinst/DistroManager.py, virtinst/ImageFetcher.py,
+	virtinst/OSDistro.py:
+	Allow RFC compliant NFS uris and update associated docs. Carry uris
+	around internally in the anaconda format nfs:server:/path. Fixes
+	rhbz #243544.
+	[aa3fe23be510]
+
+2008-02-01  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/DistroManager.py, virtinst/ImageFetcher.py,
+	virtinst/OSDistro.py:
+	Re-implement hasFile to not pull down any files, just test they
+	exist.
+	[96dd51a7e06b]
+
+	* virt-install:
+	Return correct error code if passed invalid command line value.
+	(Shigeki Sakamoto)
+	[375d3f83844c]
+
+2008-01-30  "Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.1, man/en/virt-install.pod:
+	Document the Debian ostypes (patch by Trent W. Buck)
+	[9eccd3abccb6]
+
+	* virtinst/CloneManager.py:
+	virt-clone: fix specifying non-existent disk on the command line.
+	rhbz 430757
+	[611782118e76]
+
+	* virtinst/util.py:
+	Have util.is_blktap_capable return accurate value for fedora
+	distros.
+	[da82ae52bc47]
+
+2008-01-29  agx  <agx@sigxcpu.org>
+
+	* virtinst/DistroManager.py:
+	Don't fail if a non root user can't read from the block device due
+	to insufficient permissions
+	[96a103cd78dc]
+
 2008-01-10  "Daniel P. Berrange  <berrange@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_300_2 for changeset bdc241ce11c9
+	[5109856f3bed]
+
+	* virtinst/CapabilitiesParser.py, virtinst/CloneManager.py,
+	virtinst/DistroManager.py, virtinst/FullVirtGuest.py,
+	virtinst/Guest.py, virtinst/ImageFetcher.py,
+	virtinst/LiveCDInstaller.py, virtinst/OSDistro.py,
+	virtinst/ParaVirtGuest.py, virtinst/util.py:
+	Remove #!/usr/bin/python in modules
+	[bdc241ce11c9] [virtinst-0_300_2]
+
+	* ChangeLog:
+	Regenerate changelog
+	[e76030f32ec7]
 
 	* po/ja.po, po/pl.po, po/virtinst.pot:
 	Regenerate PO file
-	[8854785f1d42] [tip]
+	[8854785f1d42]
 
 	* python-virtinst.spec.in, setup.py:
 	Prep for 0.300.2 release

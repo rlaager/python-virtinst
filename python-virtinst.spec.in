@@ -61,6 +61,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-image
 
 %changelog
+* Mon Mar 10 2008 Daniel P. Berrange <berrange@redhat.com> - 0.300.3-1
+- Use capabilities XML when installing guests
+- Accept RFC compliant NFS uris
+- Add --force and --noreboot command line flags
+- Use .treeinfo config files for Red Hat distro variants
+
 * Thu Jan 10 2008 Daniel P. Berrange <berrange@redhat.com> - 0.300.2-1
 - Escape paths in XML
 - Add --cpuset to pin vCPUs at install time
