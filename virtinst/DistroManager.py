@@ -230,14 +230,14 @@ class DistroInstaller(Guest.Installer):
             else:
                 osblob += "    <type>%s</type>\n" % os_type
 
+            if loader:
+                osblob += "    <loader>%s</loader>\n" % loader
+
             if install and self.install["kernel"]:
                 osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self.install["kernel"])
                 osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(self.install["initrd"])
                 osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(self.install["extraargs"])
             else:
-                if loader:
-                    osblob += "    <loader>%s</loader>\n" % loader
-
                 if install:
                     osblob += "    <boot dev='cdrom'/>\n"
                 else:

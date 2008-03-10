@@ -122,14 +122,14 @@ class ImageInstaller(Guest.Installer):
         else:
             osblob += "    <type>%s</type>\n" % os_type
 
+        if loader:
+            osblob += "    <loader>%s</loader>\n" % loader
         if self.boot_caps.kernel:
             osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self._abspath(self.boot_caps.kernel))
             osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(self._abspath(self.boot_caps.initrd))
             osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(self.boot_caps.cmdline)
             osblob += "  </os>"
         elif hvm:
-            if loader:
-                osblob += "    <loader>%s</loader>\n" % loader
             if self.boot_caps.bootdev:
                 osblob += "    <boot dev='%s'/>\n" % self.boot_caps.bootdev
             osblob += "  </os>"
