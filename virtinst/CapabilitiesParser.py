@@ -92,6 +92,7 @@ class Host(object):
         self.arch = None
 
         self.features = CapabilityFeatures()
+        self.topology = None
 
         if not node is None:
             self.parseXML(node)
@@ -99,6 +100,9 @@ class Host(object):
     def parseXML(self, node):
         child = node.children
         while child:
+            if child.name == "topology":
+                self.topology = Topology(child)
+
             if child.name != "cpu":
                 child = child.next
                 continue
@@ -200,6 +204,47 @@ class Domain(object):
 
         if len(machines) > 0:
             self.machines = machines
+
+class Topology(object):
+    def __init__(self, node = None):
+        self.cells = []
+
+        if not node is None:
+            self.parseXML(node)
+
+    def parseXML(self, node):
+        child = node.children
+        if child.name == "cells":
+            for cell in child.children:
+                if cell.name == "cell":
+                    self.cells.append(TopologyCell(cell))
+
+class TopologyCell(object):
+    def __init__(self, node = None):
+        self.id = None
+        self.cpus = []
+
+        if not node is None:
+            self.parseXML(node)
+
+    def parseXML(self, node):
+        self.id = int(node.prop("id"))
+        child = node.children
+        if child.name == "cpus":
+            for cpu in child.children:
+                if cpu.name == "cpu":
+                    self.cpus.append(TopologyCPU(cpu))
+
+class TopologyCPU(object):
+    def __init__(self, node = None):
+        self.id = None
+
+        if not node is None:
+            self.parseXML(node)
+
+    def parseXML(self, node):
+        self.id = int(node.prop("id"))
+
 
 class Capabilities(object):
     def __init__(self, node = None):
