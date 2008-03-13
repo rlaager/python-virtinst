@@ -313,14 +313,11 @@ class FullVirtGuest(Guest.XenGuest):
 
         for d in self._install_disks:
             saved_path = None
-            if d.device == Guest.VirtualDisk.DEVICE_CDROM and d.transient and not install:
-                # XXX hack. libvirt can't currently handle QEMU having an empty disk path..
-                if self.type == "xen":
-                    saved_path = d.path
-                    d.path = None
-                else:
-                    # .. so simply remove CDROM device completely in non-Xen
-                    continue
+            if d.device == Guest.VirtualDisk.DEVICE_CDROM \
+               and d.transient and not install:
+                # Keep cdrom around, but with no media attached
+                saved_path = d.path
+                d.path = None
 
             ret += d.get_xml_config(d.target)
             if saved_path != None:
