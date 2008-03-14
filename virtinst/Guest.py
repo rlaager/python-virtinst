@@ -281,6 +281,8 @@ class VirtualNetworkInterface:
                second element is a string description of the collision.
            Non fatal collisions (mac addr collides with inactive guest) will
            return (False, "description of collision")"""
+        if self.macaddr is None:
+            return (False, None)
         # get Running Domains
         ids = conn.listDomainsID();
         vms = []
@@ -306,12 +308,12 @@ class VirtualNetworkInterface:
         hostdevs = util.get_host_network_devices()
 
         if self.countMACaddr(vms) > 0:
-            return (True, _("The MAC address you entered is already in use by another virtual machine!"))
+            return (True, _("The MAC address you entered is already in use by another active virtual machine."))
         for (dummy, dummy, dummy, dummy, host_macaddr) in hostdevs:
             if self.macaddr.upper() == host_macaddr.upper():
-                return (True, _("The MAC address you entered conflicts with the physical NIC."))
+                return (True, _("The MAC address you entered conflicts with a device on the physical host."))
         if self.countMACaddr(inactive_vm) > 0:
-            return (False, _("The MAC address you entered is already in use by another inactive virtual machine!"))
+            return (False, _("The MAC address you entered is already in use by another inactive virtual machine."))
         return (False, None)
 
     def setup(self, conn):
