@@ -386,52 +386,71 @@ class VirtualNetworkInterface:
 class XenNetworkInterface(VirtualNetworkInterface):
     pass
 
-class VirtualGraphics:
-    def __init__(self, *args):
-        self.name = ""
+class VirtualGraphics(object):
+
+    TYPE_SDL = "sdl"
+    TYPE_VNC = "vnc"
+
+    def __init__(self, type=None, port=-1, keymap=None, listen=None, passwd=None):
+        self._type = self.TYPE_VNC
+        self._port = port
+        self._keymap = keymap
+        self._listen = listen
+        self._passwd = passwd
+
+    def get_keymap(self):
+        return self._keymap
+    def set_keymap(self, val):
+        if not val:
+            return
+        if not val or type(val) != type("string"):
+            raise ValueError, _("Keymap must be a string")
+        if len(val) > 16:
+            raise ValueError, _("Keymap must be less than 16 characters")
+        if re.match("^[a-zA-Z0-9_-]*$", val) == None:
+            raise ValueError, _("Keymap can only contain alphanumeric, '_', or '-' characters")
+        self._keymap = val
+    keymap = property(get_keymap, set_keymap)
+
+    def get_port(self):
+        return self._port
+    def set_port(self, val):
+        if type(val) is not int or val < 5900 or val > 65535:
+            raise ValueError, _("VNC port must be a number between 5900 and 65535")
+        self._port = val
+    port = property(get_port, set_port)
+
+    def get_listen(self):
+        return self._listen
+    def set_listen(self, val):
+        self._listen = val
+    listen = property(get_listen, set_listen)
+
+    def get_passwd(self):
+        return self._passwd
+    def set_passwd(self, val):
+        self._passwd = val
+    passwd = property(get_passwd, set_passwd)
 
     def get_xml_config(self):
-        return ""
-
-# Back compat class to avoid ABI break
-class XenGraphics(VirtualGraphics):
-    pass
-
-class VNCVirtualGraphics(XenGraphics):
-    def __init__(self, *args):
-        self.name = "vnc"
-        if len(args) >= 1 and not args[0] is None:
-            if args[0] < 5900 or args[0] > 65535:
-                raise ValueError, _("Invalid value for vnc port, port number must be in between 5900 and 65535")
-            self.port = args[0]
-        else:
-            self.port = -1
-        if len(args) >= 2 and args[1]:
-            self.keymap = args[1]
-        else:
-            self.keymap = None
-
-    def get_xml_config(self):
-        if self.keymap == None:
-            keymapstr = ""
-        else:
-            keymapstr = "keymap='"+self.keymap+"' "
-        return "    <graphics type='vnc' port='%(port)d' %(keymapstr)s/>" % {"port":self.port, "keymapstr":keymapstr}
-
-# Back compat class to avoid ABI break
-class XenVNCGraphics(VNCVirtualGraphics):
-    pass
-
-class SDLVirtualGraphics(XenGraphics):
-    def __init__(self, *args):
-        self.name = "sdl"
-
-    def get_xml_config(self):
-        return "    <graphics type='sdl'/>"
-
-# Back compat class to avoid ABI break
-class XenSDLGraphics(SDLVirtualGraphics):
-    pass
+        if self._type == self.TYPE_SDL:
+            return "    <graphics type='sdl'/>"
+        keymapxml = ""
+        listenxml = ""
+        passwdxml = ""
+        if self.keymap:
+            keymapxml = " keymap='%s'" % self._keymap
+        if self.listen:
+            listenxml = " listen='%s'" % self._listen
+        if self.passwd:
+            passwdxml = " passwd='%s'" % self._passwd
+        xml = "    <graphics type='vnc' " + \
+                   "port='%(port)d'" % { "port" : self._port } + \
+                   "%(keymapxml)s"   % { "keymapxml" : keymapxml } + \
+                   "%(listenxml)s"   % { "listenxml" : listenxml } + \
+                   "%(passwdxml)s"   % { "passwdxml" : passwdxml } + \
+                   "/>"
+        return xml
 
 class Installer(object):
     def __init__(self, type = "xen", location = None, boot = None, extraargs = None, os_type = None):
@@ -663,35 +682,30 @@ class Guest(object):
     def get_graphics(self):
         return self._graphics
     def set_graphics(self, val):
-        def validate_keymap(keymap):
-            if not keymap:
-                return keymap
-            if type(keymap) != type("string"):
-                raise ValueError, _("Keymap must be a string")
-            if len(keymap) > 16:
-                raise ValueError, _("Keymap must be less than 16 characters")
-            if re.match("^[a-zA-Z0-9_-]*$", keymap) == None:
-                raise ValueError, _("Keymap can only contain alphanumeric, '_', or '-' characters")
-            return keymap
 
-        opts = None
-        t = None
+        # val can be:
+        #   a dictionary with keys:  enabled, type, port, keymap
+        #   a tuple of the form   : (enabled, type, port, keymap)
+        #                            last 2 optional
+        #                         : "vnc", "sdl", true or false
+        port = None
+        gtype = None
         if type(val) == dict:
             if not val.has_key("enabled"):
                 raise ValueError, _("Must specify whether graphics are enabled")
             self._graphics["enabled"] = val["enabled"]
             if val.has_key("type"):
-                t = val["type"]
+                gtype = val["type"]
                 if val.has_key("opts"):
-                    opts = val["opts"]
+                    port = val["opts"]
         elif type(val) == tuple:
             if len(val) >= 1: self._graphics["enabled"] = val[0]
-            if len(val) >= 2: t = val[1]
-            if len(val) >= 3: opts = val[2]
-            if len(val) >= 4: self._graphics["keymap"] = validate_keymap(val[3])
+            if len(val) >= 2: gtype = val[1]
+            if len(val) >= 3: port = val[2]
+            if len(val) >= 4: self._graphics["keymap"] = val[3]
         else:
             if val in ("vnc", "sdl"):
-                t = val
+                gtype = val
                 self._graphics["enabled"] = True
             else:
                 self._graphics["enabled"] = val
@@ -700,16 +714,12 @@ class Guest(object):
             raise ValueError, _("Graphics enabled must be True or False")
 
         if self._graphics["enabled"] == True:
-            if t == "vnc":
-                if self.graphics.has_key("keymap"):
-                    gt = VNCVirtualGraphics(opts, self._graphics["keymap"])
-                else:
-                    gt = VNCVirtualGraphics(opts)
-            elif t == "sdl":
-                gt = SDLVirtualGraphics(opts)
-            else:
-                raise ValueError, _("Unknown graphics type")
-            self._graphics["type"] = gt
+            gdev = VirtualGraphics(type=gtype)
+            if port:
+                gdev.port = port
+            if self._graphics.has_key("keymap") and self._graphics["keymap"]:
+                gdev.keymap = self._graphics["keymap"]
+            self._graphics["type"] = gdev
 
     graphics = property(get_graphics, set_graphics)
 
