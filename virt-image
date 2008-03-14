@@ -74,7 +74,7 @@ def get_networks(domain, macs, bridges, networks, guest):
 
 def get_graphics(domain, vnc, vncport, nographics, sdl, keymap, guest):
     if not domain.graphics:
-        guest.graphics = False
+        guest.graphics_dev = None
         return
     else:
         if not vnc and not sdl:

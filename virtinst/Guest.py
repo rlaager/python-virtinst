@@ -391,12 +391,19 @@ class VirtualGraphics(object):
     TYPE_SDL = "sdl"
     TYPE_VNC = "vnc"
 
-    def __init__(self, type=None, port=-1, keymap=None, listen=None, passwd=None):
-        self._type = self.TYPE_VNC
-        self._port = port
-        self._keymap = keymap
-        self._listen = listen
-        self._passwd = passwd
+    def __init__(self, type=None):
+        
+        self._type = (type or self.TYPE_VNC)
+        if self._type != self.TYPE_VNC and self._type != self.TYPE_SDL:
+            raise ValueError(_("Unknown graphics type"))
+        self._port   = -1
+        self._keymap = None
+        self._listen = None
+        self._passwd = None
+
+    def get_type(self):
+        return self._type
+    type = property(get_type)
 
     def get_keymap(self):
         return self._keymap
@@ -554,9 +561,8 @@ class Guest(object):
         self._maxmemory = None
         self._vcpus = None
         self._cpuset = None
-        self._graphics = { "enabled": False }
-        self._keymap = None
-        
+        self._graphics_dev = None
+
         # Public device lists unaltered by install process
         self.disks = []
         self.nics = []
@@ -678,9 +684,29 @@ class Guest(object):
         self._cpuset = val
     cpuset = property(get_cpuset, set_cpuset)
 
-    # graphics setup
+    def get_graphics_dev(self):
+        return self._graphics_dev
+    def set_graphics_dev(self, val):
+        self._graphics_dev = val
+    graphics_dev = property(get_graphics_dev, set_graphics_dev)
+
+    # DEPRECATED PROPERTIES
+    # Deprecated: Should set graphics_dev.keymap directly
+    def get_keymap(self):
+        if self._graphics_dev is None:
+            return None
+        return self._graphics_dev.keymap
+    def set_keymap(self, val):
+        if self._graphics_dev is not None:
+            self_.graphics_dev.keymap = keymap
+    keymap = property(get_keymap, set_keymap)
+
+    # Deprecated: Should set guest.graphics_dev = VirtualGraphics(...)
     def get_graphics(self):
-        return self._graphics
+        if self._graphics_dev is None:
+            return { "enabled " : False }
+        return { "enabled" : true, "type" : self._graphics_dev, \
+                 "keymap"  : self._graphics_dev.keymap}
     def set_graphics(self, val):
 
         # val can be:
@@ -723,30 +749,33 @@ class Guest(object):
 
     graphics = property(get_graphics, set_graphics)
 
-
-    # Legacy, deprecated properties
-    def get_scratchdir(self):
-        return self._installer.scratchdir
-    scratchdir = property(get_scratchdir)
-
-    def get_boot(self):
-        return self._installer.boot
-    def set_boot(self, val):
-        self._installer.boot = val
-    boot = property(get_boot, set_boot)
-
+    # Deprecated: Should be called from the installer directly
     def get_location(self):
         return self._installer.location
     def set_location(self, val):
         self._installer.location = val
     location = property(get_location, set_location)
 
+    # Deprecated: Should be called from the installer directly
+    def get_scratchdir(self):
+        return self._installer.scratchdir
+    scratchdir = property(get_scratchdir)
+
+    # Deprecated: Should be called from the installer directly
+    def get_boot(self):
+        return self._installer.boot
+    def set_boot(self, val):
+        self._installer.boot = val
+    boot = property(get_boot, set_boot)
+
+    # Deprecated: Should be called from the installer directly
     def get_extraargs(self):
         return self._installer.extraargs
     def set_extraargs(self, val):
         self._installer.extraargs = val
     extraargs = property(get_extraargs, set_extraargs)
 
+    # Deprecated: Should set the installer values directly
     def get_cdrom(self):
         return self._installer.location
     def set_cdrom(self, val):
@@ -761,6 +790,7 @@ class Guest(object):
             self._installer.location = val
         self._installer.cdrom = True
     cdrom = property(get_cdrom, set_cdrom)
+    # END DEPRECATED PROPERTIES
 
 
     def _create_devices(self,progresscb):
@@ -773,17 +803,15 @@ class Guest(object):
     def _get_network_xml(self, install = True):
         """Get the network config in the libvirt XML format"""
         ret = ""
-        for n in self.nics:
+        for n in self._install_nics:
             ret += n.get_xml_config()
         return ret
 
     def _get_graphics_xml(self, install = True):
         """Get the graphics config in the libvirt XML format."""
-        ret = ""
-        if self.graphics["enabled"] == False:
-            return ret
-        gt = self.graphics["type"]
-        return gt.get_xml_config()
+        if self._graphics_dev is None:
+            return ""
+        return self._graphics_dev.get_xml_config()
 
     def _get_input_xml(self, install = True):
         """Get the input device config in libvirt XML format."""

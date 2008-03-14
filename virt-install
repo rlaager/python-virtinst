@@ -431,8 +431,8 @@ def main():
         continue_inst = guest.get_continue_inst()
 
     def show_console(dom):
-        if guest.graphics["enabled"]:
-            if guest.graphics["type"].name == "vnc":
+        if guest.graphics_dev:
+            if guest.graphics_dev.type == virtinst.VirtualGraphics.TYPE_VNC:
                 return vnc_console(dom, options.connect)
             else:
                 return None # SDL needs no viewer app

@@ -248,22 +248,20 @@ def digest_networks(macs, bridges, networks):
     return (macs, networks)
 
 def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
-    if vnc and nographics:
-        raise ValueError, _("Can't do both VNC graphics and nographics")
-    elif vnc and sdl:
-        raise ValueError, _("Can't do both VNC graphics and SDL")
-    elif sdl and nographics:
-        raise ValueError, _("Can't do both SDL and nographics")
-    if nographics:
-        guest.graphics = False
+    if (vnc and nographics) or \
+       (vnc and sdl) or \
+       (sdl and nographics):
+        raise ValueError, _("Can't specify more than one of VNC, SDL, or nographics")
+    if nographics is not None:
+        guest.graphics_dev = None
         return
     if vnc is not None:
-        guest.graphics = (True, "vnc", vncport, keymap)
-        return
+        guest.graphics_dev = Guest.VirtualGraphics(type=Guest.VirtualGraphics.TYPE_VNC)
     if sdl is not None:
-        guest.graphics = (True, "sdl")
-        return
+        guest.graphics_dev = Guest.VirtualGraphics(type=Guest.VirtualGraphics.TYPE_SDL)
     while 1:
+        if guest.graphics_dev:
+            break
         res = prompt_for_input(_("Would you like to enable graphics support? (yes or no)"))
         try:
             vnc = yes_or_no(res)
@@ -271,10 +269,14 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
             print _("ERROR: "), e
             continue
         if vnc:
-            guest.graphics = (True, "vnc", vncport, keymap)
+            guest.graphics_dev = Guest.VirtualGraphics(type=Guest.VirtualGraphics.TYPE_VNC)
         else:
-            guest.graphics = False
+            guest.graphics_dev = None
         break
+    if vncport:
+        guest.graphics_dev.port = vncport
+    if keymap:
+        guest.graphics_dev.keymap = keymap
 
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):
