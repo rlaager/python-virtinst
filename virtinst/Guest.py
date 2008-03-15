@@ -391,11 +391,11 @@ class VirtualGraphics(object):
     TYPE_SDL = "sdl"
     TYPE_VNC = "vnc"
 
-    def __init__(self, type=None):
+    def __init__(self, type=TYPE_VNC):
         
-        self._type = (type or self.TYPE_VNC)
-        if self._type != self.TYPE_VNC and self._type != self.TYPE_SDL:
+        if type != self.TYPE_VNC and type != self.TYPE_SDL:
             raise ValueError(_("Unknown graphics type"))
+        self._type   = type
         self._port   = -1
         self._keymap = None
         self._listen = None
@@ -713,39 +713,42 @@ class Guest(object):
         #   a dictionary with keys:  enabled, type, port, keymap
         #   a tuple of the form   : (enabled, type, port, keymap)
         #                            last 2 optional
-        #                         : "vnc", "sdl", true or false
+        #                         : "vnc", "sdl", or false
         port = None
         gtype = None
+        enabled = False
+        keymap = None
+        gdev = None
         if type(val) == dict:
             if not val.has_key("enabled"):
                 raise ValueError, _("Must specify whether graphics are enabled")
-            self._graphics["enabled"] = val["enabled"]
+            enabled = val["enabled"]
             if val.has_key("type"):
                 gtype = val["type"]
                 if val.has_key("opts"):
                     port = val["opts"]
         elif type(val) == tuple:
-            if len(val) >= 1: self._graphics["enabled"] = val[0]
+            if len(val) >= 1: enabled = val[0]
             if len(val) >= 2: gtype = val[1]
             if len(val) >= 3: port = val[2]
-            if len(val) >= 4: self._graphics["keymap"] = val[3]
+            if len(val) >= 4: keymap = val[3]
         else:
             if val in ("vnc", "sdl"):
                 gtype = val
-                self._graphics["enabled"] = True
+                enabled = True
             else:
-                self._graphics["enabled"] = val
+                enabled = val
 
-        if self._graphics["enabled"] not in (True, False):
+        if enabled not in (True, False):
             raise ValueError, _("Graphics enabled must be True or False")
 
-        if self._graphics["enabled"] == True:
+        if enabled == True:
             gdev = VirtualGraphics(type=gtype)
             if port:
                 gdev.port = port
-            if self._graphics.has_key("keymap") and self._graphics["keymap"]:
-                gdev.keymap = self._graphics["keymap"]
-            self._graphics["type"] = gdev
+            if keymap:
+                gdev.keymap = keymap
+        self._graphics_dev = gdev
 
     graphics = property(get_graphics, set_graphics)
 
