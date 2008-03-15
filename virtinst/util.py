@@ -48,7 +48,10 @@ def default_route():
 # Legacy for compat only.
 def default_bridge():
     rt = default_route()
-    defn = int(rt[-1])
+    if rt is None:
+        defn = None
+    else:
+        defn = int(rt[-1])
 
     if defn is None:
         return "xenbr0"

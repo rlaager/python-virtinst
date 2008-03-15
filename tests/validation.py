@@ -221,7 +221,8 @@ class TestValidation(unittest.TestCase):
             network.setup(self.guest.conn)
         except Exception, e:
             raise AssertionError, \
-                "Network setup with no params failed, expected success."
+                "Network setup with no params failed, expected success." + \
+                " Exception was: %s: %s" % (str(e), "".join(traceback.format_exc()))
 
     def testDistroInstaller(self):
        dinstall = virtinst.DistroInstaller()
