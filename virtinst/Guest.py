@@ -391,15 +391,16 @@ class VirtualGraphics(object):
     TYPE_SDL = "sdl"
     TYPE_VNC = "vnc"
 
-    def __init__(self, type=TYPE_VNC):
-        
+    def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
+                 keymap=None):
+
         if type != self.TYPE_VNC and type != self.TYPE_SDL:
             raise ValueError(_("Unknown graphics type"))
         self._type   = type
-        self._port   = -1
-        self._keymap = None
-        self._listen = None
-        self._passwd = None
+        self.set_port(port)
+        self.set_keymap(keymap)
+        self.set_listen(None)
+        self.set_passwd(passwd)
 
     def get_type(self):
         return self._type
@@ -422,8 +423,11 @@ class VirtualGraphics(object):
     def get_port(self):
         return self._port
     def set_port(self, val):
-        if type(val) is not int or val < 5900 or val > 65535:
-            raise ValueError, _("VNC port must be a number between 5900 and 65535")
+        if val is None:
+            val = -1
+        elif type(val) is not int \
+             or (val != -1 and (val < 5900 or val > 65535)):
+            raise ValueError, _("VNC port must be a number between 5900 and 65535, or -1 for auto allocation")
         self._port = val
     port = property(get_port, set_port)
 
