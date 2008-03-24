@@ -400,7 +400,7 @@ def main():
 
     # set up cpuset
     if type == "xen":
-        cli.get_cpuset(options.cpuset, guest)
+        cli.get_cpuset(options.cpuset, guest.memory, guest, conn)
 
     # set up disks
     get_disks(options.diskfile, options.disksize, options.sparse, options.nodisks,

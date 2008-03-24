@@ -26,7 +26,7 @@ from optparse import OptionValueError
 
 import libvirt
 import util
-import Guest
+import Guest, CapabilitiesParser
 
 MIN_RAM = 64
 force = False
@@ -189,9 +189,39 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
         except ValueError, e:
             print _("ERROR: "), e
 
-def get_cpuset(cpuset, guest):
-    if cpuset:
+def get_cpuset(cpuset, mem, guest, conn):
+    if cpuset and cpuset != "auto":
         guest.cpuset = cpuset
+    elif cpuset == "auto":
+        caps = CapabilitiesParser.parse(conn.getCapabilities())
+        cells = caps.host.topology.cells
+        if len(cells) <= 1:
+            logging.debug("Capabilities only show <= 1 cell. Not NUMA capable")
+            print >> sys.stderr, _("This system is not NUMA capable.")
+            sys.exit(1)
+
+        cell_mem = conn.getCellsFreeMemory(0, len(cells))
+        cell_id = -1
+        mem = mem * 1024 * 1024
+        for i in range(len(cells)):
+            if cell_mem[i] > mem and len(cells[i].cpus) != 0:
+                # Find smallest cell that fits
+                if cell_id < 0 or cell_mem[i] < cell_mem[cell_id]:
+                    cell_id = i;
+        if cell_id < 0:
+            print >> sys.stderr,\
+                     _("Could not find any usable NUMA cell/cpu combinations")
+            sys.exit(1)
+
+        # Build cpuset
+        cpustr = ""
+        for cpu in cells[cell_id].cpus:
+            if cpustr != "":
+                cpustr += ","
+            cpustr += str(cpu.id)
+        logging.debug("Auto cpuset is: %s" % cpustr)
+        guest.cpuset = cpustr
+    return
 
 def get_network(mac, network, guest):
     if mac == "RANDOM":
