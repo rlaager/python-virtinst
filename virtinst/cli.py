@@ -197,8 +197,7 @@ def get_cpuset(cpuset, mem, guest, conn):
         cells = caps.host.topology.cells
         if len(cells) <= 1:
             logging.debug("Capabilities only show <= 1 cell. Not NUMA capable")
-            print >> sys.stderr, _("This system is not NUMA capable.")
-            sys.exit(1)
+            return
 
         cell_mem = conn.getCellsFreeMemory(0, len(cells))
         cell_id = -1
@@ -209,9 +208,8 @@ def get_cpuset(cpuset, mem, guest, conn):
                 if cell_id < 0 or cell_mem[i] < cell_mem[cell_id]:
                     cell_id = i;
         if cell_id < 0:
-            print >> sys.stderr,\
-                     _("Could not find any usable NUMA cell/cpu combinations")
-            sys.exit(1)
+            logging.debug("Could not find any usable NUMA cell/cpu combinations. Not setting cpuset.")
+            return
 
         # Build cpuset
         cpustr = ""
