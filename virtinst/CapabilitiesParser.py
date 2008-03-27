@@ -258,11 +258,18 @@ class Capabilities(object):
         self._fixBrokenEmulator()
 
     def guestForOSType(self, type = None, arch = None):
-        for g in self.guests:
-            if (type is None or g.os_type == type) and (arch is None or g.arch == arch):
-                return g
-        return None
+        if self.host is None:
+            return None
 
+        if arch is None:
+            archs = [self.host.arch, None]
+        else:
+            archs = [arch]
+        for a in archs:
+            for g in self.guests:
+                if (type is None or g.os_type == type) and \
+                   (a is None or g.arch == a):
+                    return g
 
     # 32-bit HVM emulator path, on a 64-bit host is wrong due
     # to bug in libvirt capabilities. We fix by copying the
