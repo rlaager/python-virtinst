@@ -130,7 +130,7 @@ def get_paravirt_install(src, guest):
             print _("ERROR: "), e
             src = None
 
-def get_paravirt_extraargs(extra, guest):
+def get_extraargs(extra, guest):
     guest.extraargs = extra
 
 
@@ -412,10 +412,11 @@ def main():
     # set up graphics information
     cli.get_graphics(options.vnc, options.vncport, options.nographics, options.sdl, options.keymap, guest)
 
+    get_extraargs(options.extra, guest)
+
     # and now for the full-virt vs paravirt specific questions
     if not hvm: # paravirt
         get_paravirt_install(options.location, guest)
-        get_paravirt_extraargs(options.extra, guest)
         continue_inst = False
     else:
         if not options.pxe:
