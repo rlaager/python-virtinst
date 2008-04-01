@@ -250,6 +250,7 @@ class Capabilities(object):
     def __init__(self, node = None):
         self.host = None
         self.guests = []
+        self._topology = None
 
         if not node is None:
             self.parseXML(node)
@@ -303,7 +304,14 @@ class Capabilities(object):
                 self.host = Host(child)
             elif child.name == "guest":
                 self.guests.append(Guest(child))
+            if child.name == "topology":
+                self._topology = Topology(child)
             child = child.next
+
+        # Libvirt < 0.4.1 placed topology info at the capabilities level
+        # rather than the host level. This is just for back compat
+        if self.host.topology is None:
+            self.host.topology = self._topology
 
 def parse(xml):
     class ErrorHandler:
