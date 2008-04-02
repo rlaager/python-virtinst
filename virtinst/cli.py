@@ -194,7 +194,7 @@ def get_cpuset(cpuset, mem, guest, conn):
         guest.cpuset = cpuset
     elif cpuset == "auto":
         caps = CapabilitiesParser.parse(conn.getCapabilities())
-        if cells.host.topology is None:
+        if caps.host.topology is None:
             logging.debug("No topology section in caps xml. Skipping cpuset")
             return
 
