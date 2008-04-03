@@ -205,7 +205,7 @@ def get_cpuset(cpuset, mem, guest, conn):
 
         cell_mem = conn.getCellsFreeMemory(0, len(cells))
         cell_id = -1
-        mem = mem * 1024 * 1024
+        mem = mem * 1024
         for i in range(len(cells)):
             if cell_mem[i] > mem and len(cells[i].cpus) != 0:
                 # Find smallest cell that fits
