@@ -660,9 +660,11 @@ class Guest(object):
         return self._vcpus
     def set_vcpus(self, val):
         maxvcpus = util.get_max_vcpus(self.conn, self.type)
-        if val < 1 or val > maxvcpus:
+        if type(val) is not int or val < 1:
+            raise ValueError, _("Number of vcpus must be a postive integer.")
+        if val > maxvcpus:
             raise ValueError, \
-                  _("Number of vcpus must be in the range of 1-%d") % (maxvcpus,)
+                  _("Number of vcpus must be no greater than %d for this vm type.") % maxvcpus
         self._vcpus = val
     vcpus = property(get_vcpus, set_vcpus)
 
