@@ -1,0 +1,994 @@
+# translation of sr.po to Serbian
+# Serbian translations for virtinst
+# Copyright (C) 2008 Red Hat, Inc.
+# This file is distributed under the same license as the virtinst package.
+#
+# Nikola Pajtic <salgeras@gmail.com>, 2008.
+# Jovan Krunic <jovan.krunic@gmail.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: virtinst\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-03-04 09:52-0500\n"
+"PO-Revision-Date: 2008-04-07 00:24+0200\n"
+"Last-Translator: Jovan Krunic <jovan.krunic@gmail.com>\n"
+"Language-Team: Serbian (sr) <fedora-trans-sr@redhat.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: virt-clone:43
+msgid "What is the name for the cloned virtual machine?"
+msgstr "Које је име за клонирану виртуелну машину?"
+
+#: virt-clone:48 virt-clone:58 virt-clone:87 virt-clone:205 virt-image:227
+#: virt-install:66 virt-install:77 virt-install:130 virt-install:158
+#: virt-install:483 virtinst/cli.py:119 virtinst/cli.py:149
+#: virtinst/cli.py:157 virtinst/cli.py:174 virtinst/cli.py:179
+#: virtinst/cli.py:260
+msgid "ERROR: "
+msgstr "ГРЕШКА: "
+
+#: virt-clone:53
+msgid "What is the name or uuid of the original virtual machine?"
+msgstr "Које је име или uuid идентификатор за оригиналну виртуелну машину?"
+
+#: virt-clone:81
+msgid "What would you like to use as the cloned disk (file path)?"
+msgstr "Шта бисте желели да користите као клонирани диск (путања датотеке)?"
+
+#: virt-clone:93 virt-install:83
+#, python-format
+msgid "Disk %s is already in use by another guest!\n"
+msgstr "Други гост већ користи диск %s!\n"
+
+#: virt-clone:94 virt-install:85
+msgid "Do you really want to use the disk (yes or no)? "
+msgstr "Да ли заиста желите да користите диск (да или не)?"
+
+#: virt-clone:123
+msgid "Name or uuid for the original guest; The status must be shut off"
+msgstr ""
+"Име или uuid идентификатор за оригиналног госта; статус мора бити угашен"
+
+#: virt-clone:127
+msgid "Name for the new guest"
+msgstr "Име за новог госта"
+
+#: virt-clone:132
+msgid "New UUID for the clone guest; Default is a randomly generated UUID"
+msgstr ""
+"Нови јединствени идентификатор за клонираног госта; случајно изабрани "
+"идентификатор је подразумеван"
+
+#: virt-clone:137
+msgid ""
+"New fixed MAC address for the clone guest. Default is a randomly generated "
+"MAC"
+msgstr ""
+"Нова фиксирана MAC адреса за клонираног госта. Случајно изабрана адреса је "
+"подразумевана"
+
+#: virt-clone:142
+msgid "New file to use as the disk image for the new guest"
+msgstr "Нова датотека која ће се користити као слика диска за новог госта"
+
+#: virt-clone:146 virt-image:128 virt-install:236
+msgid "Connect to hypervisor with URI"
+msgstr "Повезати се на хипервизора са УРИ-ом"
+
+#: virt-clone:152
+msgid ""
+"Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-"
+"copy=hdc)"
+msgstr ""
+"Приморај копирање уређаја (нпр, ако је „hdc“ случајан диск уређај, користити "
+"--force-copy=hdc)"
+
+#: virt-clone:157
+msgid "Do not use a sparse file for the clone's disk image"
+msgstr "Немој користити празну датотеку за слику клонираног диска"
+
+#: virt-clone:162
+msgid "Preserve a new file to use as the disk image for the new guest"
+msgstr ""
+"Сачувај нову датотеку која ће се користити као слика диска за новог госта"
+
+#: virt-clone:166 virt-image:137 virt-install:273
+msgid "Print debugging information"
+msgstr "Одштампај податке о отклањању грешака"
+
+#: virt-clone:181
+msgid "Must be root to clone Xen guests"
+msgstr "Морате бити root корисник да бисте клонирали Xen госта"
+
+#: virt-clone:219 virt-image:242 virt-install:498
+msgid "Installation aborted at user request"
+msgstr "Инсталацијa је обустављена на корисников захтев"
+
+#: virt-image:67
+msgid ""
+"Warning: image does not support networking, ignoring network related options"
+msgstr ""
+"Упозорење: слика не подржава умрежавање, игноришући опције везане за мрежу"
+
+#: virt-image:70
+msgid "The image needs one network interface"
+msgstr "Слици је потребан један мрежни интерфејс"
+
+#: virt-image:90 virt-install:177
+msgid "Name of the guest instance"
+msgstr "Име инстанце госта"
+
+#: virt-image:92 virt-install:179
+msgid "Memory to allocate for guest instance in megabytes"
+msgstr "Меморија коју је потребно алоцирати за инстанцу госта у мегабајтима"
+
+#: virt-image:95 virt-install:182
+msgid ""
+"UUID for the guest; if none is given a random UUID will be generated. If you "
+"specify UUID, you should use a 32-digit hexadecimal number."
+msgstr ""
+"Јединствени идентификатор за госта; уколико ниједан није наведен, генерисаће "
+"се случајни. Ако одредите идентификатор, требало би да користите 32-цифрени "
+"хексадецимални број."
+
+#: virt-image:97 virt-install:184
+msgid "Number of vcpus to configure for your guest"
+msgstr "Број виртуелних процесора које је потребно подесити за госта"
+
+#: virt-image:99 virt-install:186
+msgid "Check that vcpus do not exceed physical CPUs and warn if they do."
+msgstr ""
+"Проверите да ли виртуелни процесори не превазилазе број физичких процесора и "
+"упозорите уколико да."
+
+#: virt-image:104 virt-install:207
+msgid ""
+"Fixed MAC address for the guest; if none or RANDOM is given a random address "
+"will be used"
+msgstr ""
+"Фиксирана MAC адреса за госта; уколико је ниједна или СЛУЧАЈНА одабрана, "
+"користиће се случајно изабрана адреса"
+
+#: virt-image:107 virt-install:210
+msgid ""
+"Bridge to connect guest NIC to; if none given, will try to determine the "
+"default"
+msgstr ""
+"Мост на који се повезује NIC госта; уколико ниједан није дат, биће покушано "
+"да се одреди подразумевани"
+
+#: virt-image:110 virt-install:213
+msgid ""
+"Connect the guest to a virtual network, forwarding to the physical network "
+"with NAT"
+msgstr ""
+"Повежи госта на виртуелну мрежу, прослеђујући га на физичку мрежу користећи "
+"NAT"
+
+#: virt-image:114 virt-install:217
+msgid "Use VNC for graphics support"
+msgstr "Користи VNC као графичку подршку"
+
+#: virt-image:116 virt-install:219
+msgid "Port to use for VNC"
+msgstr "Прикључак за VNC"
+
+#: virt-image:118 virt-install:221
+msgid "Use SDL for graphics support"
+msgstr "Користи SDL као графичку подршку"
+
+#: virt-image:120 virt-install:223
+msgid "Don't set up a graphical console for the guest."
+msgstr "Немој постављати графичку конзолу за новог госта."
+
+#: virt-image:124 virt-install:230
+msgid "set up keymap for a graphical console"
+msgstr "постави мапирање кључа за графичку конзолу"
+
+#: virt-image:132 virt-install:255
+msgid ""
+"Disables APIC for fully virtualized guest (overrides value in os-type/os-"
+"variant db)"
+msgstr ""
+"Онемогући APIC за потпуно виртуализованог госта (премости вредности os-type/"
+"os-variant у бази података)"
+
+#: virt-image:133 virt-install:256
+msgid ""
+"Disables ACPI for fully virtualized guest (overrides value in os-type/os-"
+"variant db)"
+msgstr ""
+"Онемогући ACPI за потпуно виртуализованог госта (премости вредности os-type/"
+"os-variant у бази података)"
+
+#: virt-image:139
+msgid "Print the libvirt XML, but do not start the domain"
+msgstr "Одштампај libvirt XML, али немој покретати домен"
+
+#: virt-image:141
+msgid "The zero-based index of the boot record to use"
+msgstr "Нулти индекс који ће се користити при подизању система"
+
+#: virt-image:145
+msgid "You need to provide an image XML descriptor"
+msgstr "Потребно је да пружите дескриптор XML слике"
+
+#: virt-image:152
+msgid "Must provide the location of an image XML file with --image"
+msgstr ""
+"Потребно је да пружите локацију слике XML датотеке, користећи опцију --image"
+
+#: virt-image:155
+#, python-format
+msgid "Can not read %s"
+msgstr "Не могу да прочитам %s"
+
+#: virt-image:175
+#, python-format
+msgid "The index for --boot must be between 0 and %d"
+msgstr "Индекс за --boot мора бити између 0 и %d"
+
+#: virt-image:219
+#, python-format
+msgid ""
+"\n"
+"\n"
+"Creating guest %s..."
+msgstr ""
+"\n"
+"\n"
+"Правим госта %s..."
+
+#: virt-image:223
+msgid "Guest creation failed"
+msgstr "Није могуће направити госта"
+
+#: virt-image:230
+#, python-format
+msgid ""
+"Domain creation may not have been\n"
+"successful.  If it was, you can restart your domain\n"
+"by running 'virsh start %s'; otherwise, please\n"
+"restart your installation."
+msgstr ""
+"Прављење домена можда неће бити успешно.\n"
+"Ако буде, можете поново покренути домен\n"
+"покретањем „virsh start %s“; у супротном, молим\n"
+"поново покрените инсталацију."
+
+#: virt-install:47
+msgid ""
+"Would you like a fully virtualized guest (yes or no)?  This will allow you "
+"to run unmodified operating systems."
+msgstr ""
+"Да ли бисте желели потпуно виртуализованог госта (да или не)?  Ово ће Вам "
+"омогућити да покрећете немодификоване оперативне системе."
+
+#: virt-install:52
+msgid "What would you like to use as the disk (file path)?"
+msgstr "Шта бисте желели да користите као диск (путања датотеке)?"
+
+#: virt-install:54
+#, python-format
+msgid ""
+"Please enter the path to the file you would like to use for storage. It will "
+"have size %sGB."
+msgstr ""
+"Унесите путању до датотеке коју бисте желели да користите као складиште. "
+"Имаће величину од %sГБ."
+
+#: virt-install:61
+#, python-format
+msgid "How large would you like the disk (%s) to be (in gigabytes)?"
+msgstr "Колико велики бисте желели да диск (%s) буде (у гигабајтима)?"
+
+#: virt-install:95
+msgid "Cannot use --file with --nodisks"
+msgstr "Не могу да користим опцију --file са --nodisks"
+
+#: virt-install:100
+msgid "Need to pass size for each disk"
+msgstr "Потребно је да проследите величину за сваки диск"
+
+#: virt-install:125
+msgid "What is the install location?"
+msgstr "Која је локација инсталације?"
+
+#: virt-install:145
+msgid "What is the virtual CD image, CD device or install location?"
+msgstr "Која је слика виртуелног CD-а, CD уређај или локација инсталације?"
+
+#: virt-install:165 virt-install:170 virtinst/cli.py:271 virtinst/cli.py:276
+#, python-format
+msgid "%s option requires an argument"
+msgstr "Опција %s је потребна као аргумент"
+
+#: virt-install:189
+msgid "Set which physical CPUs Domain can use."
+msgstr "Постави који домен физички процесори могу да користе."
+
+#: virt-install:194
+msgid "File to use as the disk image"
+msgstr "Датотека која ће се користити као слика диска"
+
+#: virt-install:197
+msgid "Size of the disk image (if it doesn't exist) in gigabytes"
+msgstr "Величина слике диска (уколико не постоји) у гигабајтима"
+
+#: virt-install:200
+msgid ""
+"Don't use sparse files for disks.  Note that this will be significantly "
+"slower for guest creation"
+msgstr ""
+"Немој користити празну датотеку као диск.  Обратите пажњу да ће ово доста "
+"успорити прављење госта"
+
+#: virt-install:202
+msgid "Don't set up any disks for the guest."
+msgstr "Немој постављати никакав диск за госта."
+
+#: virt-install:226
+msgid "Don't automatically try to connect to the guest console"
+msgstr "Немој самостално покушавати да се повежеш на конзолу госта"
+
+#: virt-install:233
+msgid "Use kernel acceleration capabilities"
+msgstr "Користи могућности убрзавања језгра"
+
+#: virt-install:239
+msgid "Specify the CDROM media is a LiveCD"
+msgstr "Одреди да је CDROM медијум LiveCD"
+
+#: virt-install:243
+msgid "This guest should be a fully virtualized guest"
+msgstr "Овај гост би требало да буде потпуно виртуализован гост"
+
+#: virt-install:246
+msgid "File to use a virtual CD-ROM device for fully virtualized guests"
+msgstr ""
+"Датотека која ће користити CD-ROM уређај за потпуно виртуализованог госта"
+
+#: virt-install:248
+msgid "Boot an installer from the network using the PXE boot protocol"
+msgstr "Покрени инсталацију са мреже користећи PXE протокол"
+
+#: virt-install:251
+msgid ""
+"The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
+msgstr ""
+"Врста оперативног система за потпуно виртуализоване госте, нпр. „linux“, "
+"„unix“, „windows“"
+
+#: virt-install:254
+msgid ""
+"The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
+"'solaris10', 'win2k', 'vista'"
+msgstr ""
+"Варијанта оперативног система за потпуно виртуализоване госте, нпр. "
+"„fedora6“, „rhel5“, „solaris10“, „win2k“, „vista“"
+
+#: virt-install:259
+msgid "The CPU architecture to simulate"
+msgstr "Архитектура процесора која ће се симулирати"
+
+#: virt-install:263
+msgid "This guest should be a paravirtualized guest"
+msgstr "Овај гост би требало да буде паравиртуализован гост"
+
+#: virt-install:266
+msgid ""
+"Installation source for paravirtualized guest (eg, nfs:host:/path, http://"
+"host/path, ftp://host/path)"
+msgstr ""
+"Извор за инсталацију за паравиртуелизованог госта (нпр. nfs:host:/path, "
+"http://host/path, ftp://host/path)"
+
+#: virt-install:269
+msgid "Additional arguments to pass to the installer with paravirt guests"
+msgstr "Додатни аргументи који ће се проследити инсталеру са паравирт. гостима"
+
+#: virt-install:275
+msgid "Disables the automatic rebooting when the installation is complete."
+msgstr "Искључује аутоматско поновно подизање система када се инсталација заврши."
+
+#: virt-install:315
+msgid ""
+"Unable to connect to graphical console: virt-viewer not installed. Please "
+"install the 'virt-viewer' package."
+msgstr ""
+"Не могу да се повежем на графичку конзолу: virt-viewer није инсталиран. "
+"Молим, инсталирајте пакет „virt-viewer“."
+
+#: virt-install:346
+msgid "Can't do both --hvm and --paravirt"
+msgstr "Не могу истовремено да извршим опције --hvm и --paravirt"
+
+#: virt-install:357 virtinst/ImageManager.py:47
+msgid "Unsupported virtualization type"
+msgstr "Врста виртуелизације која није подржана"
+
+#: virt-install:370
+msgid "LiveCD installations are not supported for paravirt guests"
+msgstr "Инсталације са LiveCD-а нису подржане за паравирт. госте"
+
+#: virt-install:379
+msgid "Only one of --pxe, --location and --cdrom can be used"
+msgstr "Само једна од опција --pxe, --location и --cdrom може бити коришћена"
+
+#: virt-install:389
+msgid "Network PXE boot is not support for paravirtualized guests"
+msgstr "Мрежно PXE стартовање није подржано за паравиртуализоване госте"
+
+#: virt-install:449
+msgid ""
+"\n"
+"\n"
+"Starting install..."
+msgstr ""
+"\n"
+"\n"
+"Покрећем инсталацију..."
+
+#: virt-install:462
+msgid "Guest installation failed"
+msgstr "Инсталација госта није успела"
+
+#: virt-install:466
+msgid ""
+"Domain installation still in progress.  You can reconnect to \n"
+"the console to complete the installation process."
+msgstr ""
+"Инсталација домена је још у изради. Можете се поново повезати на \n"
+"конзолу да завршите инсталациони процес."
+
+#: virt-install:472
+#, python-format
+msgid ""
+"Domain installation does not appear to have been\n"
+" successful.  If it was, you can restart your domain\n"
+" by running 'virsh start %s'; otherwise, please\n"
+" restart your installation."
+msgstr ""
+"Изгледа да инсталација домена није била успешна.\n"
+"Уколико јесте, можете поново покренути домен \n"
+"извршавајући „virsh start %s“; у супротном, молим\n"
+"поново покрените инсталацију."
+
+#: virt-install:476
+#, python-format
+msgid ""
+"Guest installation complete... you can restart your domain\n"
+"by running 'virsh start %s'"
+msgstr ""
+"Инсталација госта је завршена... можете поново покренути ваш домен\n"
+"извршавањем „virsh start %s“"
+
+#: virt-install:479
+msgid "Guest installation complete... restarting guest."
+msgstr "Инсталација госта је завршена... поново покрећем госта."
+
+#: virt-install:489
+#, python-format
+msgid ""
+"Domain installation may not have been\n"
+" successful.  If it was, you can restart your domain\n"
+" by running 'virsh start %s'; otherwise, please\n"
+" restart your installation."
+msgstr ""
+"Инсталација домена можда није била успешна.\n"
+"Уколико јесте, можете поново покренути домен \n"
+"извршавајући „virsh start %s“; у супротном, молим\n"
+"поново покрените инсталацију."
+
+#: virtinst/cli.py:129
+msgid "What is the name of your virtual machine?"
+msgstr "Које је име Ваше виртуелне машине?"
+
+#: virtinst/cli.py:140
+msgid "How much RAM should be allocated (in megabytes)?"
+msgstr "Колико RAM меморије треба да буде алоцирано (у мегабајтима)?"
+
+#: virtinst/cli.py:142
+#, python-format
+msgid "ERROR: Installs currently require %d megs of RAM."
+msgstr "ГРЕШКА: инсталација тренутно захтева %d мегабајта RAM меморије."
+
+#: virtinst/cli.py:168
+#, python-format
+msgid ""
+"You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
+"on the host. This will work, but performance will be poor. Are you sure? "
+"(yes or no)"
+msgstr ""
+"Тражили сте више виртуелних процесора (%d) него што постоји физичких "
+"процесора (%d) на домаћину. Ово ће радити, али ће учинак бити слаб. Да ли "
+"сте сигурни? (да или не)"
+
+#: virtinst/cli.py:172
+msgid "How many VCPUs should be attached?"
+msgstr "Колико би виртуелних процесора требало да буде придружено?"
+
+#: virtinst/cli.py:195
+msgid "Unknown network type "
+msgstr "Непозната врста мреже"
+
+#: virtinst/cli.py:210
+msgid "Cannot mix both --bridge and --network arguments"
+msgstr "Не могу истовремено да повежем аргументе --bridge и --network"
+
+#: virtinst/cli.py:220 virtinst/cli.py:232
+msgid "Need to pass equal numbers of networks & mac addresses"
+msgstr "Потребно је да проследите једнаке бројеве мрежних и МАС адреса"
+
+#: virtinst/cli.py:241
+msgid "Can't do both VNC graphics and nographics"
+msgstr "Не могу истовремено да покренем графички и неграфички део VNC сервиса"
+
+#: virtinst/cli.py:243
+msgid "Can't do both VNC graphics and SDL"
+msgstr "Не могу истовремено да покренем графички VNC и SDL"
+
+#: virtinst/cli.py:245
+msgid "Can't do both SDL and nographics"
+msgstr "Не могу истовремено да покренем SDL и неграфички део"
+
+#: virtinst/cli.py:256
+msgid "Would you like to enable graphics support? (yes or no)"
+msgstr "Да ли бисте желели да укључите графичку подршку? (да или не)"
+
+#: virtinst/CloneManager.py:73
+msgid "Name or UUID of guest to clone is required"
+msgstr "За клонирање госта потребно је унети име или јединствени идентификатор"
+
+#: virtinst/CloneManager.py:82
+msgid "A valid name or UUID of guest to clone is required"
+msgstr ""
+"За клонирање госта потребно је унети исправно име или јединствени "
+"идентификатор"
+
+#: virtinst/CloneManager.py:92
+#, python-format
+msgid "Invalid name for new guest: %s"
+msgstr "Неисправно име за новог госта: %s"
+
+#: virtinst/CloneManager.py:100
+#, python-format
+msgid "Invalid uuid for new guest: %s"
+msgstr "Неисправан јединствени идентификатор за новог госта: %s"
+
+#: virtinst/CloneManager.py:108
+msgid "New file to use for disk image is required"
+msgstr "Потребна је нова датотека која ће се користити као слика диска"
+
+#: virtinst/CloneManager.py:186
+#, python-format
+msgid "Domain %s is not found"
+msgstr "Домен %s није пронађен"
+
+#: virtinst/CloneManager.py:203
+msgid "Domain status must be SHUTOFF"
+msgstr "Статус домена мора бити УГАШЕН"
+
+#: virtinst/CloneManager.py:210
+#, python-format
+msgid "Domain %s already exists"
+msgstr "Домен %s већ постоји"
+
+#: virtinst/CloneManager.py:219 virtinst/Guest.py:971
+msgid "The UUID you entered is already in use by another guest!"
+msgstr "Други гост већ користи јединствени идентификатор који сте унели"
+
+#: virtinst/CloneManager.py:262
+#, python-format
+msgid "Missing new file to use disk image for %s"
+msgstr "Недостаје датотека која ће се користити за слику диска %s"
+
+#: virtinst/CloneManager.py:545
+#, python-format
+msgid "Cloning from %(src)s to %(dst)s"
+msgstr "Клонирам од %(src)s ка %(dst)s"
+
+#: virtinst/CloneManager.py:547
+msgid "Cloning domain..."
+msgstr "Клонирам домен..."
+
+#: virtinst/DistroManager.py:85
+#, python-format
+msgid "Could not find an installable distribution at '%s'"
+msgstr "Нисам могао да пронађем инсталациону дистрибуцију на „%s“"
+
+#: virtinst/DistroManager.py:95 virtinst/DistroManager.py:111
+msgid "Invalid install location: "
+msgstr "Неисправна локација за инсталацију:"
+
+#: virtinst/DistroManager.py:142
+msgid "Invalid NFS format: No path specified."
+msgstr "Погрешан NFS облик: ниједна путања није одређена."
+
+#: virtinst/DistroManager.py:148
+msgid ""
+"Install media location must be an NFS, HTTP or FTP network install source, "
+"or an existing local file/device"
+msgstr ""
+"Медиј за инсталацију мора бити NFS, HTTP или FTP извор, или постојећа "
+"локална датотека/уређај"
+
+#: virtinst/DistroManager.py:151
+msgid "NFS installations are only supported as root"
+msgstr "Инсталације преко NFS-а су једино подржане као root корисник"
+
+#: virtinst/FullVirtGuest.py:144
+#, python-format
+msgid "OS type %s does not exist in our dictionary"
+msgstr "Врста оперативног система %s не постоји у нашем речнику"
+
+#: virtinst/FullVirtGuest.py:151
+msgid "An OS type must be specified before a variant."
+msgstr "Врста оперативног система мора бити одређена пре промене."
+
+#: virtinst/FullVirtGuest.py:155
+#, python-format
+msgid ""
+"OS variant %(var)s does not exist in our dictionary for OS type %(type)s"
+msgstr ""
+"Променљива оперативног система %(var)s не постоји у нашем речнику "
+"оперативног система врсте %(type)s"
+
+#: virtinst/FullVirtGuest.py:260
+msgid "Unable to start domain for guest, aborting installation!"
+msgstr "Не могу да покренем домен за госта, прекидам инсталацију!"
+
+#: virtinst/Guest.py:67
+#, python-format
+msgid "The %s path must be a string or None."
+msgstr "Путања %s мора бити низ знакова или Ништа."
+
+#: virtinst/Guest.py:70
+#, python-format
+msgid "The %s path must be a file or a device, not a directory"
+msgstr "Путања %s мора бити датотека или уређај, а не директоријум"
+
+#: virtinst/Guest.py:72
+msgid "The specified path's root directory must exist."
+msgstr "Одређена путања кореног директоријума мора постојати."
+
+#: virtinst/Guest.py:77
+#, python-format
+msgid "The %s path must exist."
+msgstr "Путања %s мора постојати."
+
+#: virtinst/Guest.py:96
+msgid "A size must be provided for non-existent disks"
+msgstr "Величина мора бити дата за не-постојеће дискове."
+
+#: virtinst/Guest.py:99
+msgid "The specified path is a block device, not a regular file."
+msgstr "Одређена путања је блок уређај, а не регуларна датотека."
+
+#: virtinst/Guest.py:102
+msgid "Disk size must be an int or a float."
+msgstr "Величина диска мора бити типа int или float."
+
+#: virtinst/Guest.py:104
+msgid "Disk size must not be less than 0."
+msgstr "Величина диска не сме бити мања од 0."
+
+#: virtinst/Guest.py:108
+msgid "The specified block device does not exist."
+msgstr "Одређени блок уређај не постоји."
+
+#: virtinst/Guest.py:111
+msgid "The specified path is not a block device."
+msgstr "Одређена путања није блок уређај."
+
+#: virtinst/Guest.py:117
+#, python-format
+msgid "Disk type '%s' requires a path"
+msgstr "Врста диска „%s“ захтева путању"
+
+#: virtinst/Guest.py:148
+msgid "Creating storage file..."
+msgstr "Правим датотеку складишта..."
+
+#: virtinst/Guest.py:255
+msgid "MAC address must be of the format AA:BB:CC:DD:EE:FF"
+msgstr "MAC адреса мора бити у формату AA:BB:CC:DD:EE:FF"
+
+#: virtinst/Guest.py:262
+msgid "A network name was not provided"
+msgstr "Мрежно име није дато"
+
+#: virtinst/Guest.py:264 virtinst/Guest.py:272
+#, python-format
+msgid "Bridge name is not required for %s"
+msgstr "Име моста није потребно за %s"
+
+#: virtinst/Guest.py:267 virtinst/Guest.py:270
+#, python-format
+msgid "Network name is not required for %s"
+msgstr "Мрежно име није потребно за %s"
+
+#: virtinst/Guest.py:274
+#, python-format
+msgid "Unknown network type %s"
+msgstr "Непозната врста мреже %s"
+
+#: virtinst/Guest.py:309
+msgid ""
+"The MAC address you entered is already in use by another virtual machine!"
+msgstr "Друга виртуелна машина већ користи унету MAC адресу!"
+
+#: virtinst/Guest.py:312
+msgid "The MAC address you entered conflicts with the physical NIC."
+msgstr "MAC адреса коју сте унели се сукобљава са физичким NIC уређајем."
+
+#: virtinst/Guest.py:314
+msgid ""
+"The MAC address you entered is already in use by another inactive virtual "
+"machine!"
+msgstr "Друга неактивна виртуелна машина већ користи унету MAC адресу!"
+
+#: virtinst/Guest.py:403
+msgid ""
+"Invalid value for vnc port, port number must be in between 5900 and 65535"
+msgstr ""
+"Неисправна вредност за vnc прикључак, број прикључка мора бити између 5900 и "
+"65535"
+
+#: virtinst/Guest.py:488
+msgid "Guest.cdrom must be a boolean type"
+msgstr "Вредност Guest.cdrom мора бити логичког типа "
+
+#: virtinst/Guest.py:505 virtinst/Guest.py:510 virtinst/Guest.py:514
+msgid "Must pass both a kernel and initrd"
+msgstr "Потребно је проследити и језгро и initrd"
+
+#: virtinst/Guest.py:517
+msgid "Kernel and initrd must be specified by a list, dict, or tuple."
+msgstr "Језгро и initrd морају бити дефинисани у листи, речнику или у пару"
+
+#: virtinst/Guest.py:552
+msgid "Unable to connect to hypervisor, aborting installation!"
+msgstr "Не могу да се повежем на хипервизора, прекидам инсталацију!"
+
+#: virtinst/Guest.py:575
+msgid ""
+"System name must be a string greater than 0 and no more than 50 characters"
+msgstr "Системско име мора бити низ знакова дужи од 0 и не дужи од 50 знакова"
+
+#: virtinst/Guest.py:577
+msgid "System name must not be only numeric characters"
+msgstr "Системско име не сме бити само са нумеричким знацима"
+
+#: virtinst/Guest.py:579
+msgid "System name can only contain alphanumeric, '_', '.', or '-' characters"
+msgstr ""
+"Системско име може садржати само алфанумеричке, „_“, „.“, или „-“ знакове"
+
+#: virtinst/Guest.py:589
+msgid "Memory value must be an integer greater than 0"
+msgstr "Вредност меморије мора бити цео број већи од 0"
+
+#: virtinst/Guest.py:600
+msgid "Max Memory value must be an integer greater than 0"
+msgstr "Највећа вредност меморије мора бити цео број већи од 0"
+
+#: virtinst/Guest.py:611
+msgid "UUID must be a string."
+msgstr "Јединствени идентификатор мора бити низ знакова."
+
+#: virtinst/Guest.py:617
+msgid ""
+"UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-"
+"XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
+msgstr ""
+"Јединствени идентификатор мора бити 32-цифрени хексадецимални број. Може "
+"бити у облику XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX или може бити без цртица."
+
+#: virtinst/Guest.py:633
+#, python-format
+msgid "Number of vcpus must be in the range of 1-%d"
+msgstr "Број виртуелних процесора мора бити у опсегу 1-%d"
+
+#: virtinst/Guest.py:642
+msgid "cpuset must be string"
+msgstr "Вредност cpuset мора бити низ знакова"
+
+#: virtinst/Guest.py:644
+msgid "cpuset can only contain numeric, ',', or '-' characters"
+msgstr "Вредност cpuset може садржати само нумеричке, „,“, или „-“ знакове"
+
+#: virtinst/Guest.py:651
+msgid "cpuset contains invalid format."
+msgstr "Вредност cpuset садржи неприхватљив формат."
+
+#: virtinst/Guest.py:653 virtinst/Guest.py:656
+msgid "cpuset's pCPU numbers must be less than pCPUs."
+msgstr ""
+"Бројеви тренутних процеса вредности cpuset морају бити мањи од броја "
+"тренутних процеса."
+
+#: virtinst/Guest.py:668
+msgid "Keymap must be a string"
+msgstr "Вредност Keymap мора бити низ знакова"
+
+#: virtinst/Guest.py:670
+msgid "Keymap must be less than 16 characters"
+msgstr "Вредност Keymap мора бити краћа од 16 знакова"
+
+#: virtinst/Guest.py:672
+msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
+msgstr "Вредност Keymap може само садржати алфанумеречке, „_“, или „-“ знакове"
+
+#: virtinst/Guest.py:679
+msgid "Must specify whether graphics are enabled"
+msgstr "Морате назначити да ли је графика укључена"
+
+#: virtinst/Guest.py:698
+msgid "Graphics enabled must be True or False"
+msgstr "Укључена графика мора бити Тачна или Нетачна"
+
+#: virtinst/Guest.py:709
+msgid "Unknown graphics type"
+msgstr "Непозната врста графике"
+
+#: virtinst/Guest.py:742
+msgid "You must specify a valid ISO or CD-ROM location for the installation"
+msgstr ""
+"Морате назначити исправну локацију ISO слике или CD-ROM уређаја за "
+"инсталацију"
+
+#: virtinst/Guest.py:745
+msgid "The specified media path does not exist."
+msgstr "Назначена путања до медија не постоји."
+
+#: virtinst/Guest.py:856
+#, python-format
+msgid "Domain named %s already exists!"
+msgstr "Домен са именом %s већ постоји!"
+
+#: virtinst/Guest.py:865
+msgid "Creating domain..."
+msgstr "Правим домен..."
+
+#: virtinst/Guest.py:868
+msgid "Unable to create domain for the guest, aborting installation!"
+msgstr "Не могу да направим домен за госта, прекидам инсталацију!"
+
+#: virtinst/Guest.py:888
+msgid ""
+"It appears that your installation has crashed.  You should be able to find "
+"more information in the logs"
+msgstr ""
+"Изгледа да је инсталација прекинута. Требало би да можете да пронађете више "
+"информација у евиденцијама"
+
+#: virtinst/Guest.py:934
+msgid ""
+"Domain has not existed.  You should be able to find more information in the "
+"logs"
+msgstr ""
+"Домен није постојао. Требало би да можете да пронађете више информација у "
+"евиденцијама"
+
+#: virtinst/Guest.py:936
+msgid ""
+"Domain has not run yet.  You should be able to find more information in the "
+"logs"
+msgstr ""
+"Домен још није покренут. Требало би да можете да пронађете више информација "
+"у евиденцијама"
+
+#: virtinst/Guest.py:951
+msgid "Domain has already been started!"
+msgstr "Домен је већ покренут!"
+
+#: virtinst/Guest.py:979
+msgid "Name and memory must be specified for all guests!"
+msgstr "Име и меморија морају бити назначени за све госте!"
+
+#: virtinst/ImageFetcher.py:74
+msgid "Verifying install location..."
+msgstr "Потврђујем локацију инсталације..."
+
+#: virtinst/ImageFetcher.py:78
+#, python-format
+msgid "Opening URL %s failed: %s"
+msgstr "Отварање УРЛ-а %s није успело: %s"
+
+#: virtinst/ImageFetcher.py:90
+#, python-format
+msgid "Retrieving file %s..."
+msgstr "Учитавам датотеку %s..."
+
+#: virtinst/ImageFetcher.py:92
+#, python-format
+msgid "Couldn't acquire file %s: %s"
+msgstr "Не могу да прибавим датотеку %s: %s"
+
+#: virtinst/ImageFetcher.py:149 virtinst/ImageFetcher.py:151
+msgid "Invalid file location given: "
+msgstr "Дата је неисправна локација датотеке: "
+
+#: virtinst/ImageFetcher.py:186
+#, python-format
+msgid "Mounting location %s failed"
+msgstr "Локација монтирања %s није успешна"
+
+#: virtinst/ImageManager.py:41
+msgid "Could not find suitable boot descriptor for this host"
+msgstr ""
+"Нисам могао да пронађем одговарајући дескриптор подизања система за овог "
+"домаћина"
+
+#: virtinst/ImageManager.py:94
+#, python-format
+msgid "System disk %s does not exist"
+msgstr "Системски диск %s не постоји"
+
+#: virtinst/ImageParser.py:59
+msgid "Expected exactly one 'domain' element"
+msgstr "Очекиван је само један „домен“ елемент"
+
+#: virtinst/ImageParser.py:64
+#, python-format
+msgid "Disk entry for '%s' not found"
+msgstr "Запис диска за „%s“ није пронађен"
+
+#: virtinst/ImageParser.py:91
+#, python-format
+msgid "Memory must be an integer, but is '%s'"
+msgstr "Вредност меморије мора бити цео број, али је „%s“"
+
+#: virtinst/ImageParser.py:200
+#, python-format
+msgid "The format for disk %s must be one of %s"
+msgstr "Формат за диск %s мора бити један од %s"
+
+#: virtinst/ImageParser.py:239
+msgid "Root element is not 'image'"
+msgstr "Главни елемент није „слика“"
+
+#: virtinst/LiveCDInstaller.py:39
+#, python-format
+msgid "LiveCD image '%s' does not exist"
+msgstr "LiveCD слика „%s“ не постоји"
+
+#: virtinst/LiveCDInstaller.py:50
+msgid "HVM virtualisation not supported; cannot boot LiveCD"
+msgstr "HVM виртуализација није подржана; не могу да покренем LiveCD"
+
+#: virtinst/OSDistro.py:231
+msgid "Unable to determine kernel RPM path"
+msgstr "Не могу да утврдим путању за RPM језгра"
+
+#: virtinst/OSDistro.py:233
+msgid "Unable to determine install-initrd RPM path"
+msgstr "Не могу да утврдим путању за install-initrd RPM"
+
+#: virtinst/OSDistro.py:244
+msgid "Building initrd"
+msgstr "Изграђујем initrd"
+
+#: virtinst/ParaVirtGuest.py:63
+msgid "A location must be specified to install from"
+msgstr "Мора се одредити локација са које ће инсталирати"
+
+#: virtinst/ParaVirtGuest.py:90
+msgid "Can't use more than 16 disks on a PV guest"
+msgstr "Не могу да користим више од 16 дискова на паравиртуализованом госту"
+
+#: virtinst/util.py:35
+#, python-format
+msgid "Invalid line length while parsing %s."
+msgstr "Неисправна дужина линије при рашчлањивању %s."
+
+#: virtinst/util.py:36
+#, python-format
+msgid "Defaulting bridge to xenbr%d"
+msgstr "Подразумевани мост за xenbr%d"
