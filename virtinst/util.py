@@ -222,3 +222,22 @@ def xml_escape(str):
     str = str.replace("<", "&lt;")
     str = str.replace(">", "&gt;")
     return str
+
+def compareMAC(p, q):
+    """Compare two MAC addresses"""
+    pa = p.split(":")
+    qa = q.split(":")
+
+    if len(pa) != len(qa):
+        if p > q:
+            return 1
+        else:
+            return -1
+
+    for i in xrange(len(pa)):
+        n = int(pa[i], 0x10) - int(qa[i], 0x10)
+        if n > 0:
+            return 1
+        elif n < 0:
+            return -1
+    return 0

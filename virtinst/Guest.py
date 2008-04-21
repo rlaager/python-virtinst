@@ -368,13 +368,10 @@ class VirtualNetworkInterface:
                 continue
             ctx = doc.xpathNewContext()
             try:
-                try:
-                    count += ctx.xpathEval("count(/domain/devices/interface/mac[@address='%s'])"
-                                           % self.macaddr.upper())
-                    count += ctx.xpathEval("count(/domain/devices/interface/mac[@address='%s'])"
-                                           % self.macaddr.lower())
-                except:
-                    continue
+                for mac in ctx.xpathEval("/domain/devices/interface/mac"):
+                    macaddr = mac.xpathEval("attribute::address")[0].content
+                    if util.compareMAC(self.macaddr, macaddr) == 0:
+                        count += 1
             finally:
                 if ctx is not None:
                     ctx.xpathFreeContext()
