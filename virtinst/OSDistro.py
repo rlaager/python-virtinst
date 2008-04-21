@@ -79,7 +79,7 @@ class RedHatDistro(Distro):
             initrdpath = self.treeinfo.get("images-%s" % type, "initrd")
         else:
             # fall back to old code
-            if self.type is None:
+            if self.type is None or self.type == "hvm":
                 kernelpath = "images/pxeboot/vmlinuz"
                 initrdpath = "images/pxeboot/initrd.img"
             else:
@@ -359,7 +359,7 @@ class SuseDistro(Distro):
 class DebianDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
-        if self.type is not None:
+        if self.type is not None and self.type != "hvm":
             return False
 
         file = None
@@ -400,21 +400,21 @@ class DebianDistro(Distro):
 class UbuntuDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
-        if self.type is not None:
+        if self.type is not None and self.type != "hvm":
             return False
         return False
 
 class GentooDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
-        if self.type is not None:
+        if self.type is not None and self.type != "hvm":
             return False
         return False
 
 class MandrivaDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
-        if self.type is not None:
+        if self.type is not None and self.type != "hvm":
             return False
 
         # Mandriva websites / media appear to have a VERSION
