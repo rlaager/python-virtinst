@@ -9,6 +9,13 @@
 %define _extra_release %{?dist:%{dist}}%{!?dist:%{?extra_release:%{extra_release}}}
 %define appname virtinst
 
+%if "%{fedora}" >= "9"
+%define with_egg 1
+%else
+%define with_egg 0
+%endif
+
+
 Summary: Python modules for starting Xen guest installations
 Name: python-%{appname}
 Version: ::VERSION::
@@ -54,6 +61,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc README COPYING AUTHORS ChangeLog NEWS doc/image.rng doc/example1.xml
 %dir %{python_sitelib}/%{appname}
 %{python_sitelib}/%{appname}/*
+%if %{with_egg}
+%{python_sitelib}/%{appname}-*.egg-info
+%endif
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 %{_bindir}/virt-install
