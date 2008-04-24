@@ -56,17 +56,22 @@ class RedHatDistro(Distro):
 
     def hasTreeinfo(self, fetcher, progresscb):
         # all Red Hat based distros should have .treeinfo / execute only once
-        if (self.treeinfo is None):
-            if fetcher.hasFile(".treeinfo"):
-                logging.debug("Detected .treeinfo file")
-                tmptreeinfo = fetcher.acquireFile(".treeinfo", progresscb)
-                self.treeinfo = ConfigParser.SafeConfigParser()
-                self.treeinfo.read(tmptreeinfo)
-                return True
-            else:
-                return False
-        else:
+        if not (self.treeinfo is None):
             return True
+
+        if not fetcher.hasFile(".treeinfo"):
+            return False
+
+        logging.debug("Detected .treeinfo file")
+
+        tmptreeinfo = fetcher.acquireFile(".treeinfo", progresscb)
+        try:
+            self.treeinfo = ConfigParser.SafeConfigParser()
+            self.treeinfo.read(tmptreeinfo)
+        finally:
+            os.unlink(tmptreeinfo)
+
+        return True
 
     def acquireKernel(self, fetcher, progresscb):
         if self.hasTreeinfo(fetcher, progresscb):
