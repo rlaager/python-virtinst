@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-IMAGE 1"
-.TH VIRT-IMAGE 1 "2007-08-24" "perl v5.8.8" "Virtual Machine Install Tools"
+.TH VIRT-IMAGE 1 "2008-05-08" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
 virt\-image \- create virtual machines from an image descriptor
 .SH "SYNOPSIS"
@@ -225,6 +225,10 @@ The zero-based index of the boot record to use. The \s-1XML\s0 descriptor can
 contain multiple \f(CW\*(C`/image/domain/boot\*(C'\fR elements for use on different
 hypervisors. By default, the one that is most appropriate for the current
 hypervisor is selected.
+.IP "\-\-force" 4
+.IX Item "--force"
+Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
+say yes. For any other prompts, the application will exit.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 Create and start a guest called \f(CW\*(C`example\*(C'\fR with a \s-1VNC\s0 console from

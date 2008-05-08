@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-CLONE 1"
-.TH VIRT-CLONE 1 "2007-11-20" "perl v5.8.8" "Virtual Machine Install Tools"
+.TH VIRT-CLONE 1 "2008-05-08" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
 virt\-clone \- clone existing virtual machine images
 .SH "SYNOPSIS"
@@ -175,9 +175,9 @@ mind if manually specifying a \s-1UUID\s0
 .IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 4
 .IX Item "-f DISKFILE, --file=DISKFILE"
 Path to the file, disk partition, or logical volume to use as the backing store
-for the guest's virtual disk. If the original guest has multiple disks, this 
-parameter must be repeated multiple times, once per disk in the original virtual 
-machine.
+for the new guest's virtual disk. If the original guest has multiple disks,
+this parameter must be repeated multiple times, once per disk in the original
+virtual machine.
 .IP "\-m \s-1MAC\s0, \-\-mac=MAC" 4
 .IX Item "-m MAC, --mac=MAC"
 Fixed \s-1MAC\s0 address for the guest; If this parameter is omitted, or the value
@@ -210,6 +210,10 @@ prioritization is incorrect, eg if wanting to use \s-1QEMU\s0 while on a Xen ker
 Print debugging information to the terminal when running the install process.
 The debugging information is also stored in \f(CW\*(C`$HOME/.virtinst/virt\-clone.log\*(C'\fR
 even if this parameter is omitted.
+.IP "\-\-force" 4
+.IX Item "--force"
+Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
+say yes. For any other prompts, the application will exit.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 Clone the guest called \f(CW\*(C`demo\*(C'\fR which has a single disk to copy
