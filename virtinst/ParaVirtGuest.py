@@ -35,14 +35,6 @@ class ParaVirtGuest(Guest.XenGuest):
     def _get_osblob(self, install):
         return self.installer._get_osblob(install, hvm = False)
 
-    def _connectSerialConsole(self):
-        cmd = ["/usr/bin/virsh", "console", "%s" %(self.domain.ID(),)]
-        child = os.fork()
-        if (not child):
-            os.execvp(cmd[0], cmd)
-            os._exit(1)
-        return child
-
     def get_input_device(self):
         return ("mouse", "xen")
 
