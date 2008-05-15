@@ -141,7 +141,7 @@ class DistroInstaller(Guest.Installer):
             if index == -1:
                 raise ValueError(_("Invalid NFS format: No path specified."))
             if val[index - 1] != ":":
-                val = val[:index - 1] + ":" + val[index:] 
+                val = val[:index] + ":" + val[index:] 
 
         elif not (val.startswith("http://") or val.startswith("ftp://") or
                   val.startswith("nfs:")):
