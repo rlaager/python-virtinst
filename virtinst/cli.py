@@ -183,11 +183,12 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
             vcpus = int(prompt_for_input(_("How many VCPUs should be attached?")))
         except ValueError, e:
             print _("ERROR: "), e
-    if vcpus:
+    if vcpus is not None:
         try:
             guest.vcpus = vcpus
         except ValueError, e:
             print _("ERROR: "), e
+            sys.exit(1)
 
 def get_cpuset(cpuset, mem, guest, conn):
     if cpuset and cpuset != "auto":
