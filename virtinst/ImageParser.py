@@ -37,6 +37,8 @@ class Image:
         self.name = None
         self.label = None
         self.descr = None
+        self.version = None
+        self.release = None
         if not node is None:
             self.parseXML(node)
 
@@ -49,6 +51,8 @@ class Image:
         self.name = xpathString(node, "name")
         self.label = xpathString(node, "label")
         self.descr = xpathString(node, "description")
+        self.version = xpathString(node, "name/@version")
+        self.release = xpathString(node, "name/@release")
         for d in node.xpathEval("storage/disk"):
             disk = Disk(d)
             if disk.file is None:

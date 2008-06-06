@@ -8,7 +8,15 @@
          storage backing the machine -->
     <element name="image">
       <!-- A machine-usable name for this image -->
-      <element name="name"><ref name="genericName"/></element>
+      <element name="name">
+        <optional>
+          <attribute name="version"><ref name="verString"/></attribute>
+        </optional>
+        <optional>
+          <attribute name="release"><ref name="verString"/></attribute>
+        </optional>
+        <ref name="genericName"/>
+      </element>
       <!--  A human-readable label and description, mostly
             to support UI's -->
       <optional>
@@ -244,6 +252,11 @@
   <define name='deviceName'>
     <data type='string'>
       <param name="pattern">[a-zA-Z0-9_\-:./]+</param>
+    </data>
+  </define>
+  <define name="verString">
+    <data type="string">
+      <param name="pattern">[0-9\.]+(-[0-9\.]+)?</param>
     </data>
   </define>
 </grammar>
