@@ -143,7 +143,7 @@ class ImageInstaller(Guest.Installer):
         return True
 
     def _abspath(self, p):
-        return os.path.abspath(os.path.join(self.image.base, p))
+        return self.image.abspath(p)
 
 class PlatformMatchException(Exception):
     def __init__(self, msg):

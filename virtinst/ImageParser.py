@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import os.path
 import libxml2
 import CapabilitiesParser
 from virtinst import _virtinst as _
@@ -38,6 +39,11 @@ class Image:
         self.descr = None
         if not node is None:
             self.parseXML(node)
+
+    def abspath(self, p):
+        """Turn P into an absolute path. Relative paths are taken relative
+           to self.BASE"""
+        return os.path.abspath(os.path.join(self.base, p))
 
     def parseXML(self, node):
         self.name = xpathString(node, "name")
