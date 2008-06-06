@@ -150,17 +150,6 @@ def parse_args():
     
     return options
 
-def parse_image_xml(fname):
-    if fname is None:
-        print >> sys.stderr, _("Must provide the location of an image XML file with --image")
-        sys.exit(1)
-    if not os.access(fname, os.R_OK):
-        print >> sys.stderr, _("Can not read %s") % fname
-    file = open(fname, "r")
-    xml = file.read()
-    file.close()
-    return virtinst.ImageParser.parse(xml, os.path.dirname(fname))
-
 def main():
     options = parse_args()
 
@@ -170,7 +159,7 @@ def main():
     conn = cli.getConnection(options.connect)
     type = None
 
-    image = parse_image_xml(options.image)
+    image = virtinst.ImageParser.parse_file(options.image)
     capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
 
     if options.boot is not None:
