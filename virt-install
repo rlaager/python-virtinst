@@ -356,7 +356,7 @@ def main():
 
     guest = capabilities.guestForOSType(type=os_type, arch=options.arch)
     if guest is None:
-        print >> sys.stderr, _("Unsupported virtualization type")
+        print >> sys.stderr, _("Unsupported virtualization type '%s'" % guest)
         sys.exit(1)
 
     if guest.os_type == "hvm":

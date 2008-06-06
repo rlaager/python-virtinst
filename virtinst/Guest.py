@@ -576,6 +576,8 @@ class Guest(object):
         self.domain = None
         self.conn = connection
         if self.conn == None:
+            logging.debug("No conn passed to Guest, opening URI '%s'" % \
+                          hypervisorURI)
             self.conn = libvirt.open(hypervisorURI)
         if self.conn == None:
             raise RuntimeError, _("Unable to connect to hypervisor, aborting installation!")
