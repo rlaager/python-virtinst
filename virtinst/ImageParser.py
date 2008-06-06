@@ -65,7 +65,7 @@ class Image:
             raise ParserException(_("Expected exactly one 'domain' element"))
         # Connect the disk maps to the disk definitions
         for boot in self.domain.boots:
-            for d in boot.disks:
+            for d in boot.drives:
                 if not self.storage.has_key(d.disk_id):
                     raise ParserException(_("Disk entry for '%s' not found")
                                                % d.disk_id)
@@ -124,7 +124,7 @@ class Boot:
         self.kernel = None
         self.initrd = None
         self.cmdline = None
-        self.disks = []
+        self.drives = []
         self.arch = None
         self.features = ImageFeatures()
         if not node is None:
@@ -146,7 +146,7 @@ class Boot:
             self.features = ImageFeatures(fl[0])
 
         for d in node.xpathEval("drive"):
-            self.disks.append(Drive(d))
+            self.drives.append(Drive(d))
 
         validate(self.type is not None,
            "The boot type must be provided")

@@ -81,7 +81,7 @@ class ImageInstaller(Guest.Installer):
                     guest.features[f] = False
 
     def _make_disks(self, guest):
-        for m in self.boot_caps.disks:
+        for m in self.boot_caps.drives:
             p = self._abspath(m.disk.file)
             s = None
             if m.disk.size is not None:
