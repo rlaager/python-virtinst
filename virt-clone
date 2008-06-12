@@ -35,7 +35,7 @@ import virtinst.cli as cli
 
 locale.setlocale(locale.LC_ALL, '')
 gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
-gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
+gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
 ### General input gathering functions
 def get_clone_name(new_name, design):
