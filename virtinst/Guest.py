@@ -407,8 +407,7 @@ class VirtualGraphics(object):
         return self._keymap
     def set_keymap(self, val):
         if not val:
-            self._keymap = None
-            return
+            val = util.default_keymap()
         if not val or type(val) != type("string"):
             raise ValueError, _("Keymap must be a string")
         if len(val) > 16:
