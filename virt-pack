@@ -1,0 +1,143 @@
+#!/usr/bin/python -tt
+#
+# Package and unpackage images for distribution
+#
+# Copyright 2007  Red Hat, Inc.
+# David Lutterkort <dlutter@redhat.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
+
+import os, sys, string
+from optparse import OptionParser, OptionValueError
+import subprocess
+import logging
+import libxml2
+import urlgrabber.progress as progress
+
+import virtinst
+import virtinst.ImageParser
+import virtinst.CapabilitiesParser
+import virtinst.cli as cli
+import virtinst.util as util
+import virtinst.UnWare
+
+import tempfile
+
+import gettext
+import locale
+
+locale.setlocale(locale.LC_ALL, '')
+gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
+gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
+
+class PackageException(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self, msg)
+
+class Package:
+    
+    def __init__(self, image):
+        self.image = image
+        if image.name is None or image.version is None:
+            raise PackageException(
+                _("The image name and version must be present"))
+        self.vername = "%s-%s" % (image.name, image.version)
+        self.tmpdir = tempfile.mkdtemp(dir="/var/tmp", prefix="virt-pack")
+        self.stagedir = os.path.join(self.tmpdir, self.vername)
+        self.files = []
+
+    def add_image_files(self):
+        cwd = os.getcwd()
+        img = self.image
+        self.files.append(os.path.basename(img.filename))
+        os.chdir(img.base)
+        for d in img.storage.keys():
+            disk = img.storage[d]
+            if disk.use == disk.USE_SCRATCH:
+                if disk.size is None:
+                    raise PackageException(_("Scratch disk %s does not have a size attribute") % disk.id)
+            else:
+                if not os.path.exists(disk.file):
+                    raise PackageException(_("Disk file %s could not be found") % disk.id)
+                self.files.append(disk.file)
+            os.path.exists(os.path.join(img.base, disk.file))   
+
+    def make_vmx_files(self):
+        img = virtinst.UnWare.Image(self.image)
+        files = img.make(self.image.base)
+        self.files.extend(files)
+
+    def pack(self, outdir):
+        outfile = os.path.join(outdir, self.vername + ".tgz")
+        for f in set(self.files):
+            dir = os.path.join(self.stagedir, os.path.dirname(f))
+            if not os.path.exists(dir):
+                os.makedirs(dir)
+            os.symlink(os.path.join(self.image.base, f), 
+                       os.path.join(self.stagedir, f))
+        print _("Writing %s") % outfile
+        cmd = "tar chzv -C %s -f %s %s" % (self.tmpdir, 
+                                           outfile, 
+                                           os.path.basename(self.vername))
+        util.system(cmd)
+        return outfile
+
+### Option parsing
+def parse_args():
+    parser = OptionParser()
+    parser.set_usage("%prog [options] image.xml")
+
+    parser.add_option("-o", "--output", type="string", dest="output",
+                      action="callback", callback=cli.check_before_store,
+                      help=_("Directory in which packaged file will be put"))
+    parser.add_option("-d", "--debug", action="store_true", dest="debug",
+                      help=_("Print debugging information"))
+
+    (options,args) = parser.parse_args()
+    if len(args) < 1:
+        parser.error(_("You need to provide an image XML descriptor"))
+    options.image = args[0]
+    
+    return options
+
+def main():
+    options = parse_args()
+    cli.setupLogging("virt-pack", options.debug)
+    image = virtinst.ImageParser.parse_file(os.path.abspath(options.image))
+    if image.name is None or image.version is None:
+        print >> sys.stderr, _("The image descriptor must contain name and version")
+        valid = False
+
+    if options.output is None:
+        options.output = os.path.join(image.base, "..")
+
+    pkg = Package(image)
+    try:
+        pkg.add_image_files()
+    except PackageException, e:
+        print >> sys.stderr, _("Validation failed: %s"), e
+        return 1
+
+    try:
+        pkg.make_vmx_files()
+        pkg.pack(options.output)
+    except PackageException, e:
+        print >> sys.stderr, _("Packaging failed: %s") % e
+        return 1
+
+if __name__ == "__main__":
+    main()
+
