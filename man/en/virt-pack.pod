@@ -36,6 +36,8 @@ Directory in which packaged tar file will be placed
 
 Print debugging information
 
+=back
+
 =head1 EXAMPLES
 
 Convert a guest from C<image.xml>:
