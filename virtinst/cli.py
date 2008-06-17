@@ -22,7 +22,8 @@
 import os, sys
 import logging
 import logging.handlers
-from optparse import OptionValueError
+import locale
+from optparse import OptionValueError, OptionParser
 
 import libvirt
 import util
@@ -30,6 +31,21 @@ import Guest, CapabilitiesParser
 
 MIN_RAM = 64
 force = False
+
+class VirtOptionParser(OptionParser):
+    '''Subclass to get print_help to work properly with non-ascii text'''
+
+    def _get_encoding(self, file):
+        encoding = getattr(file, "encoding", None)
+        if not encoding:
+            (language, encoding) = locale.getlocale()
+        return encoding
+
+    def print_help(self, file=None):
+        if file is None:
+            file = sys.stdout
+        encoding = self._get_encoding(file)
+        file.write(self.format_help().encode(encoding, "replace"))
 
 #
 # Setup helpers

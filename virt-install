@@ -171,7 +171,7 @@ def check_before_append(option, opt_str, value, parser):
     parser.values.ensure_value(option.dest, []).append(value)
 
 def parse_args():
-    parser = OptionParser()
+    parser = cli.VirtOptionParser()
     parser.add_option("-n", "--name", type="string", dest="name",
                       action="callback", callback=cli.check_before_store,
                       help=_("Name of the guest instance"))

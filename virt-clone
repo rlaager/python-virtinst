@@ -115,7 +115,7 @@ def get_force_target(target, design):
             design.set_force_target(i)
 
 def parse_args():
-    parser = OptionParser()
+    parser = cli.VirtOptionParser()
 
     # original name
     parser.add_option("-o", "--original", type="string", dest="original_guest",

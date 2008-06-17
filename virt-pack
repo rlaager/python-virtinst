@@ -41,7 +41,7 @@ import locale
 
 locale.setlocale(locale.LC_ALL, '')
 gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
-gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
+gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
 class PackageException(Exception):
     def __init__(self, msg):
@@ -97,7 +97,7 @@ class Package:
 
 ### Option parsing
 def parse_args():
-    parser = OptionParser()
+    parser = cli.VirtOptionParser()
     parser.set_usage("%prog [options] image.xml")
 
     parser.add_option("-o", "--output", type="string", dest="output",
