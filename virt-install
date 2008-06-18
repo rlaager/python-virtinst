@@ -354,10 +354,12 @@ def main():
         os_type = "hvm"
     else:
         os_type = "xen"
+    logging.debug("Requesting virt type '%s'" % os_type)
 
     guest = capabilities.guestForOSType(type=os_type, arch=options.arch)
     if guest is None:
-        fail(_("Unsupported virtualization type '%s'" % guest))
+        fail(_("Unsupported virtualization type '%s %s'" % (os_type,
+                                                            options.arch)))
 
     if guest.os_type == "hvm":
         hvm = True
@@ -366,6 +368,7 @@ def main():
 
     domain = guest.bestDomainType(options.accelerate)
     type = domain.hypervisor_type
+    logging.debug("Hypervisor type is '%s'" % type)
 
     if options.livecd:
         if not hvm:
