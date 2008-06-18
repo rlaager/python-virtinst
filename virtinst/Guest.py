@@ -120,10 +120,6 @@ class VirtualDisk:
         return self._type
     type = property(get_type)
 
-    def get_transient(self):
-        return self._transient
-    transient = property(get_transient)
-
     def get_device(self):
         return self._device
     device = property(get_device)
@@ -703,14 +699,14 @@ class Guest(object):
         return self._graphics_dev.keymap
     def set_keymap(self, val):
         if self._graphics_dev is not None:
-            self_.graphics_dev.keymap = keymap
+            self._graphics_dev.keymap = val
     keymap = property(get_keymap, set_keymap)
 
     # Deprecated: Should set guest.graphics_dev = VirtualGraphics(...)
     def get_graphics(self):
         if self._graphics_dev is None:
             return { "enabled " : False }
-        return { "enabled" : true, "type" : self._graphics_dev, \
+        return { "enabled" : True, "type" : self._graphics_dev, \
                  "keymap"  : self._graphics_dev.keymap}
     def set_graphics(self, val):
 

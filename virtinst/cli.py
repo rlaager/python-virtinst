@@ -27,7 +27,8 @@ from optparse import OptionValueError, OptionParser
 
 import libvirt
 import util
-from virtinst import Guest, CapabilitiesParser
+from virtinst import Guest, CapabilitiesParser, VirtualNetworkInterface, \
+                     VirtualGraphics
 from virtinst import _virtinst as _
 
 MIN_RAM = 64
@@ -109,8 +110,7 @@ def fail(msg):
 def getConnection(connect):
     if connect is None or connect.lower()[0:3] == "xen":
         if os.geteuid() != 0:
-            print >> sys.stderr, "Must be root to create Xen guests"
-            sys.exit(1)
+            fail(_("Must be root to create Xen guests"))
 
     return libvirt.open(connect)
 
@@ -253,14 +253,13 @@ def get_network(mac, network, guest):
     if mac == "RANDOM":
         mac = None
     if network == "user":
-        n = Guest.VirtualNetworkInterface(mac, type="user")
+        n = VirtualNetworkInterface(mac, type="user")
     elif network[0:6] == "bridge":
-        n = Guest.VirtualNetworkInterface(mac, type="bridge", bridge=network[7:])
+        n = VirtualNetworkInterface(mac, type="bridge", bridge=network[7:])
     elif network[0:7] == "network":
-        n = Guest.VirtualNetworkInterface(mac, type="network", network=network[8:])
+        n = VirtualNetworkInterface(mac, type="network", network=network[8:])
     else:
-        print >> sys.stderr, _("Unknown network type ") + network
-        sys.exit(1)
+        fail(_("Unknown network type ") + network)
     guest.nics.append(n)
 
 def digest_networks(macs, bridges, networks):
@@ -274,8 +273,7 @@ def digest_networks(macs, bridges, networks):
         networks = [ networks ]
 
     if bridges is not None and networks != None:
-        print >> sys.stderr, _("Cannot mix both --bridge and --network arguments")
-        sys.exit(1)
+        fail(_("Cannot mix both --bridge and --network arguments"))
 
     # ensure we have equal length lists
     if bridges != None:
@@ -284,8 +282,7 @@ def digest_networks(macs, bridges, networks):
     if networks != None:
         if macs != None:
             if len(macs) != len(networks):
-                print >> sys.stderr, _("Need to pass equal numbers of networks & mac addresses")
-                sys.exit(1)
+                fail(_("Need to pass equal numbers of networks & mac addresses"))
         else:
             macs = [ None ] * len(networks)
     else:
@@ -296,8 +293,7 @@ def digest_networks(macs, bridges, networks):
             networks = ["user"]
         if macs != None:
             if len(macs) > 1:
-                print >> sys.stderr, _("Need to pass equal numbers of networks & mac addresses")
-                sys.exit(1)
+                fail(_("Need to pass equal numbers of networks & mac addresses"))
         else:
             macs = [ None ]
 
@@ -312,9 +308,9 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
         guest.graphics_dev = None
         return
     if vnc is not None:
-        guest.graphics_dev = Guest.VirtualGraphics(type=Guest.VirtualGraphics.TYPE_VNC)
+        guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
     if sdl is not None:
-        guest.graphics_dev = Guest.VirtualGraphics(type=Guest.VirtualGraphics.TYPE_SDL)
+        guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_SDL)
     while 1:
         if guest.graphics_dev:
             break
@@ -325,7 +321,7 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
             print _("ERROR: "), e
             continue
         if vnc:
-            guest.graphics_dev = Guest.VirtualGraphics(type=Guest.VirtualGraphics.TYPE_VNC)
+            guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
         else:
             guest.graphics_dev = None
         break

@@ -23,6 +23,7 @@ import ImageParser
 import CapabilitiesParser as Cap
 import os
 import util
+from virtinst import _virtinst as _
 
 class ImageInstallerException(RuntimeError):
     def __init__(self, msg):
