@@ -218,6 +218,12 @@ def get_phy_cpus(conn):
     pcpus = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
     return pcpus
 
+def system(cmd):
+    st = os.system(cmd)
+    if os.WIFEXITED(st) and os.WEXITSTATUS(st) != 0:
+        raise OSError("Failed to run %s, exited with %d" % 
+                      (cmd, os.WEXITSTATUS(st)))
+
 def xml_escape(str):
     """Replaces chars ' " < > & with xml safe counterparts"""
     str = str.replace("&", "&amp;")
