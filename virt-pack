@@ -40,6 +40,7 @@ import tempfile
 import gettext
 import locale
 
+from virtinst import _virtinst as _
 locale.setlocale(locale.LC_ALL, '')
 gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
 gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)

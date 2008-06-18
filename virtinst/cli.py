@@ -27,7 +27,8 @@ from optparse import OptionValueError, OptionParser
 
 import libvirt
 import util
-import Guest, CapabilitiesParser
+from virtinst import Guest, CapabilitiesParser
+from virtinst import _virtinst as _
 
 MIN_RAM = 64
 force = False
