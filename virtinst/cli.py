@@ -62,7 +62,8 @@ def setupLogging(appname, debug=False):
 
     dateFormat = "%a, %d %b %Y %H:%M:%S"
     fileFormat = "[%(asctime)s " + appname + " %(process)d] %(levelname)s (%(module)s:%(lineno)d) %(message)s"
-    streamFormat = "%(asctime)s %(levelname)-8s %(message)s"
+    streamDebugFormat = "%(asctime)s %(levelname)-8s %(message)s"
+    streamErrorFormat = "%(levelname)-8s %(message)s"
     filename = os.path.join(vi_dir, appname + ".log")
 
     rootLogger = logging.getLogger()
@@ -75,12 +76,13 @@ def setupLogging(appname, debug=False):
     rootLogger.addHandler(fileHandler)
 
     streamHandler = logging.StreamHandler(sys.stderr)
-    streamHandler.setFormatter(logging.Formatter(streamFormat,
-                                                 dateFormat))
     if debug:
         streamHandler.setLevel(logging.DEBUG)
+        streamHandler.setFormatter(logging.Formatter(streamDebugFormat,
+                                                     dateFormat))
     else:
         streamHandler.setLevel(logging.ERROR)
+        streamHandler.setFormatter(logging.Formatter(streamErrorFormat))
     rootLogger.addHandler(streamHandler)
 
     # Register libvirt handler
@@ -98,6 +100,10 @@ def setupLogging(appname, debug=False):
         sys.__excepthook__(type, val, tb)
     sys.excepthook = exception_log
 
+def fail(msg):
+    """Convenience function when failing in cli app"""
+    logging.error(msg)
+    sys.exit(1)
 
 def getConnection(connect):
     if connect is None or connect.lower()[0:3] == "xen":

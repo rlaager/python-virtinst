@@ -33,6 +33,7 @@ import libvirt
 import virtinst
 import virtinst.CapabilitiesParser
 import virtinst.cli as cli
+from virtinst.cli import fail
 
 import gettext
 import locale
@@ -92,13 +93,12 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
 def get_disks(disk, size, sparse, nodisks, guest, hvm, conn):
     if nodisks:
         if disk or size:
-            raise ValueError, _("Cannot use --file with --nodisks")
+            fail(_("Cannot use --file with --nodisks"))
         return
-    # ensure we have equal length lists 
+    # ensure we have equal length lists
     if (type(disk) == type(size) == list):
         if len(disk) != len(size):
-            print >> sys.stderr, _("Need to pass size for each disk")
-            sys.exit(1)
+            fail(_("Need to pass size for each disk"))
     elif type(disk) == list:
         size = [ None ] * len(disk)
     elif type(size) == list:
@@ -347,7 +347,7 @@ def main():
 
 
     if options.fullvirt and options.paravirt:
-        print >> sys.stderr, _("Can't do both --hvm and --paravirt")
+        fail(_("Can't do both --hvm and --paravirt"))
 
     if options.fullvirt:
         os_type = "hvm"
@@ -356,8 +356,7 @@ def main():
 
     guest = capabilities.guestForOSType(type=os_type, arch=options.arch)
     if guest is None:
-        print >> sys.stderr, _("Unsupported virtualization type '%s'" % guest)
-        sys.exit(1)
+        fail(_("Unsupported virtualization type '%s'" % guest))
 
     if guest.os_type == "hvm":
         hvm = True
@@ -369,8 +368,7 @@ def main():
 
     if options.livecd:
         if not hvm:
-            print >> sys.stderr, _("LiveCD installations are not supported for paravirt guests")
-            sys.exit(1)
+            fail(_("LiveCD installations are not supported for paravirt guests"))
         installer = virtinst.LiveCDInstaller(type = type, os_type = os_type)
     elif options.pxe:
         installer = virtinst.PXEInstaller(type = type, os_type = os_type)
@@ -378,8 +376,7 @@ def main():
         installer = virtinst.DistroInstaller(type = type, os_type = os_type)
 
     if (options.pxe and options.location) or (options.location and options.cdrom) or (options.cdrom and options.pxe):
-        print >> sys.stderr, _("Only one of --pxe, --location and --cdrom can be used")
-        sys.exit(1)
+        fail(_("Only one of --pxe, --location and --cdrom can be used"))
 
     if hvm:
         # Xen only supports CDROM
@@ -388,8 +385,7 @@ def main():
         guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=guest.arch)
     else:
         if options.pxe:
-            print >> sys.stderr, _("Network PXE boot is not support for paravirtualized guests")
-            sys.exit(1)
+            fail(_("Network PXE boot is not support for paravirtualized guests"))
         guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
 
     # now let's get some of the common questions out of the way
@@ -483,8 +479,7 @@ def main():
             dom.create()
             guest.connect_console(conscb)
     except RuntimeError, e:
-        print >> sys.stderr, _("ERROR: "), e
-        sys.exit(1)
+        fail(e)
     except SystemExit, e:
         sys.exit(e.code)
     except Exception, e:

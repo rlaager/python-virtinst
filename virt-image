@@ -31,6 +31,7 @@ import virtinst
 import virtinst.ImageParser
 import virtinst.CapabilitiesParser
 import virtinst.cli as cli
+from virtinst.cli import fail
 
 import gettext
 import locale
@@ -67,8 +68,7 @@ def get_networks(domain, macs, bridges, networks, guest):
         print >> sys.stderr, _("Warning: image does not support networking, ignoring network related options")
         return
     elif nnics == 1 and len(networks) == 0:
-        print >> sys.stderr, _("The image needs one network interface")
-        sys.exit(1)
+        fail(_("The image needs one network interface"))
 
     map(lambda m, n: cli.get_network(m, n, guest), macs, networks)
 
@@ -165,8 +165,7 @@ def main():
     if options.boot is not None:
         nboots = len(image.domain.boots)
         if options.boot < 0 or options.boot >= nboots:
-            print >> sys.stderr, _("The index for --boot must be between 0 and %d") % (nboots - 1)
-            sys.exit(1)
+            fail(_("The index for --boot must be between 0 and %d") % (nboots - 1))
 
     installer = virtinst.ImageInstaller(boot_index = options.boot,
                                         image = image,
@@ -217,8 +216,7 @@ def main():
                 sys.exit(1)
 
         except RuntimeError, e:
-            print >> sys.stderr, _("ERROR: "), e
-            sys.exit(1)
+            fail(e)
         except Exception, e:
             print _("Domain creation may not have been\n"
                    "successful.  If it was, you can restart your domain\n"

@@ -32,6 +32,7 @@ import virtinst.CloneManager as clmgr
 import gettext
 import locale
 import virtinst.cli as cli
+from virtinst.cli import fail
 
 locale.setlocale(locale.LC_ALL, '')
 gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
@@ -182,8 +183,7 @@ def main():
 
     if options.connect is None or options.connect.lower()[0:3] == "xen":
         if os.geteuid() != 0:
-            print >> sys.stderr, _("Must be root to clone Xen guests")
-            sys.exit(1)
+            fail(_("Must be root to clone Xen guests"))
 
     conn = cli.getConnection(options.connect)
     design = clmgr.CloneDesign(connection=conn)
@@ -206,13 +206,11 @@ def main():
 
         logging.debug("end clone")
     except RuntimeError, e:
-        print >> sys.stderr, _("ERROR: "), e
-        sys.exit(1)
+        fail(e)
     except SystemExit, e:
         sys.exit(e.code)
     except Exception, e:
-        print "ERROR: ", e
-        sys.exit(1)
+        fail(e)
 
 if __name__ == "__main__":
     try:

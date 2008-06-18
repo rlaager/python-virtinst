@@ -31,6 +31,7 @@ import virtinst
 import virtinst.ImageParser
 import virtinst.CapabilitiesParser
 import virtinst.cli as cli
+from virtinst.cli import fail
 import virtinst.util as util
 import virtinst.UnWare
 
@@ -118,8 +119,7 @@ def main():
     cli.setupLogging("virt-pack", options.debug)
     image = virtinst.ImageParser.parse_file(os.path.abspath(options.image))
     if image.name is None or image.version is None:
-        print >> sys.stderr, _("The image descriptor must contain name and version")
-        valid = False
+        fail(_("The image descriptor must contain name and version"))
 
     if options.output is None:
         options.output = os.path.join(image.base, "..")
@@ -128,15 +128,13 @@ def main():
     try:
         pkg.add_image_files()
     except PackageException, e:
-        print >> sys.stderr, _("Validation failed: %s"), e
-        return 1
+        fail(_("Validation failed: %s"), e)
 
     try:
         pkg.make_vmx_files()
         pkg.pack(options.output)
     except PackageException, e:
-        print >> sys.stderr, _("Packaging failed: %s") % e
-        return 1
+        fail(_("Packaging failed: %s") % e)
 
 if __name__ == "__main__":
     main()
