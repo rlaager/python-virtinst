@@ -32,6 +32,6 @@ class TestImageParser(unittest.TestCase):
         self.assertEqual(5, len(img.storage))
         self.assertEqual(2, len(img.domain.boots))
         boot = img.domain.boots[0]
-        self.assertEqual("xvdb", boot.disks[1].target)
+        self.assertEqual("xvdb", boot.drives[1].target)
 if __name__ == "__main__":
     unittest.main()
