@@ -70,7 +70,7 @@ class TestXMLConfig(unittest.TestCase):
 
     def testBootParavirtDiskFile(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
         self._compare(g, "boot-paravirt-disk-file", False)
 
     def testBootParavirtDiskBlock(self):
@@ -86,27 +86,27 @@ class TestXMLConfig(unittest.TestCase):
 
     def testBootParavirtDiskDrvFile(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
                                        driverName = virtinst.VirtualDisk.DRIVER_FILE,size=5))
         self._compare(g, "boot-paravirt-disk-drv-file", False)
 
     def testBootParavirtDiskDrvTap(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
                                        driverName = virtinst.VirtualDisk.DRIVER_TAP,size=5))
         self._compare(g, "boot-paravirt-disk-drv-tap", False)
 
     def testBootParavirtDiskDrvTapQCow(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
                                        driverName = virtinst.VirtualDisk.DRIVER_TAP, \
                                        driverType = virtinst.VirtualDisk.DRIVER_TAP_QCOW,size=5))
         self._compare(g, "boot-paravirt-disk-drv-tap-qcow", False)
 
     def testBootParavirtManyDisks(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test1.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
-        g.disks.append(virtinst.VirtualDisk("/etc/test2.img", type=virtinst.VirtualDisk.TYPE_FILE, \
+        g.disks.append(virtinst.VirtualDisk("/tmp/test1.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(virtinst.VirtualDisk("/tmp/test2.img", type=virtinst.VirtualDisk.TYPE_FILE, \
                                        driverName = virtinst.VirtualDisk.DRIVER_TAP, \
                                        driverType = virtinst.VirtualDisk.DRIVER_TAP_QCOW,size=5))
         g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK))
@@ -114,7 +114,7 @@ class TestXMLConfig(unittest.TestCase):
 
     def testBootFullyvirtDiskFile(self):
         g = self._get_basic_fullyvirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
         self._compare(g, "boot-fullyvirt-disk-file", False)
 
     def testBootFullyvirtDiskBlock(self):
@@ -127,7 +127,7 @@ class TestXMLConfig(unittest.TestCase):
 
     def testInstallParavirtDiskFile(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
         self._compare(g, "install-paravirt-disk-file", True)
 
     def testInstallParavirtDiskBlock(self):
@@ -143,27 +143,27 @@ class TestXMLConfig(unittest.TestCase):
 
     def testInstallParavirtDiskDrvFile(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
                                        driverName = virtinst.VirtualDisk.DRIVER_FILE,size=5))
         self._compare(g, "install-paravirt-disk-drv-file", True)
 
     def testInstallParavirtDiskDrvTap(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
                                        driverName = virtinst.VirtualDisk.DRIVER_TAP,size=5))
         self._compare(g, "install-paravirt-disk-drv-tap", True)
 
     def testInstallParavirtDiskDrvTapQCow(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
                                        driverName = virtinst.VirtualDisk.DRIVER_TAP, \
                                        driverType = virtinst.VirtualDisk.DRIVER_TAP_QCOW,size=5))
         self._compare(g, "install-paravirt-disk-drv-tap-qcow", True)
 
     def testInstallParavirtManyDisks(self):
         g = self._get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test1.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
-        g.disks.append(virtinst.VirtualDisk("/etc/test2.img", type=virtinst.VirtualDisk.TYPE_FILE, \
+        g.disks.append(virtinst.VirtualDisk("/tmp/test1.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(virtinst.VirtualDisk("/tmp/test2.img", type=virtinst.VirtualDisk.TYPE_FILE, \
                                        driverName = virtinst.VirtualDisk.DRIVER_TAP, \
                                        driverType = virtinst.VirtualDisk.DRIVER_TAP_QCOW,size=5))
         g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK))
@@ -171,7 +171,7 @@ class TestXMLConfig(unittest.TestCase):
 
     def testInstallFullyvirtDiskFile(self):
         g = self._get_basic_fullyvirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/etc/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
         self._compare(g, "install-fullyvirt-disk-file", True)
 
     def testInstallFullyvirtDiskBlock(self):
@@ -182,7 +182,7 @@ class TestXMLConfig(unittest.TestCase):
 
     def testXMLEscaping(self):
         g = self._get_basic_fullyvirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/ISO&'&s", type=virtinst.VirtualDisk.TYPE_FILE, size=5))
+        g.disks.append(virtinst.VirtualDisk("/tmp/ISO&'&s", type=virtinst.VirtualDisk.TYPE_FILE, size=5))
         self._compare(g, "misc-xml-escaping", True)
 
 

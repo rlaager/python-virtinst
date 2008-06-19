@@ -20,7 +20,7 @@
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <console device='pty'/>
     <disk type='file' device='disk'>
-      <source file='/ISO&amp;&apos;&amp;s'/>
+      <source file='/tmp/ISO&amp;&apos;&amp;s'/>
       <target dev='hda'/>
     </disk>
     <disk type='block' device='cdrom'>

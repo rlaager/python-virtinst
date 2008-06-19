@@ -88,6 +88,14 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
                 disk = size = None
                 continue
 
+        ret = d.size_conflict()
+        if ret[0]:
+            raise ValueError, ret[1]
+        elif ret[1]:
+            if not cli.prompt_for_yes_or_no(ret[1] + _(" Do you really want to use the disk (yes or no)?")):
+                disk = size = None
+                continue
+
         guest.disks.append(d)
         break
 
