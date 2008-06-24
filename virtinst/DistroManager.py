@@ -39,6 +39,7 @@ from ImageFetcher import DirectImageFetcher
 from OSDistro import FedoraDistro
 from OSDistro import RHELDistro
 from OSDistro import CentOSDistro
+from OSDistro import SLDistro
 from OSDistro import SuseDistro
 from OSDistro import DebianDistro
 from OSDistro import UbuntuDistro
@@ -67,6 +68,8 @@ def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=
         stores.append(RHELDistro(baseuri, type, scratchdir))
     if distro == "centos" or distro is None:
         stores.append(CentOSDistro(baseuri, type, scratchdir))
+    if distro == "sl" or distro is None:
+        stores.append(SLDistro(baseuri, type, scratchdir))
     if distro == "suse" or distro is None:
         stores.append(SuseDistro(baseuri, type, scratchdir))
     if distro == "debian" or distro is None:

@@ -156,6 +156,14 @@ class CentOSDistro(RedHatDistro):
                 return True
             return False
 
+# Scientific Linux distro check
+class SLDistro(RedHatDistro):
+    def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile("SL"):
+            logging.debug("Detected a Scientific Linux distro")
+            return True
+        return False
+
 
 
 # Suse  image store is harder - we fetch the kernel RPM and a helper
