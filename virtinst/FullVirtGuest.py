@@ -44,6 +44,7 @@ class FullVirtGuest(Guest.XenGuest):
                                           "fedora6": { "label": "Fedora Core 6", "distro": "fedora" }, \
                                           "fedora7": { "label": "Fedora 7", "distro": "fedora" }, \
                                           "fedora8": { "label": "Fedora 8", "distro": "fedora" }, \
+                                          "fedora9": { "label": "Fedora 9", "distro": "fedora" }, \
                                           "sles10": { "label": "Suse Linux Enterprise Server", "distro": "suse" }, \
                                           "debianEtch": { "label": "Debian Etch", "distro": "debian" }, \
                                           "debianLenny": { "label": "Debian Lenny", "distro": "debian" }, \
@@ -64,6 +65,7 @@ class FullVirtGuest(Guest.XenGuest):
                                                        "acpi": False, \
                                                        "apic": False }, \
                                             "win2k3": { "label": "Microsoft Windows 2003" }, \
+                                            "win2k8": { "label": "Microsoft Windows 2008" }, \
                                             "vista": { "label": "Microsoft Windows Vista" }, \
                                             }, \
                               }, \
