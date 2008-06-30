@@ -59,27 +59,28 @@ def _fetcherForURI(uri, scratchdir=None):
         else:
             return MountedImageFetcher(uri, scratchdir)
 
-def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=None):
+def _storeForDistro(fetcher, baseuri, type, progresscb, arch, distro=None,
+                    scratchdir=None):
     stores = []
     logging.debug("Attempting to detect distro:")
     if distro == "fedora" or distro is None:
-        stores.append(FedoraDistro(baseuri, type, scratchdir))
+        stores.append(FedoraDistro(baseuri, type, scratchdir, arch))
     if distro == "rhel" or distro is None:
-        stores.append(RHELDistro(baseuri, type, scratchdir))
+        stores.append(RHELDistro(baseuri, type, scratchdir, arch))
     if distro == "centos" or distro is None:
-        stores.append(CentOSDistro(baseuri, type, scratchdir))
+        stores.append(CentOSDistro(baseuri, type, scratchdir, arch))
     if distro == "sl" or distro is None:
-        stores.append(SLDistro(baseuri, type, scratchdir))
+        stores.append(SLDistro(baseuri, type, scratchdir, arch))
     if distro == "suse" or distro is None:
-        stores.append(SuseDistro(baseuri, type, scratchdir))
+        stores.append(SuseDistro(baseuri, type, scratchdir, arch))
     if distro == "debian" or distro is None:
-        stores.append(DebianDistro(baseuri, type, scratchdir))
+        stores.append(DebianDistro(baseuri, type, scratchdir, arch))
     if distro == "ubuntu" or distro is None:
-        stores.append(UbuntuDistro(baseuri, type, scratchdir))
+        stores.append(UbuntuDistro(baseuri, type, scratchdir, arch))
     if distro == "gentoo" or distro is None:
-        stores.append(GentooDistro(baseuri, type, scratchdir))
+        stores.append(GentooDistro(baseuri, type, scratchdir, arch))
     if distro == "mandriva" or distro is None:
-        stores.append(MandrivaDistro(baseuri, type, scratchdir))
+        stores.append(MandrivaDistro(baseuri, type, scratchdir, arch))
 
     for store in stores:
         if store.isValidStore(fetcher, progresscb):
@@ -89,7 +90,8 @@ def _storeForDistro(fetcher, baseuri, type, progresscb, distro=None, scratchdir=
 
 
 # Method to fetch a kernel & initrd pair for a particular distro / HV type
-def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None, distro=None):
+def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None,
+                  distro=None, arch=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
     
     try:
@@ -98,14 +100,16 @@ def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None, distro=
         raise ValueError, _("Invalid install location: ") + str(e)
 
     try:
-        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type, \
-                                progresscb=progresscb, distro=distro, scratchdir=scratchdir)
-        return store.acquireKernel(fetcher, progresscb)
+        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type,
+                                progresscb=progresscb, distro=distro,
+                                scratchdir=scratchdir, arch=arch)
+        return store.acquireKernel(fetcher, progresscb, )
     finally:
         fetcher.cleanupLocation()
 
 # Method to fetch a bootable ISO image for a particular distro / HV type
-def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None, distro=None):
+def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
+                    distro=None, arch=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
 
     try:
@@ -114,8 +118,9 @@ def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None, distr
         raise ValueError, _("Invalid install location: ") + str(e)
 
     try:
-        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type, \
-                                progresscb=progresscb, distro=distro, scratchdir=scratchdir)
+        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type,
+                                progresscb=progresscb, distro=distro,
+                                scratchdir=scratchdir, arch=arch)
         return store.acquireBootDisk(fetcher, progresscb)
     finally:
         fetcher.cleanupLocation()
@@ -161,10 +166,14 @@ class DistroInstaller(Guest.Installer):
             cdrom = self.location
         else:
             # Xen needs a boot.iso if its a http://, ftp://, or nfs: url
+            arch = os.uname()[4]
+            if hasattr(guest, "arch"):
+                arch = guest.arch
             cdrom = acquireBootDisk(self.location,
                                     meter,
                                     scratchdir = self.scratchdir,
-                                    distro = distro)
+                                    distro = distro,
+                                    arch = arch)
             self._tmpfiles.append(cdrom)
 
         self._install_disk = Guest.VirtualDisk(cdrom,
@@ -182,11 +191,15 @@ class DistroInstaller(Guest.Installer):
         else:
             # Need to fetch the kernel & initrd from a remote site, or
             # out of a loopback mounted disk image/device
+            arch = os.uname()[4]
+            if hasattr(guest, "arch"):
+                arch = guest.arch
             (kernelfn, initrdfn, args) = acquireKernel(self.location,
                                                        meter,
                                                        scratchdir = self.scratchdir,
                                                        type = self.os_type,
-                                                       distro = distro)
+                                                       distro = distro,
+                                                       arch=arch)
             self.install["kernel"] = kernelfn
             self.install["initrd"] = initrdfn
             if not self.extraargs is None:

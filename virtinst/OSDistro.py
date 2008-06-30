@@ -32,10 +32,11 @@ from virtinst import _virtinst as _
 # ISO image, or a kernel+initrd  pair for a particular OS distribution
 class Distro:
 
-    def __init__(self, uri, type=None, scratchdir=None):
+    def __init__(self, uri, type=None, scratchdir=None, arch=None):
         self.uri = uri
         self.type = type
         self.scratchdir = scratchdir
+        self.arch = arch
 
     def acquireBootDisk(self, fetcher, progresscb):
         raise "Not implemented"
@@ -50,7 +51,7 @@ class Distro:
 # Base image store for any Red Hat related distros which have
 # a common layout
 class RedHatDistro(Distro):
-    def __init__(self, uri, type=None, scratchdir=None):
+    def __init__(self, uri, type=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, type, scratchdir)
         self.treeinfo = None
 
@@ -169,10 +170,21 @@ class SLDistro(RedHatDistro):
 # Suse  image store is harder - we fetch the kernel RPM and a helper
 # RPM and then munge bits together to generate a initrd
 class SuseDistro(Distro):
+    def __init__(self, uri, type=None, scratchdir=None, arch=None):
+        Distro.__init__(self, uri, type, scratchdir)
+        if self.arch is None:
+            logging.debug("No arch specified for suse distro. Using hosts.")
+            self.arch = os.uname()[4]
+
     def acquireBootDisk(self, fetcher, progresscb):
         return fetcher.acquireFile("boot/boot.iso", progresscb)
 
     def acquireKernel(self, fetcher, progresscb):
+
+        self._findXenRPMS(fetcher, progresscb)
+
+
+    def _findXenRPMS(self, fetcher, progresscb):
         kernelrpm = None
         installinitrdrpm = None
         filelist = None
@@ -180,14 +192,14 @@ class SuseDistro(Distro):
             # There is no predictable filename for kernel/install-initrd RPMs
             # so we have to grok the filelist and find them
             filelist = fetcher.acquireFile("ls-lR.gz", progresscb)
-            (kernelrpmname, installinitrdrpmname) = self.extractRPMNames(filelist)
+            (kernelrpmname, initrdrpmname) = self._extractRPMNames(filelist)
 
             # Now fetch the two RPMs we want
             kernelrpm = fetcher.acquireFile(kernelrpmname, progresscb)
-            installinitrdrpm = fetcher.acquireFile(installinitrdrpmname, progresscb)
+            installinitrdrpm = fetcher.acquireFile(initrdrpmname, progresscb)
 
             # Process the RPMs to extract the kernel & generate an initrd
-            return self.buildKernelInitrd(fetcher, kernelrpm, installinitrdrpm, progresscb)
+            return self._buildKernelInitrd(fetcher, kernelrpm, installinitrdrpm, progresscb)
         finally:
             if filelist is not None:
                 os.unlink(filelist)
@@ -199,7 +211,7 @@ class SuseDistro(Distro):
     # We need to parse the ls-lR.gz file, looking for the kernel &
     # install-initrd RPM entries - capturing the directory they are
     # in and the version'd filename.
-    def extractRPMNames(self, filelist):
+    def _extractRPMNames(self, filelist):
         filelistData = gzip.GzipFile(filelist, mode = "r")
         try:
             arch = os.uname()[4]
@@ -252,7 +264,7 @@ class SuseDistro(Distro):
     # booting the installer.
     #
     # Yes, this is crazy ass stuff :-)
-    def buildKernelInitrd(self, fetcher, kernelrpm, installinitrdrpm, progresscb):
+    def _buildKernelInitrd(self, fetcher, kernelrpm, installinitrdrpm, progresscb):
         progresscb.start(text=_("Building initrd"), size=11)
         progresscb.update(1)
         cpiodir = tempfile.mkdtemp(prefix="virtinstcpio.", dir=self.scratchdir)
