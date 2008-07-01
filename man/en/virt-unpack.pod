@@ -1,0 +1,88 @@
+=pod
+
+=head1 NAME
+
+virt-unpack - convert virtual machines from VMware(tm) format into an xml image descriptor
+
+=head1 SYNOPSIS
+
+B<virt-unpack> [OPTION]... IMAGE.VMX
+
+=head1 DESCRIPTION
+
+B<virt-unpack> is a command line tool for converting virtual machines from an
+VMware(tm) format machine into an XML image descriptor C<IMAGE.XML> (L<virt-image(5)>). 
+The basic configuration of the virtual machine are taken from the VMware configuration file (e.g., 
+disk image files, memory, name, vcpus) and a new XML image descriptor file is created using
+these values. The conversion process requires that all necessary kernel modules and configuration 
+to boot using Xen or KVM are completed prior to running this tool. 
+
+
+=head1 OPTIONS
+
+Any of the options can be omitted, in which case B<virt-unpack> will use defaults when required.
+
+=over 4
+
+=item -h, --help
+
+Show the help message and exit
+
+=item -a ARCH, --arch=ARCH
+
+Architecture of the virtual machine (i686/x86_64,ppc)
+
+=item  -v, --hvm      Create  a fully virtualized guest image
+
+Convert machine to a hvm/qemu based image (this is the default if paravirt is not specified)
+
+=item  -p, --paravirt      Create  a paravirtualized guest image
+
+Convert machine to a paravirt xen based image
+
+=item  -o OUTPUTDIR, --outputdir=NAME  
+
+Directory in which files will be placed
+
+=item -d, --debug
+
+Print debugging information
+
+=back
+
+=head1 EXAMPLES
+
+Convert a paravirt guest from C<image.vmx>:
+
+  # virt-unpack image.vmx --arch=i686 --paravirt
+
+Convert a hvm guest and output the created file to /tmp
+
+  # virt-unpack image.vmx --arch=x86_64 --hvm --outputdir /tmp
+
+=head1 AUTHOR
+
+Written by Joey Boggs
+
+See the AUTHORS file in the source distribution for the complete list of credits.
+
+=head1 BUGS
+
+Report bugs to the mailing list C<http://www.redhat.com/mailman/listinfo/et-mgmt-tools>
+or directly to BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the
+C<Fedora> product, and the C<python-virtinst> component.
+
+=head1 COPYRIGHT
+
+Copyright (C) 2006-2008 Red Hat, Inc, and various contributors. 
+This is free software. You may redistribute copies of it under the terms of the GNU General 
+Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent 
+permitted by law.
+
+=head1 SEE ALSO
+
+L<virt-pack(1)>, L<virt-image(5)>, the project website
+C<http://virt-manager.org>
+
+=cut
+
