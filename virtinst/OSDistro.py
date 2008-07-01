@@ -173,15 +173,41 @@ class SuseDistro(Distro):
     def __init__(self, uri, type=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, type, scratchdir)
         if self.arch is None:
-            logging.debug("No arch specified for suse distro. Using hosts.")
             self.arch = os.uname()[4]
+            if len(self.arch) == 4 and len[0] == 'i' and len[2:] == "86":
+                self.arch = "i386"
 
     def acquireBootDisk(self, fetcher, progresscb):
         return fetcher.acquireFile("boot/boot.iso", progresscb)
 
     def acquireKernel(self, fetcher, progresscb):
+        kernel_args = ""
+        if not fetcher.location.startswith("/"):
+            kernel_args = "method=" + fetcher.location
 
-        self._findXenRPMS(fetcher, progresscb)
+        # If installing a fullvirt guest
+        if self.type is None or self.type == "hvm":
+            # Tested with Opensuse 10, 11, and sles 10
+            kernel = fetcher.acquireFile("boot/%s/loader/linux" % self.arch,
+                                         progresscb)
+            initrd = fetcher.acquireFile("boot/%s/loader/initrd" % self.arch,
+                                         progresscb)
+            if kernel and initrd:
+                return (kernel, initrd, kernel_args)
+
+        # Else we are looking for a paravirt kernel
+        if fetcher.hasFile("boot/%s/vmlinuz-xen" % self.arch):
+            # Should match opensuse > 10.2 and sles 10
+            kernel = fetcher.acquireFile("boot/%s/vmlinux-xen" % self.arch,
+                                         progresscb)
+            initrd = fetcher.acquireFile("boot/%s/initrd-xen" % self.arch,
+                                         progresscb)
+            if kernel and initrd:
+                return (kernel, initrd, kernel_args)
+
+        # For Opensuse <= 10.2, we need to perform some heinous stuff
+        logging.debug("Trying Opensuse 10 PV rpm hacking")
+        return self._findXenRPMS(fetcher, progresscb)
 
 
     def _findXenRPMS(self, fetcher, progresscb):
@@ -214,17 +240,18 @@ class SuseDistro(Distro):
     def _extractRPMNames(self, filelist):
         filelistData = gzip.GzipFile(filelist, mode = "r")
         try:
-            arch = os.uname()[4]
-            arches = [arch]
+            arches = [self.arch]
             # On i686 arch, we also look under i585 and i386 dirs
             # in case the RPM is built for a lesser arch. We also
             # need the PAE variant (for Fedora dom0 at least)
             #
             # XXX shouldn't hard code that dom0 is PAE
-            if arch == "i686":
+            if self.arch == "i386":
                 arches.append("i586")
-                arches.append("i386")
+                arches.append("i686")
                 kernelname = "kernel-xenpae"
+            else:
+                kernelname = "kernel-xen"
 
             installinitrdrpm = None
             kernelrpm = None
