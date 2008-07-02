@@ -80,6 +80,8 @@ def parse_args():
     if len(args) == 1:
         options.output_file = None
         options.output_dir = None
+        if os.path.isdir(args[0]):
+            options.output_dir = options.input_dir
     elif os.path.isdir(args[1]) or args[1].endswith("/"):
         options.output_file = None
         options.output_dir = args[1]
