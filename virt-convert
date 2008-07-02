@@ -244,11 +244,6 @@ def main():
     options = parse_args()
     cli.setupLogging("virt-convert", options.debug)
 
-    logging.debug("input_file: %s" % options.input_file)
-    logging.debug("input_dir: %s" % options.input_dir)
-    logging.debug("output_file: %s" % options.output_file)
-    logging.debug("output_dir: %s" % options.input_dir)
-
     vm_config = parse_vmware_config(options)
     record, disks_list = vm_config
 
@@ -273,6 +268,11 @@ def main():
     if not options.output_file:
         options.output_file = os.path.join(options.output_dir,
        "%s.virt-image.xml" % name)
+
+    logging.debug("input_file: %s" % options.input_file)
+    logging.debug("input_dir: %s" % options.input_dir)
+    logging.debug("output_file: %s" % options.output_file)
+    logging.debug("output_dir: %s" % options.input_dir)
 
     # configuration completed, ready to write config file and convert disks
     out = open(options.output_file, "w")
