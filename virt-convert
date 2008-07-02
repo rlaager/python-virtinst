@@ -218,9 +218,10 @@ def parse_vmware_config(options):
         before_eq, after_eq = line.split("=", 1)
         key = before_eq.replace(" ","")
         value = after_eq.replace('"',"")
-        record[key] = value.strip()
-        logging.debug("Key: %s      Value: %s" % (key, value))
-        if value.endswith("vmdk\n"): # separate disks from config
+        value = value.strip()
+        record[key] = value
+        logging.debug("Key: %s      Value: \"%s\"" % (key, value))
+        if value.endswith("vmdk"): # separate disks from config
             disks_list.append(value)
     return record, disks_list
 
