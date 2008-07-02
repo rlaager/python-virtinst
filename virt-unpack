@@ -192,7 +192,8 @@ def vmx_to_image_xml(disks_list,record,options,hvm):
   <storage>
   %(vm_storage)s
   </storage>
-</image>"""
+</image>
+"""
     
     virtimage_xml_template = virt_image_xml_template % virt_image_xml_dict
     return virtimage_xml_template
