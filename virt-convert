@@ -38,10 +38,10 @@ def parse_args():
                       help=("Output virtualization type (hvm, paravirt"))
     parser.add_option("-d", "--debug", action="store_true", dest="debug",
                       help=("Print debugging information"))
-    parser.add_option("-i", "--input-format", action="store_true",
+    parser.add_option("-i", "--input-format", action="store",
                       dest="inputformat", default="vmx",
                       help=("Input format, e.g. 'vmx'"))
-    parser.add_option("-o", "--output-format", action="store_true",
+    parser.add_option("-o", "--output-format", action="store",
                       dest="outputformat", default="virt-image",
                       help=("Output format, e.g. 'virt-image'"))
     parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
