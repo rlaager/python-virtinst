@@ -113,15 +113,11 @@ def vmx_to_image_xml(disks_list, record, options, hvm):
     if record.has_key("annotation"):
         annotation = record["annotation"]
     else:
-        logging.error("annotation key not parsed from %s, "
-                      "creating blank comment" % infile)
         annotation = ""
 
     if record.has_key("numvcpus"):
         vcpus = record["numvcpus"]
     else:
-        logging.error("numvcpus key not parsed from %s, "
-                      "defaulting to 1 virtual cpu" % infile)
         vcpus = "1"
 
 
