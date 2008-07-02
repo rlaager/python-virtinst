@@ -28,32 +28,65 @@ import random
 import pdb
 import shutil
 import logging
+import errno
 from optparse import OptionParser, OptionValueError
 
 def parse_args():
     parser = OptionParser()
-    parser.set_usage("%prog [options] image.vmx")
+    parser.set_usage("%prog [options] inputdir|input.vmx [outputdir|output.xml]")
     parser.add_option("-a", "--arch", type="string", dest="arch",
                       help=("Machine Architecture Type (i686/x86_64/ppc)"))
     parser.add_option("-t", "--type", type="string", dest="type",
                       help=("Output virtualization type (hvm, paravirt"))
     parser.add_option("-d", "--debug", action="store_true", dest="debug",
                       help=("Print debugging information"))
-    parser.add_option("-o", "--outputdir", type="string", dest="outputdir",
-                      help=("Output directory in which files will be created"))
+    parser.add_option("-i", "--input-format", action="store_true",
+                      dest="inputformat", default="vmx",
+                      help=("Input format, e.g. 'vmx'"))
+    parser.add_option("-o", "--output-format", action="store_true",
+                      dest="outputformat", default="virt-image",
+                      help=("Output format, e.g. 'virt-image'"))
     parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
                       help=("This guest should be a fully virtualized guest"))
     parser.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
                       help=("This guest should be a paravirtualized guest"))
 
-
     (options,args) = parser.parse_args()
     if len(args) < 1:
-         parser.error(("You need to provide an image XML descriptor"))
-    options.file  = args[0]
+         parser.error(("You need to provide an input VM definition"))
+    if len(args) > 2:
+         parser.error(("Too many arguments provided"))
     
     if (options.arch is None):
         parser.error(("Missing option value \n\nArchitecture: " + str(options.arch)))
+
+    # hard-code for now
+    if options.inputformat != "vmx":
+        parser.error(("Unsupported input format \"%s\"" % options.inputformat))
+    if options.outputformat != "virt-image":
+        parser.error(("Unsupported output format \"%s\"" % options.outputformat))
+    if os.path.isdir(args[0]):
+        vmx_files = [x for x in os.listdir(args[0]) if x.endswith(".vmx") ]
+        if (len(vmx_files)) == 0:
+            parser.error(("No VM definition file was found in %s" % args[0]))
+        if (len(vmx_files)) > 1:
+            parser.error(("Too many .vmx definitions found in %s" % args[0]))
+        options.input_file = os.path.join(args[0], vmx_files[0])
+        options.input_dir =  args[0]
+    else:
+        options.input_file = args[0]
+        options.input_dir = os.path.dirname(os.path.realpath(args[0]))
+
+    if len(args) == 1:
+        options.output_file = None
+        options.output_dir = None
+    elif os.path.isdir(args[1]) or args[1].endswith("/"):
+        options.output_file = None
+        options.output_dir = args[1]
+    else:
+        options.output_file = args[1]
+        options.output_dir = os.path.dirname(os.path.realpath(args[1]))
+
     return options
 
 # Begin creation of xml template from parsed vmx config file
@@ -62,29 +95,31 @@ def vmx_to_image_xml(disks_list,record,options,hvm):
     fv_disk_list = []
     storage_disk_list = []
 
+    file = options.input_file
+
     # validate required values for conversion are in the input vmx file
     if record.has_key("displayName"):
         name = record["displayName"]
     else:
-        logging.error("displayName key not parsed from %s" % options.file)
+        logging.error("displayName key not parsed from %s" % file)
         sys.exit(1)
 
     if record.has_key("memsize"):
         memory = int(record["memsize"]) * 1024
     else:
-        logging.error("memsize key not parsed from %s" % options.file)
+        logging.error("memsize key not parsed from %s" % file)
         sys.exit(1)
 
     if record.has_key("annotation"):
        annotation = record["annotation"]
     else:
-        logging.error("annotation key not parsed from %s, creating blank comment" % options.file)
+        logging.error("annotation key not parsed from %s, creating blank comment" % file)
         annotation = ""
      
     if record.has_key("numvcpus"):
         vcpus = record["numvcpus"]
     else:  
-        logging.error("numvcpus key not parsed from %s, defaulting to 1 virtual cpu" % options.file)
+        logging.error("numvcpus key not parsed from %s, defaulting to 1 virtual cpu" % file)
         vcpus = "1"
 
    
@@ -164,9 +199,9 @@ def vmx_to_image_xml(disks_list,record,options,hvm):
 
 # parse input vmware configuration
 def parse_vmware_config(options):
-    if not os.access(options.file,os.R_OK):
-        raise ValueError, "Could not read file: %s" % options.file
-    input = open(options.file,"r")
+    if not os.access(options.input_file, os.R_OK):
+        raise ValueError, "Could not read file: %s" % options.input_file
+    input = open(options.input_file, "r")
     contents = input.readlines()
     input.close()
     record = {}
@@ -191,18 +226,30 @@ def parse_vmware_config(options):
     return record,disks_list
 
 
-def convert_disks(disks_list,dirname):
+def convert_disks(disks_list, options):
     for disk in disks_list:
-        file = disk.replace(".vmdk","").strip()
-        convert_cmd="qemu-img convert %s -O raw %s/%s.img" % (disk.strip(),dirname,file)
-        logging.debug("Converting %s" % disk.strip())
-        print "\nConverting %s to %s/%s.img" % (disk.strip(),dirname,file)
-        os.system(convert_cmd)
+        infile = disk.strip()
+        if not os.path.isabs(infile):
+            infile = os.path.join(options.input_dir, infile)
+
+        outfile = disk.replace(".vmdk","").strip()
+   outfile += ".img"
+        if not os.path.isabs(outfile):
+            outfile = os.path.join(options.output_dir, outfile)
+        convert_cmd="qemu-img convert %s -O raw %s" % (infile, outfile)
+        ret = os.system(convert_cmd)
+        print ret
 
 
 def main():
     options = parse_args()
     cli.setupLogging("virt-unpack", options.debug)
+
+    logging.debug("input_file: %s" % options.input_file)
+    logging.debug("input_dir: %s" % options.input_dir)
+    logging.debug("output_file: %s" % options.output_file)
+    logging.debug("output_dir: %s" % options.input_dir)
+
     vm_config = parse_vmware_config(options)
     record, disks_list = vm_config
 
@@ -210,26 +257,31 @@ def main():
       hvm = False
     else:
       hvm = True
-    virtimage_xml = vmx_to_image_xml(disks_list,record,options,hvm)
+    out_contents = vmx_to_image_xml(disks_list, record, options, hvm)
 
     name = record["displayName"].replace(" ","-")
-    dirname = options.outputdir
-    if not dirname:
-        dirname = name
+    if not options.output_dir:
+        options.output_dir = name
     try:
-         logging.debug ("Creating directory %s" % dirname)
-         os.mkdir(dirname)
+         logging.debug("Creating directory %s" % options.output_dir)
+         os.mkdir(options.output_dir)
     except OSError,e:
-        logging.error("Could not create directory %s: %s" % (dirname, str(e)))
-        sys.exit(1)
+        if (e.errno != errno.EEXIST):
+            logging.error("Could not create directory %s: %s" %
+                (options.output_dir, str(e)))
+            sys.exit(1)
+
+    if not options.output_file:
+        options.output_file = os.path.join(options.output_dir,
+       "%s.virt-image.xml" % name)
 
     # configuration completed, ready to write config file and convert disks
-    virtimage_xml_file = open(dirname + "/" + name + ".virtimage.xml","w")
-    virtimage_xml_file.writelines(virtimage_xml)
-    virtimage_xml_file.close()
-    convert_disks(disks_list,dirname)
+    out = open(options.output_file, "w")
+    out.writelines(out_contents)
+    out.close()
+    convert_disks(disks_list, options)
 
-    print "\n\nConversion completed and placed in: %s" % dirname
+    print "\n\nConversion completed and placed in: %s" % options.output_dir
 
     
 if __name__ == "__main__":
