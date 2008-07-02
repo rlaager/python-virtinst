@@ -21,10 +21,14 @@
 
 import random
 import os.path
+import re
+import logging
 from sys import stderr
 
 import libvirt
 from virtinst import _virtinst as _
+
+KEYBOARD_DIR = "/etc/sysconfig/keyboard"
 
 def default_route():
     route_file = "/proc/net/route"
@@ -214,6 +218,12 @@ def get_phy_cpus(conn):
     pcpus = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
     return pcpus
 
+def system(cmd):
+    st = os.system(cmd)
+    if os.WIFEXITED(st) and os.WEXITSTATUS(st) != 0:
+        raise OSError("Failed to run %s, exited with %d" % 
+                      (cmd, os.WEXITSTATUS(st)))
+
 def xml_escape(str):
     """Replaces chars ' " < > & with xml safe counterparts"""
     str = str.replace("&", "&amp;")
@@ -241,3 +251,29 @@ def compareMAC(p, q):
         elif n < 0:
             return -1
     return 0
+
+def default_keymap():
+    """Look in /etc/sysconfig for the host machine's keymap, and attempt to
+       map it to a keymap supported by qemu"""
+
+    # Set keymap to same as hosts
+    import keytable
+    keymap = "en-us"        # Default value
+    try:
+        f = open(KEYBOARD_DIR, "r")
+    except IOError, e:
+        logging.debug('Could not open "/etc/sysconfig/keyboard" ' + str(e))
+    else:
+        while 1:
+            s = f.readline()
+            if s == "":
+                break
+            if re.search("KEYTABLE", s) != None:
+                kt = s.split('"')[1]
+                if keytable.keytable.has_key(kt):
+                    keymap = keytable.keytable[kt]
+                else:
+                    logging.debug("Didn't find keymap '%s' in keytable!" % kt)
+            f.close
+    return keymap
+

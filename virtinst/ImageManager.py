@@ -23,6 +23,7 @@ import ImageParser
 import CapabilitiesParser as Cap
 import os
 import util
+from virtinst import _virtinst as _
 
 class ImageInstallerException(RuntimeError):
     def __init__(self, msg):
@@ -81,7 +82,7 @@ class ImageInstaller(Guest.Installer):
                     guest.features[f] = False
 
     def _make_disks(self, guest):
-        for m in self.boot_caps.disks:
+        for m in self.boot_caps.drives:
             p = self._abspath(m.disk.file)
             s = None
             if m.disk.size is not None:
@@ -143,7 +144,7 @@ class ImageInstaller(Guest.Installer):
         return True
 
     def _abspath(self, p):
-        return os.path.abspath(os.path.join(self.image.base, p))
+        return self.image.abspath(p)
 
 class PlatformMatchException(Exception):
     def __init__(self, msg):

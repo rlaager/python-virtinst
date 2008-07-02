@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import os.path
 import libxml2
 import CapabilitiesParser
 from virtinst import _virtinst as _
@@ -29,20 +30,38 @@ class ParserException(Exception):
 
 class Image:
     """The toplevel object representing a VM image"""
-    def __init__(self, node = None, base = "."):
+    def __init__(self, node = None, base = None, filename = None):
         self.storage = {}
         self.domain = None
-        self.base = base
+        self.filename = os.path.abspath(filename)
+        if base is None:
+            if filename is not None:
+                self.base = os.path.dirname(filename)
+                if self.base == '' :
+                     self.base ="."
+            else:
+                self.base ="."
+        else:
+            self.base = base
         self.name = None
         self.label = None
         self.descr = None
+        self.version = None
+        self.release = None
         if not node is None:
             self.parseXML(node)
+
+    def abspath(self, p):
+        """Turn P into an absolute path. Relative paths are taken relative
+           to self.BASE"""
+        return os.path.abspath(os.path.join(self.base, p))
 
     def parseXML(self, node):
         self.name = xpathString(node, "name")
         self.label = xpathString(node, "label")
         self.descr = xpathString(node, "description")
+        self.version = xpathString(node, "name/@version")
+        self.release = xpathString(node, "name/@release")
         for d in node.xpathEval("storage/disk"):
             disk = Disk(d)
             if disk.file is None:
@@ -59,7 +78,7 @@ class Image:
             raise ParserException(_("Expected exactly one 'domain' element"))
         # Connect the disk maps to the disk definitions
         for boot in self.domain.boots:
-            for d in boot.disks:
+            for d in boot.drives:
                 if not self.storage.has_key(d.disk_id):
                     raise ParserException(_("Disk entry for '%s' not found")
                                                % d.disk_id)
@@ -118,7 +137,7 @@ class Boot:
         self.kernel = None
         self.initrd = None
         self.cmdline = None
-        self.disks = []
+        self.drives = []
         self.arch = None
         self.features = ImageFeatures()
         if not node is None:
@@ -140,7 +159,7 @@ class Boot:
             self.features = ImageFeatures(fl[0])
 
         for d in node.xpathEval("drive"):
-            self.disks.append(Drive(d))
+            self.drives.append(Drive(d))
 
         validate(self.type is not None,
            "The boot type must be provided")
@@ -210,7 +229,7 @@ def xpathString(node, path, default = None):
         result = default
     return result
 
-def parse(xml, base):
+def parse(xml, filename):
     """Parse the XML description of a VM image into a data structure. Returns
     an object of class Image. BASE should be the directory where the disk
     image files for this image can be found"""
@@ -238,10 +257,14 @@ def parse(xml, base):
         if root.name != "image":
             raise ParserException(_("Root element is not 'image'"))
 
-        image = Image(root)
-        image.base = base
+        image = Image(root, filename = filename)
     finally:
         doc.freeDoc()
 
     return image
 
+def parse_file(filename):
+    file = open(filename, "r")
+    xml = file.read()
+    file.close()
+    return parse(xml, filename = filename)

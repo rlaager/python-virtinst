@@ -30,7 +30,8 @@ class LiveCDInstallerException(Exception):
 
 class LiveCDInstaller(Guest.Installer):
     def __init__(self, type = "xen", location = None, os_type = None):
-        Guest.Installer.__init__(self, type, location, os_type = None)
+        Guest.Installer.__init__(self, type=type, location=location,
+                                 os_type=os_type)
 
     def prepare(self, guest, meter, distro = None):
         self.cleanup()
@@ -64,11 +65,11 @@ class LiveCDInstaller(Guest.Installer):
             os_type = "linux"
 
         osblob  = "<os>\n"
-        osblob += "      <type>%s</type>\n" % os_type
+        osblob += "    <type>%s</type>\n" % os_type
         if loader:
-            osblob += "      <loader>%s</loader>\n" % loader
-        osblob += "      <boot dev='cdrom'/>\n"
-        osblob += "    </os>"
+            osblob += "    <loader>%s</loader>\n" % loader
+        osblob += "    <boot dev='cdrom'/>\n"
+        osblob += "  </os>"
 
         return osblob
 

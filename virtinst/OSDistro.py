@@ -56,17 +56,22 @@ class RedHatDistro(Distro):
 
     def hasTreeinfo(self, fetcher, progresscb):
         # all Red Hat based distros should have .treeinfo / execute only once
-        if (self.treeinfo is None):
-            if fetcher.hasFile(".treeinfo"):
-                logging.debug("Detected .treeinfo file")
-                tmptreeinfo = fetcher.acquireFile(".treeinfo", progresscb)
-                self.treeinfo = ConfigParser.SafeConfigParser()
-                self.treeinfo.read(tmptreeinfo)
-                return True
-            else:
-                return False
-        else:
+        if not (self.treeinfo is None):
             return True
+
+        if not fetcher.hasFile(".treeinfo"):
+            return False
+
+        logging.debug("Detected .treeinfo file")
+
+        tmptreeinfo = fetcher.acquireFile(".treeinfo", progresscb)
+        try:
+            self.treeinfo = ConfigParser.SafeConfigParser()
+            self.treeinfo.read(tmptreeinfo)
+        finally:
+            os.unlink(tmptreeinfo)
+
+        return True
 
     def acquireKernel(self, fetcher, progresscb):
         if self.hasTreeinfo(fetcher, progresscb):
@@ -150,6 +155,14 @@ class CentOSDistro(RedHatDistro):
                 logging.debug("Detected a CentOS distro")
                 return True
             return False
+
+# Scientific Linux distro check
+class SLDistro(RedHatDistro):
+    def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile("SL"):
+            logging.debug("Detected a Scientific Linux distro")
+            return True
+        return False
 
 
 

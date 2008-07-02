@@ -122,6 +122,11 @@ contain multiple C</image/domain/boot> elements for use on different
 hypervisors. By default, the one that is most appropriate for the current
 hypervisor is selected.
 
+=item --force
+
+Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
+say yes. For any other prompts, the application will exit.
+
 =head1 EXAMPLES
 
 Create and start a guest called C<example> with a VNC console from

@@ -132,6 +132,7 @@ class LocalImageFetcher(ImageFetcher):
 
     def __init__(self, location, scratchdir, srcdir=None):
         ImageFetcher.__init__(self, location, scratchdir)
+        self.srcdir = srcdir
 
     def acquireFile(self, filename, progresscb):
         file = None

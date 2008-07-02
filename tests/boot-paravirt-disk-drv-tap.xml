@@ -11,7 +11,7 @@
   <devices>
     <disk type='file' device='disk'>
       <driver name='tap'/>
-      <source file='/etc/test.img'/>
+      <source file='/tmp/test.img'/>
       <target dev='xvda'/>
     </disk>
 

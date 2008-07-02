@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "virt-image 5"
-.TH virt-image 5 "2007-12-04" "perl v5.8.8" "Virtual Machine Install Tools"
+.TH virt-image 5 "2008-05-08" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
 virt\-image \- Format of the virtual image XML descriptor
 .SH "DESCRIPTION"
@@ -269,7 +269,7 @@ created, with the size given by the \fIsize\fR attribute.
 the \fIsize\fR attribute giving the size of the disk in \s-1MB\s0.
 .IP "\(bu" 4
 the \fIformat\fR attribute giving the format of the disk file. Currently, this
-can be either \f(CW\*(C`raw\*(C'\fR for a raw disk image and \f(CW\*(C`iso\*(C'\fR for an \s-1ISO\s0 image.
+can be one of: \f(CW\*(C`raw\*(C'\fR \f(CW\*(C`iso\*(C'\fR, \f(CW\*(C`qemu\*(C'\fR, \f(CW\*(C`qemu2\*(C'\fR, or \f(CW\*(C`vmdk\*(C'\fR.
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 The image descriptor below can be used to create a virtual machine running

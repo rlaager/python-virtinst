@@ -22,14 +22,32 @@
 import os, sys
 import logging
 import logging.handlers
-from optparse import OptionValueError
+import locale
+from optparse import OptionValueError, OptionParser
 
 import libvirt
 import util
-import Guest, CapabilitiesParser
+from virtinst import Guest, CapabilitiesParser, VirtualNetworkInterface, \
+                     VirtualGraphics
+from virtinst import _virtinst as _
 
 MIN_RAM = 64
 force = False
+
+class VirtOptionParser(OptionParser):
+    '''Subclass to get print_help to work properly with non-ascii text'''
+
+    def _get_encoding(self, file):
+        encoding = getattr(file, "encoding", None)
+        if not encoding:
+            (language, encoding) = locale.getlocale()
+        return encoding
+
+    def print_help(self, file=None):
+        if file is None:
+            file = sys.stdout
+        encoding = self._get_encoding(file)
+        file.write(self.format_help().encode(encoding, "replace"))
 
 #
 # Setup helpers
@@ -46,7 +64,8 @@ def setupLogging(appname, debug=False):
 
     dateFormat = "%a, %d %b %Y %H:%M:%S"
     fileFormat = "[%(asctime)s " + appname + " %(process)d] %(levelname)s (%(module)s:%(lineno)d) %(message)s"
-    streamFormat = "%(asctime)s %(levelname)-8s %(message)s"
+    streamDebugFormat = "%(asctime)s %(levelname)-8s %(message)s"
+    streamErrorFormat = "%(levelname)-8s %(message)s"
     filename = os.path.join(vi_dir, appname + ".log")
 
     rootLogger = logging.getLogger()
@@ -59,12 +78,13 @@ def setupLogging(appname, debug=False):
     rootLogger.addHandler(fileHandler)
 
     streamHandler = logging.StreamHandler(sys.stderr)
-    streamHandler.setFormatter(logging.Formatter(streamFormat,
-                                                 dateFormat))
     if debug:
         streamHandler.setLevel(logging.DEBUG)
+        streamHandler.setFormatter(logging.Formatter(streamDebugFormat,
+                                                     dateFormat))
     else:
         streamHandler.setLevel(logging.ERROR)
+        streamHandler.setFormatter(logging.Formatter(streamErrorFormat))
     rootLogger.addHandler(streamHandler)
 
     # Register libvirt handler
@@ -82,12 +102,15 @@ def setupLogging(appname, debug=False):
         sys.__excepthook__(type, val, tb)
     sys.excepthook = exception_log
 
+def fail(msg):
+    """Convenience function when failing in cli app"""
+    logging.error(msg)
+    sys.exit(1)
 
 def getConnection(connect):
     if connect is None or connect.lower()[0:3] == "xen":
         if os.geteuid() != 0:
-            print >> sys.stderr, "Must be root to create Xen guests"
-            sys.exit(1)
+            fail(_("Must be root to create Xen guests"))
 
     return libvirt.open(connect)
 
@@ -183,11 +206,12 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
             vcpus = int(prompt_for_input(_("How many VCPUs should be attached?")))
         except ValueError, e:
             print _("ERROR: "), e
-    if vcpus:
+    if vcpus is not None:
         try:
             guest.vcpus = vcpus
         except ValueError, e:
             print _("ERROR: "), e
+            sys.exit(1)
 
 def get_cpuset(cpuset, mem, guest, conn):
     if cpuset and cpuset != "auto":
@@ -229,14 +253,13 @@ def get_network(mac, network, guest):
     if mac == "RANDOM":
         mac = None
     if network == "user":
-        n = Guest.VirtualNetworkInterface(mac, type="user")
+        n = VirtualNetworkInterface(mac, type="user")
     elif network[0:6] == "bridge":
-        n = Guest.VirtualNetworkInterface(mac, type="bridge", bridge=network[7:])
+        n = VirtualNetworkInterface(mac, type="bridge", bridge=network[7:])
     elif network[0:7] == "network":
-        n = Guest.VirtualNetworkInterface(mac, type="network", network=network[8:])
+        n = VirtualNetworkInterface(mac, type="network", network=network[8:])
     else:
-        print >> sys.stderr, _("Unknown network type ") + network
-        sys.exit(1)
+        fail(_("Unknown network type ") + network)
     guest.nics.append(n)
 
 def digest_networks(macs, bridges, networks):
@@ -250,8 +273,7 @@ def digest_networks(macs, bridges, networks):
         networks = [ networks ]
 
     if bridges is not None and networks != None:
-        print >> sys.stderr, _("Cannot mix both --bridge and --network arguments")
-        sys.exit(1)
+        fail(_("Cannot mix both --bridge and --network arguments"))
 
     # ensure we have equal length lists
     if bridges != None:
@@ -260,8 +282,7 @@ def digest_networks(macs, bridges, networks):
     if networks != None:
         if macs != None:
             if len(macs) != len(networks):
-                print >> sys.stderr, _("Need to pass equal numbers of networks & mac addresses")
-                sys.exit(1)
+                fail(_("Need to pass equal numbers of networks & mac addresses"))
         else:
             macs = [ None ] * len(networks)
     else:
@@ -272,8 +293,7 @@ def digest_networks(macs, bridges, networks):
             networks = ["user"]
         if macs != None:
             if len(macs) > 1:
-                print >> sys.stderr, _("Need to pass equal numbers of networks & mac addresses")
-                sys.exit(1)
+                fail(_("Need to pass equal numbers of networks & mac addresses"))
         else:
             macs = [ None ]
 
@@ -288,9 +308,9 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
         guest.graphics_dev = None
         return
     if vnc is not None:
-        guest.graphics_dev = Guest.VirtualGraphics(type=Guest.VirtualGraphics.TYPE_VNC)
+        guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
     if sdl is not None:
-        guest.graphics_dev = Guest.VirtualGraphics(type=Guest.VirtualGraphics.TYPE_SDL)
+        guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_SDL)
     while 1:
         if guest.graphics_dev:
             break
@@ -301,7 +321,7 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
             print _("ERROR: "), e
             continue
         if vnc:
-            guest.graphics_dev = Guest.VirtualGraphics(type=Guest.VirtualGraphics.TYPE_VNC)
+            guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
         else:
             guest.graphics_dev = None
         break

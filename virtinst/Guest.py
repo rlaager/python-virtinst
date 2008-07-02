@@ -20,6 +20,7 @@
 # MA 02110-1301 USA.
 
 import os, os.path
+import statvfs
 import stat, sys, time
 import re
 import libxml2
@@ -60,69 +61,74 @@ class VirtualDisk:
         self._driverName = driverName
         self._driverType = driverType
         self.target = None
-       
-        if self.path is not None:
-            # Check that the basics are valid
-            if __builtin__.type(self.path) is not __builtin__.type("string"):
-                raise ValueError, _("The %s path must be a string or None.") % self._device
-            self.path = os.path.abspath(self.path)
-            if os.path.isdir(self.path):
-                raise ValueError, _("The %s path must be a file or a device, not a directory") % self._device
-            if not os.path.exists(os.path.dirname(self.path)):
-                raise ValueError, _("The specified path's root directory must exist.")
 
-            if (self._device == self.DEVICE_FLOPPY or \
-                self._device == self.DEVICE_CDROM) and \
-               not os.path.exists(self.path):
-                raise ValueError, _("The %s path must exist.") % self._device
+        # Reset type variable as the builtin function
+        type = __builtin__.type
 
-            # If no disk type specified, attempt to determine from path
-            if self._type is None:
-                if not os.path.exists(self.path):
-                    logging.debug(\
-                        "Disk path not found: Assuming file disk type.");
-                    self._type = VirtualDisk.TYPE_FILE
-                else:
-                    if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                        logging.debug(\
-                            "Path is block file: Assuming Block disk type.");
-                        self._type = VirtualDisk.TYPE_BLOCK
-                    else:
-                        self._type = VirtualDisk.TYPE_FILE
-        
-            if self._type == VirtualDisk.TYPE_FILE:
-                if self.size is None and not os.path.exists(self.path):
-                    raise ValueError, \
-                        _("A size must be provided for non-existent disks")
-                if os.path.exists(self.path) and \
-                   stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                    raise ValueError, _("The specified path is a block device, not a regular file.")
-                if self.size is not None and \
-                   (__builtin__.type(self.size) is not __builtin__.type(1) and __builtin__.type(self.size) is not __builtin__.type(1.0)):
-                    raise ValueError, _("Disk size must be an int or a float.")
-                if self.size < 0 and self.size is not None:
-                    raise ValueError, _("Disk size must not be less than 0.")
-            elif self._type == VirtualDisk.TYPE_BLOCK:
-                if not os.path.exists(self.path):
-                    raise ValueError, \
-                          _("The specified block device does not exist.")
-                if not stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                    raise ValueError, \
-                          _("The specified path is not a block device.")
+        if self._device == self.DEVICE_CDROM:
+            self._readOnly = True
+
+        # Only floppy or cdrom can be created w/o media
+        if self.path is None:
+            if device != self.DEVICE_FLOPPY and device != self.DEVICE_CDROM:
+                raise ValueError, _("Disk type '%s' requires a path") % device
+            return
+
+        # Basic path validation
+        if type(self.path) is not str:
+            raise ValueError, _("The %s path must be a string or None.") % \
+                              self._device
+        self.path = os.path.abspath(self.path)
+        if os.path.isdir(self.path):
+            raise ValueError, _("The %s path must be a file or a device, not a directory") % self._device
+
+        # Main distinction: does path exist or not?
+        if os.path.exists(self.path):
+            logging.debug("VirtualDisk path exists.")
+
+            # Determine disk type
+            if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
+                logging.debug("Path is block file: Assuming Block disk type.")
+                newtype = VirtualDisk.TYPE_BLOCK
+            else:
+                newtype = VirtualDisk.TYPE_FILE
+
+            if self._type is not None and self._type != newtype:
+                raise ValueError, _("Path is not specified type '%s'." % \
+                                    self._type)
+            self._type = newtype
+
 
         else:
-            # Only floppy or cdrom can be created w/o media
-            if device != self.DEVICE_FLOPPY and \
-               device != self.DEVICE_CDROM:
-                raise ValueError, _("Disk type '%s' requires a path") % device
+            logging.debug("VirtualDisk path does not exist.")
+            if self._device == self.DEVICE_FLOPPY or \
+               self._device == self.DEVICE_CDROM:
+                raise ValueError, _("The %s path must exist.") % self._device
+
+            if self._type is self.TYPE_BLOCK:
+                raise ValueError, _("Block device path must exist.")
+            self._type = self.TYPE_FILE
+
+            # Path doesn't exist: make sure we have write access to dir
+            if not os.access(os.path.dirname(self.path), os.W_OK):
+                raise ValueError, _("No write access to directory '%s'") % \
+                                  os.path.dirname(self.path)
+
+            # Ensure size was specified
+            if size is None or type(size) not in [int, float] or size < 0:
+                raise ValueError, \
+                      _("A size must be provided for non-existent disks")
+
+            ret = self.size_conflict()
+            if ret[0]:
+                raise ValueError, ret[1]
+            elif ret[1]:
+                logging.warn(ret[1])
+
 
     def get_type(self):
         return self._type
     type = property(get_type)
-
-    def get_transient(self):
-        return self._transient
-    transient = property(get_transient)
 
     def get_device(self):
         return self._device
@@ -188,6 +194,34 @@ class VirtualDisk:
             ret += "      <readonly/>\n"
         ret += "    </disk>\n"
         return ret
+
+    def size_conflict(self):
+        """size_conflict: reports if disk size conflicts with available space
+
+           returns a two element tuple:
+               first element is True if fatal conflict occurs
+               second element is a string description of the conflict or None
+           Non fatal conflicts (sparse disk exceeds available space) will
+           return (False, "description of collision")"""
+
+        if not self.size or not self.path or os.path.exists(self.path) or \
+           self.type != self.TYPE_FILE:
+            return (False, None)
+
+        ret = False
+        msg = None
+        vfs = os.statvfs(os.path.dirname(self.path))
+        avail = vfs[statvfs.F_FRSIZE] * vfs[statvfs.F_BAVAIL]
+        need = self.size * 1024 * 1024 * 1024
+        if need > avail:
+            if self.sparse:
+                msg = _("The filesystem will not have enough free space"
+                        " to fully allocate the sparse file when the guest"
+                        " is running.")
+            else:
+                ret = True
+                msg = _("There is not enough free space to create the disk.")
+        return (ret, msg)
 
     def is_conflict_disk(self, conn):
         vms = []
@@ -407,8 +441,7 @@ class VirtualGraphics(object):
         return self._keymap
     def set_keymap(self, val):
         if not val:
-            self._keymap = None
-            return
+            val = util.default_keymap()
         if not val or type(val) != type("string"):
             raise ValueError, _("Keymap must be a string")
         if len(val) > 16:
@@ -508,13 +541,13 @@ class Installer(object):
     def get_scratchdir(self):
         if self.type == "xen":
             return "/var/lib/xen"
-        return "/var/tmp"
+        return "/var/lib/libvirt/boot"
     scratchdir = property(get_scratchdir)
 
     def get_cdrom(self):
         return self._cdrom
     def set_cdrom(self, enable):
-        if __builtin__.type(enable) is not __builtin__.type(True):
+        if enable not in [True, False]:
             raise ValueError, _("Guest.cdrom must be a boolean type")
         self._cdrom = enable
     cdrom = property(get_cdrom, set_cdrom)
@@ -576,6 +609,8 @@ class Guest(object):
         self.domain = None
         self.conn = connection
         if self.conn == None:
+            logging.debug("No conn passed to Guest, opening URI '%s'" % \
+                          hypervisorURI)
             self.conn = libvirt.open(hypervisorURI)
         if self.conn == None:
             raise RuntimeError, _("Unable to connect to hypervisor, aborting installation!")
@@ -702,14 +737,14 @@ class Guest(object):
         return self._graphics_dev.keymap
     def set_keymap(self, val):
         if self._graphics_dev is not None:
-            self_.graphics_dev.keymap = keymap
+            self._graphics_dev.keymap = val
     keymap = property(get_keymap, set_keymap)
 
     # Deprecated: Should set guest.graphics_dev = VirtualGraphics(...)
     def get_graphics(self):
         if self._graphics_dev is None:
             return { "enabled " : False }
-        return { "enabled" : true, "type" : self._graphics_dev, \
+        return { "enabled" : True, "type" : self._graphics_dev, \
                  "keymap"  : self._graphics_dev.keymap}
     def set_graphics(self, val):
 

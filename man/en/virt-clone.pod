@@ -56,9 +56,9 @@ mind if manually specifying a UUID
 =item -f DISKFILE, --file=DISKFILE
 
 Path to the file, disk partition, or logical volume to use as the backing store
-for the guest's virtual disk. If the original guest has multiple disks, this 
-parameter must be repeated multiple times, once per disk in the original virtual 
-machine.
+for the new guest's virtual disk. If the original guest has multiple disks,
+this parameter must be repeated multiple times, once per disk in the original
+virtual machine.
 
 =item -m MAC, --mac=MAC
 
@@ -97,6 +97,11 @@ prioritization is incorrect, eg if wanting to use QEMU while on a Xen kernel.
 Print debugging information to the terminal when running the install process.
 The debugging information is also stored in C<$HOME/.virtinst/virt-clone.log>
 even if this parameter is omitted.
+
+=item --force
+
+Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
+say yes. For any other prompts, the application will exit.
 
 =back
 
