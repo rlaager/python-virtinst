@@ -128,16 +128,16 @@
 .rm #[ #] #H #V #F C
 .\" ========================================================================
 .\"
-.IX Title "VIRT-UNPACK 1"
-.TH VIRT-UNPACK 1 "2008-07-01" "perl v5.8.8" "Virtual Machine Install Tools"
+.IX Title "VIRT-CONVERT 1"
+.TH VIRT-CONVERT 1 "2008-07-01" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
-virt\-unpack \- convert virtual machines between formats
+virt\-convert \- convert virtual machines between formats
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBvirt-unpack\fR [\s-1OPTION\s0]... \s-1INPUT\s0.VMX|INPUT\-DIR [\s-1OUTPUT\s0.XML|OUTPUT\-DIR]
+\&\fBvirt-convert\fR [\s-1OPTION\s0]... \s-1INPUT\s0.VMX|INPUT\-DIR [\s-1OUTPUT\s0.XML|OUTPUT\-DIR]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBvirt-unpack\fR is a command line tool for converting virtual machines
+\&\fBvirt-convert\fR is a command line tool for converting virtual machines
 from one format to another. Pass in either a \s-1VM\s0 definition file (such
 as VMWare vmx format) or a directory containing a \s-1VM\s0. By default, a new
 \&\s-1VM\s0 definition file, and converted disk images, will be placed in a new
@@ -151,7 +151,7 @@ If an output \s-1VM\s0 definition file is specified, it will be created
 alongside any disks in the same directory.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
-Any of the options can be omitted, in which case \fBvirt-unpack\fR will use defaults when required.
+Any of the options can be omitted, in which case \fBvirt-convert\fR will use defaults when required.
 An input \s-1VM\s0 definition or containing directory must be provided. By
 default, an output directory is generated based upon the name of the \s-1VM\s0.
 The default input format is VMWare vmx, and the default output format is
@@ -182,13 +182,13 @@ Print debugging information
 Convert a paravirt guest from \f(CW\*(C`image.vmx\*(C'\fR:
 .PP
 .Vb 1
-\&  # virt-unpack --arch=i686 --paravirt image.vmx
+\&  # virt-convert --arch=i686 --paravirt image.vmx
 .Ve
 .PP
 Convert a 64\-bit hvm guest:
 .PP
 .Vb 1
-\&  # virt-unpack --arch=x86_64 vmx-appliance/ hvm-appliance/
+\&  # virt-convert --arch=x86_64 vmx-appliance/ hvm-appliance/
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"

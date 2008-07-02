@@ -2,15 +2,15 @@
 
 =head1 NAME
 
-virt-unpack - convert virtual machines between formats
+virt-convert - convert virtual machines between formats
 
 =head1 SYNOPSIS
 
-B<virt-unpack> [OPTION]... INPUT.VMX|INPUT-DIR [OUTPUT.XML|OUTPUT-DIR]
+B<virt-convert> [OPTION]... INPUT.VMX|INPUT-DIR [OUTPUT.XML|OUTPUT-DIR]
 
 =head1 DESCRIPTION
 
-B<virt-unpack> is a command line tool for converting virtual machines
+B<virt-convert> is a command line tool for converting virtual machines
 from one format to another. Pass in either a VM definition file (such
 as VMWare vmx format) or a directory containing a VM. By default, a new
 VM definition file, and converted disk images, will be placed in a new
@@ -25,7 +25,7 @@ alongside any disks in the same directory.
 
 =head1 OPTIONS
 
-Any of the options can be omitted, in which case B<virt-unpack> will use defaults when required.
+Any of the options can be omitted, in which case B<virt-convert> will use defaults when required.
 An input VM definition or containing directory must be provided. By
 default, an output directory is generated based upon the name of the VM.
 The default input format is VMWare vmx, and the default output format is
@@ -67,11 +67,11 @@ Print debugging information
 
 Convert a paravirt guest from C<image.vmx>:
 
-  # virt-unpack --arch=i686 --paravirt image.vmx
+  # virt-convert --arch=i686 --paravirt image.vmx
 
 Convert a 64-bit hvm guest:
 
-  # virt-unpack --arch=x86_64 vmx-appliance/ hvm-appliance/
+  # virt-convert --arch=x86_64 vmx-appliance/ hvm-appliance/
 
 =head1 AUTHOR
 

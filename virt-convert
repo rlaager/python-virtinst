@@ -246,7 +246,7 @@ def convert_disks(disks_list, options):
 
 def main():
     options = parse_args()
-    cli.setupLogging("virt-unpack", options.debug)
+    cli.setupLogging("virt-convert", options.debug)
 
     logging.debug("input_file: %s" % options.input_file)
     logging.debug("input_dir: %s" % options.input_dir)
