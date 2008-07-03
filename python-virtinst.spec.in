@@ -70,6 +70,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-clone
 %{_bindir}/virt-image
 %{_bindir}/virt-pack
+%{_bindir}/virt-convert
 
 %changelog
 * Mon Mar 10 2008 Daniel P. Berrange <berrange@redhat.com> - 0.300.3-1
