@@ -27,7 +27,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 Url: http://virt-manager.et.redhat.com
 Requires: libvirt-python >= 0.2.0
-Requires: virt-viewer
 Requires: urlgrabber
 Requires: libxml2-python
 BuildRequires: python-devel
