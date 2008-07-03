@@ -142,7 +142,10 @@ def parse_args():
                       help=_("The zero-based index of the boot record to use"))
     parser.add_option("", "--force", action="store_true", dest="force",
                       help=_("Do not prompt for input. Answers yes where applicable, terminates for all other prompts"),
-                      default=False)
+                      default=False)    
+    parser.add_option("", "--replace",action="store_true", dest="replace",
+                      help=_("Overwrite, or destroy, an existing image with the same name"),
+                      default=False)                      
 
     (options,args) = parser.parse_args()
     if len(args) < 1:
@@ -211,7 +214,7 @@ def main():
         try:
             print _("\n\nCreating guest %s...") % guest.name
 
-            dom = guest.start_install(None, progresscb)
+            dom = guest.start_install(None, progresscb, options.replace)
             if dom is None:
                 print _("Guest creation failed")
                 sys.exit(1)

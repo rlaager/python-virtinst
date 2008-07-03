@@ -914,7 +914,7 @@ class Guest(object):
         "action": action }
 
 
-    def start_install(self, consolecb = None, meter = None):
+    def start_install(self, consolecb = None, meter = None,  removeOld = False):
         """Do the startup of the guest installation."""
         self.validate_parms()
 
@@ -924,7 +924,7 @@ class Guest(object):
 
         self._prepare_install(meter)
         try:
-            return self._do_install(consolecb, meter)
+            return self._do_install(consolecb, meter, removeOld)
         finally:
             self._installer.cleanup()
 
@@ -932,10 +932,22 @@ class Guest(object):
         self._install_disks = self.disks[:]
         self._install_nics = self.nics[:]
 
-    def _do_install(self, consolecb, meter):
+    def _do_install(self, consolecb, meter ,removeOld = False):
         try:
-            if self.conn.lookupByName(self.name) is not None:
-                raise RuntimeError, _("Domain named %s already exists!") %(self.name,)
+            vm = self.conn.lookupByName(self.name)
+            if removeOld:
+                if vm is not None:
+                    try:
+                        if vm.ID() != -1:
+                            logging.info("Destroying image %s" %(self.name))           
+                            vm.destroy()           
+                        logging.info("Removing old definition for image %s" %(self.name))
+                        vm.undefine()
+                    except libvirt.libvirtError, e:
+                        raise RuntimeError, _("Could not remove old vm '%s': %s") %(self.name, str(e))                       
+            else:
+                if vm is not None:
+                    raise RuntimeError, _("Domain named %s already exists!") %(self.name,)
         except libvirt.libvirtError:
             pass
 
