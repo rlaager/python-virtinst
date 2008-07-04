@@ -413,6 +413,27 @@ class VirtualNetworkInterface:
                     doc.freeDoc()
         return count
 
+class VirtualAudio(object):
+
+    MODELS = [ "es1370", "sb16", "pcspk" ]
+
+    def __init__(self, model):
+        self.model = model
+
+    def get_model(self):
+        return self._model
+    def set_model(self, new_model):
+        if type(new_model) != str:
+            raise ValueError, _("'model' must be a string, "
+                                " was '%s'." % type(new_model))
+        if not self.MODELS.count(new_model):
+            raise ValueError, _("Unsupported sound model '%s'" % new_model)
+        self._model = new_model
+    model = property(get_model, set_model)
+
+    def get_xml_config(self):
+        return "    <sound model='%s'/>" % self.model
+
 # Back compat class to avoid ABI break
 class XenNetworkInterface(VirtualNetworkInterface):
     pass
@@ -601,6 +622,7 @@ class Guest(object):
         # Public device lists unaltered by install process
         self.disks = []
         self.nics = []
+        self.sound_devs = []
 
         # Device lists to use/alter during install process
         self._install_disks = []
@@ -860,14 +882,25 @@ class Guest(object):
         (type,bus) = self.get_input_device()
         return "    <input type='%s' bus='%s'/>" % (type, bus)
 
+    def _get_sound_xml(self):
+        """Get the sound device configuration in libvirt XML format."""
+        xml = ""
+        for sound_dev in self.sound_devs:
+            if xml != "":
+                xml += "\n"
+            xml += sound_dev.get_xml_config()
+        return xml
+
     def _get_device_xml(self, install = True):
         return """%(disks)s
 %(networks)s
 %(input)s
-%(graphics)s""" % { "disks": self._get_disk_xml(install), \
-        "networks": self._get_network_xml(install), \
-        "input": self._get_input_xml(install), \
-        "graphics": self._get_graphics_xml(install) }
+%(graphics)s
+%(sound)s""" % { "disks": self._get_disk_xml(install), \
+                 "networks": self._get_network_xml(install), \
+                 "input": self._get_input_xml(install), \
+                 "graphics": self._get_graphics_xml(install), \
+                 "sound": self._get_sound_xml()}
 
     def get_config_xml(self, install = True, disk_boot = False):
         if install:

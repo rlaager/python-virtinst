@@ -25,7 +25,7 @@ def _virtinst(msg):
     return gettext.dgettext(gettext_app, msg)
 
 import util
-from Guest import Guest, VirtualDisk, VirtualNetworkInterface, XenGuest, XenDisk, XenNetworkInterface, VirtualGraphics
+from Guest import Guest, VirtualDisk, VirtualNetworkInterface, XenGuest, XenDisk, XenNetworkInterface, VirtualGraphics, VirtualAudio
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
 from DistroManager import DistroInstaller, PXEInstaller
