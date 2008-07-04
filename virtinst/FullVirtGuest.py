@@ -318,8 +318,11 @@ class FullVirtGuest(Guest.XenGuest):
             if d.device == Guest.VirtualDisk.DEVICE_CDROM \
                and d.transient and not install:
                 # Keep cdrom around, but with no media attached
+                # But only if we are a distro that doesn't have a multi
+                # stage install (aka not Windows)
                 saved_path = d.path
-                d.path = None
+                if not self.get_continue_inst():
+                    d.path = None
 
             if ret:
                 ret += "\n"
