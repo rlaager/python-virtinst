@@ -228,7 +228,7 @@ class FullVirtGuest(Guest.XenGuest):
 """ + Guest.Guest._get_device_xml(self, install)
         else:
             return ("""    <emulator>%(emulator)s</emulator>
-    <console type='pty'>
+    <console type='pty'/>
 """ % { "emulator": self.emulator }) + \
         Guest.Guest._get_device_xml(self, install)
 

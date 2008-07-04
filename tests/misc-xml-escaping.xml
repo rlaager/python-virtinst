@@ -18,7 +18,7 @@
   <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
-    <console device='pty'/>
+    <console type='pty'/>
     <disk type='file' device='disk'>
       <source file='/tmp/ISO&amp;&apos;&amp;s'/>
       <target dev='hda'/>
