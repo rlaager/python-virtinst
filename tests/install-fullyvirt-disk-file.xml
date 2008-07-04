@@ -28,8 +28,6 @@
       <target dev='hdc'/>
       <readonly/>
     </disk>
-
-
     <input type='mouse' bus='ps2'/>
     <graphics type='sdl'/>
   </devices>

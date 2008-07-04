@@ -69,5 +69,7 @@ class ParaVirtGuest(Guest.XenGuest):
             if target is None or nodes[target] is not None:
                 raise ValueError, _("Can't use more than 16 disks on a PV guest")
             nodes[target] = True
+            if ret:
+                ret += "\n"
             ret += d.get_xml_config(target)
         return ret

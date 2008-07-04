@@ -192,7 +192,7 @@ class VirtualDisk:
         ret += "      <target dev='%(disknode)s'/>\n" % { "disknode": disknode }
         if self.read_only:
             ret += "      <readonly/>\n"
-        ret += "    </disk>\n"
+        ret += "    </disk>"
         return ret
 
     def size_conflict(self):
@@ -378,18 +378,18 @@ class VirtualNetworkInterface:
             return ("    <interface type='bridge'>\n" + \
                     "      <source bridge='%(bridge)s'/>\n" + \
                     "      <mac address='%(mac)s'/>\n" + \
-                    "    </interface>\n") % \
+                    "    </interface>") % \
                     { "bridge": self.bridge, "mac": self.macaddr }
         elif self.type == "network":
             return ("    <interface type='network'>\n" + \
                     "      <source network='%(network)s'/>\n" + \
                     "      <mac address='%(mac)s'/>\n" + \
-                    "    </interface>\n") % \
+                    "    </interface>") % \
                     { "network": self.network, "mac": self.macaddr }
         elif self.type == "user":
             return ("    <interface type='user'>\n" + \
                     "      <mac address='%(mac)s'/>\n" + \
-                    "    </interface>\n") % \
+                    "    </interface>") % \
                     { "mac": self.macaddr }
 
     def countMACaddr(self, vms):
@@ -868,6 +868,8 @@ class Guest(object):
         """Get the network config in the libvirt XML format"""
         ret = ""
         for n in self._install_nics:
+            if ret:
+                ret += "\n"
             ret += n.get_xml_config()
         return ret
 
@@ -892,15 +894,19 @@ class Guest(object):
         return xml
 
     def _get_device_xml(self, install = True):
-        return """%(disks)s
-%(networks)s
-%(input)s
-%(graphics)s
-%(sound)s""" % { "disks": self._get_disk_xml(install), \
-                 "networks": self._get_network_xml(install), \
-                 "input": self._get_input_xml(install), \
-                 "graphics": self._get_graphics_xml(install), \
-                 "sound": self._get_sound_xml()}
+
+        xml = ""
+        diskxml     = self._get_disk_xml(install)
+        netxml      = self._get_network_xml(install)
+        inputxml    = self._get_input_xml(install)
+        graphicsxml = self._get_graphics_xml(install)
+        soundxml    = self._get_sound_xml()
+        for devxml in [diskxml, netxml, inputxml, graphicsxml, soundxml]:
+            if devxml:
+                if xml:
+                    xml += "\n"
+                xml += devxml
+        return xml
 
     def get_config_xml(self, install = True, disk_boot = False):
         if install:

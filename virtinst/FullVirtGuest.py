@@ -321,6 +321,8 @@ class FullVirtGuest(Guest.XenGuest):
                 saved_path = d.path
                 d.path = None
 
+            if ret:
+                ret += "\n"
             ret += d.get_xml_config(d.target)
             if saved_path != None:
                 d.path = saved_path
