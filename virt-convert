@@ -21,56 +21,58 @@
 # MA 02110-1301 USA.
 
 import sys
-from string import ascii_letters
-import virtinst.cli as cli
 import os
 import logging
 import errno
 from optparse import OptionParser
 
-def parse_args():
-    parser = OptionParser()
-    parser.set_usage("%prog [options] inputdir|input.vmx "
-        "[outputdir|output.xml]")
-    parser.add_option("-a", "--arch", type="string", dest="arch",
-                      help=("Machine Architecture Type (i686/x86_64/ppc)"))
-    parser.add_option("-t", "--type", type="string", dest="type",
-                      help=("Output virtualization type (hvm, paravirt"))
-    parser.add_option("-d", "--debug", action="store_true", dest="debug",
-                      help=("Print debugging information"))
-    parser.add_option("-i", "--input-format", action="store",
-                      dest="inputformat", default="vmx",
-                      help=("Input format, e.g. 'vmx'"))
-    parser.add_option("-o", "--output-format", action="store",
-                      dest="outputformat", default="virt-image",
-                      help=("Output format, e.g. 'virt-image'"))
-    parser.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
-                      help=("This guest should be a fully virtualized guest"))
-    parser.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
-                      help=("This guest should be a paravirtualized guest"))
+import virtinst.cli as cli
+import virtconv
+import virtconv.vmconfig as vmconfig
 
-    (options, args) = parser.parse_args()
+def parse_args():
+    opts = OptionParser()
+    opts.set_usage("%prog [options] inputdir|input.vmx "
+        "[outputdir|output.xml]")
+    opts.add_option("-a", "--arch", type="string", dest="arch",
+                    help=("Machine Architecture Type (i686/x86_64/ppc)"))
+    opts.add_option("-t", "--type", type="string", dest="type",
+                    help=("Output virtualization type (hvm, paravirt"))
+    opts.add_option("-d", "--debug", action="store_true", dest="debug",
+                    help=("Print debugging information"))
+    opts.add_option("-i", "--input-format", action="store",
+                    dest="inputformat", default="vmx",
+                    help=("Input format, e.g. 'vmx'"))
+    opts.add_option("-o", "--output-format", action="store",
+                    dest="outputformat", default="virt-image",
+                    help=("Output format, e.g. 'virt-image'"))
+    opts.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
+                    help=("This guest should be a fully virtualized guest"))
+    opts.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
+                    help=("This guest should be a paravirtualized guest"))
+
+    (options, args) = opts.parse_args()
     if len(args) < 1:
-        parser.error(("You need to provide an input VM definition"))
+        opts.error(("You need to provide an input VM definition"))
     if len(args) > 2:
-        parser.error(("Too many arguments provided"))
+        opts.error(("Too many arguments provided"))
     
     if (options.arch is None):
-        parser.error(("Missing option value \n\nArchitecture: " +
+        opts.error(("Missing option value \n\nArchitecture: " +
        str(options.arch)))
 
     # hard-code for now
     if options.inputformat != "vmx":
-        parser.error(("Unsupported input format \"%s\"" % options.inputformat))
+        opts.error(("Unsupported input format \"%s\"" % options.inputformat))
     if options.outputformat != "virt-image":
-        parser.error(("Unsupported output format \"%s\""
+        opts.error(("Unsupported output format \"%s\""
             % options.outputformat))
     if os.path.isdir(args[0]):
         vmx_files = [x for x in os.listdir(args[0]) if x.endswith(".vmx") ]
         if (len(vmx_files)) == 0:
-            parser.error(("No VM definition file was found in %s" % args[0]))
+            opts.error(("No VM definition file was found in %s" % args[0]))
         if (len(vmx_files)) > 1:
-            parser.error(("Too many .vmx definitions found in %s" % args[0]))
+            opts.error(("Too many .vmx definitions found in %s" % args[0]))
         options.input_file = os.path.join(args[0], vmx_files[0])
         options.input_dir =  args[0]
     else:
@@ -91,197 +93,78 @@ def parse_args():
 
     return options
 
-# Begin creation of xml template from parsed vmx config file
-def vmx_to_image_xml(disks_list, record, options, hvm):
-    pv_disk_list = []
-    fv_disk_list = []
-    storage_disk_list = []
-
-    infile = options.input_file
-
-    # validate required values for conversion are in the input vmx file
-    if record.has_key("displayName"):
-        name = record["displayName"]
-    else:
-        logging.error("displayName key not parsed from %s" % infile)
-        sys.exit(1)
-
-    if record.has_key("memsize"):
-        memory = int(record["memsize"]) * 1024
-    else:
-        logging.error("memsize key not parsed from %s" % infile)
-        sys.exit(1)
-
-    if record.has_key("annotation"):
-        annotation = record["annotation"]
-    else:
-        annotation = ""
-
-    if record.has_key("numvcpus"):
-        vcpus = record["numvcpus"]
-    else:
-        vcpus = "1"
-
-
-# create disk filename lists for xml template
-    for (number, dfile) in enumerate(disks_list):
-        dfile = str(dfile.replace(".vmdk","")).strip()
-        pv_disk_list.append("""<drive disk="%s.img" target="xvd%s"/>""" % \
-                               (dfile, ascii_letters[number % 26]))
-        fv_disk_list.append("""<drive disk="%s.img" target="hd%s"/>""" % \
-                               (dfile, ascii_letters[number % 26]))
-        storage_disk_list.append("""<disk file="%s.img" use="system" format="raw"/>""" % (dfile))
-
-# determine virtualization type for image.boot section
-    if hvm is False:
-        virt_boot_template = """<boot type="xen">
-          <guest>
-            <arch>%(vm_arch)s</arch>
-            <features>
-              <pae/>
-            </features>
-          </guest>
-          <os>
-            <loader>pygrub</loader>
-          </os>
-         %(vm_pv_disks)s
-         </boot>"""
-    elif hvm is True:
-        virt_boot_template = """<boot type="hvm">
-          <guest>
-            <arch>%(vm_arch)s</arch>
-          </guest>
-          <os>
-            <loader dev="hd"/>
-          </os>
-          %(vm_fv_disks)s
-        </boot>"""
-
-
-# xml replacements dictionaries
-    virt_boot_xml_dict = {
-        "vm_pv_disks" : "".join(pv_disk_list),
-        "vm_fv_disks" : "".join(fv_disk_list),
-        "vm_arch" : options.arch,
-         }
-    virt_boot_template = virt_boot_template % virt_boot_xml_dict
-    virt_image_xml_dict = {
-        "virt_boot_template" : virt_boot_template,
-        "vm_displayName": name.replace(" ","_"),
-        "vm_annotation" : annotation,
-        "vm_vcpus" : vcpus,
-        "vm_mem"  : memory,
-        "vm_storage" : "".join(storage_disk_list),
-         }
-    
-    virt_image_xml_template = """<image>
- <name>%(vm_displayName)s</name>
-  <label>%(vm_displayName)s</label>
-    <description>
-        %(vm_annotation)s
-    </description>
-      <domain>
-       %(virt_boot_template)s
-        <devices>
-         <vcpu>%(vm_vcpus)s</vcpu>
-         <memory>%(vm_mem)s</memory>
-          <interface/>
-          <graphics/>
-        </devices>
-      </domain>
-  <storage>
-  %(vm_storage)s
-  </storage>
-</image>
-"""
-    
-    virtimage_xml_template = virt_image_xml_template % virt_image_xml_dict
-    return virtimage_xml_template
-
-# parse input vmware configuration
-def parse_vmware_config(options):
-    if not os.access(options.input_file, os.R_OK):
-        raise ValueError, "Could not read file: %s" % options.input_file
-    infile = open(options.input_file, "r")
-    contents = infile.readlines()
-    infile.close()
-    record = {}
-    vm_config = []
-    disks_list = []
-
-    # strip out comment and blank lines for easy splitting of values
-    for line in contents:
-        if not line.strip() or line.startswith("#"):
-            continue
-        else:
-            vm_config.append(line)
-    
-    for line in vm_config:
-        before_eq, after_eq = line.split("=", 1)
-        key = before_eq.replace(" ","")
-        value = after_eq.replace('"',"")
-        value = value.strip()
-        record[key] = value
-        logging.debug("Key: %s      Value: \"%s\"" % (key, value))
-        if value.endswith("vmdk"): # separate disks from config
-            disks_list.append(value)
-    return record, disks_list
-
-
-def convert_disks(disks_list, options):
-    for disk in disks_list:
-        infile = disk.strip()
-        if not os.path.isabs(infile):
-            infile = os.path.join(options.input_dir, infile)
-
-        outfile = disk.replace(".vmdk","").strip()
-        outfile += ".img"
-        if not os.path.isabs(outfile):
-            outfile = os.path.join(options.output_dir, outfile)
-        convert_cmd = "qemu-img convert %s -O raw %s" % (infile, outfile)
-        ret = os.system(convert_cmd)
-        print ret
-
-
 def main():
     options = parse_args()
     cli.setupLogging("virt-convert", options.debug)
 
-    vm_config = parse_vmware_config(options)
-    record, disks_list = vm_config
+    try:
+        inp = virtconv.vmconfig.find_parser_by_name(options.inputformat)
+    except:
+        logging.error("No parser of format \"%s\" was found." %
+            options.inputformat)
+        sys.exit(1)
+ 
+    try:
+        outp = virtconv.vmconfig.find_parser_by_name(options.outputformat)
+    except:
+        logging.error("No parser of format \"%s\" was found." %
+            options.outputformat)
+        sys.exit(1)
+
+    vmdef = None
+
+    try:
+        vmdef = inp.import_file(options.input_file)
+    except IOError, e:
+        logging.error("Couldn't import file \"%s\": %s" %
+            (options.input_file, e.strerror))
+        sys.exit(1)
+    except Exception, e:
+        logging.error("Couldn't import file \"%s\": %s" %
+            (options.input_file, e.message))
+        sys.exit(1)
 
     if options.paravirt:
-        hvm = False
+        vmdef.type = vmconfig.VM_TYPE_PV
     else:
-        hvm = True
-    out_contents = vmx_to_image_xml(disks_list, record, options, hvm)
+        vmdef.type = vmconfig.VM_TYPE_HVM
 
-    name = record["displayName"].replace(" ","-")
+    vmdef.arch = options.arch
+
+    unixname = vmdef.name.replace(" ", "-")
     if not options.output_dir:
-        options.output_dir = name
+        options.output_dir = unixname
     try:
         logging.debug("Creating directory %s" % options.output_dir)
         os.mkdir(options.output_dir)
     except OSError, e:
         if (e.errno != errno.EEXIST):
             logging.error("Could not create directory %s: %s" %
-                (options.output_dir, str(e)))
+                (options.output_dir, e.strerror))
             sys.exit(1)
 
     if not options.output_file:
         options.output_file = os.path.join(options.output_dir,
-       "%s.virt-image.xml" % name)
+           "%s%s" % (unixname, outp.suffix))
 
     logging.debug("input_file: %s" % options.input_file)
     logging.debug("input_dir: %s" % options.input_dir)
     logging.debug("output_file: %s" % options.output_file)
     logging.debug("output_dir: %s" % options.input_dir)
 
-    # configuration completed, ready to write config file and convert disks
-    out = open(options.output_file, "w")
-    out.writelines(out_contents)
-    out.close()
-    convert_disks(disks_list, options)
+    try:
+        for d in vmdef.disks:
+            d.convert(options.input_dir, options.output_dir,
+                vmconfig.DISK_TYPE_RAW)
+    except Exception, e:
+        logging.error(e)
+        sys.exit(1)
+ 
+    try:
+        outp.export_file(vmdef, options.output_file)
+    except Exception, e:
+        logging.error(e)
+        sys.exit(1)
 
     print "\n\nConversion completed and placed in: %s" % options.output_dir
 

@@ -9,7 +9,8 @@ from os.path import splitext, basename, join as pjoin, walk
 import os, sys
 import tests.coverage as coverage
 
-pkgs = ['virtinst']
+pkgs = ['virtinst', 'virtconv', 'virtconv.parsers' ]
+
 datafiles = [('share/man/man1', ['man/en/virt-install.1',
                                  'man/en/virt-clone.1',
                                  'man/en/virt-image.1',
