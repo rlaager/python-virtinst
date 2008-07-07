@@ -59,7 +59,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %doc README COPYING AUTHORS ChangeLog NEWS doc/image.rng doc/example1.xml
 %dir %{python_sitelib}/%{appname}
+%dir %{python_sitelib}/virtconv
 %{python_sitelib}/%{appname}/*
+%{python_sitelib}/virtconv/*
 %if %{with_egg}
 %{python_sitelib}/%{appname}-*.egg-info
 %endif
