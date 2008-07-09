@@ -24,6 +24,7 @@ import sys
 import os
 import logging
 import errno
+import platform
 from optparse import OptionParser
 
 import virtinst.cli as cli
@@ -53,6 +54,8 @@ def parse_args():
     opts.add_option("-o", "--output-format", action="store",
                     dest="output_format", default="virt-image",
                     help=("Output format, e.g. 'virt-image'"))
+    opts.add_option("-D", "--disk-format", action="store",
+                    dest="disk_format", help=("Output disk format"))
     opts.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
                     help=("This guest should be a fully virtualized guest"))
     opts.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
@@ -64,6 +67,10 @@ def parse_args():
     if len(args) > 2:
         opts.error(("Too many arguments provided"))
     
+    if (options.disk_format and
+        options.disk_format not in diskcfg.disk_formats()):
+        opts.error("Unknown output disk format \"%s\"" % options.disk_format)
+
     # hard-code for now
     if options.input_format != "vmx":
         opts.error(("Unsupported input format \"%s\"" % options.input_format))
@@ -191,9 +198,22 @@ def main():
 
     try:
         for d in vmdef.disks:
-            verbose(options, "Converting disk \"%s\" to type %s..." %
-                (d.path, "raw"))
-            d.convert(options.input_dir, options.output_dir, "raw")
+            format = options.disk_format
+
+            # no auto-conversion on Solaris for VMDK disks
+            if (d.format == diskcfg.DISK_FORMAT_VMDK and
+                not format and platform.system() == "SunOS"):
+                continue
+
+            if not format:
+                format = "raw"
+
+            if format != "none":
+                verbose(options, "Converting disk \"%s\" to type %s..." %
+                    (d.path, format))
+
+            d.convert(options.input_dir, options.output_dir, format)
+
     except OSError, e:
         cleanup("Couldn't convert disks: %s" % e.strerror,
             options, vmdef, clean)

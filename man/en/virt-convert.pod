@@ -58,6 +58,11 @@ Input format. Currently, C<vmx>  is the only supported input format.
 
 Output format. Currently, C<virt-image>  is the only supported output format.
 
+=item  -D format
+
+Output disk format, or C<none> if no conversion should be performed. See
+L<qemu-img(1)>.
+
 =item -d, --debug
 
 Print debugging information
@@ -80,7 +85,7 @@ Convert a 64-bit hvm guest:
 
 =head1 AUTHOR
 
-Written by Joey Boggs
+Written by Joey Boggs and John Levon
 
 See the AUTHORS file in the source distribution for the complete list of credits.
 

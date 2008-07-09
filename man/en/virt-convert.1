@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-CONVERT 1"
-.TH VIRT-CONVERT 1 "2008-07-04" "perl v5.8.8" "Virtual Machine Install Tools"
+.TH VIRT-CONVERT 1 "2008-07-09" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
 virt\-convert \- convert virtual machines between formats
 .SH "SYNOPSIS"
@@ -175,6 +175,10 @@ Input format. Currently, \f(CW\*(C`vmx\*(C'\fR  is the only supported input form
 .IP "\-o format" 4
 .IX Item "-o format"
 Output format. Currently, \f(CW\*(C`virt\-image\*(C'\fR  is the only supported output format.
+.IP "\-D format" 4
+.IX Item "-D format"
+Output disk format, or \f(CW\*(C`none\*(C'\fR if no conversion should be performed. See
+\&\fIqemu\-img\fR\|(1).
 .IP "\-d, \-\-debug" 4
 .IX Item "-d, --debug"
 Print debugging information
@@ -196,7 +200,7 @@ Convert a 64\-bit hvm guest:
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-Written by Joey Boggs
+Written by Joey Boggs and John Levon
 .PP
 See the \s-1AUTHORS\s0 file in the source distribution for the complete list of credits.
 .SH "BUGS"
