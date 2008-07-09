@@ -60,6 +60,7 @@ class vmx_parser(vmconfig.parser):
                 lines.append(line)
     
         config = {}
+        disks = []
 
         # split out all remaining entries of key = value form
         for (line_nr, line) in enumerate(lines):
@@ -69,6 +70,9 @@ class vmx_parser(vmconfig.parser):
                 value = after_eq.replace('"',"")
                 value = value.strip()
                 config[key] = value
+                # FIXME: this should probably be a lot smarter.
+                if value.endswith(".vmdk"):
+                    disks += [ value ]
             except:
                 raise Exception("Syntax error at line %d: %s" %
                     (line_nr + 1, line.strip()))
@@ -80,10 +84,6 @@ class vmx_parser(vmconfig.parser):
         vm.memory = config.get("memsize")
         vm.description = config.get("annotation")
         vm.nr_vcpus = config.get("numvcpus")
-
-        # FIXME: this should probably be a lot smarter. I don't think
-        # this even gets disk numbering right.
-        disks = [ d for d in config.values() if d.endswith(".vmdk") ]
 
         for (number, path) in enumerate(disks):
             vm.disks += [ vmconfig.disk(path, number, vmconfig.DISK_TYPE_VMDK) ]

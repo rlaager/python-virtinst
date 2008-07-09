@@ -117,12 +117,12 @@ class virtimage_parser(vmconfig.parser):
 
             # FIXME: needs updating for later Xen enhancements; need to
             # implement capabilities checking for max disks etc.
-            pv_disks.append("""<drive disk="%s" target="xvd%s" />""" %
+            pv_disks.append("""<drive disk="%s" target="xvd%s" />\n""" %
                 (path, ascii_letters[number % 26]))
-            hvm_disks.append("""<drive disk="%s" target="hd%s" />""" %
+            hvm_disks.append("""<drive disk="%s" target="hd%s" />\n""" %
                 (path, ascii_letters[number % 26]))
             storage_disks.append(
-                """<disk file="%s" use="system" format="raw"/>""" % path)
+                """<disk file="%s" use="system" format="raw"/>\n""" % path)
 
         if vm.type == vmconfig.VM_TYPE_PV:
             boot_template = pv_boot_template
