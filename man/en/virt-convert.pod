@@ -62,6 +62,10 @@ Output format. Currently, C<virt-image>  is the only supported output format.
 
 Print debugging information
 
+=item -q, --quiet
+
+Avoid verbose output.
+
 =back
 
 =head1 EXAMPLES

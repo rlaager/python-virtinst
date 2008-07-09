@@ -35,6 +35,8 @@ def parse_args():
     opts = OptionParser()
     opts.set_usage("%prog [options] inputdir|input.vmx "
         "[outputdir|output.xml]")
+    opts.add_option("-q", "--quiet", action="store_true", dest="quiet",
+                    help=("Don't be verbose"))
     opts.add_option("-a", "--arch", type="string", dest="arch",
                     default=util.get_default_arch(),
                     help=("Machine Architecture Type (i686/x86_64/ppc)"))
@@ -43,10 +45,10 @@ def parse_args():
     opts.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=("Print debugging information"))
     opts.add_option("-i", "--input-format", action="store",
-                    dest="inputformat", default="vmx",
+                    dest="input_format", default="vmx",
                     help=("Input format, e.g. 'vmx'"))
     opts.add_option("-o", "--output-format", action="store",
-                    dest="outputformat", default="virt-image",
+                    dest="output_format", default="virt-image",
                     help=("Output format, e.g. 'virt-image'"))
     opts.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
                     help=("This guest should be a fully virtualized guest"))
@@ -60,11 +62,11 @@ def parse_args():
         opts.error(("Too many arguments provided"))
     
     # hard-code for now
-    if options.inputformat != "vmx":
-        opts.error(("Unsupported input format \"%s\"" % options.inputformat))
-    if options.outputformat != "virt-image":
+    if options.input_format != "vmx":
+        opts.error(("Unsupported input format \"%s\"" % options.input_format))
+    if options.output_format != "virt-image":
         opts.error(("Unsupported output format \"%s\""
-            % options.outputformat))
+            % options.output_format))
     if os.path.isdir(args[0]):
         vmx_files = [x for x in os.listdir(args[0]) if x.endswith(".vmx") ]
         if (len(vmx_files)) == 0:
@@ -91,22 +93,27 @@ def parse_args():
 
     return options
 
+def verbose(options, msg):
+    """Output a message if --quiet is not set."""
+    if not options.quiet:
+        print msg
+
 def main():
     options = parse_args()
     cli.setupLogging("virt-convert", options.debug)
 
     try:
-        inp = virtconv.vmconfig.find_parser_by_name(options.inputformat)
+        inp = virtconv.vmconfig.find_parser_by_name(options.input_format)
     except:
         logging.error("No parser of format \"%s\" was found." %
-            options.inputformat)
+            options.input_format)
         sys.exit(1)
  
     try:
-        outp = virtconv.vmconfig.find_parser_by_name(options.outputformat)
+        outp = virtconv.vmconfig.find_parser_by_name(options.output_format)
     except:
         logging.error("No parser of format \"%s\" was found." %
-            options.outputformat)
+            options.output_format)
         sys.exit(1)
 
     vmdef = None
@@ -150,8 +157,13 @@ def main():
     logging.debug("output_file: %s" % options.output_file)
     logging.debug("output_dir: %s" % options.input_dir)
 
+    verbose(options, "Generating output in \"%s\" format to %s/" %
+        (options.output_format, options.output_dir))
+
     try:
         for d in vmdef.disks:
+            verbose(options, "Converting disk \"%s\" to type %s..." %
+                (d.path, vmconfig.qemu_formats[vmconfig.DISK_TYPE_RAW]))
             d.convert(options.input_dir, options.output_dir,
                 vmconfig.DISK_TYPE_RAW)
     except Exception, e:
@@ -164,7 +176,7 @@ def main():
         logging.error(e)
         sys.exit(1)
 
-    print "\n\nConversion completed and placed in: %s" % options.output_dir
+    verbose(options, "Done.")
 
     
 if __name__ == "__main__":
