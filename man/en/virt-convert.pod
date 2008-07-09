@@ -39,7 +39,8 @@ Show the help message and exit
 
 =item -a ARCH, --arch=ARCH
 
-Architecture of the virtual machine (i686, x86_64, ppc)
+Architecture of the virtual machine (i686, x86_64, ppc). Defaults to
+that of the host machine.
 
 =item  -v, --hvm      Create  a fully virtualized guest image
 

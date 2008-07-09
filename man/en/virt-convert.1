@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-CONVERT 1"
-.TH VIRT-CONVERT 1 "2008-07-01" "perl v5.8.8" "Virtual Machine Install Tools"
+.TH VIRT-CONVERT 1 "2008-07-04" "perl v5.8.8" "Virtual Machine Install Tools"
 .SH "NAME"
 virt\-convert \- convert virtual machines between formats
 .SH "SYNOPSIS"
@@ -161,7 +161,8 @@ a libvirt \*(L"image\*(R" \s-1XML\s0 definition (see \fIvirt\-image\fR\|(5)).
 Show the help message and exit
 .IP "\-a \s-1ARCH\s0, \-\-arch=ARCH" 4
 .IX Item "-a ARCH, --arch=ARCH"
-Architecture of the virtual machine (i686, x86_64, ppc)
+Architecture of the virtual machine (i686, x86_64, ppc). Defaults to
+that of the host machine.
 .IP "\-v, \-\-hvm      Create  a fully virtualized guest image" 4
 .IX Item "-v, --hvm      Create  a fully virtualized guest image"
 Convert machine to a hvm/qemu based image (this is the default if paravirt is not specified)

@@ -27,6 +27,7 @@ import errno
 from optparse import OptionParser
 
 import virtinst.cli as cli
+import virtinst.util as util
 import virtconv
 import virtconv.vmconfig as vmconfig
 
@@ -35,6 +36,7 @@ def parse_args():
     opts.set_usage("%prog [options] inputdir|input.vmx "
         "[outputdir|output.xml]")
     opts.add_option("-a", "--arch", type="string", dest="arch",
+                    default=util.get_default_arch(),
                     help=("Machine Architecture Type (i686/x86_64/ppc)"))
     opts.add_option("-t", "--type", type="string", dest="type",
                     help=("Output virtualization type (hvm, paravirt"))
@@ -57,10 +59,6 @@ def parse_args():
     if len(args) > 2:
         opts.error(("Too many arguments provided"))
     
-    if (options.arch is None):
-        opts.error(("Missing option value \n\nArchitecture: " +
-       str(options.arch)))
-
     # hard-code for now
     if options.inputformat != "vmx":
         opts.error(("Unsupported input format \"%s\"" % options.inputformat))
