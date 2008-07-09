@@ -18,9 +18,11 @@
 # MA 02110-1301 USA.
 #
 
-import virtconv.vmconfig as vmconfig
+import virtconv.formats as formats
+import virtconv.vmcfg as vmcfg
+import virtconv.diskcfg as diskcfg
 
-class vmx_parser(vmconfig.parser):
+class vmx_parser(formats.parser):
     """
     Support for VMWare .vmx files.  Note that documentation is
     particularly sparse on this format, with pretty much the best
@@ -44,7 +46,7 @@ class vmx_parser(vmconfig.parser):
         opened, or parsing otherwise failed.
         """
 
-        vm = vmconfig.vm()
+        vm = vmcfg.vm()
 
         infile = open(input_file, "r")
         contents = infile.readlines()
@@ -86,7 +88,7 @@ class vmx_parser(vmconfig.parser):
         vm.nr_vcpus = config.get("numvcpus")
 
         for (number, path) in enumerate(disks):
-            vm.disks += [ vmconfig.disk(path, number, vmconfig.DISK_TYPE_VMDK) ]
+            vm.disks += [ diskcfg.disk(path, number, diskcfg.DISK_FORMAT_VMDK) ]
 
         vm.validate()
         return vm
@@ -104,4 +106,4 @@ class vmx_parser(vmconfig.parser):
 
         raise NotImplementedError
 
-vmconfig.register_parser(vmx_parser)
+formats.register_parser(vmx_parser)

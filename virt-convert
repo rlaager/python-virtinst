@@ -29,9 +29,12 @@ from optparse import OptionParser
 import virtinst.cli as cli
 import virtinst.util as util
 import virtconv
-import virtconv.vmconfig as vmconfig
+import virtconv.formats as formats
+import virtconv.vmcfg as vmcfg
+import virtconv.diskcfg as diskcfg
 
 def parse_args():
+    """Parse and verify command line."""
     opts = OptionParser()
     opts.set_usage("%prog [options] inputdir|input.vmx "
         "[outputdir|output.xml]")
@@ -98,19 +101,41 @@ def verbose(options, msg):
     if not options.quiet:
         print msg
 
+def cleanup(msg, options, vmdef, paths):
+    """
+    After failure, clean up anything we created.
+    """
+    logging.error(msg)
+
+    try:
+        paths.reverse()
+        for path in paths:
+            if os.path.isdir(path):
+                os.rmdir(path)
+            elif os.path.isfile(path):
+                os.remove(path)
+
+        for disk in vmdef.disks:
+            disk.cleanup()
+    except OSError, e:
+        logging.error("Couldn't clean up output directory \"%s\": %s" %
+            (options.output_dir, e.strerror))
+
+    sys.exit(1)
+
 def main():
     options = parse_args()
     cli.setupLogging("virt-convert", options.debug)
 
     try:
-        inp = virtconv.vmconfig.find_parser_by_name(options.input_format)
+        inp = formats.find_parser_by_name(options.input_format)
     except:
         logging.error("No parser of format \"%s\" was found." %
             options.input_format)
         sys.exit(1)
  
     try:
-        outp = virtconv.vmconfig.find_parser_by_name(options.output_format)
+        outp = formats.find_parser_by_name(options.output_format)
     except:
         logging.error("No parser of format \"%s\" was found." %
             options.output_format)
@@ -130,17 +155,21 @@ def main():
         sys.exit(1)
 
     if options.paravirt:
-        vmdef.type = vmconfig.VM_TYPE_PV
+        vmdef.type = vmcfg.VM_TYPE_PV
     else:
-        vmdef.type = vmconfig.VM_TYPE_HVM
+        vmdef.type = vmcfg.VM_TYPE_HVM
 
     vmdef.arch = options.arch
 
+    clean = []
+
     unixname = vmdef.name.replace(" ", "-")
+
     if not options.output_dir:
         options.output_dir = unixname
     try:
         logging.debug("Creating directory %s" % options.output_dir)
+        clean += [ options.output_dir ]
         os.mkdir(options.output_dir)
     except OSError, e:
         if (e.errno != errno.EEXIST):
@@ -163,18 +192,20 @@ def main():
     try:
         for d in vmdef.disks:
             verbose(options, "Converting disk \"%s\" to type %s..." %
-                (d.path, vmconfig.qemu_formats[vmconfig.DISK_TYPE_RAW]))
-            d.convert(options.input_dir, options.output_dir,
-                vmconfig.DISK_TYPE_RAW)
-    except Exception, e:
-        logging.error(e)
-        sys.exit(1)
- 
+                (d.path, "raw"))
+            d.convert(options.input_dir, options.output_dir, "raw")
+    except OSError, e:
+        cleanup("Couldn't convert disks: %s" % e.strerror,
+            options, vmdef, clean)
+    except RuntimeError, e:
+        cleanup("Couldn't convert disks: %s" % e.message, options, vmdef, clean)
+
     try:
+        clean += [ options.output_file ]
         outp.export_file(vmdef, options.output_file)
-    except Exception, e:
-        logging.error(e)
-        sys.exit(1)
+    except ValueError, e:
+        cleanup("Couldn't export to file \"%s\": %s" %
+            (options.output_file, e.message), options, vmdef, clean)
 
     verbose(options, "Done.")
 

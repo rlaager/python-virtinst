@@ -19,7 +19,9 @@
 #
 
 from string import ascii_letters
-import virtconv.vmconfig as vmconfig
+import virtconv.formats as formats
+import virtconv.vmcfg as vmcfg
+import virtconv.diskcfg as diskcfg
 
 pv_boot_template = """
   <boot type="xen">
@@ -70,7 +72,7 @@ image_template = """
 </image>
 """
 
-class virtimage_parser(vmconfig.parser):
+class virtimage_parser(formats.parser):
     """
     Support for virt-install's image format (see virt-image man page).
     """
@@ -122,9 +124,10 @@ class virtimage_parser(vmconfig.parser):
             hvm_disks.append("""<drive disk="%s" target="hd%s" />\n""" %
                 (path, ascii_letters[number % 26]))
             storage_disks.append(
-                """<disk file="%s" use="system" format="raw"/>\n""" % path)
+                """<disk file="%s" use="system" format="%s"/>\n"""
+                    % (path, diskcfg.qemu_formats[disk.format]))
 
-        if vm.type == vmconfig.VM_TYPE_PV:
+        if vm.type == vmcfg.VM_TYPE_PV:
             boot_template = pv_boot_template
         else:
             boot_template = hvm_boot_template
@@ -149,4 +152,4 @@ class virtimage_parser(vmconfig.parser):
         outfile.writelines(out)
         outfile.close()
 
-vmconfig.register_parser(virtimage_parser)
+formats.register_parser(virtimage_parser)
