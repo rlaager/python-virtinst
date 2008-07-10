@@ -274,6 +274,6 @@ def default_keymap():
                     keymap = keytable.keytable[kt]
                 else:
                     logging.debug("Didn't find keymap '%s' in keytable!" % kt)
-            f.close
+        f.close()
     return keymap
 
