@@ -176,8 +176,8 @@ def main():
         options.output_dir = unixname
     try:
         logging.debug("Creating directory %s" % options.output_dir)
-        clean += [ options.output_dir ]
         os.mkdir(options.output_dir)
+        clean += [ options.output_dir ]
     except OSError, e:
         if (e.errno != errno.EEXIST):
             logging.error("Could not create directory %s: %s" %
