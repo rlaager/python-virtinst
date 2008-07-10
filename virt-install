@@ -406,12 +406,10 @@ def main():
     cli.get_memory(options.memory, guest)
     cli.get_uuid(options.uuid, guest)
     cli.get_vcpus(options.vcpus, options.check_cpu, guest, conn)
+    cli.get_cpuset(options.cpuset, guest.memory, guest, conn)
     if hvm:
         cli.get_sound(options.sound, guest)
 
-    # set up cpuset
-    if type == "xen":
-        cli.get_cpuset(options.cpuset, guest.memory, guest, conn)
 
     # set up disks
     get_disks(options.diskfile, options.disksize, options.sparse, options.nodisks,
