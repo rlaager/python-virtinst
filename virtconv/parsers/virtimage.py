@@ -18,6 +18,7 @@
 # MA 02110-1301 USA.
 #
 
+from xml.sax.saxutils import escape
 from string import ascii_letters
 import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
@@ -146,7 +147,7 @@ class virtimage_parser(formats.parser):
         out = image_template % {
             "boot_template": boot_xml,
             "name" : vmname,
-            "description" : vm.description,
+            "description" : escape(vm.description),
             "nr_vcpus" : vm.nr_vcpus,
             # Mb to Kb
             "memory" : int(vm.memory) * 1024,
