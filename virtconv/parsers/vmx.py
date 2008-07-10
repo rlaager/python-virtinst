@@ -22,6 +22,8 @@ import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
 
+import re
+
 class vmx_parser(formats.parser):
     """
     Support for VMWare .vmx files.  Note that documentation is
@@ -31,13 +33,23 @@ class vmx_parser(formats.parser):
 
     name = "vmx"
     suffix = ".vmx"
+    can_import = True
+    can_export = False
+    can_identify = True
 
     @staticmethod
     def identify_file(input_file):
         """
         Return True if the given file is of this format.
         """
-        raise NotImplementedError
+        infile = open(input_file, "r")
+        line = infile.readline()
+        infile.close()
+
+        # some .vmx files don't bother with the header
+        if re.match(r'^config.version\s+=', line):
+            return True
+        return re.match(r'^#!\s*/usr/bin/vm(ware|player)', line) is not None
 
     @staticmethod
     def import_file(input_file):

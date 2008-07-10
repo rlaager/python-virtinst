@@ -81,6 +81,9 @@ class virtimage_parser(formats.parser):
     """
     name = "virt-image"
     suffix = ".virt-image.xml"
+    can_import = False
+    can_export = True
+    can_identify = False
 
     @staticmethod
     def identify_file(input_file):

@@ -18,6 +18,8 @@
 # MA 02110-1301 USA.
 #
 
+import os
+
 _parsers = [ ]
 
 class parser(object):
@@ -66,11 +68,13 @@ def register_parser(parser):
     global _parsers
     _parsers += [ parser ]
 
-def find_parser_by_name(name):
+def parser_by_name(name):
     """
-    Return the parser of the given name
+    Return the parser of the given name.
     """
-    return [p for p in _parsers if p.name == name][0] or None
+    parsers = [p for p in _parsers if p.name == name]
+    if len(parsers):
+        return parsers[0]
 
 def find_parser_by_file(input_file):
     """
@@ -80,3 +84,46 @@ def find_parser_by_file(input_file):
         if p.identify_file(input_file):
             return p
     return None
+
+def formats():
+    """
+    Return a list of supported formats.
+    """
+    return [p.name for p in _parsers]
+
+def input_formats():
+    """
+    Return a list of supported input formats.
+    """
+    return [p.name for p in _parsers if p.can_import]
+
+def output_formats():
+    """
+    Return a list of supported output formats.
+    """
+    return [p.name for p in _parsers if p.can_export]
+
+def find_input(path, format = None):
+    """
+    Search for a configuration file automatically. If @format is given,
+    then only search using a matching format parser.
+    """
+
+    if os.path.isdir(path):
+        files = os.listdir(path)
+
+    for p in _parsers:
+        if not p.can_identify:
+            continue
+        if format and format != p.name:
+            continue
+
+        if os.path.isfile(path):
+            if p.identify_file(path):
+                return (path, p.name)
+        elif os.path.isdir(path):
+            for cfgfile in [ x for x in files if x.endswith(p.suffix) ]:
+                if p.identify_file(os.path.join(path, cfgfile)):
+                    return (os.path.join(path, cfgfile), p.name)
+ 
+    raise StandardError("unknown format")

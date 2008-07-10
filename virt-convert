@@ -1,9 +1,10 @@
 #!/usr/bin/python 
 #
-# Convert a VMware(tm) virtual machine into an XML image description
-#
 # Copyright 2008  Red Hat, Inc.
 # Joey Boggs <jboggs@redhat.com>
+#
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,8 +50,7 @@ def parse_args():
     opts.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=("Print debugging information"))
     opts.add_option("-i", "--input-format", action="store",
-                    dest="input_format", default="vmx",
-                    help=("Input format, e.g. 'vmx'"))
+                    dest="input_format", help=("Input format, e.g. 'vmx'"))
     opts.add_option("-o", "--output-format", action="store",
                     dest="output_format", default="virt-image",
                     help=("Output format, e.g. 'virt-image'"))
@@ -71,35 +71,45 @@ def parse_args():
         options.disk_format not in diskcfg.disk_formats()):
         opts.error("Unknown output disk format \"%s\"" % options.disk_format)
 
-    # hard-code for now
-    if options.input_format != "vmx":
-        opts.error(("Unsupported input format \"%s\"" % options.input_format))
-    if options.output_format != "virt-image":
-        opts.error(("Unsupported output format \"%s\""
-            % options.output_format))
-    if os.path.isdir(args[0]):
-        vmx_files = [x for x in os.listdir(args[0]) if x.endswith(".vmx") ]
-        if (len(vmx_files)) == 0:
-            opts.error(("No VM definition file was found in %s" % args[0]))
-        if (len(vmx_files)) > 1:
-            opts.error(("Too many .vmx definitions found in %s" % args[0]))
-        options.input_file = os.path.join(args[0], vmx_files[0])
-        options.input_dir =  args[0]
-    else:
-        options.input_file = args[0]
-        options.input_dir = os.path.dirname(os.path.realpath(args[0]))
-
     if len(args) == 1:
         options.output_file = None
         options.output_dir = None
         if os.path.isdir(args[0]):
-            options.output_dir = options.input_dir
+            options.output_dir = args[0]
     elif os.path.isdir(args[1]) or args[1].endswith("/"):
         options.output_file = None
         options.output_dir = args[1]
     else:
         options.output_file = args[1]
         options.output_dir = os.path.dirname(os.path.realpath(args[1]))
+
+    if options.output_format not in formats.formats():
+        opts.error(("Unknown output format \"%s\"" % options.output_format))
+    if options.output_format not in formats.output_formats():
+        opts.error(("No output handler for format \"%s\""
+            % options.output_format))
+
+    if not options.input_format:
+        try:
+            (args[0], options.input_format) = formats.find_input(args[0])
+        except StandardError, e:
+            opts.error("Couldn't determine input format for \"%s\": %s" % 
+                (args[0], e.message))
+            sys.exit(1)
+
+    if options.input_format not in formats.formats():
+        opts.error(("Unknown input format \"%s\"" % options.input_format))
+    if options.input_format not in formats.input_formats():
+        opts.error(("No input handler for format \"%s\""
+            % options.input_format))
+
+    if os.path.isdir(args[0]):
+        (options.input_file, _) = formats.find_input(args[0],
+            options.input_format)
+        options.input_dir =  args[0]
+    else:
+        options.input_file = args[0]
+        options.input_dir = os.path.dirname(os.path.realpath(args[0]))
 
     return options
 
@@ -134,19 +144,8 @@ def main():
     options = parse_args()
     cli.setupLogging("virt-convert", options.debug)
 
-    try:
-        inp = formats.find_parser_by_name(options.input_format)
-    except:
-        logging.error("No parser of format \"%s\" was found." %
-            options.input_format)
-        sys.exit(1)
- 
-    try:
-        outp = formats.find_parser_by_name(options.output_format)
-    except:
-        logging.error("No parser of format \"%s\" was found." %
-            options.output_format)
-        sys.exit(1)
+    inp = formats.parser_by_name(options.input_format)
+    outp = formats.parser_by_name(options.output_format)
 
     vmdef = None
 
