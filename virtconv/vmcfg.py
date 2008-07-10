@@ -18,8 +18,9 @@
 # MA 02110-1301 USA.
 #
 
-VM_TYPE_PV = 0
-VM_TYPE_HVM = 1
+VM_TYPE_UNKNOWN = 0
+VM_TYPE_PV = 1
+VM_TYPE_HVM = 2
 
 class vm(object):
     """
@@ -62,7 +63,7 @@ class vm(object):
             self.description = ""
         if not self.nr_vcpus:
             self.nr_vcpus = 1
-        if not self.type:
+        if self.type == VM_TYPE_UNKNOWN:
             raise ValueError("VM type is not set")
         if not self.arch:
             raise ValueError("VM arch is not set")
