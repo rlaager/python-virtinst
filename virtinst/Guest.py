@@ -661,8 +661,9 @@ class Guest(object):
             raise ValueError, _("System name must be a string greater than 0 and no more than 50 characters")
         if re.match("^[0-9]+$", val):
             raise ValueError, _("System name must not be only numeric characters")
-        if re.match("^[a-zA-Z0-9._-]+$", val) == None:
-            raise ValueError, _("System name can only contain alphanumeric, '_', '.', or '-' characters")
+        if re.match("^[A-Za-z0-9_.:/+-]+$", val) == None:
+            raise ValueError, _("System name can only contain: alphanumeric "
+                                "'_', '.', ':', '+', or '-' characters")
         self._name = val
     name = property(get_name, set_name)
 
