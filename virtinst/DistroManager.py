@@ -231,7 +231,7 @@ class DistroInstaller(Guest.Installer):
         else:
             self._prepare_kernel_and_initrd(guest, distro, meter)
 
-    def _get_osblob(self, install, hvm, arch = None, loader = None):
+    def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
         osblob = ""
         if install or hvm:
             osblob = "<os>\n"
@@ -261,7 +261,7 @@ class DistroInstaller(Guest.Installer):
 
             osblob += "  </os>"
         else:
-            osblob += "<bootloader>/usr/bin/pygrub</bootloader>"
+            osblob += "<bootloader>%s</bootloader>" % util.pygrub_path(conn)
 
         return osblob
 
@@ -288,7 +288,7 @@ class PXEInstaller(Guest.Installer):
     def prepare(self, guest, meter, distro = None):
         pass
 
-    def _get_osblob(self, install, hvm, arch = None, loader = None):
+    def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
         osblob = ""
         if install or hvm:
             osblob = "<os>\n"
@@ -313,7 +313,7 @@ class PXEInstaller(Guest.Installer):
 
             osblob += "  </os>"
         else:
-            osblob += "<bootloader>/usr/bin/pygrub</bootloader>"
+            osblob += "<bootloader>%s</bootloader>" % util.pygrub_path(conn)
 
         return osblob
 

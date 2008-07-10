@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import platform
 import random
 import os.path
 import re
@@ -27,6 +28,8 @@ from sys import stderr
 
 import libvirt
 from virtinst import _virtinst as _
+from virtinst import CapabilitiesParser
+
 
 KEYBOARD_DIR = "/etc/sysconfig/keyboard"
 
@@ -277,3 +280,20 @@ def default_keymap():
         f.close()
     return keymap
 
+def pygrub_path(conn=None):
+    """
+    Return the pygrub path for the current host, or connection if
+    available.
+    """
+    # FIXME: This should be removed/deprecated when capabilities are
+    #        fixed to provide bootloader info
+    if conn:
+        cap = CapabilitiesParser.parse(conn.getCapabilities())
+        if (cap.host.arch == "i86pc"):
+            return "/usr/lib/xen/bin/pygrub"
+        else:
+            return "/usr/bin/pygrub"
+
+    if platform.system() == "SunOS":
+        return "/usr/lib/xen/bin/pygrub"
+    return "/usr/bin/pygrub"

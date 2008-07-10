@@ -106,7 +106,7 @@ class ImageInstaller(Guest.Installer):
 
             guest._install_disks.append(d)
 
-    def _get_osblob(self, install, hvm, arch = None, loader = None):
+    def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
         osblob = "<os>\n"
 
         if hvm:
@@ -136,7 +136,7 @@ class ImageInstaller(Guest.Installer):
             osblob += "  </os>"
         elif self.boot_caps.loader == "pygrub" or (self.boot_caps.loader is None and self.boot_caps.type == "xen"):
             osblob += "  </os>\n"
-            osblob += "  <bootloader>/usr/bin/pygrub</bootloader>"
+            osblob += "  <bootloader>%s</bootloader>" % util.pygrub_path(conn)
 
         return osblob
 

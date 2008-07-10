@@ -55,7 +55,7 @@ class LiveCDInstaller(Guest.Installer):
                                  readOnly = True)
         guest._install_disks.insert(0, disk)
 
-    def _get_osblob(self, install, hvm, arch = None, loader = None):
+    def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
         if install:
             return None
 
