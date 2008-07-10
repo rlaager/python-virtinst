@@ -28,7 +28,7 @@ from optparse import OptionValueError, OptionParser
 import libvirt
 import util
 from virtinst import Guest, CapabilitiesParser, VirtualNetworkInterface, \
-                     VirtualGraphics
+                     VirtualGraphics, VirtualAudio
 from virtinst import _virtinst as _
 
 MIN_RAM = 64
@@ -329,6 +329,14 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
         guest.graphics_dev.port = vncport
     if keymap:
         guest.graphics_dev.keymap = keymap
+
+def get_sound(sound, guest):
+
+    # Sound is just a boolean value, so just specify a default of 'es1370'
+    # model since this should provide audio out of the box for most modern
+    # distros
+    if sound:
+        guest.sound_devs.append(VirtualAudio(model="es1370"))
 
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):

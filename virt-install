@@ -266,7 +266,8 @@ def parse_args():
     parser.add_option("", "--arch", type="string", dest="arch",
                       action="callback", callback=cli.check_before_store,
                       help=_("The CPU architecture to simulate"))
-    
+    parser.add_option("", "--sound", action="store_true", dest="sound",
+                      default=False, help=_("Use sound device emulation"))
     # paravirt options
     parser.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
                       help=_("This guest should be a paravirtualized guest"))
@@ -405,6 +406,8 @@ def main():
     cli.get_memory(options.memory, guest)
     cli.get_uuid(options.uuid, guest)
     cli.get_vcpus(options.vcpus, options.check_cpu, guest, conn)
+    if hvm:
+        cli.get_sound(options.sound, guest)
 
     # set up cpuset
     if type == "xen":
