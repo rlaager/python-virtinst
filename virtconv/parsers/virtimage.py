@@ -23,6 +23,8 @@ import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
 
+import re
+
 pv_boot_template = """
   <boot type="xen">
    <guest>
@@ -108,6 +110,9 @@ class virtimage_parser(formats.parser):
         if not vm.memory:
             raise ValueError("VM must have a memory setting")
 
+        # xend wants the name to match r'^[A-Za-z0-9_\-\.\:\/\+]+$'
+        vmname = re.sub(r'[^A-Za-z0-9_.:/+-]+',  '_', vm.name)
+
         pv_disks = []
         hvm_disks = []
         storage_disks = []
@@ -140,7 +145,7 @@ class virtimage_parser(formats.parser):
 
         out = image_template % {
             "boot_template": boot_xml,
-            "name" : vm.name,
+            "name" : vmname,
             "description" : vm.description,
             "nr_vcpus" : vm.nr_vcpus,
             # Mb to Kb
