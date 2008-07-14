@@ -25,7 +25,6 @@ import sys
 import os
 import logging
 import errno
-import platform
 from optparse import OptionParser
 
 import virtinst.cli as cli
@@ -125,15 +124,15 @@ def cleanup(msg, options, vmdef, paths):
     logging.error(msg)
 
     try:
+        for disk in vmdef.disks.values():
+            disk.cleanup()
+
         paths.reverse()
         for path in paths:
             if os.path.isdir(path):
                 os.rmdir(path)
             elif os.path.isfile(path):
                 os.remove(path)
-
-        for disk in vmdef.disks:
-            disk.cleanup()
     except OSError, e:
         logging.error("Couldn't clean up output directory \"%s\": %s" %
             (options.output_dir, e.strerror))
@@ -195,19 +194,20 @@ def main():
     verbose(options, "Generating output in \"%s\" format to %s/" %
         (options.output_format, options.output_dir))
 
+
     try:
-        for d in vmdef.disks:
+        for d in vmdef.disks.values():
             format = options.disk_format
 
-            # no auto-conversion on Solaris for VMDK disks
+            # VMDK disks on Solaris converted to vdisk by default
             if (d.format == diskcfg.DISK_FORMAT_VMDK and
-                not format and platform.system() == "SunOS"):
-                continue
+                not format and vmcfg.host() == "SunOS"):
+                format = "vdisk"
 
             if not format:
                 format = "raw"
 
-            if format != "none":
+            if d.path and format != "none":
                 verbose(options, "Converting disk \"%s\" to type %s..." %
                     (d.path, format))
 

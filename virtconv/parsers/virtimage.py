@@ -37,7 +37,7 @@ pv_boot_template = """
    <os>
     <loader>pygrub</loader>
    </os>
-   %(pv_disks)s
+   %(disks)s
   </boot>
 """
 
@@ -49,7 +49,7 @@ hvm_boot_template = """
    <os>
     <loader dev="hd"/>
    </os>
-   %(hvm_disks)s
+   %(disks)s
   </boot>
 """
 
@@ -74,6 +74,74 @@ image_template = """
  </storage>
 </image>
 """
+
+def export_disks(vm):
+    """
+    Export code for the disks.  Slightly tricky for two reasons.
+    
+    We can't handle duplicate disks: some vmx files define SCSI/IDE devices
+    that point to the same storage, and Xen isn't happy about that. We
+    just ignore any entries that have duplicate paths.
+
+    Since there is no SCSI support in rombios, and the SCSI emulation is
+    troublesome with Solaris, we forcibly switch the disks to IDE, and expect
+    the guest OS to cope (which at least Linux does admirably).
+
+    Note that we even go beyond hdd: above that work if the domU has PV
+    drivers.
+    """
+
+    paths = []
+
+    disks = {}
+
+    for (bus, instance), disk in sorted(vm.disks.iteritems()):
+
+        if disk.path and disk.path in paths:
+            continue
+
+        if bus == "scsi":
+            instance = 0
+            while disks.get(("ide", instance)):
+                instance += 1
+
+        disks[("ide", instance)] = disk
+
+        if disk.path:
+            paths += [ disk.path ]
+
+    diskout = []
+    storage = []
+
+    for (bus, instance), disk in sorted(disks.iteritems()):
+
+        # virt-image XML cannot handle an empty CD device
+        if not disk.path:
+            continue
+
+        path = disk.path
+        drive_nr = ascii_letters[int(instance) % 26]
+
+        disk_prefix = "xvd"
+        if vm.type == vmcfg.VM_TYPE_HVM:
+            if bus == "ide":
+                disk_prefix = "hd"
+            else:
+                disk_prefix = "sd"
+
+        # FIXME: needs updating for later Xen enhancements; need to
+        # implement capabilities checking for max disks etc.
+        diskout.append("""<drive disk="%s" target="%s%s" />\n""" %
+            (path, disk_prefix, drive_nr))
+
+        type = "raw"
+        if disk.type == diskcfg.DISK_TYPE_ISO:
+            type = "iso"
+        storage.append(
+            """<disk file="%s" use="system" format="%s"/>\n""" %
+                (path, type))
+
+    return storage, diskout
 
 class virtimage_parser(formats.parser):
     """
@@ -117,33 +185,15 @@ class virtimage_parser(formats.parser):
         # xend wants the name to match r'^[A-Za-z0-9_\-\.\:\/\+]+$'
         vmname = re.sub(r'[^A-Za-z0-9_.:/+-]+',  '_', vm.name)
 
-        pv_disks = []
-        hvm_disks = []
-        storage_disks = []
-
-        # create disk filename lists for xml template
-        for disk in vm.disks:
-            number = disk.number
-            path = disk.path
-
-            # FIXME: needs updating for later Xen enhancements; need to
-            # implement capabilities checking for max disks etc.
-            pv_disks.append("""<drive disk="%s" target="xvd%s" />\n""" %
-                (path, ascii_letters[number % 26]))
-            hvm_disks.append("""<drive disk="%s" target="hd%s" />\n""" %
-                (path, ascii_letters[number % 26]))
-            storage_disks.append(
-                """<disk file="%s" use="system" format="%s"/>\n"""
-                    % (path, diskcfg.qemu_formats[disk.format]))
-
         if vm.type == vmcfg.VM_TYPE_PV:
             boot_template = pv_boot_template
         else:
             boot_template = hvm_boot_template
 
+        (storage, disks) = export_disks(vm)
+
         boot_xml = boot_template % {
-            "pv_disks" : "".join(pv_disks),
-            "hvm_disks" : "".join(hvm_disks),
+            "disks" : "".join(disks),
             "arch" : vm.arch,
         }
 
@@ -154,7 +204,7 @@ class virtimage_parser(formats.parser):
             "nr_vcpus" : vm.nr_vcpus,
             # Mb to Kb
             "memory" : int(vm.memory) * 1024,
-            "storage" : "".join(storage_disks),
+            "storage" : "".join(storage),
         }
 
         outfile = open(output_file, "w")

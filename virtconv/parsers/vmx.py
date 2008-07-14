@@ -23,6 +23,49 @@ import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
 
 import re
+import os
+
+def parse_disk_entry(vm, fullkey, value):
+    """
+    Parse a particular key/value for a disk.  FIXME: this should be a
+    lot smarter.
+    """
+
+    # skip bus values, e.g. 'scsi0.present = "TRUE"'
+    if re.match(r"^(scsi|ide)[0-9]+[^:]", fullkey):
+        return
+
+    ignore, bus, bus_nr, inst, key = re.split(r"^(scsi|ide)([0-9]+):([0-9]+)\.",
+        fullkey)
+
+    lvalue = value.lower()
+
+    if key == "present" and lvalue == "false":
+        return
+
+    # Does anyone else think it's scary that we're still doing things
+    # like this?
+    if bus == "ide":
+        inst = int(inst) + int(bus_nr) * 2
+
+    devid = (bus, inst)
+    if not vm.disks.get(devid):
+        vm.disks[devid] = diskcfg.disk(bus = bus,
+            type = diskcfg.DISK_TYPE_DISK)
+
+    if key == "deviceType":
+        if lvalue == "atapi-cdrom" or lvalue == "cdrom-raw":
+            vm.disks[devid].type = diskcfg.DISK_TYPE_CDROM
+        elif lvalue == "cdrom-image":
+            vm.disks[devid].type = diskcfg.DISK_TYPE_ISO
+
+    if key == "fileName":
+        vm.disks[devid].path = value
+        vm.disks[devid].format = diskcfg.DISK_FORMAT_RAW
+        if lvalue.endswith(".vmdk"):
+            vm.disks[devid].format = diskcfg.DISK_FORMAT_VMDK
+
+import re
 
 class vmx_parser(formats.parser):
     """
@@ -74,22 +117,29 @@ class vmx_parser(formats.parser):
                 lines.append(line)
     
         config = {}
-        disks = []
 
         # split out all remaining entries of key = value form
         for (line_nr, line) in enumerate(lines):
             try:
                 before_eq, after_eq = line.split("=", 1)
-                key = before_eq.replace(" ","")
-                value = after_eq.replace('"',"")
-                value = value.strip()
+                key = before_eq.strip()
+                value = after_eq.strip().strip('"')
                 config[key] = value
-                # FIXME: this should probably be a lot smarter.
-                if value.endswith(".vmdk"):
-                    disks += [ value ]
+
+                if key.startswith("scsi") or key.startswith("ide"):
+                    parse_disk_entry(vm, key, value)
             except:
                 raise Exception("Syntax error at line %d: %s" %
                     (line_nr + 1, line.strip()))
+
+        for devid, disk in vm.disks.iteritems():
+            if disk.type == diskcfg.DISK_TYPE_DISK:
+                continue
+                
+            # vmx files often have dross left in path for CD entries
+            if (disk.path == "auto detect" or
+                not os.path.exists(disk.path)):
+                vm.disks[devid].path = None
 
         if not config.get("displayName"):
             raise ValueError("No displayName defined in \"%s\"" % input_file)
@@ -98,10 +148,7 @@ class vmx_parser(formats.parser):
         vm.memory = config.get("memsize")
         vm.description = config.get("annotation")
         vm.nr_vcpus = config.get("numvcpus")
-
-        for (number, path) in enumerate(disks):
-            vm.disks += [ diskcfg.disk(path, number, diskcfg.DISK_FORMAT_VMDK) ]
-
+     
         vm.validate()
         return vm
 

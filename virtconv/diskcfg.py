@@ -64,11 +64,10 @@ def ensuredirs(path):
 class disk(object):
     """Definition of an individual disk instance."""
 
-    def __init__(self, path = None, number = 0, format = None, bus = "ide",
+    def __init__(self, path = None, format = None, bus = "ide",
         type = DISK_TYPE_DISK):
         self.path = path
         self.format = format
-        self.number = number
         self.bus = bus
         self.type = type
         self.clean = []
@@ -140,6 +139,9 @@ class disk(object):
         failures.
         """
 
+        if self.type != DISK_TYPE_DISK:
+            return
+
         out_format = disk_format_names[output_format]
         indir = os.path.normpath(os.path.abspath(indir))
         outdir = os.path.normpath(os.path.abspath(outdir))
@@ -160,11 +162,13 @@ class disk(object):
             convert_cmd = ("""/usr/bin/vdiskadm import -t %s "%s" "%s" """ %
                 (qemu_formats[out_format], absin, absout)) 
         elif out_format == DISK_FORMAT_RAW:
-            convert_cmd = ("""qemu-img convert "%s" -O %s "%s" """ %
-                (absin, qemu_formats[out_format], absout))
+            convert_cmd = ("""qemu-img convert -O %s "%s" "%s" """ %
+                (qemu_formats[out_format], absin, absout))
         else:
             raise NotImplementedError("Cannot convert to disk format %s" %
                 output_format)
+
+        self.clean += [ absout ]
 
         ret = os.system(convert_cmd)
         if ret != 0:
