@@ -18,12 +18,13 @@
 # MA 02110-1301 USA.
 #
 
-from xml.sax.saxutils import escape
-from string import ascii_letters
 import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
+import virtinst.FullVirtGuest as fv
 
+from xml.sax.saxutils import escape
+from string import ascii_letters
 import re
 
 pv_boot_template = """
@@ -74,6 +75,37 @@ image_template = """
  </storage>
 </image>
 """
+
+def export_os_params(vm):
+    """
+    Export OS-specific parameters.
+    """
+    ostype = None
+    osvariant = None
+
+    ostype = fv.OS_TYPES.get(vm.os_type)
+    if ostype:
+        osvariant = ostype.variants.get(vm.os_variant)
+
+    def get_os_val(key, default):
+        val = None
+        if osvariant:
+            val = osvariant.get(key)
+        if not val and ostype:
+            val = ostype.get(key)
+        if not val:
+            val = default
+        return val
+
+    acpi = ""
+    if vm.noacpi is False and get_os_val("acpi", True):
+        acpi = "<acpi />"
+
+    apic = ""
+    if vm.noapic is False and get_os_val("apic", False):
+        apic = "<apic />"
+
+    return acpi, apic
 
 def export_disks(vm):
     """
@@ -190,6 +222,8 @@ class virtimage_parser(formats.parser):
         if len(vm.netdevs):
             interface = "<interface />"
 
+        acpi, apic = export_os_params(vm)
+
         if vm.type == vmcfg.VM_TYPE_PV:
             boot_template = pv_boot_template
         else:
@@ -200,6 +234,8 @@ class virtimage_parser(formats.parser):
         boot_xml = boot_template % {
             "disks" : "".join(disks),
             "arch" : vm.arch,
+            "acpi" : acpi,
+            "apic" : apic,
         }
 
         out = image_template % {

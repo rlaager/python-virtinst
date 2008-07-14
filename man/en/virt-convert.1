@@ -185,6 +185,151 @@ Print debugging information
 .IP "\-q, \-\-quiet" 4
 .IX Item "-q, --quiet"
 Avoid verbose output.
+.IP "\-\-os\-type=OS_TYPE" 4
+.IX Item "--os-type=OS_TYPE"
+Optimize the guest configuration for a type of operating system. This will
+attempt to pick the most suitable \s-1ACPI\s0 & \s-1APIC\s0 settings, optimally supported
+mouse drivers and generally accommodate other operating system quirks. The
+valid operating system types are
+.RS 4
+.IP "linux" 4
+.IX Item "linux"
+Linux 2.x series
+.IP "windows" 4
+.IX Item "windows"
+Microsoft Windows 9x or later
+.IP "unix" 4
+.IX Item "unix"
+Traditional \s-1UNIX\s0 \s-1BSD\s0 or SysV derivatives
+.IP "other" 4
+.IX Item "other"
+Operating systems not in one of the 3 prior groups
+.RE
+.RS 4
+.RE
+.IP "\-\-os\-variant=OS_VARIANT" 4
+.IX Item "--os-variant=OS_VARIANT"
+Further optimize the guest configuration for a specific operating system
+variant. This parameter is optional. The valid variants are
+.RS 4
+.IP "linux" 4
+.IX Item "linux"
+.RS 4
+.PD 0
+.IP "rhel2.1" 4
+.IX Item "rhel2.1"
+.PD
+Red Hat Enterprise Linux 2.1
+.IP "rhel3" 4
+.IX Item "rhel3"
+Red Hat Enterprise Linux 3
+.IP "rhel4" 4
+.IX Item "rhel4"
+Red Hat Enterprise Linux 4
+.IP "rhel5" 4
+.IX Item "rhel5"
+Red Hat Enterprise Linux 5
+.IP "centos5" 4
+.IX Item "centos5"
+Cent \s-1OS\s0 5
+.IP "fedora5" 4
+.IX Item "fedora5"
+Fedora Core 5
+.IP "fedora6" 4
+.IX Item "fedora6"
+Fedora Core 6
+.IP "fedora7" 4
+.IX Item "fedora7"
+Fedora 7
+.IP "sles10" 4
+.IX Item "sles10"
+Suse Linux Enterprise Server 10.x
+.IP "debianEtch" 4
+.IX Item "debianEtch"
+Debian 4.0 (Etch)
+.IP "debianLenny" 4
+.IX Item "debianLenny"
+Debian Lenny
+.IP "generic26" 4
+.IX Item "generic26"
+Generic Linux 2.6.x kernel
+.IP "generic24" 4
+.IX Item "generic24"
+Generic Linux 2.4.x kernel
+.RE
+.RS 4
+.RE
+.IP "windows" 4
+.IX Item "windows"
+.RS 4
+.PD 0
+.IP "winxp" 4
+.IX Item "winxp"
+.PD
+Microsoft Windows \s-1XP\s0
+.IP "win2k" 4
+.IX Item "win2k"
+Microsoft Windows 2000
+.IP "win2k3" 4
+.IX Item "win2k3"
+Microsoft Windows 2003
+.IP "vista" 4
+.IX Item "vista"
+Microsoft Windows Vista
+.RE
+.RS 4
+.RE
+.IP "unix" 4
+.IX Item "unix"
+.RS 4
+.PD 0
+.IP "solaris9" 4
+.IX Item "solaris9"
+.PD
+Sun Solaris 9
+.IP "solaris10" 4
+.IX Item "solaris10"
+Sun Solaris 10
+.IP "freebsd6" 4
+.IX Item "freebsd6"
+Free \s-1BSD\s0 6.x
+.IP "openbsd4" 4
+.IX Item "openbsd4"
+Open \s-1BSD\s0 4.x
+.RE
+.RS 4
+.RE
+.IP "other" 4
+.IX Item "other"
+.RS 4
+.PD 0
+.IP "msdos" 4
+.IX Item "msdos"
+.PD
+Microsoft \s-1DOS\s0
+.IP "netware4" 4
+.IX Item "netware4"
+Novell Netware 4
+.IP "netware5" 4
+.IX Item "netware5"
+Novell Netware 5
+.IP "netware6" 4
+.IX Item "netware6"
+Novell Netware 6
+.RE
+.RS 4
+.RE
+.RE
+.RS 4
+.RE
+.IP "\-\-noapic" 4
+.IX Item "--noapic"
+Override the \s-1OS\s0 type / variant to disables the \s-1APIC\s0 setting for fully 
+virtualized guest.
+.IP "\-\-noacpi" 4
+.IX Item "--noacpi"
+Override the \s-1OS\s0 type / variant to disables the \s-1ACPI\s0 setting for fully 
+virtualized guest. 
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 Convert a paravirt guest from \f(CW\*(C`image.vmx\*(C'\fR:

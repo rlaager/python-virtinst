@@ -55,6 +55,10 @@ class vm(object):
         self.netdevs = {}
         self.type = VM_TYPE_HVM
         self.arch = "i686"
+        self.noacpi = None
+        self.noapic = None
+        self.os_type = None
+        self.os_variant = None
 
     def validate(self):
         """

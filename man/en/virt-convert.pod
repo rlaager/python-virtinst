@@ -71,6 +71,176 @@ Print debugging information
 
 Avoid verbose output.
 
+=item  --os-type=OS_TYPE
+
+Optimize the guest configuration for a type of operating system. This will
+attempt to pick the most suitable ACPI & APIC settings, optimally supported
+mouse drivers and generally accommodate other operating system quirks. The
+valid operating system types are
+
+=over 4
+
+=item linux
+
+Linux 2.x series
+
+=item windows
+
+Microsoft Windows 9x or later
+
+=item unix
+
+Traditional UNIX BSD or SysV derivatives
+
+=item other
+
+Operating systems not in one of the 3 prior groups
+
+=back
+
+=item --os-variant=OS_VARIANT
+
+Further optimize the guest configuration for a specific operating system
+variant. This parameter is optional. The valid variants are
+
+=over 4
+
+=item linux
+
+=over 4
+
+=item rhel2.1
+
+Red Hat Enterprise Linux 2.1
+
+=item rhel3
+
+Red Hat Enterprise Linux 3
+
+=item rhel4
+
+Red Hat Enterprise Linux 4
+
+=item rhel5
+
+Red Hat Enterprise Linux 5
+
+=item centos5
+
+Cent OS 5
+
+=item fedora5
+
+Fedora Core 5
+
+=item fedora6
+
+Fedora Core 6
+
+=item fedora7
+
+Fedora 7
+
+=item sles10
+
+Suse Linux Enterprise Server 10.x
+
+=item debianEtch
+
+Debian 4.0 (Etch)
+
+=item debianLenny
+
+Debian Lenny
+
+=item generic26
+
+Generic Linux 2.6.x kernel
+
+=item generic24
+
+Generic Linux 2.4.x kernel
+
+=back
+
+=item windows
+
+=over 4
+
+=item winxp
+
+Microsoft Windows XP
+
+=item win2k
+
+Microsoft Windows 2000
+
+=item win2k3
+
+Microsoft Windows 2003
+
+=item vista
+
+Microsoft Windows Vista
+
+=back
+
+=item unix
+
+=over 4
+
+=item solaris9
+
+Sun Solaris 9
+
+=item solaris10
+
+Sun Solaris 10
+
+=item freebsd6
+
+Free BSD 6.x
+
+=item openbsd4
+
+Open BSD 4.x
+
+=back
+
+=item other
+
+=over 4
+
+=item msdos
+
+Microsoft DOS
+
+=item netware4
+
+Novell Netware 4
+
+=item netware5
+
+Novell Netware 5
+
+=item netware6
+
+Novell Netware 6
+
+=back
+
+=back
+
+=item  --noapic
+
+Override the OS type / variant to disables the APIC setting for fully 
+virtualized guest.
+
+=item  --noacpi
+
+Override the OS type / variant to disables the ACPI setting for fully 
+virtualized guest. 
+
 =back
 
 =head1 EXAMPLES
