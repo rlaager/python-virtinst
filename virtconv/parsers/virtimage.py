@@ -65,8 +65,8 @@ image_template = """
   <devices>
    <vcpu>%(nr_vcpus)s</vcpu>
    <memory>%(memory)s</memory>
-   <interface/>
-   <graphics/>
+   %(interface)s
+   <graphics />
   </devices>
  </domain>
  <storage>
@@ -185,6 +185,11 @@ class virtimage_parser(formats.parser):
         # xend wants the name to match r'^[A-Za-z0-9_\-\.\:\/\+]+$'
         vmname = re.sub(r'[^A-Za-z0-9_.:/+-]+',  '_', vm.name)
 
+        # Hmm.  Any interface is a good interface?
+        interface = None
+        if len(vm.netdevs):
+            interface = "<interface />"
+
         if vm.type == vmcfg.VM_TYPE_PV:
             boot_template = pv_boot_template
         else:
@@ -204,6 +209,7 @@ class virtimage_parser(formats.parser):
             "nr_vcpus" : vm.nr_vcpus,
             # Mb to Kb
             "memory" : int(vm.memory) * 1024,
+            "interface" : interface,
             "storage" : "".join(storage),
         }
 

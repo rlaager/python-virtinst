@@ -21,9 +21,34 @@
 import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
+import virtconv.netdevcfg as netdevcfg
 
 import re
 import os
+
+def parse_netdev_entry(vm, fullkey, value):
+    """
+    Parse a particular key/value for a network.  Throws ValueError.
+    """
+
+    ignore, ignore, inst, key = re.split("^(ethernet)([0-9]+).", fullkey)
+
+    lvalue = value.lower()
+
+    if key == "present" and lvalue == "false":
+        return
+
+    if not vm.netdevs.get(inst):
+        vm.netdevs[inst] = netdevcfg.netdev(type = netdevcfg.NETDEV_TYPE_UNKNOWN)
+
+    # "vlance", "vmxnet", "e1000"
+    if key == "virtualDev":
+        vm.netdevs[inst].driver = lvalue
+    if key == "addressType" and lvalue == "generated":
+        vm.netdevs[inst].mac = "auto"
+    # we ignore .generatedAddress for auto mode
+    if key == "address":
+        vm.netdevs[inst].mac = lvalue
 
 def parse_disk_entry(vm, fullkey, value):
     """
@@ -128,6 +153,8 @@ class vmx_parser(formats.parser):
 
                 if key.startswith("scsi") or key.startswith("ide"):
                     parse_disk_entry(vm, key, value)
+                if key.startswith("ethernet"):
+                    parse_netdev_entry(vm, key, value)
             except:
                 raise Exception("Syntax error at line %d: %s" %
                     (line_nr + 1, line.strip()))

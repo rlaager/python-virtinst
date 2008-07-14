@@ -52,6 +52,7 @@ class vm(object):
         self.memory = None
         self.nr_vcpus = None
         self.disks = {}
+        self.netdevs = {}
         self.type = VM_TYPE_HVM
         self.arch = "i686"
 
