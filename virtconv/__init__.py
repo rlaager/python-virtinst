@@ -24,6 +24,14 @@ import os
 
 parsers_path = [os.path.join(__path__[0], "parsers/")]
 
-for loader, name, ispkg in pkgutil.iter_modules(parsers_path):
+# iter_modules is only in Python 2.5, sadly
+parser_names = [ "vmx", "virtimage" ]
+
+if hasattr(pkgutil, "iter_modules"):
+    parser_names = []
+    for ignore, name, ignore in pkgutil.iter_modules(parsers_path):
+        parser_names += [ name ]
+
+for name in parser_names:
     filename, pathname, desc = imp.find_module(name, parsers_path)
     imp.load_module(name, filename, pathname, desc)
