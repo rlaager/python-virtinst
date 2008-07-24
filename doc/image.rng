@@ -236,7 +236,7 @@
   </define>
   <define name='genericName'>
     <data type='string'>
-      <param name="pattern">[A-Za-z0-9_.:/+-]+</param>
+      <param name="pattern">[A-Za-z0-9_\.\+\-:/]+</param>
     </data>
   </define>
   <define name='fileName'>
@@ -246,12 +246,12 @@
   </define>
   <define name='relFilePath'>
     <data type='string'>
-      <param name="pattern">[a-zA-Z0-9_\+\-%.][a-zA-Z0-9_\+\-%./]*</param>
+      <param name="pattern">[a-zA-Z0-9_\.\+\-%][a-zA-Z0-9_\.\+\-%/]*</param>
     </data>
   </define>
   <define name='deviceName'>
     <data type='string'>
-      <param name="pattern">[a-zA-Z0-9_\-:./]+</param>
+      <param name="pattern">[a-zA-Z0-9_\.\-:/]+</param>
     </data>
   </define>
   <define name="verString">
