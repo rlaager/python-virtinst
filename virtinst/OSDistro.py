@@ -197,7 +197,7 @@ class SuseDistro(Distro):
         # Else we are looking for a paravirt kernel
         if fetcher.hasFile("boot/%s/vmlinuz-xen" % self.arch):
             # Should match opensuse > 10.2 and sles 10
-            kernel = fetcher.acquireFile("boot/%s/vmlinux-xen" % self.arch,
+            kernel = fetcher.acquireFile("boot/%s/vmlinuz-xen" % self.arch,
                                          progresscb)
             initrd = fetcher.acquireFile("boot/%s/initrd-xen" % self.arch,
                                          progresscb)
