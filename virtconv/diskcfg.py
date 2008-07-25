@@ -18,9 +18,12 @@
 # MA 02110-1301 USA.
 #
 
+import popen2
 import shutil
 import errno
+import sys
 import os
+import re
 
 DISK_FORMAT_NONE = 0
 DISK_FORMAT_RAW = 1
@@ -32,7 +35,7 @@ DISK_TYPE_CDROM = 1
 DISK_TYPE_ISO = 2
 
 disk_suffixes = {
-    DISK_FORMAT_RAW: ".img",
+    DISK_FORMAT_RAW: ".raw",
     DISK_FORMAT_VMDK: ".vmdk",
     DISK_FORMAT_VDISK: ".vdisk.xml",
 }
@@ -60,6 +63,15 @@ def ensuredirs(path):
     except OSError, e: 
         if e.errno != errno.EEXIST:
             raise
+
+def run_cmd(cmd):
+    """
+    Return the exit status and output to stdout and stderr.
+    """
+    proc = popen2.Popen3(cmd, capturestderr=True)
+    proc.tochild.close()
+    ret = proc.wait()
+    return ret, proc.fromchild.readlines(), proc.childerr.readlines()
 
 class disk(object):
     """Definition of an individual disk instance."""
@@ -114,15 +126,27 @@ class disk(object):
 
         if need_copy:
             if out_format == DISK_FORMAT_VDISK:
-                stdin, stdout = os.popen2(["/usr/bin/vdiskadm", "import", "-n",
-                    "-f", "-t", qemu_formats[self.format],
-                    "\"%s\"" % os.path.join(indir, self.path)])
-                paths = stdout.readlines()
-                stdin.close()
-                stdout.close()
-                for path in paths:
-                    self.copy_file(os.path.join(indir, path),
-                        os.path.join(outdir, path))
+                # copy any sub-files for the disk as well as the disk
+                # itself
+                ret, stdout, stderr = run_cmd(["/usr/lib/xen/bin/vdiskadm", "import",
+                    "-npqf", os.path.join(indir, self.path)])
+
+                if ret != 0:
+                    raise RuntimeError("Disk conversion failed with "
+                        "exit status %d: %s" % (ret, "".join(stderr)))
+                if len(stderr):
+                    print >> sys.stderr, stderr
+
+                stubpath = os.path.dirname(self.path)
+
+                for item in stdout:
+                    type, path = item.strip().split(':', 1)
+                    if not (type == "snapshot" or type == "file"):
+                        continue
+                    infile = os.path.join(indir, stubpath, path)
+                    outfile = os.path.join(outdir, stubpath, path)
+                    self.copy_file(infile, outfile)
+
                 return need_convert
 
             # this is not correct for all VMDK files, but it will have
@@ -156,27 +180,63 @@ class disk(object):
         absin = os.path.join(indir, relin)
         absout = os.path.join(outdir, relout)
 
-        ensuredirs(absout)
-
-        if out_format == DISK_FORMAT_VDISK:
-            convert_cmd = ("""/usr/bin/vdiskadm import -t %s "%s" "%s" """ %
-                (qemu_formats[out_format], absin, absout)) 
-        elif out_format == DISK_FORMAT_RAW:
-            convert_cmd = ("""qemu-img convert -O %s "%s" "%s" """ %
-                (qemu_formats[out_format], absin, absout))
-        else:
+        if not (out_format == DISK_FORMAT_VDISK or
+            out_format == DISK_FORMAT_RAW):
             raise NotImplementedError("Cannot convert to disk format %s" %
                 output_format)
 
-        self.clean += [ absout ]
+        ensuredirs(absout)
 
-        ret = os.system(convert_cmd)
+        if out_format != DISK_FORMAT_VDISK:
+
+            self.clean += [ absout ]
+
+            ret, stdout, stderr = run_cmd(["qemu-img", "convert", "-O",
+                qemu_formats[out_format], absin, absout])
+            if ret != 0:
+                raise RuntimeError("Disk conversion failed with "
+                    "exit status %d: %s" % (ret, "".join(stderr)))
+            if len(stderr):
+                print >> sys.stderr, stderr
+
+            self.path = relout
+            self.format = out_format
+            return
+
+        #
+        # The presumption is that the top-level disk name can't contain
+        # spaces, but the sub-disks can.  We don't want to break an
+        # existing config if we're doing it in-place, so be careful
+        # about copying versus moving.
+        #
+        spath = re.sub(r'\s', '_', relin)
+        if spath != relin:
+            infile = os.path.join(outdir, relin)
+            outfile = os.path.join(outdir, spath)
+            if indir == outdir:
+                shutil.copy(infile, outfile)
+            else:
+                shutil.move(infile, outfile)
+            self.path = spath
+            relin = spath
+
+        ret, stdout, stderr = run_cmd(["/usr/lib/xen/bin/vdiskadm", "import",
+             "-fp", os.path.join(outdir, relin)])
+
         if ret != 0:
-            raise RuntimeError("Disk conversion failed with exit status %d"
-                % ret)
+            raise RuntimeError("Disk conversion failed with "
+                "exit status %d: %s" % (ret, "".join(stderr)))
+        if len(stderr):
+            print >> sys.stderr, stderr
 
-        self.path = relout
-        self.format = out_format
+        stubpath = os.path.dirname(relin)
+
+        for item in stdout:
+            type, path = item.strip().split(':', 1)
+            if type == "store":
+                path = os.path.join(stubpath, path)
+                self.clean += [ os.path.join(outdir, path) ]
+                self.format = out_format
 
 def disk_formats():
     """
