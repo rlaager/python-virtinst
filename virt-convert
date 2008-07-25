@@ -98,12 +98,16 @@ def parse_args():
         opts.error(("No output handler for format \"%s\""
             % options.output_format))
 
+    if not os.access(args[0], os.R_OK):
+        opts.error("Couldn't access input argument \"%s\"\n" % args[0])
+        sys.exit(1)
+
     if not options.input_format:
         try:
             (args[0], options.input_format) = formats.find_input(args[0])
         except StandardError, e:
             opts.error("Couldn't determine input format for \"%s\": %s" % 
-                (args[0], e.message))
+                (args[0], e))
             sys.exit(1)
 
     if options.input_format not in formats.formats():
@@ -166,7 +170,7 @@ def main():
         sys.exit(1)
     except Exception, e:
         logging.error("Couldn't import file \"%s\": %s" %
-            (options.input_file, e.message))
+            (options.input_file, e))
         sys.exit(1)
 
     if options.paravirt:
@@ -231,14 +235,14 @@ def main():
         cleanup("Couldn't convert disks: %s" % e.strerror,
             options, vmdef, clean)
     except RuntimeError, e:
-        cleanup("Couldn't convert disks: %s" % e.message, options, vmdef, clean)
+        cleanup("Couldn't convert disks: %s" % e, options, vmdef, clean)
 
     try:
         clean += [ options.output_file ]
         outp.export_file(vmdef, options.output_file)
     except ValueError, e:
         cleanup("Couldn't export to file \"%s\": %s" %
-            (options.output_file, e.message), options, vmdef, clean)
+            (options.output_file, e), options, vmdef, clean)
 
     verbose(options, "Done.")
 
