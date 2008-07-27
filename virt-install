@@ -361,14 +361,22 @@ def main():
 
     if options.fullvirt:
         os_type = "hvm"
-    else:
+    elif options.paravirt:
         os_type = "xen"
-    logging.debug("Requesting virt type '%s'" % os_type)
+    else:
+        # This should force capabilities to give us the most sensible default
+        os_type = None
+
+    logging.debug("Requesting virt method '%s'" % (os_type and os_type or \
+                                                  _("default")))
 
     guest = capabilities.guestForOSType(type=os_type, arch=options.arch)
     if guest is None:
-        fail(_("Unsupported virtualization type '%s %s'" % (os_type,
-                                                            options.arch)))
+        msg = _("Unsupported virtualization type '%s' " % (os_type and os_type
+                                                           or _("default")))
+        if options.arch:
+            msg += _("for arch '%s'" % options.arch)
+        fail(msg)
 
     if guest.os_type == "hvm":
         hvm = True
