@@ -103,7 +103,7 @@ def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None,
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type,
                                 progresscb=progresscb, distro=distro,
                                 scratchdir=scratchdir, arch=arch)
-        return store.acquireKernel(fetcher, progresscb, )
+        return store.acquireKernel(fetcher, progresscb)
     finally:
         fetcher.cleanupLocation()
 

@@ -171,7 +171,7 @@ class SLDistro(RedHatDistro):
 # RPM and then munge bits together to generate a initrd
 class SuseDistro(Distro):
     def __init__(self, uri, type=None, scratchdir=None, arch=None):
-        Distro.__init__(self, uri, type, scratchdir)
+        Distro.__init__(self, uri, type, scratchdir, arch)
         if self.arch is None:
             self.arch = os.uname()[4]
             if len(self.arch) == 4 and len[0] == 'i' and len[2:] == "86":
@@ -192,8 +192,7 @@ class SuseDistro(Distro):
                                          progresscb)
             initrd = fetcher.acquireFile("boot/%s/loader/initrd" % self.arch,
                                          progresscb)
-            if kernel and initrd:
-                return (kernel, initrd, kernel_args)
+            return (kernel, initrd, kernel_args)
 
         # Else we are looking for a paravirt kernel
         if fetcher.hasFile("boot/%s/vmlinuz-xen" % self.arch):
@@ -202,8 +201,7 @@ class SuseDistro(Distro):
                                          progresscb)
             initrd = fetcher.acquireFile("boot/%s/initrd-xen" % self.arch,
                                          progresscb)
-            if kernel and initrd:
-                return (kernel, initrd, kernel_args)
+            return (kernel, initrd, kernel_args)
 
         # For Opensuse <= 10.2, we need to perform some heinous stuff
         logging.debug("Trying Opensuse 10 PV rpm hacking")
