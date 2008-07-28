@@ -451,7 +451,7 @@ class VirtualGraphics(object):
         self._type   = type
         self.set_port(port)
         self.set_keymap(keymap)
-        self.set_listen(None)
+        self.set_listen(listen)
         self.set_passwd(passwd)
 
     def get_type(self):
