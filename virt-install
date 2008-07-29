@@ -378,7 +378,8 @@ def main():
             msg += _("for arch '%s'" % options.arch)
         fail(msg)
 
-    if guest.os_type == "hvm":
+    os_type = guest.os_type
+    if os_type == "hvm":
         hvm = True
     else:
         hvm = False
