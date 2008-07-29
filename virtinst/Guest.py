@@ -955,7 +955,7 @@ class Guest(object):
 
 
     def start_install(self, consolecb=None, meter=None, removeOld=False,
-                      wait=None):
+                      wait=True):
         """Do the startup of the guest installation."""
         self.validate_parms()
 
