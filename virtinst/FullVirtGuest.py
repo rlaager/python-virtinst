@@ -254,7 +254,7 @@ class FullVirtGuest(Guest.XenGuest):
                 return FullVirtGuest.OS_TYPES[self.os_type]["continue"]
         return False
 
-    def continue_install(self, consolecb, meter):
+    def continue_install(self, consolecb, meter, wait=True):
         install_xml = self.get_config_xml(disk_boot = True)
         logging.debug("Starting guest from '%s'" % ( install_xml ))
         meter.start(size=None, text="Starting domain...")
@@ -263,7 +263,7 @@ class FullVirtGuest(Guest.XenGuest):
             raise RuntimeError, _("Unable to start domain for guest, aborting installation!")
         meter.end(0)
 
-        self.connect_console(consolecb)
+        self.connect_console(consolecb, wait)
 
         # ensure there's time for the domain to finish destroying if the
         # install has finished or the guest crashed

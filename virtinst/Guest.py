@@ -954,7 +954,8 @@ class Guest(object):
         "action": action }
 
 
-    def start_install(self, consolecb = None, meter = None,  removeOld = False):
+    def start_install(self, consolecb=None, meter=None, removeOld=False,
+                      wait=None):
         """Do the startup of the guest installation."""
         self.validate_parms()
 
@@ -964,7 +965,7 @@ class Guest(object):
 
         self._prepare_install(meter)
         try:
-            return self._do_install(consolecb, meter, removeOld)
+            return self._do_install(consolecb, meter, removeOld, wait)
         finally:
             self._installer.cleanup()
 
@@ -972,7 +973,7 @@ class Guest(object):
         self._install_disks = self.disks[:]
         self._install_nics = self.nics[:]
 
-    def _do_install(self, consolecb, meter, removeOld=False):
+    def _do_install(self, consolecb, meter, removeOld=False, wait=True):
         vm = None
         try:
             vm = self.conn.lookupByName(self.name)
@@ -1030,7 +1031,7 @@ class Guest(object):
         logging.debug("Saving XML boot config '%s'" % ( boot_xml ))
         self.conn.defineXML(boot_xml)
 
-        if child: # if we connected the console, wait for it to finish
+        if child and wait: # if we connected the console, wait for it to finish
             try:
                 (pid, status) = os.waitpid(child, 0)
             except OSError, (errno, msg):
@@ -1047,7 +1048,7 @@ class Guest(object):
     def post_install_check(self):
         return self.installer.post_install_check(self)
 
-    def connect_console(self, consolecb):
+    def connect_console(self, consolecb, wait=True):
         logging.debug("Restarted guest, looking to see if it is running")
         # sleep in .25 second increments until either a) we get running
         # domain ID or b) it's been 5 seconds.  this is so that
@@ -1075,7 +1076,7 @@ class Guest(object):
             logging.debug("Launching console callback")
             child = consolecb(self.domain)
 
-        if child: # if we connected the console, wait for it to finish
+        if child and wait: # if we connected the console, wait for it to finish
             try:
                 (pid, status) = os.waitpid(child, 0)
             except OSError, (errno, msg):

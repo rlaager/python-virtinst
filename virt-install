@@ -22,6 +22,7 @@
 # MA 02110-1301 USA.
 
 import os, sys, string
+import time
 import errno
 from optparse import OptionParser, OptionValueError
 import subprocess
@@ -286,6 +287,10 @@ def parse_args():
     parser.add_option("", "--force", action="store_true", dest="force",
                       help=_("Do not prompt for input. Answers yes where applicable, terminates for all other prompts"),
                       default=False)
+    parser.add_option("", "--wait", type="int", dest="wait",
+                      help=_("Total time to wait for VM to shutdown if console "
+                             "not present. Time less than 0 waits "
+                             "indefinitely."))
 
 
     (options,args) = parser.parse_args()
@@ -458,6 +463,16 @@ def main():
         else:
             return txt_console(dom, options.connect)
 
+    wait = False
+    wait_time = 0
+    if options.wait:
+        wait = True
+        wait_time = options.wait * 60
+
+    if wait is True and wait_time == 0:
+        # wait == 0 implies noautoconsole
+        options.autoconsole = False
+
     if options.autoconsole is False:
         conscb = None
     else:
@@ -469,12 +484,15 @@ def main():
     try:
         print _("\n\nStarting install...")
 
+        start_time = time.time()
+
         started = False
         while True:
             if not started:
-                dom = guest.start_install(conscb,progresscb)
+                dom = guest.start_install(conscb, progresscb, wait=(not wait))
             elif continue_inst:
-                dom = guest.continue_install(conscb,progresscb)
+                dom = guest.continue_install(conscb, progresscb,
+                                             wait=(not wait))
                 continue_inst = False
             else:
                 break
@@ -484,8 +502,28 @@ def main():
                 sys.exit(0)
             elif dom.info()[0] != libvirt.VIR_DOMAIN_SHUTOFF:
                 # domain seems to be running
-                print _("Domain installation still in progress.  You can reconnect to \nthe console to complete the installation process.")
-                sys.exit(0)
+                if wait:
+                    print _("Domain installation still in progress. Waiting"+\
+                            ((wait_time > 0)
+                             and (_(" %d minutes") % (int(wait_time) / 60))
+                             or "") + \
+                            " for domain to shutdown.")
+                    while True:
+                        if dom.info()[0] == libvirt.VIR_DOMAIN_SHUTOFF:
+                            print _("Domain has shutdown. Continuing.")
+                            break
+                        if wait_time < 0 or \
+                           ((time.time() - start_time) < wait_time):
+                            time.sleep(2)
+                        else:
+                            print _("Installation has exceeded specified time"
+                                    "limit. Aborting.")
+                            sys.exit(1)
+                else:
+                    print _("Domain installation still in progress. "
+                            "You can reconnect to \nthe console to complete "
+                            "the installation process.")
+                    sys.exit(0)
 
             if not started:
                 started = True
