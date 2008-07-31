@@ -45,60 +45,40 @@ gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
 gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
 ### General input gathering functions
-def get_full_virt():
-    while 1:
-        return cli.prompt_for_yes_or_no(_("Would you like a fully virtualized guest (yes or no)?  This will allow you to run unmodified operating systems."))
-
-
 def get_disk(disk, size, sparse, guest, hvm, conn):
-    while 1:
-        msg = _("What would you like to use as the disk (file path)?")
-        if not size is None:
-            msg = _("Please enter the path to the file you would like to use for storage. It will have size %sGB.") %(size,)
-        disk = cli.prompt_for_input(msg, disk)
 
-        # Getting disk size
-        while 1:
-            if os.path.exists(disk):
-                break
-            size = cli.prompt_for_input(_("How large would you like the disk (%s) to be (in gigabytes)?") %(disk,), size)
-            try:
-                size = float(size)
-                break
-            except Exception, e:
-                print _("ERROR: "), e
-                size = None
+    # Getting disk size
+    if not os.path.exists(disk) and size is None:
+        fail(_("Must specify size for non-existent disks"))
+    try:
+        size = float(size)
+    except Exception, e:
+        fail(e)
 
-        # Build disk object
-        try:
-            d = virtinst.VirtualDisk(disk, size, sparse = sparse)
-            # Default file backed PV guests to tap driver
-            if d.type == virtinst.VirtualDisk.TYPE_FILE \
-               and not(hvm) and virtinst.util.is_blktap_capable():
-                d.driver_name = virtinst.VirtualDisk.DRIVER_TAP
-        except ValueError, e:
-            print _("ERROR: "), e
-            disk = size = None
-            continue
+    # Build disk object
+    try:
+        d = virtinst.VirtualDisk(disk, size, sparse = sparse)
+        # Default file backed PV guests to tap driver
+        if d.type == virtinst.VirtualDisk.TYPE_FILE \
+           and not(hvm) and virtinst.util.is_blktap_capable():
+           d.driver_name = virtinst.VirtualDisk.DRIVER_TAP
+    except ValueError, e:
+        fail(e)
 
-        # Check disk conflicts
-        if d.is_conflict_disk(conn) is True:
-            warnmsg = _("Disk %s is already in use by another guest!\n") \
-                         % d.path
-            if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the disk (yes or no)? ")):
-                disk = size = None
-                continue
+    # Check disk conflicts
+    if d.is_conflict_disk(conn) is True:
+        warnmsg = _("Disk %s is already in use by another guest!\n") % d.path
+        if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the disk (yes or no)? ")):
+            cli.nice_exit()
 
-        ret = d.size_conflict()
-        if ret[0]:
-            raise ValueError, ret[1]
-        elif ret[1]:
-            if not cli.prompt_for_yes_or_no(ret[1] + _(" Do you really want to use the disk (yes or no)?")):
-                disk = size = None
-                continue
+    ret = d.size_conflict()
+    if ret[0]:
+        fail(ret[1])
+    elif ret[1]:
+        if not cli.prompt_for_yes_or_no(ret[1] + _(" Do you really want to use the disk (yes or no)?")):
+            cli.nice_exit()
 
-        guest.disks.append(d)
-        break
+    guest.disks.append(d)
 
 def get_disks(disk, size, sparse, nodisks, guest, hvm, conn):
     if nodisks:
@@ -130,43 +110,40 @@ def get_networks(macs, bridges, networks, guest):
 
 
 ### Paravirt input gathering functions
-def get_paravirt_install(src, guest):
-    while 1:
-        src = cli.prompt_for_input(_("What is the install location?"), src)
-        try:
-            guest.location = src
-            break
-        except ValueError, e:
-            print _("ERROR: "), e
-            src = None
-
 def get_extraargs(extra, guest):
     guest.extraargs = extra
 
 
-### fullvirt input gathering functions
-def get_fullvirt_cdrom(cdpath, location, guest):
-    # Got a location, then ignore CDROM
-    if location is not None:
-        guest.location = location
-        return
+def get_install_media(location, cdpath, pxe, livecd, guest, ishvm):
 
-    while 1:
-        cdpath = cli.prompt_for_input(_("What is the virtual CD image, CD device or install location?"), cdpath)
-        try:
-            # guest.cdrom is deprecated
-            guest.location = cdpath
-            if os.path.exists(guest.location):
-                # Build a throwaway disk for validation for local CDs only
-                cddisk = virtinst.VirtualDisk(path=guest.location, 
-                                              transient=True,
-                                              device=virtinst.VirtualDisk.DEVICE_CDROM,
-                                              readOnly=True)
+    if (pxe and location) or (location and cdpath) or (cdpath and pxe):
+        fail(_("Only one of --pxe, --location and --cdrom can be used"))
+
+    if not ishvm:
+        if pxe:
+            fail(_("Network PXE boot is not supported for paravirtualized "
+                   "guests"))
+        if cdpath or livecd:
+            fail(_("Paravirtualized guests cannot install off cdrom media."))
+        if location is None:
+            fail(_("location must be specified for paravirtualized guests."))
+
+    if not (pxe or location or cdpath):
+        fail(_("One of --pxe, --location or --cdrom must be specified."))
+    if pxe:
+        return
+    try:
+        # guest.cdrom is deprecated
+        guest.location = (location or cdpath)
+        if cdpath and os.path.exists(cdpath):
+            # Build a throwaway disk for validation for local CDs only
+            cddisk = virtinst.VirtualDisk(path=guest.location, 
+                                          transient=True,
+                                          device=virtinst.VirtualDisk.DEVICE_CDROM,
+                                          readOnly=True)
             guest.installer.cdrom = True
-            break
-        except ValueError, e:
-            print _("ERROR: "), e
-            cdpath = None
+    except ValueError, e:
+        fail(e)
 
 
 ### Option parsing
@@ -384,6 +361,7 @@ def main():
         fail(msg)
 
     os_type = guest.os_type
+    logging.debug("Received virt method '%s'" % os_type)
     if os_type == "hvm":
         hvm = True
     else:
@@ -394,25 +372,17 @@ def main():
     logging.debug("Hypervisor type is '%s'" % type)
 
     if options.livecd:
-        if not hvm:
-            fail(_("LiveCD installations are not supported for paravirt guests"))
         installer = virtinst.LiveCDInstaller(type = type, os_type = os_type)
     elif options.pxe:
         installer = virtinst.PXEInstaller(type = type, os_type = os_type)
     else:
         installer = virtinst.DistroInstaller(type = type, os_type = os_type)
 
-    if (options.pxe and options.location) or (options.location and options.cdrom) or (options.cdrom and options.pxe):
-        fail(_("Only one of --pxe, --location and --cdrom can be used"))
 
     if hvm:
-        # Xen only supports CDROM
-        if type == "xen":
-            installer.cdrom = True
-        guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=guest.arch)
+        guest = virtinst.FullVirtGuest(connection=conn, installer=installer,
+                                       arch=guest.arch)
     else:
-        if options.pxe:
-            fail(_("Network PXE boot is not support for paravirtualized guests"))
         guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
 
     # now let's get some of the common questions out of the way
@@ -433,17 +403,17 @@ def main():
     get_networks(options.mac, options.bridge, options.network, guest)
 
     # set up graphics information
-    cli.get_graphics(options.vnc, options.vncport, options.nographics, options.sdl, options.keymap, guest)
+    cli.get_graphics(options.vnc, options.vncport, options.nographics,
+                     options.sdl, options.keymap, guest)
 
     get_extraargs(options.extra, guest)
 
     # and now for the full-virt vs paravirt specific questions
+    get_install_media(options.location, options.cdrom, options.pxe,
+                      options.livecd, guest, hvm)
     if not hvm: # paravirt
-        get_paravirt_install(options.location, guest)
         continue_inst = False
     else:
-        if not options.pxe:
-            get_fullvirt_cdrom(options.cdrom, options.location, guest)
         if options.noacpi:
             guest.features["acpi"] = False
         if options.noapic:

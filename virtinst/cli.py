@@ -107,6 +107,10 @@ def fail(msg):
     logging.error(msg)
     sys.exit(1)
 
+def nice_exit():
+    print _("Exiting at user request.")
+    sys.exit(0)
+
 def getConnection(connect):
     if connect is None or connect.lower()[0:3] == "xen":
         if os.geteuid() != 0:
@@ -159,59 +163,45 @@ def prompt_for_yes_or_no(prompt):
 #
 
 def get_name(name, guest):
-    while 1:
-        name = prompt_for_input(_("What is the name of your virtual machine?"), name)
-        try:
-            guest.name = name
-            break
-        except ValueError, e:
-            print "ERROR: ", e
-            name = None
+    if name is None:
+        fail(_("A name is required for the virtual machine."))
+    try:
+        guest.name = name
+    except ValueError, e:
+        fail(e)
 
 def get_memory(memory, guest):
-    while 1:
-        try:
-            memory = int(prompt_for_input(_("How much RAM should be allocated (in megabytes)?"), memory))
-            if memory < MIN_RAM:
-                print _("ERROR: Installs currently require %d megs of RAM.") %(MIN_RAM,)
-                print ""
-                memory = None
-                continue
-            guest.memory = memory
-            break
-        except ValueError, e:
-            print _("ERROR: "), e
-            memory = None
+    if memory is None:
+        fail(_("Memory amount is required for the virtual machine."))
+    if memory < MIN_RAM:
+        fail(_("Installs currently require %d megs of RAM.") % MIN_RAM)
+    try:
+        guest.memory = memory
+    except ValueError, e:
+        fail(e)
 
 def get_uuid(uuid, guest):
     if uuid:
         try:
             guest.uuid = uuid
         except ValueError, e:
-            print _("ERROR: "), e
-            sys.exit(1)
+            fail(e)
 
 def get_vcpus(vcpus, check_cpu, guest, conn):
-    while 1:
-        if check_cpu is None:
-            break
+
+    if check_cpu:
         hostinfo = conn.getInfo()
         cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
         if vcpus <= cpu_num:
-            break
-        res = prompt_for_input(_("You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) on the host. This will work, but performance will be poor. Are you sure? (yes or no)") %(vcpus, cpu_num))
-        try:
-            if yes_or_no(res):
-                break
-            vcpus = int(prompt_for_input(_("How many VCPUs should be attached?")))
-        except ValueError, e:
-            print _("ERROR: "), e
+            pass
+        elif not prompt_for_yes_or_no(_("You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) on the host. This will work, but performance will be poor. Are you sure? (yes or no)") % (vcpus, cpu_num)):
+            nice_exit()
+
     if vcpus is not None:
         try:
             guest.vcpus = vcpus
         except ValueError, e:
-            print _("ERROR: "), e
-            sys.exit(1)
+            fail(e)
 
 def get_cpuset(cpuset, mem, guest, conn):
     if cpuset and cpuset != "auto":
@@ -303,28 +293,25 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
     if (vnc and nographics) or \
        (vnc and sdl) or \
        (sdl and nographics):
-        raise ValueError, _("Can't specify more than one of VNC, SDL, or nographics")
+        raise ValueError, _("Can't specify more than one of VNC, SDL, "
+                            "or --nographics")
+
+    if not (vnc or nographics or sdl):
+        if "DISPLAY" in os.environ.keys():
+            logging.debug("DISPLAY is set: graphics defaulting to VNC.")
+            vnc = True
+        else:
+            logging.debug("DISPLAY is not set: defaulting to nographics.")
+            nographics = True
+
     if nographics is not None:
         guest.graphics_dev = None
         return
-    if vnc is not None:
-        guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
     if sdl is not None:
         guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_SDL)
-    while 1:
-        if guest.graphics_dev:
-            break
-        res = prompt_for_input(_("Would you like to enable graphics support? (yes or no)"))
-        try:
-            vnc = yes_or_no(res)
-        except ValueError, e:
-            print _("ERROR: "), e
-            continue
-        if vnc:
-            guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
-        else:
-            guest.graphics_dev = None
-        break
+        return
+    if vnc is not None:
+        guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
     if vncport:
         guest.graphics_dev.port = vncport
     if keymap:
