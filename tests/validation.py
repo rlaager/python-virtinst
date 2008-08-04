@@ -15,6 +15,7 @@
 # MA 02110-1301 USA.
 
 import virtinst
+from virtinst import VirtualDisk
 import unittest
 import traceback
 import os
@@ -58,29 +59,31 @@ args = { 'guest'    : { \
                                         'valid'   : ['rhel5', \
                                                      'sles10']}, \
                       },\
-         'disk'     : { \
-                        '__init__'  : { 'invalid' : [{ 'path' : 0},\
-                                                     { 'path' : '/root' },\
-                                                     { 'path' : 'valid',
-                                                       'size' : None },\
-                                                     { 'path' : "valid", \
-                                                       'size' : 'invalid'},\
-                                                     { 'path' : 'valid', \
-                                                       'size' : -1},\
-                                                     { 'path' : 'notblock',\
-                                                       'type' : virtinst.VirtualDisk.TYPE_BLOCK},\
-                                                     { 'path' :'/dev/null',\
-                                                       'type' : virtinst.VirtualDisk.TYPE_BLOCK},
-                                                     { 'path' : None}],\
-                                        'valid'   : [{ 'path' : '/dev/loop0'},\
-                                                     { 'path' : 'nonexist', \
-                                                       'size' : 10}, \
-                                                     { 'path' :'/dev/null'},
-                                                     { 'path' : None,
-                                                       'device' : virtinst.VirtualDisk.DEVICE_CDROM},
-                                                     { 'path' : None,
-                                                       'device' : virtinst.VirtualDisk.DEVICE_FLOPPY}]}\
-                      },\
+         'disk' :
+            { '__init__' :
+
+                { 'invalid' :
+                    [{ 'path' : 0},
+                     { 'path' : '/root' },
+                     { 'path' : 'valid', 'size' : None },
+                     { 'path' : "valid", 'size' : 'invalid' },
+                     { 'path' : 'valid', 'size' : -1},
+                     { 'path' : 'notblock', 'type' : VirtualDisk.TYPE_BLOCK},
+                     { 'path' :'/dev/null', 'type' : VirtualDisk.TYPE_BLOCK},
+                     { 'path' : None },
+                     { 'path' : "noexist", 'size' : 900000, 'sparse' : False },
+                    ],
+
+                  'valid' :
+                    [{ 'path' : '/dev/loop0' },
+                     { 'path' : 'nonexist', 'size' : 1 },
+                     { 'path' :'/dev/null'},
+                     { 'path' : None, 'device' : VirtualDisk.DEVICE_CDROM},
+                     { 'path' : None, 'device' : VirtualDisk.DEVICE_FLOPPY},
+                    ]
+                },
+            },
+
          'installer' : { \
                         'boot'      : { 'invalid' : ['', 0, ('1element'),\
                                                      ['1el', '2el', '3el'],\
@@ -193,8 +196,8 @@ class TestValidation(unittest.TestCase):
         self._testArgs(PVGuest, virtinst.Guest, 'guest')
 
     def testDiskValidation(self):
-        disk = virtinst.VirtualDisk("/dev/loop0")
-        self._testArgs(disk, virtinst.VirtualDisk, 'disk')
+        disk = VirtualDisk("/dev/loop0")
+        self._testArgs(disk, VirtualDisk, 'disk')
 
     def testFVGuestValidation(self):
         FVGuest = virtinst.FullVirtGuest(hypervisorURI="test:///default",\
