@@ -32,6 +32,7 @@
        <vcpu>7</vcpu>
        <memory>262144</memory>
        <interface/>
+       <interface/>
        <graphics/>
     </devices>
   </domain>

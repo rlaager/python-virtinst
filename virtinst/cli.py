@@ -252,41 +252,46 @@ def get_network(mac, network, guest):
         fail(_("Unknown network type ") + network)
     guest.nics.append(n)
 
-def digest_networks(macs, bridges, networks):
+def digest_networks(macs, bridges, networks, nics = 0):
     if type(bridges) != list and bridges != None:
         bridges = [ bridges ]
 
-    if type(macs) != list and macs != None:
+    if macs is None:
+        macs = []
+    elif type(macs) != list:
         macs = [ macs ]
-
-    if type(networks) != list and networks != None:
-        networks = [ networks ]
+           
+    if networks is None:
+        networks = []
+    elif type(networks) != list:
+        networks = [ macs ]
 
     if bridges is not None and networks != None:
         fail(_("Cannot mix both --bridge and --network arguments"))
 
-    # ensure we have equal length lists
+
     if bridges != None:
         networks = map(lambda b: "bridge:" + b, bridges)
-
-    if networks != None:
-        if macs != None:
-            if len(macs) != len(networks):
-                fail(_("Need to pass equal numbers of networks & mac addresses"))
-        else:
-            macs = [ None ] * len(networks)
+    
+    # ensure we have less macs then networks. Auto fill in the remaining
+    # macs       
+    if len(macs) > len(networks):
+        fail(_("Need to pass equal numbers of networks & mac addresses"))
     else:
-        if os.getuid() == 0:
-            net = util.default_network()
-            networks = [net[0] + ":" + net[1]]
-        else:
-            networks = ["user"]
-        if macs != None:
-            if len(macs) > 1:
-                fail(_("Need to pass equal numbers of networks & mac addresses"))
-        else:
-            macs = [ None ]
-
+        for cnt in range (len(macs),len(networks)):
+            macs.append(None)
+            
+    
+    # Create extra networks up to the number of nics requested 
+    if len(macs) < nics:
+        for cnt in range(len(macs),nics):
+            if os.getuid() == 0:
+                net = util.default_network()
+                networks.append(net[0] + ":" + net[1])
+            else:
+                networks.append("user")
+            macs.append(None)
+            
     return (macs, networks)
 
 def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):

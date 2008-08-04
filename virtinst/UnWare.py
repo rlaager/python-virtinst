@@ -143,7 +143,9 @@ class Image:
         self.label = image.label
         self.vcpu = domain.vcpu
         self.memory = domain.memory
-        self.interface = domain.interface
+        # Make this a boolean based on the existence of one or more
+        # interfaces in the domain
+        self.interface = domain.interface > 0
 
         self.disks = []
         for d in boot.drives:

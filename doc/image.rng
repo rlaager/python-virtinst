@@ -47,8 +47,10 @@
       <element name="vcpu"><ref name="countCPU"/></element>
       <!-- Size of memory (in kB) -->
       <element name="memory"><ref name="memoryKB"/></element>
-      <!-- Whether the VM should have a network interface -->
-      <element name="interface"><empty/></element>
+      <!--The number of network interfaces which should exist -->
+      <zeroOrMore>
+        <element name="interface"><empty/></element>
+      </zeroOrMore>
       <!-- Whether the VM has a graphical interface -->
       <element name="graphics"><empty/></element>
     </element>

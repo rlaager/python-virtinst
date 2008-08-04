@@ -90,7 +90,7 @@ class Domain:
         self.boots = []
         self.vcpu = None
         self.memory = None
-        self.interface = None
+        self.interface = 0
         self.graphics = None
         if not node is None:
             self.parseXML(node)
@@ -99,7 +99,7 @@ class Domain:
         self.boots = [ Boot(b) for b in node.xpathEval("boot") ]
         self.vcpu = xpathString(node, "devices/vcpu", 1)
         self.memory = xpathString(node, "devices/memory")
-        self.interface = node.xpathEval("count(devices/interface)") > 0
+        self.interface = int(node.xpathEval("count(devices/interface)")) 
         self.graphics = node.xpathEval("count(devices/graphics)") > 0
 
         # FIXME: There must be a better way to check this

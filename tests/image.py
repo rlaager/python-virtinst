@@ -31,7 +31,16 @@ class TestImageParser(unittest.TestCase):
         self.assertTrue(img.domain)
         self.assertEqual(5, len(img.storage))
         self.assertEqual(2, len(img.domain.boots))
+        self.assertEqual(1, img.domain.interface)
         boot = img.domain.boots[0]
         self.assertEqual("xvdb", boot.drives[1].target)
+
+    def testMultipleNics(self):
+        file = open(os.path.join("tests", "image2nics.xml"), "r")
+        xml = file.read()
+        file.close()
+
+        img = virtinst.ImageParser.parse(xml, ".")
+        self.assertEqual(2, img.domain.interface)
 if __name__ == "__main__":
     unittest.main()

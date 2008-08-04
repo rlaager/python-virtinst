@@ -59,17 +59,15 @@ def get_vcpus(vcpus, image_vcpus, check_cpu, guest, conn):
     cli.get_vcpus(vcpus, check_cpu, guest, conn)
 
 def get_networks(domain, macs, bridges, networks, guest):
-    (macs, networks) = cli.digest_networks(macs, bridges, networks)
+    nnics = domain.interface
+    (macs, networks) = cli.digest_networks(macs, bridges, networks, nnics)
 
-    nnics = 0
-    if domain.interface:
-        nnics = 1
-
-    if nnics == 0 and len(networks) > 0:
-        print >> sys.stderr, _("Warning: image does not support networking, ignoring network related options")
-        return
-    elif nnics == 1 and len(networks) == 0:
-        fail(_("The image needs one network interface"))
+    if len(networks) > nnics:
+        print >> sys.stderr, (_("Warning: more networks were provided [%i] then nics required [%i]. All extras are ignored") % (len(networks),  nnics))
+        networks = networks[0:nnics]
+        macs = macs [0:nnics]
+    elif nnics > len(networks):
+        fail(_("The image requires %i network interface") % nnics)
 
     map(lambda m, n: cli.get_network(m, n, guest), macs, networks)
 
