@@ -21,6 +21,7 @@
 import Guest
 import ImageParser
 import CapabilitiesParser as Cap
+from VirtualDisk import VirtualDisk
 import os
 import util
 from virtinst import _virtinst as _
@@ -94,14 +95,14 @@ class ImageInstaller(Guest.Installer):
             if m.disk.use == ImageParser.Disk.USE_SYSTEM and not os.path.exists(p):
                 raise ImageInstallerException(_("System disk %s does not exist")
                                               % p)
-            device = Guest.VirtualDisk.DEVICE_DISK
+            device = VirtualDisk.DEVICE_DISK
             if m.disk.format == ImageParser.Disk.FORMAT_ISO:
-                device = Guest.VirtualDisk.DEVICE_CDROM
-            d = Guest.VirtualDisk(p, s,
-                                  device = device,
-                                  type = Guest.VirtualDisk.TYPE_FILE)
+                device = VirtualDisk.DEVICE_CDROM
+            d = VirtualDisk(p, s,
+                            device = device,
+                            type = VirtualDisk.TYPE_FILE)
             if self.boot_caps.type == "xen" and util.is_blktap_capable():
-                d.driver_name = Guest.VirtualDisk.DRIVER_TAP
+                d.driver_name = VirtualDisk.DRIVER_TAP
             d.target = m.target
 
             guest._install_disks.append(d)

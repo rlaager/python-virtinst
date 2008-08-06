@@ -26,6 +26,7 @@ import util
 import DistroManager
 import logging
 import time
+from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
 
@@ -285,7 +286,7 @@ class FullVirtGuest(Guest.XenGuest):
         # First assign CDROM device nodes, since they're scarce resource
         cdnode = self.disknode + "c"
         for d in self._install_disks:
-            if d.device != Guest.VirtualDisk.DEVICE_CDROM:
+            if d.device != VirtualDisk.DEVICE_CDROM:
                 continue
 
             if d.target:
@@ -300,7 +301,7 @@ class FullVirtGuest(Guest.XenGuest):
 
         # Now assign regular disk node with remainder
         for d in self._install_disks:
-            if d.device == Guest.VirtualDisk.DEVICE_CDROM:
+            if d.device == VirtualDisk.DEVICE_CDROM:
                 continue
 
             if d.target is None: # Auto-assign disk
@@ -316,7 +317,7 @@ class FullVirtGuest(Guest.XenGuest):
 
         for d in self._install_disks:
             saved_path = None
-            if d.device == Guest.VirtualDisk.DEVICE_CDROM \
+            if d.device == VirtualDisk.DEVICE_CDROM \
                and d.transient and not install:
                 # Keep cdrom around, but with no media attached
                 # But only if we are a distro that doesn't have a multi

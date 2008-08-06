@@ -21,6 +21,7 @@
 
 import os
 import Guest
+from VirtualDisk import VirtualDisk
 import CapabilitiesParser
 from virtinst import _virtinst as _
 
@@ -50,9 +51,9 @@ class LiveCDInstaller(Guest.Installer):
         if not found:
             raise LiveCDInstallerException(_("HVM virtualisation not supported; cannot boot LiveCD"))
 
-        disk = Guest.VirtualDisk(self.location,
-                                 device = Guest.VirtualDisk.DEVICE_CDROM,
-                                 readOnly = True)
+        disk = VirtualDisk(self.location,
+                           device = VirtualDisk.DEVICE_CDROM,
+                           readOnly = True)
         guest._install_disks.insert(0, disk)
 
     def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):

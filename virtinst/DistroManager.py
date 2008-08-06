@@ -29,6 +29,7 @@ import struct
 import tempfile
 import util
 import Guest
+from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
 from ImageFetcher import MountedImageFetcher
@@ -176,10 +177,10 @@ class DistroInstaller(Guest.Installer):
                                     arch = arch)
             self._tmpfiles.append(cdrom)
 
-        self._install_disk = Guest.VirtualDisk(cdrom,
-                                               device=Guest.VirtualDisk.DEVICE_CDROM,
-                                               readOnly=True,
-                                               transient=True)
+        self._install_disk = VirtualDisk(cdrom,
+                                         device=VirtualDisk.DEVICE_CDROM,
+                                         readOnly=True,
+                                         transient=True)
 
     def _prepare_kernel_and_initrd(self, guest, distro, meter):
         if self.boot is not None:
@@ -213,9 +214,9 @@ class DistroInstaller(Guest.Installer):
         # If they're installing off a local file/device, we map it
         # through to a virtual harddisk
         if self.location is not None and self.location.startswith("/") and not os.path.isdir(self.location):
-            self._install_disk = Guest.VirtualDisk(self.location,
-                                                   readOnly=True,
-                                                   transient=True)
+            self._install_disk = VirtualDisk(self.location,
+                                             readOnly=True,
+                                             transient=True)
 
     def prepare(self, guest, meter, distro = None):
         self.cleanup()

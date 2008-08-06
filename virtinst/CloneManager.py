@@ -29,6 +29,7 @@ import util
 import commands
 import libvirt
 import Guest
+from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
 #
@@ -332,7 +333,7 @@ class CloneDesign(object):
     # ret : Use File Path
     #
     def _check_file(self, conn, disk, size):
-        d = Guest.VirtualDisk(disk, size)
+        d = VirtualDisk(disk, size)
         return d.path
 
     #
