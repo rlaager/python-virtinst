@@ -23,6 +23,7 @@ import platform
 import random
 import os.path
 import re
+import libxml2
 import logging
 from sys import stderr
 
@@ -297,3 +298,119 @@ def pygrub_path(conn=None):
     if platform.system() == "SunOS":
         return "/usr/lib/xen/bin/pygrub"
     return "/usr/bin/pygrub"
+
+def uri_split(uri):
+    """
+    Parse a libvirt hypervisor uri into it's individual parts
+    @returns: tuple of the form (scheme (ex. 'qemu', 'xen+ssh'), username,
+                                 hostname, path (ex. '/system'), query,
+                                 fragment)
+    """
+    def splitnetloc(url, start=0):
+        for c in '/?#': # the order is important!
+            delim = url.find(c, start)
+            if delim >= 0:
+                break
+        else:
+            delim = len(url)
+        return url[start:delim], url[delim:]
+
+    username = netloc = query = fragment = ''
+    i = uri.find(":")
+    if i > 0:
+        scheme, uri = uri[:i].lower(), uri[i+1:]
+        if uri[:2] == '//':
+            netloc, uri = splitnetloc(uri, 2)
+            offset = netloc.find("@")
+            if offset > 0:
+                username = netloc[0:offset]
+                netloc = netloc[offset+1:]
+        if '#' in uri:
+            uri, fragment = uri.split('#', 1)
+        if '?' in uri:
+            uri, query = uri.split('?', 1)
+    else:
+        scheme = uri.lower()
+    return scheme, username, netloc, uri, query, fragment
+
+
+def is_uri_remote(uri):
+    try:
+        (scheme, username, netloc, path, query, fragment) = uri_split(uri)
+        if netloc == "":
+            return False
+        return True
+    except Exception, e:
+        logging.exception("Error parsing URI in is_remote: %s" % e)
+        return True
+
+def get_uri_hostname(uri):
+    try:
+        (scheme, username, netloc, path, query, fragment) = uri_split(uri)
+
+        if netloc != "":
+            return netloc
+    except Exception, e:
+        logging.warning("Cannot parse URI %s: %s" % (uri, str(e)))
+    return "localhost"
+
+def get_uri_transport(uri):
+    try:
+        (scheme, username, netloc, path, query, fragment) = uri_split(uri)
+        if scheme:
+            offset = scheme.index("+")
+            if offset > 0:
+                return [scheme[offset+1:], username]
+    except:
+        pass
+    return [None, None]
+
+def get_uri_driver(uri):
+    try:
+        (scheme, username, netloc, path, query, fragment) = uri_split(uri)
+        if scheme:
+            offset = scheme.find("+")
+            if offset > 0:
+                return scheme[:offset]
+            return scheme
+    except Exception, e:
+        pass
+    return "xen"
+
+def is_storage_capable(conn):
+    """check if virConnectPtr passed has storage API support"""
+    if not isinstance(conn, libvirt.virConnect):
+        raise ValueError(_("'conn' must be a virConnect instance."))
+    try:
+        if not dir(conn).count("listStoragePools"):
+            return False
+        n = conn.listStoragePools()
+    except libvirt.libvirtError, e:
+        if e.get_error_code() == libvirt.VIR_ERR_RPC:
+            return False
+    return True
+
+def get_xml_path(xml, path):
+    """return the xpath from the passed xml"""
+    doc = None
+    ctx = None
+    result = None
+    try:
+        doc = libxml2.parseDoc(xml)
+        ctx = doc.xpathNewContext()
+        ret = ctx.xpathEval(path)
+        str = None
+        if ret != None:
+            if type(ret) == list:
+                if len(ret) == 1:
+                    str = ret[0].content
+            else:
+                str = ret
+        result = str
+    finally:
+        if doc:
+            doc.freeDoc()
+        if ctx:
+            ctx.xpathFreeContext()
+    return result
+
