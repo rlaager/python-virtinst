@@ -30,15 +30,13 @@ class LiveCDInstallerException(Exception):
         Exception.__init__(self, msg)
 
 class LiveCDInstaller(Guest.Installer):
-    def __init__(self, type = "xen", location = None, os_type = None):
+    def __init__(self, type = "xen", location = None, os_type = None,
+                 conn = None):
         Guest.Installer.__init__(self, type=type, location=location,
-                                 os_type=os_type)
+                                 os_type=os_type, conn=conn)
 
     def prepare(self, guest, meter, distro = None):
         self.cleanup()
-
-        if not os.path.exists(self.location):
-            raise LiveCDInstallerException(_("LiveCD image '%s' does not exist") % self.location)
 
         capabilities = CapabilitiesParser.parse(guest.conn.getCapabilities())
 
@@ -51,7 +49,14 @@ class LiveCDInstaller(Guest.Installer):
         if not found:
             raise LiveCDInstallerException(_("HVM virtualisation not supported; cannot boot LiveCD"))
 
-        disk = VirtualDisk(self.location,
+        path = None
+        vol_tuple = None
+        if type(self.location) is tuple:
+            vol_tuple = self.location
+        else:
+            path = self.location
+
+        disk = VirtualDisk(path=path, conn=guest.conn, volName=vol_tuple,
                            device = VirtualDisk.DEVICE_CDROM,
                            readOnly = True)
         guest._install_disks.insert(0, disk)

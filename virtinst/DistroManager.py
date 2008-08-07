@@ -127,18 +127,28 @@ def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
         fetcher.cleanupLocation()
 
 class DistroInstaller(Guest.Installer):
-    def __init__(self, type = "xen", location = None, boot = None, extraargs = None, os_type = None):
-        Guest.Installer.__init__(self, type, location, boot, extraargs, os_type)
+    def __init__(self, type = "xen", location = None, boot = None,
+                 extraargs = None, os_type = None, conn = None):
+        Guest.Installer.__init__(self, type, location, boot, extraargs,
+                                 os_type, conn=conn)
 
     def get_location(self):
         return self._location
     def set_location(self, val):
+        voltuple = None
+        path = None
         # 'location' is kind of overloaded: it can be a local file or device
-        # (for a boot.iso), local directory (for a tree), or an http, ftp, or 
+        # path (for a boot.iso), a local directory (for a tree), a
+        # tuple of the form (poolname, volname), or an http, ftp, or
         # nfs for an iso or a tree
-        if os.path.exists(os.path.abspath(val)):
-            val = os.path.abspath(val)
-            logging.debug("DistroInstaller location is a local file/path: %s" % val)
+        if type(val) is tuple and len(val) == 2:
+            voltuple = val
+            logging.debug("DistroInstaller location is a (poolname, volname)"
+                          " tuple")
+        elif os.path.exists(os.path.abspath(val)):
+            path = os.path.abspath(val)
+            logging.debug("DistroInstaller location is a local "
+                          "file/path: %s" % path)
         elif val.startswith("nfs://"):
             # Convert RFC compliant NFS      nfs://server/path/to/distro
             # to what mount/anaconda expect  nfs:server:/path/to/distro
@@ -152,17 +162,35 @@ class DistroInstaller(Guest.Installer):
             if val[index - 1] != ":":
                 val = val[:index] + ":" + val[index:] 
 
-        elif not (val.startswith("http://") or val.startswith("ftp://") or
-                  val.startswith("nfs:")):
-            raise ValueError(_("Install media location must be an NFS, HTTP or FTP network install source, or an existing local file/device"))
+        elif (val.startswith("http://") or val.startswith("ftp://") or
+              val.startswith("nfs:")):
+            logging.debug("DistroInstaller location is a network source.")
+        elif self.conn and util.is_storage_capable(self.conn):
+            # If conn is specified, pass the path to a VirtualDisk object
+            # and see what comes back
+            try:
+                v = VirtualDisk(path=val, type=VirtualDisk.DEVICE_CDROM,
+                                conn=self.conn)
+            except Exception, e:
+                raise ValueError(_("Checking installer location failed: %s" %\
+                                 str(e)))
+        else:
+            raise ValueError(_("Install media location must be an NFS, HTTP "
+                               "or FTP network install source, or an existing "
+                               "local file/device"))
 
         if os.geteuid() != 0 and val.startswith("nfs:"):
             raise ValueError(_("NFS installations are only supported as root"))
+
         self._location = val
     location = property(get_location, set_location)
 
     def _prepare_cdrom(self, guest, distro, meter):
-        if self.location.startswith("/") and os.path.exists(self.location):
+        cdrom = None
+        vol_tuple = None
+        if type(self.location) is tuple:
+            vol_tuple = self.location
+        elif self.location.startswith("/") and os.path.exists(self.location):
             # Huzzah, a local file/device
             cdrom = self.location
         else:
@@ -177,7 +205,9 @@ class DistroInstaller(Guest.Installer):
                                     arch = arch)
             self._tmpfiles.append(cdrom)
 
-        self._install_disk = VirtualDisk(cdrom,
+        self._install_disk = VirtualDisk(path=cdrom,
+                                         conn=guest.conn,
+                                         volName=vol_tuple,
                                          device=VirtualDisk.DEVICE_CDROM,
                                          readOnly=True,
                                          transient=True)
@@ -283,8 +313,10 @@ class DistroInstaller(Guest.Installer):
 
 
 class PXEInstaller(Guest.Installer):
-    def __init__(self, type = "xen", location = None, boot = None, extraargs = None, os_type = None):
-        Guest.Installer.__init__(self, type, location, boot, extraargs, os_type)
+    def __init__(self, type = "xen", location = None, boot = None,
+                 extraargs = None, os_type = None, conn = None):
+        Guest.Installer.__init__(self, type, location, boot, extraargs,
+                                 os_type, conn=conn)
 
     def prepare(self, guest, meter, distro = None):
         pass

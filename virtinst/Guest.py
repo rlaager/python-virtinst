@@ -273,12 +273,14 @@ class VirtualGraphics(object):
         return xml
 
 class Installer(object):
-    def __init__(self, type = "xen", location = None, boot = None, extraargs = None, os_type = None):
+    def __init__(self, type = "xen", location = None, boot = None,
+                 extraargs = None, os_type = None, conn = None):
         self._location = None
         self._extraargs = None
         self._boot = None
         self._cdrom = False
         self._os_type = os_type
+        self._conn = conn
         self._install_disk = None   # VirtualDisk that contains install media
 
         if type is None:
@@ -303,6 +305,10 @@ class Installer(object):
     def get_install_disk(self):
         return self._install_disk
     install_disk = property(get_install_disk)
+
+    def get_conn(self):
+        return self._conn
+    conn = property(get_conn)
 
     def get_type(self):
         return self._type
