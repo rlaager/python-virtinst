@@ -583,7 +583,7 @@ class StorageVolume(StorageObject):
         self.pool = pool
 
         StorageObject.__init__(self, object_type=StorageObject.TYPE_VOLUME,
-                               name=name, conn=self.pool.connect())
+                               name=name, conn=self.pool._conn)
         if not target_path:
             self.target_path = self._get_default_target_path()
         else:
