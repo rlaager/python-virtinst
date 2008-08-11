@@ -199,12 +199,6 @@ class StorageObject(object):
               """</%s>""" % (self.object_type)
         return xml
 
-    def install(self, create=False, meter=None):
-        """
-        Define and build the storage object
-        """
-        raise RuntimeError, "Must be implemented in subclass"
-
 
 
 
@@ -368,7 +362,10 @@ class StoragePool(StorageObject):
                "%s" % src_xml + \
                "%s" % tar_xml
 
-    def install(self, create=False, meter=None):
+    def install(self, meter=None, create=False, build=False):
+        """
+        Install storage pool xml.
+        """
         xml = self.get_xml_config()
         logging.debug("Creating storage pool '%s' with xml:\n%s" % \
                       (self.name, xml))
@@ -379,14 +376,15 @@ class StoragePool(StorageObject):
             raise RuntimeError(_("Could not define storage pool: %s" % str(e)))
 
         errmsg = None
-        if meter:
-            meter.start(size=None, text=_("Creating storage pool..."))
-        try:
-            pool.build(libvirt.VIR_STORAGE_POOL_BUILD_NEW)
-        except Exception, e:
-            errmsg = _("Could not build storage pool: %s" % str(e))
-        if meter:
-            meter.end(0)
+        if build:
+            if meter:
+                meter.start(size=None, text=_("Creating storage pool..."))
+            try:
+                pool.build(libvirt.VIR_STORAGE_POOL_BUILD_NEW)
+            except Exception, e:
+                errmsg = _("Could not build storage pool: %s" % str(e))
+            if meter:
+                meter.end(0)
 
         if create and not errmsg:
             try:
@@ -767,6 +765,9 @@ class StorageVolume(StorageObject):
                 "%s" % tar_xml
 
     def install(self, meter=None):
+        """
+        Build and install storage volume from xml
+        """
         xml = self.get_xml_config()
         logging.debug("Creating storage volume '%s' with xml:\n%s" % \
                       (self.name, xml))
