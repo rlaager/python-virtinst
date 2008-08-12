@@ -379,6 +379,8 @@ def get_uri_driver(uri):
 
 def is_storage_capable(conn):
     """check if virConnectPtr passed has storage API support"""
+    if not conn:
+        return False
     if not isinstance(conn, libvirt.virConnect):
         raise ValueError(_("'conn' must be a virConnect instance."))
     try:

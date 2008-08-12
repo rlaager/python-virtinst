@@ -288,7 +288,9 @@ class VirtualDisk(VirtualDevice):
 
         # if storage capable, try to lookup path
         # if no obj: if remote, error
-        storage_capable = util.is_storage_capable(self.conn)
+        storage_capable = False
+        if self.conn:
+            storage_capable = util.is_storage_capable(self.conn)
         if storage_capable:
             if self.path is not None and self.vol_object is None:
                 v = None
