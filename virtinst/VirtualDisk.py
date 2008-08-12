@@ -459,7 +459,7 @@ class VirtualDisk(VirtualDevice):
             ro = True
         if ro:
             ret += "      <readonly/>\n"
-        ret += "    </disk>\n"
+        ret += "    </disk>"
         return ret
 
     def is_size_conflict(self):
