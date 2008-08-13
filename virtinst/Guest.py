@@ -32,8 +32,14 @@ from virtinst import _virtinst as _
 
 import logging
 
-class VirtualNetworkInterface:
-    def __init__(self, macaddr = None, type="bridge", bridge = None, network=None):
+class VirtualNetworkInterface(object):
+
+    TYPE_BRIDGE  = "bridge"
+    TYPE_VIRTUAL = "network"
+    TYPE_USER    = "user"
+
+    def __init__(self, macaddr=None, type=VirtualNetworkInterface.TYPE_BRIDGE,
+                 bridge=None, network=None):
 
         if macaddr is not None and \
            __builtin__.type(macaddr) is not __builtin__.type("string"):
@@ -48,19 +54,13 @@ class VirtualNetworkInterface:
         self.type = type
         self.bridge = bridge
         self.network = network
-        if self.type == "network":
+        if self.type == self.TYPE_VIRTUAL:
             if network is None:
                 raise ValueError, _("A network name was not provided")
-            if bridge != None:
-                raise ValueError, _("Bridge name is not required for %s") % ("type=network",)
-        elif self.type == "bridge":
-            if network != None:
-                raise ValueError, _("Network name is not required for %s") % ("type=bridge",)
-        elif self.type == "user":
-            if network != None:
-                raise ValueError, _("Network name is not required for %s") % ("type=bridge",)
-            if bridge != None:
-                raise ValueError, _("Bridge name is not required for %s") % ("type=network",)
+        elif self.type == self.TYPE_BRIDGE:
+            pass
+        elif self.type == self.TYPE_USER:
+            pass
         else:
             raise ValueError, _("Unknown network type %s") % (type,)
 
@@ -108,8 +108,6 @@ class VirtualNetworkInterface:
         return (False, None)
 
     def setup(self, conn):
-
-        # check conflict MAC address
         if self.macaddr is None:
             while 1:
                 self.macaddr = util.randomMAC()
@@ -120,9 +118,7 @@ class VirtualNetworkInterface:
         else:
             ret, msg = self.is_conflict_net(conn)
             if msg is not None:
-                # Error message found
                 if ret is False:
-                    # Not fatal
                     logging.warning(msg)
                 else:
                     raise RuntimeError(msg)
@@ -131,23 +127,16 @@ class VirtualNetworkInterface:
             self.bridge = util.default_bridge()
 
     def get_xml_config(self):
-        if self.type == "bridge":
-            return ("    <interface type='bridge'>\n" + \
-                    "      <source bridge='%(bridge)s'/>\n" + \
-                    "      <mac address='%(mac)s'/>\n" + \
-                    "    </interface>") % \
-                    { "bridge": self.bridge, "mac": self.macaddr }
-        elif self.type == "network":
-            return ("    <interface type='network'>\n" + \
-                    "      <source network='%(network)s'/>\n" + \
-                    "      <mac address='%(mac)s'/>\n" + \
-                    "    </interface>") % \
-                    { "network": self.network, "mac": self.macaddr }
-        elif self.type == "user":
-            return ("    <interface type='user'>\n" + \
-                    "      <mac address='%(mac)s'/>\n" + \
-                    "    </interface>") % \
-                    { "mac": self.macaddr }
+        src_xml = None
+        if self.type == self.TYPE_BRIDGE:
+            src_xml =   "      <source bridge='%s'/>\n" % self.bridge
+        elif self.type == self.TYPE_VIRTUAL:
+            src_xml =   "      <source network='%s'/>\n" % self.network
+
+        return "    <interface type='%s'>\n" % self.type + \
+               src_xml + \
+               "      <mac address='%s'/>\n" % self.macaddr + \
+               "    </interface>"
 
     def countMACaddr(self, vms):
         count = 0
