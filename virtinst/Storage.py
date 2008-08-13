@@ -543,10 +543,33 @@ class NetworkFilesystemPool(StoragePool):
 
 class LogicalPool(StoragePool):
     """
-    Create a logical (lvm volume group, ...) storage pool
+    Create a logical (lvm volume group) storage pool
     """
-    def __init__(self, *args, **kwargs):
-        raise RuntimeError, "Not implemented"
+    def get_volume_class():
+        return LogicalVolume
+    get_volume_class = staticmethod(get_volume_class)
+
+    # Register applicable property methods from parent class
+    perms = property(StorageObject.get_perms, StorageObject.set_perms)
+
+    def __init__(self, conn, name, target_path=None, uuid=None, perms=None):
+        StoragePool.__init__(self, name=name, type=StoragePool.TYPE_LOGICAL,
+                             target_path=target_path, uuid=uuid, conn=conn)
+        if perms:
+            self.perms = perms
+
+    def _get_default_target_path(self):
+        return DEFAULT_LVM_TARGET_BASE + self.name
+
+    def _get_target_xml(self):
+        xml = "    <path>%s</path>\n" % escape(self.target_path) + \
+              "%s" % self._get_perms_xml()
+        return xml
+
+    def _get_source_xml(self):
+        return ""
+
+
 class DiskPool(StoragePool):
     """
     Create a raw disk storage pool
@@ -559,8 +582,6 @@ class iSCSIPool(StoragePool):
     """
     def __init__(self, *args, **kwargs):
         raise RuntimeError, "Not implemented"
-
-
 
 
 class StorageVolume(StorageObject):
@@ -839,6 +860,41 @@ class FileVolume(StorageVolume):
     def _get_target_xml(self):
         return "    <path>%s</path>\n" % escape(self.target_path) + \
                "    <format type='%s'/>\n" % self.format + \
+               "%s" % self._get_perms_xml()
+
+    def _get_source_xml(self):
+        return ""
+
+class DiskVolume(StorageVolume):
+    """
+    Build and install xml for use on disk device pools
+    """
+    def __init__(self, *args, **kwargs):
+        raise RuntimeError ("Not Implemented")
+
+class LogicalVolume(StorageVolume):
+    """
+    Build and install logical volumes for lvm pools
+    """
+
+    # Register applicable property methods from parent class
+    perms = property(StorageObject.get_perms, StorageObject.set_perms)
+
+    def __init__(self, name, capacity, pool=None, pool_name=None, conn=None,
+                 allocation=None, perms=None):
+        StorageVolume.__init__(self, name=name, pool=pool, pool_name=pool_name,
+                               target_path=None, allocation=allocation,
+                               capacity=capacity, conn=conn)
+        if perms:
+            self.perms = perms
+
+    def _get_default_target_path(self):
+        poolpath = util.get_xml_path(self.pool.XMLDesc(0),
+                                     "/pool/target/path")
+        return poolpath + "/" + self.name
+
+    def _get_target_xml(self):
+        return "    <path>%s</path>\n" % escape(self.target_path) + \
                "%s" % self._get_perms_xml()
 
     def _get_source_xml(self):
