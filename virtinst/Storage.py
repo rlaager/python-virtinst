@@ -40,8 +40,7 @@ General workflow for the different storage objects:
         - Pass the pool object or name to L{StorageVolume.get_volume_for_pool}
 
     These will give back the appropriate class to instantiate. For most cases,
-    all that's needed is a name and capacity, the rest will be filled in
-    (target_path defaults to pool_path + name)
+    all that's needed is a name and capacity, the rest will be filled in.
 
 @see: U{http://libvirt.org/storage.html}
 """
@@ -592,7 +591,7 @@ class StorageVolume(StorageObject):
     formats = []
 
     def __init__(self, name, capacity, conn=None, pool_name=None, pool=None,
-                 target_path=None, allocation=None):
+                 allocation=None):
         if pool is None:
             if pool_name is None:
                 raise ValueError(_("One of pool or pool_name must be "
@@ -605,15 +604,9 @@ class StorageVolume(StorageObject):
 
         StorageObject.__init__(self, object_type=StorageObject.TYPE_VOLUME,
                                name=name, conn=self.pool._conn)
-        if not target_path:
-            self.target_path = self._get_default_target_path()
-        else:
-            self.target_path = target_path
-
         self._allocation = None
         self.capacity = capacity
         self.allocation = allocation or self.capacity
-
 
     def get_volume_for_pool(pool_object=None, pool_name=None, conn=None):
         """
@@ -714,13 +707,6 @@ class StorageVolume(StorageObject):
         self._allocation = val
     allocation = property(get_allocation, set_allocation)
 
-    def get_target_path(self):
-        return self._target_path
-    def set_target_path(self, val):
-        self._validate_path(val)
-        self._target_path = val
-    target_path = property(get_target_path, set_target_path)
-
     def get_pool(self):
         return self._pool
     def set_pool(self, newpool):
@@ -758,9 +744,6 @@ class StorageVolume(StorageObject):
         if col:
             return True
         return False
-
-    def _get_default_target_path(self):
-        raise RuntimeError, "Must be implemented in subclass"
 
     # xml building functions
     def _get_target_xml(self):
@@ -837,29 +820,16 @@ class FileVolume(StorageVolume):
     format = property(StorageVolume.get_format, StorageVolume.set_format)
 
     def __init__(self, name, capacity, pool=None, pool_name=None, conn=None,
-                 target_path=None, format="raw", allocation=None, perms=None):
+                 format="raw", allocation=None, perms=None):
         StorageVolume.__init__(self, name=name, pool=pool, pool_name=pool_name,
-                               target_path=target_path, allocation=allocation,
-                               capacity=capacity, conn=conn)
+                               allocation=allocation, capacity=capacity,
+                               conn=conn)
         self.format = format
         if perms:
             self.perms = perms
 
-    def _get_default_target_path(self):
-        poolpath = util.get_xml_path(self.pool.XMLDesc(0),
-                                     "/pool/target/path")
-        basepath = poolpath + "/" + self.name
-        for i in range(0, 100000):
-            trypath = basepath
-            if i != 0:
-                trypath += ("-%d" % i)
-            if not self._check_target_collision(trypath):
-                return trypath
-        raise ValueError(_("Default volume target path range exceeded."))
-
     def _get_target_xml(self):
-        return "    <path>%s</path>\n" % escape(self.target_path) + \
-               "    <format type='%s'/>\n" % self.format + \
+        return "    <format type='%s'/>\n" % self.format + \
                "%s" % self._get_perms_xml()
 
     def _get_source_xml(self):
@@ -883,19 +853,13 @@ class LogicalVolume(StorageVolume):
     def __init__(self, name, capacity, pool=None, pool_name=None, conn=None,
                  allocation=None, perms=None):
         StorageVolume.__init__(self, name=name, pool=pool, pool_name=pool_name,
-                               target_path=None, allocation=allocation,
-                               capacity=capacity, conn=conn)
+                               allocation=allocation, capacity=capacity,
+                               conn=conn)
         if perms:
             self.perms = perms
 
-    def _get_default_target_path(self):
-        poolpath = util.get_xml_path(self.pool.XMLDesc(0),
-                                     "/pool/target/path")
-        return poolpath + "/" + self.name
-
     def _get_target_xml(self):
-        return "    <path>%s</path>\n" % escape(self.target_path) + \
-               "%s" % self._get_perms_xml()
+        return "%s" % self._get_perms_xml()
 
     def _get_source_xml(self):
         return ""
