@@ -41,7 +41,7 @@ class VirtualDevice(object):
 
         if conn:
             if not isinstance(conn, libvirt.virConnect):
-                raise ValueError, _("'conn' must be a virConnectPtr instance")
+                raise ValueError, _("'conn' must be a virConnect instance")
         self._conn = conn
 
         self.__remote = None
