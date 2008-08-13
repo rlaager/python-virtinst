@@ -31,73 +31,85 @@ from virtinst import _virtinst as _
 
 
 class FullVirtGuest(Guest.XenGuest):
-    OS_TYPES = { "linux": { "label": "Linux", \
-                            "acpi": True, \
-                            "apic": True, \
-                            "clock": "utc",\
-                            "continue": False, \
-                            "input": [ "mouse", "ps2"],
-                            "variants": { "rhel2.1": { "label": "Red Hat Enterprise Linux 2.1", "distro": "rhel" }, \
-                                          "rhel3": { "label": "Red Hat Enterprise Linux 3", "distro": "rhel" }, \
-                                          "rhel4": { "label": "Red Hat Enterprise Linux 4", "distro": "rhel" }, \
-                                          "rhel5": { "label": "Red Hat Enterprise Linux 5", "distro": "rhel" }, \
-                                          "fedora5": { "label": "Fedora Core 5", "distro": "fedora" }, \
-                                          "fedora6": { "label": "Fedora Core 6", "distro": "fedora" }, \
-                                          "fedora7": { "label": "Fedora 7", "distro": "fedora" }, \
-                                          "fedora8": { "label": "Fedora 8", "distro": "fedora" }, \
-                                          "fedora9": { "label": "Fedora 9", "distro": "fedora" }, \
-                                          "sles10": { "label": "Suse Linux Enterprise Server", "distro": "suse" }, \
-                                          "debianEtch": { "label": "Debian Etch", "distro": "debian" }, \
-                                          "debianLenny": { "label": "Debian Lenny", "distro": "debian" }, \
-                                          "generic24": { "label": "Generic 2.4.x kernel" }, \
-                                          "generic26": { "label": "Generic 2.6.x kernel" }, \
-                                          }, \
-                            }, \
-                 "windows": { "label": "Windows", \
-                              "acpi": True, \
-                              "apic": True, \
-                              "clock": "localtime",\
-                              "continue": True, \
-                              "input": [ "tablet", "usb"],
-                              "variants": { "winxp": { "label": "Microsoft Windows XP", \
-                                                       "acpi": False, \
-                                                       "apic": False }, \
-                                            "win2k": { "label": "Microsoft Windows 2000", \
-                                                       "acpi": False, \
-                                                       "apic": False }, \
-                                            "win2k3": { "label": "Microsoft Windows 2003" }, \
-                                            "win2k8": { "label": "Microsoft Windows 2008" }, \
-                                            "vista": { "label": "Microsoft Windows Vista" }, \
-                                            }, \
-                              }, \
-                 "unix": { "label": "UNIX", \
-                           "acpi": True,
-                           "apic": True,
-                           "clock": "utc",\
-                           "continue": False, \
-                           "input": [ "mouse", "ps2"],
-                           "variants": { "solaris9": { "label": "Sun Solaris 9" }, \
-                                         "solaris10": { "label": "Sun Solaris 10" }, \
-                                         "freebsd6": { "label": "Free BSD 6.x" }, \
-                                         "openbsd4": { "label": "Open BSD 4.x" }, \
-                                         }, \
-                           }, \
-                 "other": { "label": "Other", \
-                            "acpi": True,
-                            "apic": True,
-                            "clock": "utc",
-                            "continue": False,
-                            "input": [ "mouse", "ps2"],
-                            "variants": { "msdos": { "label": "MS-DOS", \
-                                                     "acpi": False, \
-                                                     "apic": False }, \
-                                          "netware4": { "label": "Novell Netware 4" }, \
-                                          "netware5": { "label": "Novell Netware 5" }, \
-                                          "netware6": { "label": "Novell Netware 6" }, \
-                                          "generic": { "label": "Generic" }, \
-                                          }, \
-                            } \
-                 }
+    OS_TYPES = {\
+    "linux": { \
+        "label": "Linux",
+        "acpi": True,
+        "apic": True,
+        "clock": "utc",
+        "continue": False,
+        "input": [ "mouse", "ps2"],
+        "variants": { \
+            "rhel2.1": { "label": "Red Hat Enterprise Linux 2.1",
+                         "distro": "rhel" },
+            "rhel3": { "label": "Red Hat Enterprise Linux 3",
+                       "distro": "rhel" },
+            "rhel4": { "label": "Red Hat Enterprise Linux 4",
+                       "distro": "rhel" },
+            "rhel5": { "label": "Red Hat Enterprise Linux 5",
+                       "distro": "rhel" },
+            "fedora5": { "label": "Fedora Core 5", "distro": "fedora" },
+            "fedora6": { "label": "Fedora Core 6", "distro": "fedora" },
+            "fedora7": { "label": "Fedora 7", "distro": "fedora" },
+            "fedora8": { "label": "Fedora 8", "distro": "fedora" },
+            "fedora9": { "label": "Fedora 9", "distro": "fedora" },
+            "sles10": { "label": "Suse Linux Enterprise Server",
+                        "distro": "suse" },
+            "debianEtch": { "label": "Debian Etch", "distro": "debian" },
+            "debianLenny": { "label": "Debian Lenny", "distro": "debian" },
+            "generic24": { "label": "Generic 2.4.x kernel" },
+            "generic26": { "label": "Generic 2.6.x kernel" },
+        },
+    },
+
+    "windows": { \
+        "label": "Windows",
+        "acpi": True,
+        "apic": True,
+        "clock": "localtime",
+        "continue": True,
+        "input": [ "tablet", "usb"],
+        "variants": { \
+            "winxp":{ "label": "Microsoft Windows XP",
+                      "acpi": False, "apic": False },
+            "win2k": { "label": "Microsoft Windows 2000",
+                       "acpi": False, "apic": False },
+            "win2k3": { "label": "Microsoft Windows 2003" },
+            "win2k8": { "label": "Microsoft Windows 2008" },
+            "vista": { "label": "Microsoft Windows Vista" },
+        },
+    },
+
+    "unix": {
+        "label": "UNIX",
+        "acpi": True,
+        "apic": True,
+        "clock": "utc",
+        "continue": False,
+        "input": [ "mouse", "ps2"],
+        "variants": { \
+            "solaris9": { "label": "Sun Solaris 9" },
+            "solaris10": { "label": "Sun Solaris 10" },
+            "freebsd6": { "label": "Free BSD 6.x" },
+            "openbsd4": { "label": "Open BSD 4.x" },
+        },
+    },
+
+    "other": { \
+        "label": "Other",
+        "acpi": True,
+        "apic": True,
+        "clock": "utc",
+        "continue": False,
+        "input": [ "mouse", "ps2"],
+        "variants": { \
+            "msdos": { "label": "MS-DOS", "acpi": False, "apic": False },
+            "netware4": { "label": "Novell Netware 4" },
+            "netware5": { "label": "Novell Netware 5" },
+            "netware6": { "label": "Novell Netware 6" },
+            "generic": { "label": "Generic" },
+        },
+    },}
 
     def list_os_types():
         return FullVirtGuest.OS_TYPES.keys()
