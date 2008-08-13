@@ -683,7 +683,7 @@ class StorageVolume(StorageObject):
     def get_capacity(self):
         return self._capacity
     def set_capacity(self, val):
-        if type(val) not in (int, float) or val <= 0:
+        if type(val) not in (int, float, long) or val <= 0:
             raise ValueError(_("Capacity must be a positive number"))
         val = int(val)
         self._capacity = val
@@ -699,8 +699,8 @@ class StorageVolume(StorageObject):
     def get_allocation(self):
         return self._allocation
     def set_allocation(self, val):
-        if type(val) not in (int, float) and val <= 0:
-            raise ValueError(_("Allocation must be a positive number"))
+        if type(val) not in (int, float, long) or val < 0:
+            raise ValueError(_("Allocation must be a non-negative number"))
         val = int(val)
         if val > self.capacity:
             val = self.capacity
