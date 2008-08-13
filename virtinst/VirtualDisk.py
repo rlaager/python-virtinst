@@ -247,7 +247,8 @@ class VirtualDisk(VirtualDevice):
             if isinstance(self.vol_install, Storage.FileVolume):
                 dtype = self.TYPE_FILE
             else:
-                raise ValueError, _("Unknown dev type for vol_install.")
+                # All others should be using TYPE_BLOCK (hopefully)
+                dtype = self.TYPE_BLOCK
         elif self.path:
             if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
                 dtype = self.TYPE_BLOCK
@@ -328,11 +329,9 @@ class VirtualDisk(VirtualDevice):
             self._set_path(self.vol_object.path(), validate=False)
 
         if self.vol_install:
-            logging.debug("Overwriting 'size' with 'path' with values from "
-                          "passed StorageVolume")
+            logging.debug("Overwriting 'size' with value from StorageVolume")
             self._set_size(self.vol_install.capacity*1024*1024*1024,
-                          validate=False)
-            self._set_path(self.vol_install.target_path, validate=False)
+                           validate=False)
 
         if self.vol_object or self.vol_install or self._is_remote():
             logging.debug("Using storage api objects for VirtualDisk")
@@ -437,8 +436,12 @@ class VirtualDisk(VirtualDevice):
         if self.type == VirtualDisk.TYPE_BLOCK:
             typeattr = 'dev'
 
-        path = self.path
-        if self.path:
+        path = None
+        if self.vol_object:
+            path = self.vol_object.path()
+        elif self.path:
+            path = self.path
+        if path:
             path = util.xml_escape(path)
 
         ret = "    <disk type='%(type)s' device='%(device)s'>\n" % { "type": self.type, "device": self.device }
@@ -531,6 +534,14 @@ class VirtualDisk(VirtualDevice):
                 # guest probably in process of dieing
                 logging.warn("Failed to lookup domain name %s" % name)
 
+        if self.vol_object:
+            path = self.vol_object.path()
+        else:
+            path = self.path
+
+        if not path:
+            return False
+
         count = 0
         for vm in vms:
             doc = None
@@ -541,8 +552,8 @@ class VirtualDisk(VirtualDevice):
             ctx = doc.xpathNewContext()
             try:
                 try:
-                    count += ctx.xpathEval("count(/domain/devices/disk/source[@dev='%s'])" % self.path)
-                    count += ctx.xpathEval("count(/domain/devices/disk/source[@file='%s'])" % self.path)
+                    count += ctx.xpathEval("count(/domain/devices/disk/source[@dev='%s'])" % path)
+                    count += ctx.xpathEval("count(/domain/devices/disk/source[@file='%s'])" % path)
                 except:
                     continue
             finally:
