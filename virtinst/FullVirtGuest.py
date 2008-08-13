@@ -176,32 +176,26 @@ class FullVirtGuest(Guest.XenGuest):
         preferences"""
         if self.features is None:
             return None
-        os_type = self.os_type
-        os_variant = self.os_variant
+
         # explicitly disabling apic and acpi will override OS_TYPES values
         features = dict(self.features)
         for f in ["acpi", "apic"]:
-            if features[f] is None and os_type is not None:
-                if os_variant is not None and FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant].has_key(f):
-                    features[f] = FullVirtGuest.OS_TYPES[os_type]["variants"][os_variant][f]
-                else:
-                    features[f] = FullVirtGuest.OS_TYPES[os_type][f]
+            val = self._lookup_osdict_key(f)
+            if val is not None:
+                features[f] = val
             else:
-                if features[f] is None:
-                    features[f] = True
+                features[f] = True
         return features
 
     def get_os_distro(self):
-        if self.os_type is not None and self.os_variant is not None and "distro" in FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant]:
-            return FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant]["distro"]
-        return None
+        return self._lookup_osdict_key("distro")
     os_distro = property(get_os_distro)
 
     def get_input_device(self):
-        if self.os_type is None or not FullVirtGuest.OS_TYPES.has_key(self.os_type):
-            return ("mouse", "ps2")
-        input = FullVirtGuest.OS_TYPES[self.os_type]["input"]
-        return (input[0], input[1])
+        val = self._lookup_osdict_key("input")
+        if val:
+            return (val[0], val[1])
+        return ("mouse", "ps2")
 
     def _get_features_xml(self):
         ret = "<features>\n"
@@ -229,12 +223,10 @@ class FullVirtGuest(Guest.XenGuest):
             return "%s\n  %s" % (osblob, self._get_features_xml())
 
     def _get_clock_xml(self):
-        if self.os_type is not None and \
-           FullVirtGuest.OS_TYPES[self.os_type].has_key("clock"):
-            return "<clock offset=\"%s\"/>" % \
-                   FullVirtGuest.OS_TYPES[self.os_type]["clock"]
-        else:
-            return None
+        val = self._lookup_osdict_key("clock")
+        if val:
+            return """<clock offset="%s"/>""" % val
+        return None
 
     def _get_device_xml(self, install = True):
         if self.emulator is None:
@@ -247,8 +239,6 @@ class FullVirtGuest(Guest.XenGuest):
         Guest.Guest._get_device_xml(self, install)
 
     def validate_parms(self):
-        #if not self.location:
-        #    raise ValueError, _("A CD must be specified to boot from")
         Guest.Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
@@ -260,12 +250,10 @@ class FullVirtGuest(Guest.XenGuest):
             self._install_disks.append(self._installer.install_disk)
 
     def get_continue_inst(self):
-        if self.os_type is not None:
-            if self.os_variant is not None and FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant].has_key("continue"):
-                return FullVirtGuest.OS_TYPES[self.os_type]["variants"][self.os_variant]["continue"]
-            else:
-                return FullVirtGuest.OS_TYPES[self.os_type]["continue"]
-        return False
+        val = self._lookup_osdict_key("continue")
+        if val is None:
+            return False
+        return val
 
     def continue_install(self, consolecb, meter, wait=True):
         install_xml = self.get_config_xml(disk_boot = True)
@@ -286,6 +274,21 @@ class FullVirtGuest(Guest.XenGuest):
         # This should always work, because it'll lookup a config file
         # for inactive guest, or get the still running install..
         return self.conn.lookupByName(self.name)
+
+    def _lookup_osdict_key(self, key):
+        """
+        Using self.os_type and self.os_variant to find key in OSTYPES
+        @returns: dict value, or None if os_type/variant wasn't set
+        """
+        typ = self.os_type
+        var = self.os_variant
+        if typ:
+            if var and self.OS_TYPES[typ]["variants"][var].has_key(key):
+                return self.OS_TYPES[typ]["variants"][var].has_key(key)
+            elif self.OS_TYPES[typ].has_key(key):
+                return self.OS_TYPES[typ][key]
+        return None
+
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
