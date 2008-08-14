@@ -110,14 +110,7 @@ args = { 'guest'    : { \
                                                      {'macaddr':''},\
                                                      {'macaddr':'$%XD'}, \
                                                      {'type':'network'}, \
-                                                     {'type':'network', \
-                                                      'bridge':'somebridge'},\
-                                                     {'network':'somenet'}, \
-                                                     {'type':'user',\
-                                                      'network':'somenet'},\
-                                                     {'type':'user',\
-                                                      'bridge':'somebridge'},\
-                                                     {'type':'unknowntype'}],\
+                                                    ],
                                         'valid'   : []}, \
                      },\
          'clonedesign' : {\

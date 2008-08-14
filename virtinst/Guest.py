@@ -38,8 +38,8 @@ class VirtualNetworkInterface(object):
     TYPE_VIRTUAL = "network"
     TYPE_USER    = "user"
 
-    def __init__(self, macaddr=None, type=VirtualNetworkInterface.TYPE_BRIDGE,
-                 bridge=None, network=None):
+    def __init__(self, macaddr=None, type=TYPE_BRIDGE, bridge=None,
+                 network=None):
 
         if macaddr is not None and \
            __builtin__.type(macaddr) is not __builtin__.type("string"):
