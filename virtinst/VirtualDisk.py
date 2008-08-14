@@ -80,7 +80,7 @@ class VirtualDisk(VirtualDevice):
     def __init__(self, path=None, size=None, transient=False, type=None,
                  device=DEVICE_DISK, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
-                 volInstall=None, volName=None):
+                 volInstall=None, volName=None, bus=None):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -106,6 +106,8 @@ class VirtualDisk(VirtualDevice):
         @type volObject: libvirt.virStorageVol
         @param volInstall: StorageVolume instance to build for new storage
         @type volInstall: L{StorageVolume}
+        @param bus: Emulated bus type (ide, scsi, virtio, ...)
+        @type bus: C{str}
         """
 
         VirtualDevice.__init__(self, conn=conn)
@@ -117,6 +119,7 @@ class VirtualDisk(VirtualDevice):
         self._set_size(size, validate=False)
         self._set_vol_object(volObject, validate=False)
         self._set_vol_install(volInstall, validate=False)
+        self._set_bus(bus, validate=False)
 
         self.transient = transient
         self._driverName = driverName
@@ -213,6 +216,13 @@ class VirtualDisk(VirtualDevice):
         self.__validate_wrapper("_vol_install", val, validate)
     vol_install = property(_get_vol_install, _set_vol_install)
 
+    def _get_bus(self):
+        return self._bus
+    def _set_bus(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "bus")
+        self.__validate_wrapper("_bus", val, validate)
+    bus = property(_get_bus, _set_bus)
 
     # Validation assistance methods
     def __validate_wrapper(self, varname, newval, validate=True):
@@ -454,7 +464,13 @@ class VirtualDisk(VirtualDevice):
             ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": path }
         if self.target is not None:
             disknode = self.target
-        ret += "      <target dev='%(disknode)s'/>\n" % { "disknode": disknode }
+
+        bus_xml = ""
+        if self.bus is not None:
+            bus_xml = " bus='%s'" % self.bus
+        ret += "      <target dev='%s'" % disknode + \
+                      "%s" % bus_xml + \
+                      "/>\n"
 
         ro = self.read_only
 
@@ -572,7 +588,18 @@ class VirtualDisk(VirtualDevice):
         the passed parameters.
         @returns: str prefix, or None if no reasonable guess can be made
         """
-        return None
+        if self.bus is None:
+            return None
+        elif self.bus == "virtio":
+            return "vd"
+        elif self.bus == "scsi":
+            return "sd"
+        elif self.bus == "xen":
+            return "xvd"
+        elif self.bus == "ide":
+            return "hd"
+        elif self.bus == "floppy" or self.device == self.DEVICE_FLOPPY:
+            return "fd"
 
 
 
