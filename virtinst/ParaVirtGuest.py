@@ -53,23 +53,12 @@ class ParaVirtGuest(Guest.XenGuest):
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
         ret = ""
-        nodes = {}
-        for i in range(16):
-            n = "%s%c" % (self.disknode, ord('a') + i)
-            nodes[n] = None
+        self._set_disk_targets(self.disknode)
         for d in self._install_disks:
             if d.transient and not install:
                 continue
-            target = d.target
-            if target is None:
-                for t in sorted(nodes.keys()):
-                    if nodes[t] is None:
-                        target = t
-                        break
-            if target is None or nodes[target] is not None:
-                raise ValueError, _("Can't use more than 16 disks on a PV guest")
-            nodes[target] = True
+
             if ret:
                 ret += "\n"
-            ret += d.get_xml_config(target)
+            ret += d.get_xml_config(d.target)
         return ret

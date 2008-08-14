@@ -293,42 +293,7 @@ class FullVirtGuest(Guest.XenGuest):
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
         ret = ""
-        nodes = {}
-        for i in range(4):
-            n = "%s%c" % (self.disknode, ord('a') + i)
-            nodes[n] = None
-
-        # First assign CDROM device nodes, since they're scarce resource
-        cdnode = self.disknode + "c"
-        for d in self._install_disks:
-            if d.device != VirtualDisk.DEVICE_CDROM:
-                continue
-
-            if d.target:
-                if d.target != cdnode:
-                    raise ValueError, "The CDROM must be device %s" % cdnode
-            else:
-                d.target = cdnode
-
-            if nodes[d.target] != None:
-                raise ValueError, "The CDROM device %s is already used" % d.target
-            nodes[d.target] = d
-
-        # Now assign regular disk node with remainder
-        for d in self._install_disks:
-            if d.device == VirtualDisk.DEVICE_CDROM:
-                continue
-
-            if d.target is None: # Auto-assign disk
-                for n in sorted(nodes.keys()):
-                    if nodes[n] is None:
-                        d.target = n
-                        nodes[d.target] = d
-                        break
-            else:
-                if nodes[d.target] != None: # Verify pre-assigned
-                    raise ValueError, "The disk device %s is already used" % d.target
-                nodes[d.target] = d
+        self._set_disk_targets(self.disknode)
 
         for d in self._install_disks:
             saved_path = None

@@ -566,6 +566,14 @@ class VirtualDisk(VirtualDevice):
         else:
             return False
 
+    def get_target_prefix(self):
+        """
+        Returns the suggested disk target prefix (hd, xvd, sd ...) from
+        the passed parameters.
+        @returns: str prefix, or None if no reasonable guess can be made
+        """
+        return None
+
 
 
 class XenDisk(VirtualDisk):
