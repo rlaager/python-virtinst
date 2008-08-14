@@ -46,7 +46,7 @@ class FullVirtGuest(Guest.XenGuest):
         "input": ["mouse", "ps2"],
     }
 
-    OS_TYPES = {\
+    _OS_TYPES = {\
     "linux": { \
         "label": "Linux",
         "variants": { \
@@ -110,19 +110,19 @@ class FullVirtGuest(Guest.XenGuest):
     },}
 
     def list_os_types():
-        return FullVirtGuest.OS_TYPES.keys()
+        return FullVirtGuest._OS_TYPES.keys()
     list_os_types = staticmethod(list_os_types)
 
     def list_os_variants(type):
-        return FullVirtGuest.OS_TYPES[type]["variants"].keys()
+        return FullVirtGuest._OS_TYPES[type]["variants"].keys()
     list_os_variants = staticmethod(list_os_variants)
 
     def get_os_type_label(type):
-        return FullVirtGuest.OS_TYPES[type]["label"]
+        return FullVirtGuest._OS_TYPES[type]["label"]
     get_os_type_label = staticmethod(get_os_type_label)
 
     def get_os_variant_label(type, variant):
-        return FullVirtGuest.OS_TYPES[type]["variants"][variant]["label"]
+        return FullVirtGuest._OS_TYPES[type]["variants"][variant]["label"]
     get_os_variant_label = staticmethod(get_os_variant_label)
 
 
@@ -151,7 +151,7 @@ class FullVirtGuest(Guest.XenGuest):
     def get_os_type(self):
         return self._os_type
     def set_os_type(self, val):
-        if FullVirtGuest.OS_TYPES.has_key(val):
+        if FullVirtGuest._OS_TYPES.has_key(val):
             self._os_type = val
         else:
             raise ValueError, _("OS type %s does not exist in our dictionary") % val
@@ -162,7 +162,7 @@ class FullVirtGuest(Guest.XenGuest):
     def set_os_variant(self, val):
         if not self._os_type:
             raise ValueError, _("An OS type must be specified before a variant.")
-        if FullVirtGuest.OS_TYPES[self._os_type]["variants"].has_key(val):
+        if FullVirtGuest._OS_TYPES[self._os_type]["variants"].has_key(val):
             self._os_variant = val
         else:
             raise ValueError, _("OS variant %(var)s does not exist in our dictionary for OS type %(type)s") % {'var' : val, 'type' : self._os_type}
@@ -271,10 +271,10 @@ class FullVirtGuest(Guest.XenGuest):
         typ = self.os_type
         var = self.os_variant
         if typ:
-            if var and self.OS_TYPES[typ]["variants"][var].has_key(key):
-                return self.OS_TYPES[typ]["variants"][var].has_key(key)
-            elif self.OS_TYPES[typ].has_key(key):
-                return self.OS_TYPES[typ][key]
+            if var and self._OS_TYPES[typ]["variants"][var].has_key(key):
+                return self._OS_TYPES[typ]["variants"][var].has_key(key)
+            elif self._OS_TYPES[typ].has_key(key):
+                return self._OS_TYPES[typ][key]
         return self._DEFAULTS[key]
 
 
