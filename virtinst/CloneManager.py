@@ -244,6 +244,7 @@ class CloneDesign(object):
 
         doc = libxml2.parseDoc(self._clone_xml)
         ctx = doc.xpathNewContext()
+        type = ctx.xpathEval("/domain")[0].prop("type")
 
         # changing name
         node = ctx.xpathEval("/domain/name")
@@ -283,7 +284,7 @@ class CloneDesign(object):
                 node[0].setContent(self._clone_mac[i-1])
             except Exception, e:
                 while 1:
-                    mac = util.randomMAC()
+                    mac = util.randomMAC(type)
                     ret, msg = self._check_mac(mac)
                     if msg is not None:
                         continue
