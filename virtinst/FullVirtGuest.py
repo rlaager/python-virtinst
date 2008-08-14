@@ -70,10 +70,19 @@ class FullVirtGuest(Guest.XenGuest):
             "fedora7": { "label": "Fedora 7", "distro": "fedora" },
             "fedora8": { "label": "Fedora 8", "distro": "fedora" },
             "fedora9": { "label": "Fedora 9", "distro": "fedora" },
+            "fedora10": { "label": "Fedora 10", "distro": "fedora",
+                          "devices" : {
+                            "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
+                            "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                          }},
             "sles10": { "label": "Suse Linux Enterprise Server",
                         "distro": "suse" },
             "debianEtch": { "label": "Debian Etch", "distro": "debian" },
             "debianLenny": { "label": "Debian Lenny", "distro": "debian" },
+            "ubuntuHardy": { "label": "Ubuntu Hardy", "distro": "ubuntu",
+                             "devices" : {
+                                "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                             }},
             "generic24": { "label": "Generic 2.4.x kernel" },
             "generic26": { "label": "Generic 2.6.x kernel" },
         },
@@ -283,7 +292,7 @@ class FullVirtGuest(Guest.XenGuest):
         var = self.os_variant
         if typ:
             if var and self._OS_TYPES[typ]["variants"][var].has_key(key):
-                return self._OS_TYPES[typ]["variants"][var].has_key(key)
+                return self._OS_TYPES[typ]["variants"][var][key]
             elif self._OS_TYPES[typ].has_key(key):
                 return self._OS_TYPES[typ][key]
         return self._DEFAULTS[key]
