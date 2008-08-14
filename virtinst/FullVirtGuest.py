@@ -43,7 +43,14 @@ class FullVirtGuest(Guest.XenGuest):
         "continue": False,
         "distro": None,
         "label": None,
-        "input": ["mouse", "ps2"],
+        "devices" : {
+         #  "devname" : { "attribute" : [( ["applicable", "hv-type", list"],
+         #                               "recommended value for hv-types" ),]},
+            "input"   : { "type" : [ (["all"], "mouse") ],
+                          "bus"  : [ (["all"], "ps2") ] },
+            "disk"    : { "bus"  : [ (["all"], None) ] },
+            "net"     : { "model": [ (["all"], None) ] },
+        }
     }
 
     _OS_TYPES = {\
@@ -76,7 +83,10 @@ class FullVirtGuest(Guest.XenGuest):
         "label": "Windows",
         "clock": "localtime",
         "continue": True,
-        "input": [ "tablet", "usb"],
+        "devices" : {
+            "input" : { "type" : [ (["all"], "tablet") ],
+                        "bus"  : [ (["all"], "usb"), ] },
+        },
         "variants": { \
             "winxp":{ "label": "Microsoft Windows XP",
                       "acpi": False, "apic": False },
@@ -187,8 +197,9 @@ class FullVirtGuest(Guest.XenGuest):
     os_distro = property(get_os_distro)
 
     def get_input_device(self):
-        val = self._lookup_osdict_key("input")
-        return (val[0], val[1])
+        typ = self._lookup_device_param("input", "type")
+        bus = self._lookup_device_param("input", "bus")
+        return (typ, bus)
 
     def _get_features_xml(self):
         ret = "<features>\n"
@@ -277,6 +288,21 @@ class FullVirtGuest(Guest.XenGuest):
                 return self._OS_TYPES[typ][key]
         return self._DEFAULTS[key]
 
+    def _lookup_device_param(self, device_key, param):
+        os_devs = self._lookup_osdict_key("devices")
+        default_devs = self._DEFAULTS["devices"]
+        for devs in [os_devs, default_devs]:
+            if not devs.has_key(device_key):
+                continue
+            for ent in devs[device_key][param]:
+                hv_types = ent[0]
+                param_value = ent[1]
+                if self.type in hv_types:
+                    return param_value
+                elif "all" in hv_types:
+                    return param_value
+        raise RuntimeError(_("Invalid dictionary entry for device '%s %s'" % \
+                             (device_key, param)))
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
@@ -301,3 +327,17 @@ class FullVirtGuest(Guest.XenGuest):
                 d.path = saved_path
 
         return ret
+
+    def _set_defaults(self):
+        Guest.Guest._set_defaults(self)
+
+        disk_bus  = self._lookup_device_param("disk", "bus")
+        net_model = self._lookup_device_param("net", "model")
+
+        # Only overwrite params if they weren't already specified
+        for net in self._install_nics:
+            if net_model and not net.model:
+                net.model = net_model
+        for disk in self._install_disks:
+            if disk_bus and not disk.bus:
+                disk.bus = disk_bus

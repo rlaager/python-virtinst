@@ -781,6 +781,7 @@ class Guest(object):
     def _prepare_install(self, meter):
         self._install_disks = self.disks[:]
         self._install_nics = self.nics[:]
+        self._set_defaults()
 
     def _do_install(self, consolecb, meter, removeOld=False, wait=True):
         vm = None
@@ -894,7 +895,6 @@ class Guest(object):
     def validate_parms(self):
         if self.domain is not None:
             raise RuntimeError, _("Domain has already been started!")
-        self._set_defaults()
 
     def _set_defaults(self):
         if self.uuid is None:
