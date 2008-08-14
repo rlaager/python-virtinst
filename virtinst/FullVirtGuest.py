@@ -31,14 +31,24 @@ from virtinst import _virtinst as _
 
 
 class FullVirtGuest(Guest.XenGuest):
-    OS_TYPES = {\
-    "linux": { \
-        "label": "Linux",
+
+    """
+    Default values for OS_TYPES keys. Can be overwritten at os_type or
+    variant level
+    """
+    _DEFAULTS = { \
         "acpi": True,
         "apic": True,
         "clock": "utc",
         "continue": False,
-        "input": [ "mouse", "ps2"],
+        "distro": None,
+        "label": None,
+        "input": ["mouse", "ps2"],
+    }
+
+    OS_TYPES = {\
+    "linux": { \
+        "label": "Linux",
         "variants": { \
             "rhel2.1": { "label": "Red Hat Enterprise Linux 2.1",
                          "distro": "rhel" },
@@ -64,8 +74,6 @@ class FullVirtGuest(Guest.XenGuest):
 
     "windows": { \
         "label": "Windows",
-        "acpi": True,
-        "apic": True,
         "clock": "localtime",
         "continue": True,
         "input": [ "tablet", "usb"],
@@ -82,11 +90,6 @@ class FullVirtGuest(Guest.XenGuest):
 
     "unix": {
         "label": "UNIX",
-        "acpi": True,
-        "apic": True,
-        "clock": "utc",
-        "continue": False,
-        "input": [ "mouse", "ps2"],
         "variants": { \
             "solaris9": { "label": "Sun Solaris 9" },
             "solaris10": { "label": "Sun Solaris 10" },
@@ -97,11 +100,6 @@ class FullVirtGuest(Guest.XenGuest):
 
     "other": { \
         "label": "Other",
-        "acpi": True,
-        "apic": True,
-        "clock": "utc",
-        "continue": False,
-        "input": [ "mouse", "ps2"],
         "variants": { \
             "msdos": { "label": "MS-DOS", "acpi": False, "apic": False },
             "netware4": { "label": "Novell Netware 4" },
@@ -181,10 +179,7 @@ class FullVirtGuest(Guest.XenGuest):
         features = dict(self.features)
         for f in ["acpi", "apic"]:
             val = self._lookup_osdict_key(f)
-            if val is not None:
-                features[f] = val
-            else:
-                features[f] = True
+            features[f] = val
         return features
 
     def get_os_distro(self):
@@ -193,9 +188,7 @@ class FullVirtGuest(Guest.XenGuest):
 
     def get_input_device(self):
         val = self._lookup_osdict_key("input")
-        if val:
-            return (val[0], val[1])
-        return ("mouse", "ps2")
+        return (val[0], val[1])
 
     def _get_features_xml(self):
         ret = "<features>\n"
@@ -224,9 +217,7 @@ class FullVirtGuest(Guest.XenGuest):
 
     def _get_clock_xml(self):
         val = self._lookup_osdict_key("clock")
-        if val:
-            return """<clock offset="%s"/>""" % val
-        return None
+        return """<clock offset="%s"/>""" % val
 
     def _get_device_xml(self, install = True):
         if self.emulator is None:
@@ -250,10 +241,7 @@ class FullVirtGuest(Guest.XenGuest):
             self._install_disks.append(self._installer.install_disk)
 
     def get_continue_inst(self):
-        val = self._lookup_osdict_key("continue")
-        if val is None:
-            return False
-        return val
+        return self._lookup_osdict_key("continue")
 
     def continue_install(self, consolecb, meter, wait=True):
         install_xml = self.get_config_xml(disk_boot = True)
@@ -287,7 +275,7 @@ class FullVirtGuest(Guest.XenGuest):
                 return self.OS_TYPES[typ]["variants"][var].has_key(key)
             elif self.OS_TYPES[typ].has_key(key):
                 return self.OS_TYPES[typ][key]
-        return None
+        return self._DEFAULTS[key]
 
 
     def _get_disk_xml(self, install = True):
