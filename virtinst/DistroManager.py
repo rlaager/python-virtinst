@@ -135,20 +135,17 @@ class DistroInstaller(Guest.Installer):
     def get_location(self):
         return self._location
     def set_location(self, val):
-        voltuple = None
-        path = None
         # 'location' is kind of overloaded: it can be a local file or device
         # path (for a boot.iso), a local directory (for a tree), a
         # tuple of the form (poolname, volname), or an http, ftp, or
         # nfs for an iso or a tree
         if type(val) is tuple and len(val) == 2:
-            voltuple = val
             logging.debug("DistroInstaller location is a (poolname, volname)"
                           " tuple")
         elif os.path.exists(os.path.abspath(val)):
-            path = os.path.abspath(val)
+            val = os.path.abspath(val)
             logging.debug("DistroInstaller location is a local "
-                          "file/path: %s" % path)
+                          "file/path: %s" % val)
         elif val.startswith("nfs://"):
             # Convert RFC compliant NFS      nfs://server/path/to/distro
             # to what mount/anaconda expect  nfs:server:/path/to/distro
@@ -165,7 +162,8 @@ class DistroInstaller(Guest.Installer):
         elif (val.startswith("http://") or val.startswith("ftp://") or
               val.startswith("nfs:")):
             logging.debug("DistroInstaller location is a network source.")
-        elif self.conn and util.is_storage_capable(self.conn):
+        elif self.conn and util.is_storage_capable(self.conn) and \
+             util.is_uri_remote(self.conn.getURI()):
             # If conn is specified, pass the path to a VirtualDisk object
             # and see what comes back
             try:
@@ -258,7 +256,11 @@ class DistroInstaller(Guest.Installer):
         }
 
         if self.cdrom:
-            self._prepare_cdrom(guest, distro, meter)
+            if self.location:
+                self._prepare_cdrom(guest, distro, meter)
+            else:
+                # Booting from a cdrom directly allocated to the guest
+                pass
         else:
             self._prepare_kernel_and_initrd(guest, distro, meter)
 

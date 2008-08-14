@@ -44,26 +44,101 @@ locale.setlocale(locale.LC_ALL, '')
 gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
 gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
-### General input gathering functions
-def get_disk(disk, size, sparse, guest, hvm, conn):
+def parse_disk_option(guest, path, size):
+    """helper to properly parse --disk options"""
+    abspath = None
+    voltuple = None
+    volinst = None
+    devtype = None
+    ro = False
+    shared = False
 
-    # Getting disk size
-    if not os.path.exists(disk) and size is None:
-        fail(_("Must specify size for non-existent disks"))
-    try:
-        size = float(size)
-    except Exception, e:
-        fail(e)
+    origpath = path
 
-    # Build disk object
+    # Strip media type
+    if path.startswith("path="):
+        path_type = "path="
+    elif path.startswith("vol="):
+        path_type = "vol="
+    elif path.startswith("pool="):
+        path_type = "pool="
+    else:
+        fail(_("--disk path must start with path=, pool=, or vol=."))
+    path = path[len(path_type):]
+
+    # Parse endings for perms and device type
+    while True:
+        if not path.count(","):
+            break
+        path, opts = path.split(",", 1)
+        for opt in opts.split(","):
+            opt_type = None
+            opt_val = None
+            if opt.count("="):
+                opt_type, opt_val = opt.split("=", 1)
+            if opt_type == "device":
+                devtype = opt_val
+            elif opt_type == "perms":
+                if opt_val == "ro":
+                    ro = True
+                elif opt_val == "sh":
+                    shared = True
+                else:
+                    fail(_("Unknown perms value '%s'." % opt_val))
+            else:
+                fail(_("Unknown disk option '%s'." % opt))
+
+    # We return (path, (poolname, volname), volinst, device, readonly, shared)
+    if path_type == "path=":
+        abspath = os.path.abspath(path)
+    elif path_type == "pool=":
+        if not size:
+            raise ValueError(_("Size must be specified with all 'pool='"))
+        vc = virtinst.Storage.StorageVolume.get_volume_for_pool(pool_name=path,
+                                                                conn=guest.conn)
+        vname = virtinst.Storage.StorageVolume.find_free_name(conn=guest.conn,
+                                                              pool_name=path,
+                                                              name=guest.name)
+        volinst = vc(pool_name=path, name=vname, conn=guest.conn,
+                     capacity=(size and size*1024*1024*1024))
+    elif path_type == "vol=":
+        if not path.count("/"):
+            raise ValueError(_("Storage volume must be specified as "
+                               "pool=poolname/volname"))
+        vollist = path.split("/")
+        voltuple = (vollist[0], vollist[1])
+        logging.debug("Parsed volume: as pool='%s' vol='%s'" % \
+                      (voltuple[0], voltuple[1]))
+
+    if not devtype:
+        devtype = virtinst.VirtualDisk.DEVICE_DISK
+    ret = (abspath, voltuple, volinst, devtype, ro, shared)
+    logging.debug("parse_disk: returning %s" % str(ret))
+    return ret
+
+def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
+
     try:
-        d = virtinst.VirtualDisk(disk, size, sparse = sparse)
+        # Get disk parameters
+        if is_file_path:
+            (path, voltuple, volinst,
+             device, readOnly, shared) = (disk, None, None,
+                                         virtinst.VirtualDisk.DEVICE_DISK,
+                                         False, False)
+        else:
+            (path, voltuple, volinst,
+             device, readOnly, shared) = parse_disk_option(guest, disk, size)
+
+        d = virtinst.VirtualDisk(path=path, size=size, sparse=sparse,
+                                 volInstall=volinst, volName=voltuple,
+                                 readOnly=readOnly, device=device,
+                                 conn=guest.conn)
         # Default file backed PV guests to tap driver
         if d.type == virtinst.VirtualDisk.TYPE_FILE \
            and not(hvm) and virtinst.util.is_blktap_capable():
            d.driver_name = virtinst.VirtualDisk.DRIVER_TAP
     except ValueError, e:
-        fail(e)
+        fail(_("Error with storage parameters: %s" % str(e)))
 
     # Check disk conflicts
     if d.is_conflict_disk(conn) is True:
@@ -71,7 +146,7 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
         if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the disk (yes or no)? ")):
             cli.nice_exit()
 
-    ret = d.size_conflict()
+    ret = d.is_size_conflict()
     if ret[0]:
         fail(ret[1])
     elif ret[1]:
@@ -80,11 +155,19 @@ def get_disk(disk, size, sparse, guest, hvm, conn):
 
     guest.disks.append(d)
 
-def get_disks(disk, size, sparse, nodisks, guest, hvm, conn):
+def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, hvm, conn):
     if nodisks:
-        if disk or size:
-            fail(_("Cannot use --file with --nodisks"))
+        if file_paths or disk_paths or size:
+            fail(_("Cannot use --file, --size, or --disk with --nodisks"))
         return
+    if file_paths and disk_paths:
+        fail(_("Cannot mix --file and --disk options."))
+    elif not file_paths and not disk_paths:
+        fail(_("A disk must be specified (use --nodisks to override)"))
+
+    is_file_path = (file_paths or False)
+    disk = (file_paths or disk_paths)
+
     # ensure we have equal length lists
     if (type(disk) == type(size) == list):
         if len(disk) != len(size):
@@ -94,17 +177,14 @@ def get_disks(disk, size, sparse, nodisks, guest, hvm, conn):
     elif type(size) == list:
         disk = [ None ] * len(size)
 
-    if (type(disk) == list):
-        map(lambda d, s: get_disk(d, s, sparse, guest, hvm, conn),
-            disk, size)
-    elif (type(size) == list):
-        map(lambda d, s: get_disk(d, s, sparse, guest, hvm, conn),
-            disk, size)
+    if type(disk) == list or type(size) == list:
+        map(lambda d, s: get_disk(d, s, sparse, guest, hvm, conn,
+                                  is_file_path), disk, size)
     else:
-        get_disk(disk, size, sparse, guest, hvm, conn)
+        get_disk(disk, size, sparse, guest, hvm, conn, is_file_path)
 
 def get_networks(macs, bridges, networks, guest):
-    (macs, networks) = cli.digest_networks(macs, bridges, networks)
+    (macs, networks) = cli.digest_networks(macs, bridges, networks, nics=1)
     map(lambda m, n: cli.get_network(m, n, guest), macs, networks)
 
 
@@ -128,22 +208,34 @@ def get_install_media(location, cdpath, pxe, livecd, guest, ishvm):
         if location is None:
             fail(_("location must be specified for paravirtualized guests."))
 
-    if not (pxe or location or cdpath):
-        fail(_("One of --pxe, --location or --cdrom must be specified."))
+    if location and virtinst.util.is_uri_remote(guest.conn.getURI()):
+        fail(_("--location can not be specified for remote connections."))
+
+    cdinstall = (cdpath or False)
+    if not (pxe or cdpath or location):
+        # Look at Guest disks: if there is a cdrom, use for install
+        for disk in guest.disks:
+            if disk.device == virtinst.VirtualDisk.DEVICE_CDROM:
+                cdinstall = True
+        if not cdinstall:
+            fail(_("One of --pxe, --location, or cdrom media must be "
+                    "specified."))
     if pxe:
         return
     try:
-        # guest.cdrom is deprecated
-        guest.location = (location or cdpath)
+        if location or cdpath:
+            guest.location = (location or cdpath)
         if cdpath and os.path.exists(cdpath):
             # Build a throwaway disk for validation for local CDs only
-            cddisk = virtinst.VirtualDisk(path=guest.location, 
+            cddisk = virtinst.VirtualDisk(path=cdpath,
+                                          conn=guest.conn,
                                           transient=True,
                                           device=virtinst.VirtualDisk.DEVICE_CDROM,
                                           readOnly=True)
+        if cdinstall:
             guest.installer.cdrom = True
     except ValueError, e:
-        fail(e)
+        fail(_("Error creating cdrom disk: %s" % str(e)))
 
 
 ### Option parsing
@@ -177,8 +269,12 @@ def parse_args():
 
     # disk options
     parser.add_option("-f", "--file", type="string",
-                      dest="diskfile", action="callback", callback=cli.check_before_append,
+                      dest="file_path", action="callback", callback=cli.check_before_append,
                       help=_("File to use as the disk image"))
+    parser.add_option("", "--disk", type="string", dest="disk_path",
+                      action="callback", callback=cli.check_before_append,
+                      help=_("Specify storage to use as a disk with various "
+                             "options."))
     parser.add_option("-s", "--file-size", type="float",
                       action="append", dest="disksize",
                       help=_("Size of the disk image (if it doesn't exist) in gigabytes"))
@@ -337,7 +433,6 @@ def main():
     conn = cli.getConnection(options.connect)
     capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
 
-
     if options.fullvirt and options.paravirt:
         fail(_("Can't do both --hvm and --paravirt"))
 
@@ -372,12 +467,14 @@ def main():
     logging.debug("Hypervisor type is '%s'" % type)
 
     if options.livecd:
-        installer = virtinst.LiveCDInstaller(type = type, os_type = os_type)
+        installer = virtinst.LiveCDInstaller(type = type, os_type = os_type,
+                                             conn = conn)
     elif options.pxe:
-        installer = virtinst.PXEInstaller(type = type, os_type = os_type)
+        installer = virtinst.PXEInstaller(type = type, os_type = os_type,
+                                          conn = conn)
     else:
-        installer = virtinst.DistroInstaller(type = type, os_type = os_type)
-
+        installer = virtinst.DistroInstaller(type = type, os_type = os_type,
+                                             conn = conn)
 
     if hvm:
         guest = virtinst.FullVirtGuest(connection=conn, installer=installer,
@@ -394,10 +491,9 @@ def main():
     if hvm:
         cli.get_sound(options.sound, guest)
 
-
     # set up disks
-    get_disks(options.diskfile, options.disksize, options.sparse, options.nodisks,
-              guest, hvm, conn)
+    get_disks(options.file_path, options.disk_path, options.disksize,
+              options.sparse, options.nodisks, guest, hvm, conn)
 
     # set up network information
     get_networks(options.mac, options.bridge, options.network, guest)

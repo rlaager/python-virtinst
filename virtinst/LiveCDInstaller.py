@@ -47,19 +47,23 @@ class LiveCDInstaller(Guest.Installer):
                 break
 
         if not found:
-            raise LiveCDInstallerException(_("HVM virtualisation not supported; cannot boot LiveCD"))
+            raise LiveCDInstallerException(_("Connection does not support HVM virtualisation, cannot boot live CD"))
 
         path = None
         vol_tuple = None
         if type(self.location) is tuple:
             vol_tuple = self.location
-        else:
+        elif self.location:
             path = self.location
+        elif not self.cdrom:
+            raise LiveCDInstallerException(_("CDROM media must be specified "
+                                             "for the live CD installer."))
 
-        disk = VirtualDisk(path=path, conn=guest.conn, volName=vol_tuple,
-                           device = VirtualDisk.DEVICE_CDROM,
-                           readOnly = True)
-        guest._install_disks.insert(0, disk)
+        if path or vol_tuple:
+            disk = VirtualDisk(path=path, conn=guest.conn, volName=vol_tuple,
+                               device = VirtualDisk.DEVICE_CDROM,
+                               readOnly = True)
+            guest._install_disks.insert(0, disk)
 
     def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
         if install:
