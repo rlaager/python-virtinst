@@ -40,7 +40,7 @@ class VirtualNetworkInterface(object):
     TYPE_USER    = "user"
 
     def __init__(self, macaddr=None, type=TYPE_BRIDGE, bridge=None,
-                 network=None):
+                 network=None, model=None):
 
         if macaddr is not None and \
            __builtin__.type(macaddr) is not __builtin__.type("string"):
@@ -55,6 +55,7 @@ class VirtualNetworkInterface(object):
         self.type = type
         self.bridge = bridge
         self.network = network
+        self.model = model
         if self.type == self.TYPE_VIRTUAL:
             if network is None:
                 raise ValueError, _("A network name was not provided")
@@ -68,7 +69,7 @@ class VirtualNetworkInterface(object):
     def is_conflict_net(self, conn):
         """is_conflict_net: determines if mac conflicts with others in system
 
-           returns a two element tuple: 
+           returns a two element tuple:
                first element is True if fatal collision occured
                second element is a string description of the collision.
            Non fatal collisions (mac addr collides with inactive guest) will
@@ -128,15 +129,20 @@ class VirtualNetworkInterface(object):
             self.bridge = util.default_bridge()
 
     def get_xml_config(self):
-        src_xml = None
+        src_xml = ""
+        model_xml = ""
         if self.type == self.TYPE_BRIDGE:
             src_xml =   "      <source bridge='%s'/>\n" % self.bridge
         elif self.type == self.TYPE_VIRTUAL:
             src_xml =   "      <source network='%s'/>\n" % self.network
 
+        if self.model:
+            model_xml = "      <model type='%s'/>\n" % self.model
+
         return "    <interface type='%s'>\n" % self.type + \
                src_xml + \
                "      <mac address='%s'/>\n" % self.macaddr + \
+               model_xml + \
                "    </interface>"
 
     def countMACaddr(self, vms):
