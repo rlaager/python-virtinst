@@ -161,8 +161,14 @@ def main():
     conn = cli.getConnection(options.connect)
     type = None
 
-    image = virtinst.ImageParser.parse_file(options.image)
-    capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
+    try:
+    	image = virtinst.ImageParser.parse_file(options.image)
+    except virtinst.ImageParser.ParserException, msg:
+        fail( "%s '%s': %s" % (_("Cannot parse"),  options.image, msg))
+    try:
+        capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
+    except virtinst.CapabilitiesParser.CapabilitiesParserException, msg:
+        fail( "%s : %s" % (_("Cannot parse capabilities"),  msg))
 
     if options.boot is not None:
         nboots = len(image.domain.boots)
