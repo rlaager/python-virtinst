@@ -187,6 +187,8 @@ class FullVirtGuest(Guest.XenGuest):
     def get_os_type(self):
         return self._os_type
     def set_os_type(self, val):
+        if type(val) is not str:
+            raise ValueError(_("OS type must be a string."))
         val = val.lower()
         if FullVirtGuest._OS_TYPES.has_key(val):
             self._os_type = val
@@ -200,6 +202,8 @@ class FullVirtGuest(Guest.XenGuest):
     def get_os_variant(self):
         return self._os_variant
     def set_os_variant(self, val):
+        if type(val) is not str:
+            raise ValueError(_("OS variant must be a string."))
         val = val.lower()
         if self._os_type:
             if self._OS_TYPES[self._os_type]["variants"].has_key(val):
