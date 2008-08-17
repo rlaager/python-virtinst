@@ -112,7 +112,7 @@ class VirtualNetworkInterface(object):
     def setup(self, conn):
         if self.macaddr is None:
             while 1:
-                self.macaddr = util.randomMAC()
+                self.macaddr = util.randomMAC(type=conn.getType().lower())
                 if self.is_conflict_net(conn)[1] is not None:
                     continue
                 else:
