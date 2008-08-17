@@ -116,7 +116,12 @@ class FullVirtGuest(Guest.XenGuest):
             "solaris9": { "label": "Sun Solaris 9" },
             "solaris10": { "label": "Sun Solaris 10" },
             "freebsd6": { "label": "Free BSD 6.x" },
-            "openbsd4": { "label": "Open BSD 4.x" },
+            "openbsd4": { "label": "Open BSD 4.x" ,
+                          # http://calamari.reverse-dns.net:980/cgi-bin/moin.cgi/OpenbsdOnQemu
+                          # https://www.redhat.com/archives/et-mgmt-tools/2008-June/msg00018.html
+                          "devices" : {
+                            "net"  : { "model" : [ (["all"], "pcnet") ] }
+                        }},
         },
     },
 
