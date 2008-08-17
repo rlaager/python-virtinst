@@ -547,10 +547,10 @@ def main():
             guest.features["acpi"] = False
         if options.noapic:
             guest.features["apic"] = False
-        if options.os_type is not None:
+        if options.os_type:
             guest.set_os_type(options.os_type)
-            if options.os_variant is not None:
-                guest.set_os_variant(options.os_variant)
+        if options.os_variant:
+            guest.set_os_variant(options.os_variant)
         continue_inst = guest.get_continue_inst()
 
     def show_console(dom):

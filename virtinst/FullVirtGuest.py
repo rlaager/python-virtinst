@@ -53,6 +53,9 @@ class FullVirtGuest(Guest.XenGuest):
         }
     }
 
+
+    # NOTE: keep variant keys using only lowercase so we can do case
+    #       insensitive checks on user passed input
     _OS_TYPES = {\
     "linux": { \
         "label": "Linux",
@@ -77,9 +80,9 @@ class FullVirtGuest(Guest.XenGuest):
                           }},
             "sles10": { "label": "Suse Linux Enterprise Server",
                         "distro": "suse" },
-            "debianEtch": { "label": "Debian Etch", "distro": "debian" },
-            "debianLenny": { "label": "Debian Lenny", "distro": "debian" },
-            "ubuntuHardy": { "label": "Ubuntu Hardy", "distro": "ubuntu",
+            "debianetch": { "label": "Debian Etch", "distro": "debian" },
+            "debianlenny": { "label": "Debian Lenny", "distro": "debian" },
+            "ubuntuhardy": { "label": "Ubuntu Hardy", "distro": "ubuntu",
                              "devices" : {
                                 "net"  : { "model" : [ (["kvm"], "virtio") ] }
                              }},
@@ -170,21 +173,36 @@ class FullVirtGuest(Guest.XenGuest):
     def get_os_type(self):
         return self._os_type
     def set_os_type(self, val):
+        val = val.lower()
         if FullVirtGuest._OS_TYPES.has_key(val):
             self._os_type = val
+            # Invalidate variant, since it may not apply to the new os type
+            self._os_variant = None
         else:
-            raise ValueError, _("OS type %s does not exist in our dictionary") % val
+            raise ValueError, _("OS type '%s' does not exist in our "
+                                "dictionary") % val
     os_type = property(get_os_type, set_os_type)
 
     def get_os_variant(self):
         return self._os_variant
     def set_os_variant(self, val):
-        if not self._os_type:
-            raise ValueError, _("An OS type must be specified before a variant.")
-        if FullVirtGuest._OS_TYPES[self._os_type]["variants"].has_key(val):
-            self._os_variant = val
+        val = val.lower()
+        if self._os_type:
+            if self._OS_TYPES[self._os_type]["variants"].has_key(val):
+                self._os_variant = val
+            else:
+                raise ValueError, _("OS variant '%(var)s; does not exist in "
+                                    "our dictionary for OS type '%(ty)s'" ) % \
+                                    {'var' : val, 'ty' : self._os_type}
         else:
-            raise ValueError, _("OS variant %(var)s does not exist in our dictionary for OS type %(type)s") % {'var' : val, 'type' : self._os_type}
+            for ostype in self.list_os_types():
+                if self._OS_TYPES[ostype]["variants"].has_key(val):
+                    logging.debug("Setting os type to '%s' for variant '%s'" %\
+                                  (ostype, val))
+                    self.os_type = ostype
+                    self._os_variant = val
+                    return
+            raise ValueError, _("Unknown OS variant '%s'" % val)
     os_variant = property(get_os_variant, set_os_variant)
 
     def os_features(self):
