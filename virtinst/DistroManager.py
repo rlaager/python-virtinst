@@ -167,7 +167,7 @@ class DistroInstaller(Guest.Installer):
             # If conn is specified, pass the path to a VirtualDisk object
             # and see what comes back
             try:
-                v = VirtualDisk(path=val, type=VirtualDisk.DEVICE_CDROM,
+                v = VirtualDisk(path=val, device=VirtualDisk.DEVICE_CDROM,
                                 conn=self.conn)
             except Exception, e:
                 raise ValueError(_("Checking installer location failed: %s" %\
@@ -188,7 +188,7 @@ class DistroInstaller(Guest.Installer):
         vol_tuple = None
         if type(self.location) is tuple:
             vol_tuple = self.location
-        elif self.location.startswith("/") and os.path.exists(self.location):
+        elif self.location.startswith("/"):
             # Huzzah, a local file/device
             cdrom = self.location
         else:
