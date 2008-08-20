@@ -437,14 +437,20 @@ class VirtualDisk(VirtualDevice):
                     progresscb.end(size_bytes)
         # FIXME: set selinux context?
 
-    def get_xml_config(self, disknode):
+    def get_xml_config(self, disknode=None):
         """
-        @param disknode: device name in host (xvda, hdb, etc.)
+        @param disknode: device name in host (xvda, hdb, etc.). self.target
+                         takes precedence.
         @type disknode: C{str}
         """
         typeattr = 'file'
         if self.type == VirtualDisk.TYPE_BLOCK:
             typeattr = 'dev'
+
+        if self.target:
+            disknode = self.target
+        if not disknode:
+            raise ValueError(_("'disknode' or self.target must be set!"))
 
         path = None
         if self.vol_object:
@@ -462,8 +468,6 @@ class VirtualDisk(VirtualDevice):
                 ret += "      <driver name='%(name)s' type='%(type)s'/>\n" % { "name": self.driver_name, "type": self.driver_type }
         if path is not None:
             ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": path }
-        if self.target is not None:
-            disknode = self.target
 
         bus_xml = ""
         if self.bus is not None:
@@ -582,25 +586,66 @@ class VirtualDisk(VirtualDevice):
         else:
             return False
 
-    def get_target_prefix(self):
+    def _get_target_type(self):
         """
         Returns the suggested disk target prefix (hd, xvd, sd ...) from
         the passed parameters.
         @returns: str prefix, or None if no reasonable guess can be made
         """
-        if self.bus is None:
-            return None
-        elif self.bus == "virtio":
-            return "vd"
-        elif self.bus == "scsi":
-            return "sd"
+        if self.bus == "virtio":
+            return ("vd", 16)
+        elif self.bus == "scsi" or self.bus == "usb":
+            return ("sd", 16)
         elif self.bus == "xen":
-            return "xvd"
+            return ("xvd", 16)
         elif self.bus == "ide":
-            return "hd"
+            return ("hd", 4)
         elif self.bus == "floppy" or self.device == self.DEVICE_FLOPPY:
-            return "fd"
+            return ("fd", 2)
+        else:
+            return (None, None)
 
+    def generate_target(self, skip_targets):
+        """
+        Generate target device ('hda', 'sdb', etc..) for disk, excluding
+        any targets in list 'skip_targets'. Sets self.target, and returns the
+        generated value
+        @param used_targets: list of targets to exclude
+        @type used_targets: C{list}
+        @raise ValueError: can't determine target type, no targets available
+        @returns generated target
+        @rtype C{str}
+        """
+
+        # Only use these targets if there are no other options
+        except_targets = ["hdc"]
+
+        prefix, maxnode = self._get_target_type()
+        if prefix is None:
+            raise ValueError(_("Cannot determine device bus/type."))
+
+        # Special case: IDE cdrom must be hdc
+        if self.device == self.DEVICE_CDROM and prefix == "hd":
+            if "hdc" not in skip_targets:
+                self.target = "hdc"
+                return self.target
+            raise ValueError(_("IDE CDROM must use 'hdc', but target in use."))
+
+        # Regular scanning
+        for i in range(maxnode):
+            gen_t = "%s%c" % (prefix, ord('a') + i)
+            if gen_t in except_targets:
+                continue
+            if gen_t not in skip_targets:
+                self.target = gen_t
+                return self.target
+
+        # Check except_targets for any options
+        for t in except_targets:
+            if t.startswith(prefix) and t not in skip_targets:
+                self.target = t
+                return self.target
+        raise ValueError(_("No more space for disks of type '%s'" % prefix))
 
 
 class XenDisk(VirtualDisk):

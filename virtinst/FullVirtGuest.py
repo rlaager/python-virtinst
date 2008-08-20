@@ -352,7 +352,11 @@ class FullVirtGuest(Guest.XenGuest):
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
         ret = ""
-        self._set_disk_targets(self.disknode)
+        used_targets = []
+        for disk in self._install_disks:
+            if not disk.bus:
+                disk.bus = "ide"
+            used_targets.append(disk.generate_target(used_targets))
 
         for d in self._install_disks:
             saved_path = None

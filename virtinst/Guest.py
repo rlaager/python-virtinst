@@ -668,55 +668,6 @@ class Guest(object):
                 xml += devxml
         return xml
 
-    def _set_disk_targets(self, disknode):
-        """
-        Go through _install_disks and set 'target' for all the disks
-        """
-
-        # (target-prefix, max-num-of-devices)
-        prefix_list = [("fd", 2),
-                       ("hd", 4),
-                       ("xvd", 16),
-                       ("sd", 16),
-                       ("vd", 16)]
-        # Generate target targets
-        targets = {}
-        for prefix, max in prefix_list:
-            targets[prefix] = []
-            for i in range(max):
-                targets[prefix].append("%s%c" % (prefix, ord('a') + i))
-
-        def pop_target(targets, prefix, value=None):
-            """
-            Pops first target from the target list for the passed prefix.
-            If value is passed, look specifically for that.
-            """
-            if not targets.has_key(prefix):
-                raise ValueError(_("Unknown disk target prefix '%s'" % prefix))
-            if not len(targets[prefix]):
-                raise RuntimeError(_("Too many disks of type '%s'" % prefix))
-            if not value:
-                return targets[prefix].pop(0)
-            else:
-                if not targets[prefix].count(value):
-                    return None
-                return targets[prefix].pop(targets[prefix].index(value))
-
-        # Special case: if prefix is hd and disk is cdrom, must be hdc
-        for disk in self._install_disks:
-            if disk.device == VirtualDisk.DEVICE_CDROM:
-                prefix = disk.get_target_prefix() or disknode
-                if prefix == "hd":
-                    target = pop_target(targets, prefix, "hdc")
-                    if not target:
-                        raise ValueError(_("Can only have one IDE cdrom."))
-                    disk.target = target
-
-        for disk in self._install_disks:
-            if not disk.target:
-                disk.target = pop_target(targets,
-                                         disk.get_target_prefix() or disknode)
-
 
     def get_config_xml(self, install = True, disk_boot = False):
         if install:
