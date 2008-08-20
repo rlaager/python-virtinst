@@ -1,0 +1,7 @@
+To install virtinst and the associated utilities (virt-install, ...),
+run the command:
+
+    python setup.py install
+
+Please see http://docs.python.org/inst/standard-install.html for more info
+on the standard python install process.
