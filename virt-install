@@ -403,28 +403,6 @@ def parse_args():
     return options
 
 
-### console callback methods
-def get_xml_string(dom, path):
-    xml = dom.XMLDesc(0)
-    try:
-        doc = libxml2.parseDoc(xml)
-    except:
-        return None
-
-    ctx = doc.xpathNewContext()
-    try:
-        ret = ctx.xpathEval(path)
-        tty = None
-        if len(ret) == 1:
-            tty = ret[0].content
-        ctx.xpathFreeContext()
-        doc.freeDoc()
-        return tty
-    except Exception, e:
-        ctx.xpathFreeContext()
-        doc.freeDoc()
-        return None
-
 def vnc_console(dom, uri):
     args = ["/usr/bin/virt-viewer"]
     if uri is not None and uri != "":
