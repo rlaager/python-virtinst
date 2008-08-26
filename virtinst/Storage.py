@@ -216,11 +216,11 @@ class StoragePool(StorageObject):
 
     # Pool type descriptions for use in higher level programs
     _types = {}
-    _types[TYPE_DIR]     = _("Filesystem directory")
-    _types[TYPE_FS]      = _("Formatted block device")
-    _types[TYPE_NETFS]   = _("Network exported directory")
+    _types[TYPE_DIR]     = _("Filesystem Directory")
+    _types[TYPE_FS]      = _("Pre-Formatted Block Device")
+    _types[TYPE_NETFS]   = _("Network Exported Directory")
     _types[TYPE_LOGICAL] = _("LVM Volume Group")
-    _types[TYPE_DISK]    = _("Raw disk device")
+    _types[TYPE_DISK]    = _("Physical Disk Device")
     _types[TYPE_ISCSI]   = _("iSCSI Target")
 
     def get_pool_class(ptype):
