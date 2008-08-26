@@ -100,7 +100,7 @@ def parse_disk_option(guest, path, size):
                                                               pool_name=path,
                                                               name=guest.name)
         volinst = vc(pool_name=path, name=vname, conn=guest.conn,
-                     capacity=(size and size*1024*1024*1024))
+                     allocation=0, capacity=(size and size*1024*1024*1024))
     elif path_type == "vol=":
         if not path.count("/"):
             raise ValueError(_("Storage volume must be specified as "
@@ -128,6 +128,8 @@ def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
         else:
             (path, voltuple, volinst,
              device, readOnly, shared) = parse_disk_option(guest, disk, size)
+            if not sparse and volinst:
+                volinst.allocation = volinst.capacity
 
         d = virtinst.VirtualDisk(path=path, size=size, sparse=sparse,
                                  volInstall=volinst, volName=voltuple,
