@@ -350,6 +350,11 @@ class VirtualDisk(VirtualDevice):
             logging.debug("Using self.path for VirtualDisk.")
             using_path = True
 
+        if self.sparse and self.vol_install and \
+           self.vol_install.allocation != 0:
+            logging.debug("Setting vol_install allocation to 0 (sparse).")
+            self.vol_install.allocation = 0
+
         if ((using_path and os.path.exists(self.path))
                         or self.vol_object):
             logging.debug("VirtualDisk storage exists.")
@@ -496,12 +501,12 @@ class VirtualDisk(VirtualDevice):
         return (False, "description of collision")
         """
 
+        if self.vol_install:
+            return self.vol_install.is_size_conflict()
+
         if self.vol_object or self.size is None or not self.path \
            or os.path.exists(self.path) or self.type != self.TYPE_FILE:
             return (False, None)
-
-        if self.vol_install:
-            return self.vol_install.is_size_conflict()
 
         ret = False
         msg = None

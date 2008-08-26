@@ -605,8 +605,12 @@ class StorageVolume(StorageObject):
         StorageObject.__init__(self, object_type=StorageObject.TYPE_VOLUME,
                                name=name, conn=self.pool._conn)
         self._allocation = None
+        self._capacity = None
+        if allocation is not None:
+            self.allocation = allocation
+        else:
+            self.allocation = capacity
         self.capacity = capacity
-        self.allocation = allocation or self.capacity
 
     def get_volume_for_pool(pool_object=None, pool_name=None, conn=None):
         """
@@ -685,12 +689,17 @@ class StorageVolume(StorageObject):
     def set_capacity(self, val):
         if type(val) not in (int, float, long) or val <= 0:
             raise ValueError(_("Capacity must be a positive number"))
-        val = int(val)
-        self._capacity = val
-        if self.allocation and (val > self.allocation):
-            self.allocation = val
+        newcap = int(val)
+        origcap = self.capacity
+        origall = self.allocation
+        self._capacity = newcap
+        if self.allocation and (newcap > self.allocation):
+            self._allocation = newcap
+
         ret = self.is_size_conflict()
         if ret[0]:
+            self._capacity = origcap
+            self._allocation = origall
             raise ValueError(ret[1])
         else:
             logging.warn(ret[1])
@@ -701,10 +710,19 @@ class StorageVolume(StorageObject):
     def set_allocation(self, val):
         if type(val) not in (int, float, long) or val < 0:
             raise ValueError(_("Allocation must be a non-negative number"))
-        val = int(val)
-        if val > self.capacity:
-            val = self.capacity
-        self._allocation = val
+        newall = int(val)
+        if self.capacity and newall > self.capacity:
+            logging.debug("Capping allocation at capacity.")
+            newall = self.capacity
+        origall = self._allocation
+        self._allocation = newall
+
+        ret = self.is_size_conflict()
+        if ret[0]:
+            self._allocation = origall
+            raise ValueError(ret[1])
+        else:
+            logging.warn(ret[1])
     allocation = property(get_allocation, set_allocation)
 
     def get_pool(self):
@@ -799,12 +817,19 @@ class StorageVolume(StorageObject):
         """
         # pool info is [ pool state, capacity, allocation, available ]
         avail = self.pool.info()[3]
-        if self.capacity > avail:
+        if self.allocation > avail:
             return (True, _("There is not enough free space on the storage "
                             "pool to create the volume. "
-                            "(%d M requested > %d M available)" % \
-                            ((self.capacity/(1024*1024)),
+                            "(%d M requested allocation > %d M available)" % \
+                            ((self.allocation/(1024*1024)),
                              (avail/(1024*1024)))))
+        elif self.capacity > avail:
+            return (False, _("The requested volume capacity will exceed the "
+                             "available pool space when the volume is fully "
+                             "allocated. "
+                             "(%d M requested capacity > %d M available)" % \
+                             ((self.capacity/(1024*1024)),
+                              (avail/(1024*1024)))))
         return (False, "")
 
 class FileVolume(StorageVolume):
