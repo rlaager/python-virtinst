@@ -381,7 +381,7 @@ class VirtualDisk(VirtualDevice):
             if not os.access(os.path.dirname(self.path), os.W_OK):
                 raise ValueError, _("No write access to directory '%s'") % \
                                     os.path.dirname(self.path)
-            if not self.size:
+            if self.size is None:
                 raise ValueError, _("size is required for non-existent disk "
                                     "'%s'" % self.path)
         else:
