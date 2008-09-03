@@ -1,19 +1,20 @@
 # Host keytable entry : keymap name in qemu/xen
+# Only use lower case entries: all lookups are .lower()'d
 keytable = {
     "ar":"ar",
     "dk":"da", "da":"da",
     "de":"de",
     "de-ch":"de-ch",
-    "gb":"en-gb", "en-gb":"en-gb",
+    "gb":"en-gb", "en-gb":"en-gb", "uk":"en-gb",
     "us":"en-us", "en-us":"en-us",
     "es":"es",
     "et":"et",
-    "se_FI":"fi", "fi":"fi",
+    "se_fi":"fi", "fi":"fi",
     "fo":"fo",
     "fr":"fr",
     "be":"fr-be","fr-be":"fr-be",
     "fr-ca":"fr-ca",
-    "fr_CH":"fr_ch", "fr_ch":"fr_ch",
+    "fr_ch":"fr-ch", "fr-ch":"fr-ch",
     "hr":"hr",
     "hu":"hu",
     "is":"is",

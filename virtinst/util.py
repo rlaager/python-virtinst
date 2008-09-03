@@ -279,7 +279,7 @@ def default_keymap():
 
     # Set keymap to same as hosts
     import keytable
-    keymap = "en-us"        # Default value
+    keymap = "en-us"
     try:
         f = open(KEYBOARD_DIR, "r")
     except IOError, e:
@@ -291,7 +291,7 @@ def default_keymap():
                 break
             if re.search("KEYTABLE", s) != None:
                 kt = s.split('"')[1]
-                if keytable.keytable.has_key(kt):
+                if keytable.keytable.has_key(kt.lower()):
                     keymap = keytable.keytable[kt]
                 else:
                     logging.debug("Didn't find keymap '%s' in keytable!" % kt)
