@@ -90,6 +90,13 @@ def get_clone_diskfile(new_diskfiles, design, conn):
                 disk = None
                 continue
 
+            if os.path.exists(d.path):
+                warnmsg = _("This will overwrite the existing path "
+                            "'%s'!\n") % d.path
+                if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use this disk (yes or no)?")):
+                    disk = None
+                    continue 
+
             # Check disk conflicts
             if d.is_conflict_disk(conn) is True:
                 warnmsg = _("Disk %s is already in use by another guest!\n") % d.path
