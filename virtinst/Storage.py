@@ -591,7 +591,7 @@ class StorageVolume(StorageObject):
     formats = []
 
     def __init__(self, name, capacity, conn=None, pool_name=None, pool=None,
-                 allocation=None):
+                 allocation=0):
         if pool is None:
             if pool_name is None:
                 raise ValueError(_("One of pool or pool_name must be "
@@ -606,10 +606,10 @@ class StorageVolume(StorageObject):
                                name=name, conn=self.pool._conn)
         self._allocation = None
         self._capacity = None
-        if allocation is not None:
-            self.allocation = allocation
-        else:
-            self.allocation = capacity
+        #self.allocation = allocation
+        # XXX Since libvirtd completely blocks if we have any allocation
+        # XXX going on, force allocation to 0 until this is usable.
+        self.allocation = 0
         self.capacity = capacity
 
     def get_volume_for_pool(pool_object=None, pool_name=None, conn=None):
@@ -693,7 +693,7 @@ class StorageVolume(StorageObject):
         origcap = self.capacity
         origall = self.allocation
         self._capacity = newcap
-        if self.allocation and (newcap > self.allocation):
+        if self.allocation != None and (newcap < self.allocation):
             self._allocation = newcap
 
         ret = self.is_size_conflict()
@@ -701,7 +701,7 @@ class StorageVolume(StorageObject):
             self._capacity = origcap
             self._allocation = origall
             raise ValueError(ret[1])
-        else:
+        elif ret[1]:
             logging.warn(ret[1])
     capacity = property(get_capacity, set_capacity)
 
@@ -711,7 +711,7 @@ class StorageVolume(StorageObject):
         if type(val) not in (int, float, long) or val < 0:
             raise ValueError(_("Allocation must be a non-negative number"))
         newall = int(val)
-        if self.capacity and newall > self.capacity:
+        if self.capacity != None and newall > self.capacity:
             logging.debug("Capping allocation at capacity.")
             newall = self.capacity
         origall = self._allocation
@@ -721,7 +721,7 @@ class StorageVolume(StorageObject):
         if ret[0]:
             self._allocation = origall
             raise ValueError(ret[1])
-        else:
+        elif ret[1]:
             logging.warn(ret[1])
     allocation = property(get_allocation, set_allocation)
 
