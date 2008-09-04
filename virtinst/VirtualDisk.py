@@ -48,9 +48,12 @@ class VirtualDisk(VirtualDevice):
            that connection.
         4. An active connection and a tuple of the form ("poolname",
            "volumename")
+        5. An active connection and a path. The base of the path must
+           point to the target path for an active pool.
 
-    For the last two cases, the lookup will be performed, and 'vol_object'
-    will be set to the returned virStorageVol. All the above cases also
+    For cases 3 and 4, the lookup will be performed, and 'vol_object'
+    will be set to the returned virStorageVol. For the last case, 'volInstall'
+    will be populated for a StorageVolume instance. All the above cases also
     work on a local connection as well, the only difference being that
     option 3 won't neccessarily error out if the volume isn't found.
 
@@ -290,6 +293,12 @@ class VirtualDisk(VirtualDevice):
         except Exception, e:
             raise ValueError(_("Couldn't lookup volume object: %s" % str(e)))
 
+    def __storage_specified(self):
+        """
+        Return bool representing if managed storage parameters have
+        been explicitly specified or filled in
+        """
+        return (self.vol_object != None or self.vol_install != None)
 
     def __validate_params(self):
         """
@@ -302,31 +311,50 @@ class VirtualDisk(VirtualDevice):
         storage_capable = False
         if self.conn:
             storage_capable = util.is_storage_capable(self.conn)
-        if storage_capable:
-            if self.path is not None and self.vol_object is None:
-                v = None
-                try:
-                    v = self.conn.storageVolLookupByPath(self.path)
-                except Exception, e:
-                    if self._is_remote():
-                        raise ValueError(_("'%s' is not managed on remote "
-                                           "host: %s" % (self.path, str(e))))
-                    else:
-                        logging.debug("Didn't find path '%s' managed on "
-                                      "connection: %s" % (self.path, str(e)))
-                if v:
-                    self._set_vol_object(v, validate=False)
-        else:
-            if self._is_remote():
-                raise ValueError, _("Connection doesn't support remote "
-                                    "storage.")
+        if not storage_capable and self._is_remote():
+            raise ValueError, _("Connection doesn't support remote storage.")
 
-        if self._is_remote() and not (self.vol_object or self.vol_install):
+
+        if storage_capable and self.path is not None \
+           and not self.__storage_specified():
+            vol = None
+            verr = None
+            try:
+                vol = self.conn.storageVolLookupByPath(self.path)
+            except Exception, e:
+                verr = str(e)
+
+            if not vol:
+                # Path wasn't a volume. See if base of path is a managed
+                # pool, and if so, setup a StorageVolume object
+                pool = util.lookup_pool_by_path(self.conn,
+                                                os.path.dirname(self.path))
+                if pool:
+                    logging.debug("Path '%s' is target for pool '%s'. "
+                                  "Creating volume '%s'." % \
+                                  (os.path.dirname(self.path), pool.name(),
+                                   os.path.basename(self.path)))
+                    volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
+                    vol = volclass(name=os.path.basename(self.path),
+                                   capacity=(self.size * 1024 * 1024 * 1024),
+                                   pool=pool)
+                    self._set_vol_install(vol, validate=False)
+                elif self._is_remote():
+                    raise ValueError(_("'%s' is not managed on remote "
+                                       "host: %s" % (self.path, verr)))
+                else:
+                    logging.debug("Didn't find path '%s' managed on "
+                                  "connection: %s" % (self.path, verr))
+            else:
+                self._set_vol_object(vol, validate=False)
+
+
+        if self._is_remote() and not self.__storage_specified():
             raise ValueError, _("Must specify libvirt managed storage if on "
                                 "a remote connection")
 
         # Only floppy or cdrom can be created w/o media
-        if self.path is None and not self.vol_object and not self.vol_install:
+        if self.path is None and not self.__storage_specified():
             if self.device != self.DEVICE_FLOPPY and \
                self.device != self.DEVICE_CDROM:
                 raise ValueError, _("Device type '%s' requires a path") % \
@@ -343,7 +371,7 @@ class VirtualDisk(VirtualDevice):
             self._set_size(self.vol_install.capacity*1024*1024*1024,
                            validate=False)
 
-        if self.vol_object or self.vol_install or self._is_remote():
+        if self.__storage_specified():
             logging.debug("Using storage api objects for VirtualDisk")
             using_path = False
         else:
