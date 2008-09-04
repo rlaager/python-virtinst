@@ -433,6 +433,23 @@ def get_xml_path(xml, path):
             ctx.xpathFreeContext()
     return result
 
+def lookup_pool_by_path(conn, path):
+    """
+    Return the first pool with matching matching target path.
+    return the first we find, active or inactive. This iterates over
+    all pools and dumps their xml, so it is NOT quick.
+    @return virStoragePool object if found, None otherwise
+    """
+    if not is_storage_capable(conn):
+        return None
+
+    pool_list = conn.listStoragePools() + conn.listDefinedStoragePools()
+    for name in pool_list:
+        pool = conn.storagePoolLookupByName(name)
+        if get_xml_path(pool.XMLDesc(0), "/pool/target/path") == path:
+            return pool
+    return None
+
 def _test():
     import doctest
     doctest.testmod()
