@@ -142,7 +142,8 @@ class DistroInstaller(Guest.Installer):
         if type(val) is tuple and len(val) == 2:
             logging.debug("DistroInstaller location is a (poolname, volname)"
                           " tuple")
-        elif os.path.exists(os.path.abspath(val)):
+        elif os.path.exists(os.path.abspath(val)) \
+             and not self.conn or not util.is_uri_remote(self.conn.getURI()):
             val = os.path.abspath(val)
             logging.debug("DistroInstaller location is a local "
                           "file/path: %s" % val)
