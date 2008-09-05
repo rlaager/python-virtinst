@@ -82,15 +82,19 @@ class URIImageFetcher(ImageFetcher):
     def acquireFile(self, filename, progresscb):
         file = None
         try:
+            path = self.location
+            if not path.endswith("/"):
+                path += "/"
             base = os.path.basename(filename)
-            logging.debug("Fetching URI " + self.location + "/" + filename)
+            path += base
+            logging.debug("Fetching URI " + path)
             try:
-                file = grabber.urlopen(self.location + "/" + filename,
+                file = grabber.urlopen(path,
                                        progress_obj = progresscb, \
                                        text = _("Retrieving file %s...") % base)
             except IOError, e:
                 raise ValueError, _("Couldn't acquire file %s: %s") %\
-                                  ((self.location + "/" + filename), str(e))
+                                    (path, str(e))
             tmpname = self.saveTemp(file, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
             return tmpname
@@ -99,20 +103,23 @@ class URIImageFetcher(ImageFetcher):
                 file.close()
 
 class HTTPImageFetcher(URIImageFetcher):
-    
+
     def hasFile(self, filename):
         try:
-            request = urllib2.Request(self.location + "/" + filename)
+            path = self.location
+            if not path.endswith("/"):
+                path += "/"
+            path += os.path.basename(filename)
+            request = urllib2.Request(path)
             request.get_method = lambda: "HEAD"
             http_file = urllib2.urlopen(request)
         except Exception, e:
-            logging.debug("HTTP hasFile: didn't find %s" % \
-                          (self.location + "/" + filename))
+            logging.debug("HTTP hasFile: didn't find %s" % path)
             return False
         return True
 
 class FTPImageFetcher(URIImageFetcher):
-    
+
     def hasFile(self, filename):
         url = urlparse.urlparse(self.location + "/" + filename)
         try:
