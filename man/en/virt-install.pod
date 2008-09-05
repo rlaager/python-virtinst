@@ -1,4 +1,4 @@
-=od
+=pod
 
 =head1 NAME
 
@@ -80,13 +80,82 @@ Set which physical cpus the guest can use. C<CPUSET> is a comma separated list o
 If the value 'auto' is passed, virt-install attempts to automatically determine
 an optimal cpu pinning using NUMA data, if available.
 
+=item --disk=DISKOPTS
+
+Specifies media to use as storage for the guest, with various options. The
+general format of a disk string is
+
+    --disk opt1=val1,opt2=val2,...
+
+To specify media, one of the following options is required:
+
+=over 4
+
+=item B<path>
+
+A path to some storage media to use, existing or not. Existing media can be
+a file or block device. If installing on a remote host, the existing media
+must be shared as a libvirt storage volume.
+
+Specifying a non-existent path implies attempting to create the new storage,
+and will require specifyng a 'size' value. If the base directory of the path
+is a libvirt storage pool on the host, the new storage will be created as a
+libvirt storage volume. For remote hosts, the base directory is required to be
+a storage pool if using this method.
+
+=item B<pool>
+
+An existing libvirt storage pool name to create new storage on. Requires
+specifying a 'size' value.
+
+=item B<vol>
+
+An existing libvirt storage volume to use. This is specified as
+'poolname:volname'.
+
+=back
+
+Other available options:
+
+=over 4
+
+=item B<device>
+
+Disk device type. Value can be 'cdrom', 'disk', or 'floppy'. Default is
+'disk'. If a 'cdrom' is specified, and no install method is chosen, the
+cdrom is used as the install media.
+
+=item B<perms>
+
+Disk permissions. Value can be 'rw' (Read/Write), 'ro' (Readonly),
+or 'sh' (Shared Read/Write). Default is 'rw'
+
+=item B<size>
+
+size (in GB) to use if creating new storage
+
+=item B<sparse>
+
+whether to skip fully allocating newly created storage. Value is 'true' or
+'false'. Default is 'true' (do not fully allocate).
+
+=back
+
+See the examples section for some uses. This option deprecates C<--file>,
+C<--file-size>, and C<--nonsparse>.
+
+=item --nodisks
+
+Request a virtual machine without any local disk storage, typically used for
+running 'Live CD' images or installing to network storage (iSCSI or NFS root).
+
 =item -f DISKFILE, --file=DISKFILE
 
 Path to the file, disk partition, or logical volume to use as the backing store
 for the guest's virtual disk. If the path does not exist, then C<--file-size>
 option should also be specified, allowing the disk to be created. This parameter
-can be repeated multiple times to add many disk. This parameter will be prompted 
-for if omitted on the command line. 
+can be repeated multiple times to add many disk. This option is deprecated in
+favor of --disk.
 
 =item -s DISKSIZE, --file-size=DISKSIZE
 
@@ -103,12 +172,6 @@ time taken to fully-allocate the guest virtual disk will be usually by balanced
 by faster install times inside the guest. Thus use of this optional is recommended 
 to ensure consistently high performance and to avoid I/O errors in the guest 
 should the host filesystem fill up. 
-
-=item --nodisks
-
-Request a virtual machine without any local disk storage, typically used for 
-running 'Live CD' images or installing to network storage (iSCSI or NFS root).
-This disables all interactive prompts for disk setup.
 
 =item -m MAC, --mac=MAC
 
@@ -248,9 +311,9 @@ parameter is implied if connecting to a QEMU based hypervisor.
 File to use a virtual CD-ROM device for fully virtualized guests. It can be
 path to an ISO image, or to a CDROM device. It can also be a URL from which
 to fetch/access a minimal boot ISO image. The URLs take the same format as
-described for the C<--location> argument. If this parameter is omitted then
-the C<--location> argument must be given to specify a location for the kernel
-and initrd, or the C<--pxe> argument used to install from the network.
+described for the C<--location> argument. If a cdrom has been specified via
+the C<--disk> option, and neither C<--cdrom> nor any other install option is
+specified, the C<--disk> cdrom is used as the install media.
 
 =item  --pxe
 
@@ -504,8 +567,60 @@ simply exits, leaving the virtual machine in its current state.
 
 =head1 EXAMPLES
 
+Install a KVM guest, creating a new storage file, virtual networking,
+booting from the host CDROM, using VNC server/viewer
+
+  # virt-install \
+       --connect qemu:///system \
+       --name demo \
+       --ram 500 \
+       --disk path=/var/lib/libvirt/images/demo.img,size=5 \
+       --network network:default \
+       --accelerate \
+       --vnc \
+       --cdrom /dev/cdrom
+
+
+Install a Fedora 9 KVM guest, using LVM partition, virtual networking,
+booting from PXE, using VNC server/viewer
+
+  # virt-install \
+       --connect qemu:///system \
+       --name demo \
+       --ram 500 \
+       --disk path=/dev/HostVG/DemoVM \
+       --network network:default \
+       --accelerate \
+       --vnc \
+       --os-variant fedora9
+
+Install a QEMU guest, with a real partition, for a different architecture
+using SDL graphics, using a remote kernel and initrd pair:
+
+  # virt-install \
+       --connect qemu:///system \
+       --name demo \
+       --ram 500 \
+       --disk path=/dev/hdc \
+       --network bridge:eth1 \
+       --arch ppc64 \
+       --sdl \
+       --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
+
+Run a Live CD image under Xen fullyvirt, in diskless environment
+
+  # virt-install \
+       --hvm \
+       --name demo \
+       --ram 500 \
+       --nodisks \
+       --livecd \
+       --vnc \
+       --cdrom /root/fedora7live.iso
+
 Install a paravirtualized Xen guest, 500 MB of RAM, a 5 GB of disk, and
-Fedora Core 6 from a web server, in text-only mode:
+Fedora Core 6 from a web server, in text-only mode, with old style --file
+options:
 
   # virt-install \
        --paravirt \
@@ -516,67 +631,23 @@ Fedora Core 6 from a web server, in text-only mode:
        --nographics \
        --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 
-Install a QEMU guest, with a real partition, for a different architecture
-using SDL graphics, using a local ISO image:
-
-  # virt-install \
-       --connect qemu:///system \
-       --name demo \
-       --ram 500 \
-       --file /dev/hdc \
-       --network bridge:eth1 \
-       --arch ppc64 \
-       --sdl \
-       --cdrom /root/boot.iso
-
-Install a QEMU guest, with a real partition, for a different architecture
-using SDL graphics, using a remote kernel and initrd pair:
-
-  # virt-install \
-       --connect qemu:///system \
-       --name demo \
-       --ram 500 \
-       --file /dev/hdc \
-       --network bridge:eth1 \
-       --arch ppc64 \
-       --sdl \
-       --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
-
-Install a KVM guest, using LVM partition, virtual networking, booting from
-the host CDROM, using VNC server/viewer
-
-  # virt-install \
-       --connect qemu:///system \
-       --name demo
-       --ram 500 \
-       --file /dev/HostVG/DemoVM \
-       --network network:default \
-       --accelerate \
-       --vnc \
-       --cdrom /dev/cdrom 
-
-Run a Live CD image under Xen fullyvirt, in diskless environment
-
-  # virt-install \
-       --hvm \
-       --name demo \
-       --ram 500 \
-       --nodisk \
-       --livecd \
-       --vnc \
-       --cdrom /root/fedora7live.iso
 
 =head1 AUTHOR
 
-Written by Daniel P. Berrange, Hugh Brock, Jeremy Katz and a team of many
-other contributors. See the AUTHORS file in the source distribution for
-the complete list of credits.
+Written by Daniel P. Berrange, Hugh Brock, Jeremy Katz, Cole Robinson and a
+team of many other contributors. See the AUTHORS file in the source
+distribution for the complete list of credits.
 
 =head1 BUGS
 
-Report bugs to the mailing list C<http://www.redhat.com/mailman/listinfo/et-mgmt-tools>
+Report bugs to the mailing list
+C<http://www.redhat.com/mailman/listinfo/et-mgmt-tools>
 or directly to BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the
 C<Fedora> product, and the C<python-virtinst> component.
+
+When filing a bug, please run the failing command with the --debug command
+line flag and post the output to the bug report, along with
+$HOME/.virtinst/virt-install.log
 
 =head1 COPYRIGHT
 

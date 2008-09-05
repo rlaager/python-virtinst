@@ -52,6 +52,7 @@ def parse_disk_option(guest, path, size):
     devtype = None
     ro = False
     shared = False
+    sparse = True
 
     origpath = path
 
@@ -66,27 +67,44 @@ def parse_disk_option(guest, path, size):
         fail(_("--disk path must start with path=, pool=, or vol=."))
     path = path[len(path_type):]
 
-    # Parse endings for perms and device type
+    # Parse out comma separated options
+    opts = {}
     while True:
         if not path.count(","):
             break
-        path, opts = path.split(",", 1)
-        for opt in opts.split(","):
+        path, tmpopts = path.split(",", 1)
+        for opt in tmpopts.split(","):
             opt_type = None
             opt_val = None
             if opt.count("="):
                 opt_type, opt_val = opt.split("=", 1)
-            if opt_type == "device":
-                devtype = opt_val
-            elif opt_type == "perms":
-                if opt_val == "ro":
-                    ro = True
-                elif opt_val == "sh":
-                    shared = True
-                else:
-                    fail(_("Unknown perms value '%s'." % opt_val))
+                opts[opt_type.lower()] = opt_val.lower()
+
+    for opt in opts.items():
+        opt_type, opt_val = opt
+        if opt_type == "device":
+            devtype = opt_val
+        elif opt_type == "perms":
+            if opt_val == "ro":
+                ro = True
+            elif opt_val == "sh":
+                shared = True
             else:
-                fail(_("Unknown disk option '%s'." % opt))
+                fail(_("Unknown '%s' value '%s'" % (opt_type, opt_val))
+        elif opt_type == "size":
+            try:
+                size = float(opt_val)
+            except Exception, e:
+                fail(_("Improper value for 'size': %s" % str(e)))
+        elif opt_type == "sparse":
+            if opt_val == "true":
+                sparse = True
+            elif opt_val == "false":
+                sparse = False
+            else:
+                fail(_("Unknown '%s' value '%s'") % (opt_type, opt_val))
+        else:
+            fail(_("Unknown --disk option '%s'." % opt))
 
     # We return (path, (poolname, volname), volinst, device, readonly, shared)
     if path_type == "path=":
@@ -112,7 +130,7 @@ def parse_disk_option(guest, path, size):
 
     if not devtype:
         devtype = virtinst.VirtualDisk.DEVICE_DISK
-    ret = (abspath, voltuple, volinst, devtype, ro, shared)
+    ret = (abspath, voltuple, volinst, devtype, ro, shared, size, sparse)
     logging.debug("parse_disk: returning %s" % str(ret))
     return ret
 
@@ -121,13 +139,14 @@ def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
     try:
         # Get disk parameters
         if is_file_path:
-            (path, voltuple, volinst,
-             device, readOnly, shared) = (disk, None, None,
-                                         virtinst.VirtualDisk.DEVICE_DISK,
-                                         False, False)
+            (path, voltuple, volinst, device, readOnly, shared, size,
+             sparse) = \
+             (disk, None, None, virtinst.VirtualDisk.DEVICE_DISK, False,
+              False, size, sparse)
         else:
             (path, voltuple, volinst,
-             device, readOnly, shared) = parse_disk_option(guest, disk, size)
+             device, readOnly, shared,
+             size, sparse) = parse_disk_option(guest, disk, size)
             if not sparse and volinst:
                 volinst.allocation = volinst.capacity
 
@@ -162,8 +181,9 @@ def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, hvm, conn):
         if file_paths or disk_paths or size:
             fail(_("Cannot use --file, --size, or --disk with --nodisks"))
         return
-    if file_paths and disk_paths:
-        fail(_("Cannot mix --file and --disk options."))
+    if (file_paths or size or sparse == False) and disk_paths:
+        fail(_("Cannot mix --file, --nonsparse, or --file-size with --disk "
+               "options. Please see the manual for --disk syntax."))
     elif not file_paths and not disk_paths:
         fail(_("A disk must be specified (use --nodisks to override)"))
 
@@ -333,13 +353,13 @@ def parse_args():
 
     parser.add_option_group(insg)
     stog = OptionGroup(parser, _("Storage Configuration"))
-    stog.add_option("-f", "--file", type="string", dest="file_path",
-                    action="callback", callback=cli.check_before_append,
-                    help=_("File to use as the disk image"))
-    stog.add_option("", "--disk", type="string", dest="disk_path",
+    stog.add_option("", "--disk", type="string", dest="diskopts",
                     action="callback", callback=cli.check_before_append,
                     help=_("Specify storage to use as a disk with various "
                            "options."))
+    stog.add_option("-f", "--file", type="string", dest="file_path",
+                    action="callback", callback=cli.check_before_append,
+                    help=_("File to use as the disk image"))
     stog.add_option("-s", "--file-size", type="float",
                     action="append", dest="disksize",
                     help=_("Size of the disk image (if it doesn't exist) in "
@@ -505,7 +525,7 @@ def main():
         cli.get_sound(options.sound, guest)
 
     # set up disks
-    get_disks(options.file_path, options.disk_path, options.disksize,
+    get_disks(options.file_path, options.diskopts, options.disksize,
               options.sparse, options.nodisks, guest, hvm, conn)
 
     # set up network information

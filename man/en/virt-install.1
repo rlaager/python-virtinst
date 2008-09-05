@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2008-07-29" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2008-09-05" "perl v5.10.0" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -205,13 +205,73 @@ Set which physical cpus the guest can use. \f(CW\*(C`CPUSET\*(C'\fR is a comma s
 .Sp
 If the value 'auto' is passed, virt-install attempts to automatically determine
 an optimal cpu pinning using \s-1NUMA\s0 data, if available.
+.IP "\-\-disk=DISKOPTS" 4
+.IX Item "--disk=DISKOPTS"
+Specifies media to use as storage for the guest, with various options. The
+general format of a disk string is
+.Sp
+.Vb 1
+\&    \-\-disk opt1=val1,opt2=val2,...
+.Ve
+.Sp
+To specify media, one of the following options is required:
+.RS 4
+.IP "\fBpath\fR" 4
+.IX Item "path"
+A path to some storage media to use, existing or not. Existing media can be
+a file or block device. If installing on a remote host, the existing media
+must be shared as a libvirt storage volume.
+.Sp
+Specifying a non-existent path implies attempting to create the new storage,
+and will require specifyng a 'size' value. If the base directory of the path
+is a libvirt storage pool on the host, the new storage will be created as a
+libvirt storage volume. For remote hosts, the base directory is required to be
+a storage pool if using this method.
+.IP "\fBpool\fR" 4
+.IX Item "pool"
+An existing libvirt storage pool name to create new storage on. Requires
+specifying a 'size' value.
+.IP "\fBvol\fR" 4
+.IX Item "vol"
+An existing libvirt storage volume to use. This is specified as
+\&'poolname:volname'.
+.RE
+.RS 4
+.Sp
+Other available options:
+.IP "\fBdevice\fR" 4
+.IX Item "device"
+Disk device type. Value can be 'cdrom', 'disk', or 'floppy'. Default is
+\&'disk'. If a 'cdrom' is specified, and no install method is chosen, the
+cdrom is used as the install media.
+.IP "\fBperms\fR" 4
+.IX Item "perms"
+Disk permissions. Value can be 'rw' (Read/Write), 'ro' (Readonly),
+or 'sh' (Shared Read/Write). Default is 'rw'
+.IP "\fBsize\fR" 4
+.IX Item "size"
+size (in \s-1GB\s0) to use if creating new storage
+.IP "\fBsparse\fR" 4
+.IX Item "sparse"
+whether to skip fully allocating newly created storage. Value is 'true' or
+\&'false'. Default is 'true' (do not fully allocate).
+.RE
+.RS 4
+.Sp
+See the examples section for some uses. This option deprecates \f(CW\*(C`\-\-file\*(C'\fR,
+\&\f(CW\*(C`\-\-file\-size\*(C'\fR, and \f(CW\*(C`\-\-nonsparse\*(C'\fR.
+.RE
+.IP "\-\-nodisks" 4
+.IX Item "--nodisks"
+Request a virtual machine without any local disk storage, typically used for
+running 'Live \s-1CD\s0' images or installing to network storage (iSCSI or \s-1NFS\s0 root).
 .IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 4
 .IX Item "-f DISKFILE, --file=DISKFILE"
 Path to the file, disk partition, or logical volume to use as the backing store
 for the guest's virtual disk. If the path does not exist, then \f(CW\*(C`\-\-file\-size\*(C'\fR
 option should also be specified, allowing the disk to be created. This parameter
-can be repeated multiple times to add many disk. This parameter will be prompted 
-for if omitted on the command line.
+can be repeated multiple times to add many disk. This option is deprecated in
+favor of \-\-disk.
 .IP "\-s \s-1DISKSIZE\s0, \-\-file\-size=DISKSIZE" 4
 .IX Item "-s DISKSIZE, --file-size=DISKSIZE"
 Size of the file to create for the guest virtual disk, if the path given to \f(CW\*(C`\-\-file\*(C'\fR
@@ -226,11 +286,6 @@ time taken to fully-allocate the guest virtual disk will be usually by balanced
 by faster install times inside the guest. Thus use of this optional is recommended 
 to ensure consistently high performance and to avoid I/O errors in the guest 
 should the host filesystem fill up.
-.IP "\-\-nodisks" 4
-.IX Item "--nodisks"
-Request a virtual machine without any local disk storage, typically used for 
-running 'Live \s-1CD\s0' images or installing to network storage (iSCSI or \s-1NFS\s0 root).
-This disables all interactive prompts for disk setup.
 .IP "\-m \s-1MAC\s0, \-\-mac=MAC" 4
 .IX Item "-m MAC, --mac=MAC"
 Fixed \s-1MAC\s0 address for the guest; If this parameter is omitted, or the value
@@ -350,9 +405,9 @@ parameter is implied if connecting to a \s-1QEMU\s0 based hypervisor.
 File to use a virtual CD-ROM device for fully virtualized guests. It can be
 path to an \s-1ISO\s0 image, or to a \s-1CDROM\s0 device. It can also be a \s-1URL\s0 from which
 to fetch/access a minimal boot \s-1ISO\s0 image. The URLs take the same format as
-described for the \f(CW\*(C`\-\-location\*(C'\fR argument. If this parameter is omitted then
-the \f(CW\*(C`\-\-location\*(C'\fR argument must be given to specify a location for the kernel
-and initrd, or the \f(CW\*(C`\-\-pxe\*(C'\fR argument used to install from the network.
+described for the \f(CW\*(C`\-\-location\*(C'\fR argument. If a cdrom has been specified via
+the \f(CW\*(C`\-\-disk\*(C'\fR option, and neither \f(CW\*(C`\-\-cdrom\*(C'\fR nor any other install option is
+specified, the \f(CW\*(C`\-\-disk\*(C'\fR cdrom is used as the install media.
 .IP "\-\-pxe" 4
 .IX Item "--pxe"
 Use the \s-1PXE\s0 boot protocol to load the initial ramdisk and kernel for starting
@@ -565,8 +620,67 @@ same results as noautoconsole. If the time limit is succeeded, virt-install
 simply exits, leaving the virtual machine in its current state.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
+Install a \s-1KVM\s0 guest, creating a new storage file, virtual networking,
+booting from the host \s-1CDROM\s0, using \s-1VNC\s0 server/viewer
+.PP
+.Vb 9
+\&  # virt\-install \e
+\&       \-\-connect qemu:///system \e
+\&       \-\-name demo \e
+\&       \-\-ram 500 \e
+\&       \-\-disk path=/var/lib/libvirt/images/demo.img,size=5 \e
+\&       \-\-network network:default \e
+\&       \-\-accelerate \e
+\&       \-\-vnc \e
+\&       \-\-cdrom /dev/cdrom
+.Ve
+.PP
+Install a Fedora 9 \s-1KVM\s0 guest, using \s-1LVM\s0 partition, virtual networking,
+booting from \s-1PXE\s0, using \s-1VNC\s0 server/viewer
+.PP
+.Vb 9
+\&  # virt\-install \e
+\&       \-\-connect qemu:///system \e
+\&       \-\-name demo \e
+\&       \-\-ram 500 \e
+\&       \-\-disk path=/dev/HostVG/DemoVM \e
+\&       \-\-network network:default \e
+\&       \-\-accelerate \e
+\&       \-\-vnc \e
+\&       \-\-os\-variant fedora9
+.Ve
+.PP
+Install a \s-1QEMU\s0 guest, with a real partition, for a different architecture
+using \s-1SDL\s0 graphics, using a remote kernel and initrd pair:
+.PP
+.Vb 9
+\&  # virt\-install \e
+\&       \-\-connect qemu:///system \e
+\&       \-\-name demo \e
+\&       \-\-ram 500 \e
+\&       \-\-disk path=/dev/hdc \e
+\&       \-\-network bridge:eth1 \e
+\&       \-\-arch ppc64 \e
+\&       \-\-sdl \e
+\&       \-\-location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
+.Ve
+.PP
+Run a Live \s-1CD\s0 image under Xen fullyvirt, in diskless environment
+.PP
+.Vb 8
+\&  # virt\-install \e
+\&       \-\-hvm \e
+\&       \-\-name demo \e
+\&       \-\-ram 500 \e
+\&       \-\-nodisks \e
+\&       \-\-livecd \e
+\&       \-\-vnc \e
+\&       \-\-cdrom /root/fedora7live.iso
+.Ve
+.PP
 Install a paravirtualized Xen guest, 500 \s-1MB\s0 of \s-1RAM\s0, a 5 \s-1GB\s0 of disk, and
-Fedora Core 6 from a web server, in text-only mode:
+Fedora Core 6 from a web server, in text-only mode, with old style \-\-file
+options:
 .PP
 .Vb 8
 \&  # virt\-install \e
@@ -578,74 +692,21 @@ Fedora Core 6 from a web server, in text-only mode:
 \&       \-\-nographics \e
 \&       \-\-location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 .Ve
-.PP
-Install a \s-1QEMU\s0 guest, with a real partition, for a different architecture
-using \s-1SDL\s0 graphics, using a local \s-1ISO\s0 image:
-.PP
-.Vb 9
-\&  # virt\-install \e
-\&       \-\-connect qemu:///system \e
-\&       \-\-name demo \e
-\&       \-\-ram 500 \e
-\&       \-\-file /dev/hdc \e
-\&       \-\-network bridge:eth1 \e
-\&       \-\-arch ppc64 \e
-\&       \-\-sdl \e
-\&       \-\-cdrom /root/boot.iso
-.Ve
-.PP
-Install a \s-1QEMU\s0 guest, with a real partition, for a different architecture
-using \s-1SDL\s0 graphics, using a remote kernel and initrd pair:
-.PP
-.Vb 9
-\&  # virt\-install \e
-\&       \-\-connect qemu:///system \e
-\&       \-\-name demo \e
-\&       \-\-ram 500 \e
-\&       \-\-file /dev/hdc \e
-\&       \-\-network bridge:eth1 \e
-\&       \-\-arch ppc64 \e
-\&       \-\-sdl \e
-\&       \-\-location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
-.Ve
-.PP
-Install a \s-1KVM\s0 guest, using \s-1LVM\s0 partition, virtual networking, booting from
-the host \s-1CDROM\s0, using \s-1VNC\s0 server/viewer
-.PP
-.Vb 9
-\&  # virt\-install \e
-\&       \-\-connect qemu:///system \e
-\&       \-\-name demo
-\&       \-\-ram 500 \e
-\&       \-\-file /dev/HostVG/DemoVM \e
-\&       \-\-network network:default \e
-\&       \-\-accelerate \e
-\&       \-\-vnc \e
-\&       \-\-cdrom /dev/cdrom
-.Ve
-.PP
-Run a Live \s-1CD\s0 image under Xen fullyvirt, in diskless environment
-.PP
-.Vb 8
-\&  # virt\-install \e
-\&       \-\-hvm \e
-\&       \-\-name demo \e
-\&       \-\-ram 500 \e
-\&       \-\-nodisk \e
-\&       \-\-livecd \e
-\&       \-\-vnc \e
-\&       \-\-cdrom /root/fedora7live.iso
-.Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-Written by Daniel P. Berrange, Hugh Brock, Jeremy Katz and a team of many
-other contributors. See the \s-1AUTHORS\s0 file in the source distribution for
-the complete list of credits.
+Written by Daniel P. Berrange, Hugh Brock, Jeremy Katz, Cole Robinson and a
+team of many other contributors. See the \s-1AUTHORS\s0 file in the source
+distribution for the complete list of credits.
 .SH "BUGS"
 .IX Header "BUGS"
-Report bugs to the mailing list \f(CW\*(C`http://www.redhat.com/mailman/listinfo/et\-mgmt\-tools\*(C'\fR
+Report bugs to the mailing list
+\&\f(CW\*(C`http://www.redhat.com/mailman/listinfo/et\-mgmt\-tools\*(C'\fR
 or directly to BugZilla \f(CW\*(C`http://bugzilla.redhat.com/bugzilla/\*(C'\fR against the
 \&\f(CW\*(C`Fedora\*(C'\fR product, and the \f(CW\*(C`python\-virtinst\*(C'\fR component.
+.PP
+When filing a bug, please run the failing command with the \-\-debug command
+line flag and post the output to the bug report, along with
+\&\f(CW$HOME\fR/.virtinst/virt\-install.log
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (C) 2006\-2007 Red Hat, Inc, and various contributors. 
@@ -655,9 +716,3 @@ permitted by law.
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 \&\f(CWvirsh(1)\fR, \f(CW\*(C`virt\-clone(1)\*(C'\fR, \f(CW\*(C`virt\-manager(1)\*(C'\fR, the project website \f(CW\*(C`http://virt\-manager.org\*(C'\fR
-.SH "POD ERRORS"
-.IX Header "POD ERRORS"
-Hey! \fBThe above document had some coding errors, which are explained below:\fR
-.IP "Around line 1:" 4
-.IX Item "Around line 1:"
-Unknown directive: =od
