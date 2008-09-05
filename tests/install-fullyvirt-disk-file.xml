@@ -21,11 +21,11 @@
     <console type='pty'/>
     <disk type='file' device='disk'>
       <source file='/tmp/test.img'/>
-      <target dev='hda'/>
+      <target dev='hda' bus='ide'/>
     </disk>
     <disk type='block' device='cdrom'>
       <source dev='/dev/loop0'/>
-      <target dev='hdc'/>
+      <target dev='hdc' bus='ide'/>
       <readonly/>
     </disk>
     <input type='mouse' bus='ps2'/>
