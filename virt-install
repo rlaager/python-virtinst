@@ -44,6 +44,35 @@ locale.setlocale(locale.LC_ALL, '')
 gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
 gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
+DEFAULT_POOL_PATH = "/var/lib/libvirt/images"
+DEFAULT_POOL_NAME = "default"
+
+def build_default_pool(guest):
+
+    if not virtinst.util.is_storage_capable(guest.conn):
+        # VirtualDisk will raise an error for us
+        return
+    pool = None
+    try:
+        pool = guest.conn.storagePoolLookupByName(DEFAULT_POOL_NAME)
+    except libvirt.libvirtError:
+        pass
+
+    if pool:
+        return
+
+    try:
+        logging.debug("Attempting to build default pool with target '%s'" %
+                      DEFAULT_POOL_PATH)
+        defpool = virtinst.Storage.DirectoryPool(conn=guest.conn,
+                                                 name=DEFAULT_POOL_NAME,
+                                                 target_path=DEFAULT_POOL_PATH)
+        newpool = defpool.install(build=True, create=True)
+        newpool.setAutostart(True)
+    except Exception, e:
+        raise RuntimeError(_("Couldn't create default storage pool '%s': %s"),
+                             (DEFAULT_POOL_PATH, str(e)))
+
 def parse_disk_option(guest, path, size):
     """helper to properly parse --disk options"""
     abspath = None
@@ -109,9 +138,13 @@ def parse_disk_option(guest, path, size):
     # We return (path, (poolname, volname), volinst, device, readonly, shared)
     if path_type == "path=":
         abspath = os.path.abspath(path)
+        if os.path.dirname(abspath) == DEFAULT_POOL_PATH:
+            build_default_pool(guest)
     elif path_type == "pool=":
         if not size:
             raise ValueError(_("Size must be specified with all 'pool='"))
+        if path == DEFAULT_POOL_NAME:
+            build_default_pool(guest)
         vc = virtinst.Storage.StorageVolume.get_volume_for_pool(pool_name=path,
                                                                 conn=guest.conn)
         vname = virtinst.Storage.StorageVolume.find_free_name(conn=guest.conn,
@@ -128,6 +161,8 @@ def parse_disk_option(guest, path, size):
         voltuple = (vollist[0], vollist[1])
         logging.debug("Parsed volume: as pool='%s' vol='%s'" % \
                       (voltuple[0], voltuple[1]))
+        if voltuple[0] == DEFAULT_POOL_NAME:
+            build_default_pool(guest)
 
     if not devtype:
         devtype = virtinst.VirtualDisk.DEVICE_DISK
