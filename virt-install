@@ -90,7 +90,7 @@ def parse_disk_option(guest, path, size):
             elif opt_val == "sh":
                 shared = True
             else:
-                fail(_("Unknown '%s' value '%s'" % (opt_type, opt_val))
+                fail(_("Unknown '%s' value '%s'" % (opt_type, opt_val)))
         elif opt_type == "size":
             try:
                 size = float(opt_val)
@@ -116,7 +116,8 @@ def parse_disk_option(guest, path, size):
                                                                 conn=guest.conn)
         vname = virtinst.Storage.StorageVolume.find_free_name(conn=guest.conn,
                                                               pool_name=path,
-                                                              name=guest.name)
+                                                              name=guest.name,
+                                                              suffix=".img")
         volinst = vc(pool_name=path, name=vname, conn=guest.conn,
                      allocation=0, capacity=(size and size*1024*1024*1024))
     elif path_type == "vol=":

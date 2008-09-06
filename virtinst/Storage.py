@@ -622,7 +622,8 @@ class StorageVolume(StorageObject):
         return StoragePool.get_volume_for_pool(util.get_xml_path(pool_object.XMLDesc(0), "/pool/@type"))
     get_volume_for_pool = staticmethod(get_volume_for_pool)
 
-    def find_free_name(name, pool_object=None, pool_name=None, conn=None):
+    def find_free_name(name, pool_object=None, pool_name=None, conn=None,
+                       suffix=""):
         """
         Finds a name similar (or equal) to passed 'name' that is not in use
         by another pool
@@ -630,7 +631,11 @@ class StorageVolume(StorageObject):
         This function scans the list of existing Volumes on the passed or
         looked up pool object for a collision with the passed name. If the
         name is in use, it append "-1" to the name and tries again, then "-2",
-        continuing to 100000 (which will hopefully never be reached.")
+        continuing to 100000 (which will hopefully never be reached.") If
+        suffix is specified, attach it to the (potentially incremented) name
+        before checking for collision.
+
+        Ex name="test", suffix=".img" -> name-3.img
 
         @returns: A free name
         @rtype: C{str}
@@ -640,10 +645,13 @@ class StorageVolume(StorageObject):
                                                         pool_name=pool_name,
                                                         conn=conn)
         pool_object.refresh(0)
+
+        vol = None
         for i in range(0, 100000):
             tryname = name
             if i != 0:
                 tryname += ("-%d" % i)
+            tryname += suffix
             try:
                 vol = pool_object.storageVolLookupByName(tryname)
             except libvirt.libvirtError:
