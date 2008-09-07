@@ -405,7 +405,8 @@ def is_storage_capable(conn):
             return False
         n = conn.listStoragePools()
     except libvirt.libvirtError, e:
-        if e.get_error_code() == libvirt.VIR_ERR_RPC:
+        if e.get_error_code() == libvirt.VIR_ERR_RPC or \
+           e.get_error_code() == libvirt.VIR_ERR_NO_SUPPORT:
             return False
     return True
 
