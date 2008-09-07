@@ -70,7 +70,7 @@ def build_default_pool(guest):
         newpool = defpool.install(build=True, create=True)
         newpool.setAutostart(True)
     except Exception, e:
-        raise RuntimeError(_("Couldn't create default storage pool '%s': %s"),
+        raise RuntimeError(_("Couldn't create default storage pool '%s': %s") %
                              (DEFAULT_POOL_PATH, str(e)))
 
 def parse_disk_option(guest, path, size):
