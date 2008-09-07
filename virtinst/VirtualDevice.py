@@ -54,7 +54,11 @@ class VirtualDevice(object):
 
     def get_conn(self):
         return self._conn
-    conn = property(get_conn)
+    def set_conn(self, val):
+        if not isinstance(val, libvirt.virConnect):
+            raise ValueError(_("'conn' must be a virConnect instance."))
+        self._conn = val
+    conn = property(get_conn, set_conn)
 
     def _is_remote(self):
         return self.__remote
