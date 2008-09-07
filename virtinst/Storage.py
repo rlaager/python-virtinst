@@ -377,13 +377,15 @@ class StoragePool(StorageObject):
         errmsg = None
         if build:
             if meter:
-                meter.start(size=None, text=_("Creating storage pool..."))
+                #meter.start(size=None, text=_("Creating storage pool..."))
+                pass
             try:
                 pool.build(libvirt.VIR_STORAGE_POOL_BUILD_NEW)
             except Exception, e:
                 errmsg = _("Could not build storage pool: %s" % str(e))
             if meter:
-                meter.end(0)
+                #meter.end(0)
+                pass
 
         if create and not errmsg:
             try:
@@ -799,15 +801,19 @@ class StorageVolume(StorageObject):
         logging.debug("Creating storage volume '%s' with xml:\n%s" % \
                       (self.name, xml))
         if meter:
-            meter.start(size=self.capacity,
-                        text=_("Creating storage volume..."))
+            #meter.start(size=self.capacity,
+            #            text=_("Creating storage volume..."))
+            # XXX: We don't have any meaningful way to update the meter
+            # XXX: throughout the operation, so just skip it
+            pass
         try:
             vol = self.pool.createXML(xml, 0)
         except Exception, e:
             raise RuntimeError("Couldn't create storage volume '%s': '%s'" %
                                (self.name, str(e)))
         if meter:
-            meter.end(0)
+            #meter.end(0)
+            pass
         logging.debug("Storage volume '%s' install complete." % self.name)
         return vol
 
