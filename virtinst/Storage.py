@@ -606,10 +606,7 @@ class StorageVolume(StorageObject):
                                name=name, conn=self.pool._conn)
         self._allocation = None
         self._capacity = None
-        #self.allocation = allocation
-        # XXX Since libvirtd completely blocks if we have any allocation
-        # XXX going on, force allocation to 0 until this is usable.
-        self.allocation = 0
+        self.allocation = allocation
         self.capacity = capacity
 
     def get_volume_for_pool(pool_object=None, pool_name=None, conn=None):

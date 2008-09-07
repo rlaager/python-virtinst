@@ -335,8 +335,16 @@ class VirtualDisk(VirtualDevice):
                                   (os.path.dirname(self.path), pool.name(),
                                    os.path.basename(self.path)))
                     volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
+                    cap = (self.size * 1024 * 1024 * 1024)
+                    if self.sparse:
+                        alloc = 0
+                    else:
+                        #alloc = cap
+                        # XXX: disable setting managed storage as nonsparse
+                        # XXX: since it hoses libvirtd (for now)
+                        alloc = 0
                     vol = volclass(name=os.path.basename(self.path),
-                                   capacity=(self.size * 1024 * 1024 * 1024),
+                                   capacity=cap, allocation=alloc,
                                    pool=pool)
                     self._set_vol_install(vol, validate=False)
                 elif self._is_remote():
