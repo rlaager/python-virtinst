@@ -86,7 +86,7 @@ class URIImageFetcher(ImageFetcher):
             if not path.endswith("/"):
                 path += "/"
             base = os.path.basename(filename)
-            path += base
+            path += filename
             logging.debug("Fetching URI " + path)
             try:
                 file = grabber.urlopen(path,
@@ -109,7 +109,7 @@ class HTTPImageFetcher(URIImageFetcher):
             path = self.location
             if not path.endswith("/"):
                 path += "/"
-            path += os.path.basename(filename)
+            path += filename
             request = urllib2.Request(path)
             request.get_method = lambda: "HEAD"
             http_file = urllib2.urlopen(request)
