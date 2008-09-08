@@ -24,6 +24,7 @@ import os
 import gzip
 import re
 import tempfile
+import platform
 import ConfigParser
 
 from virtinst import _virtinst as _
@@ -36,7 +37,10 @@ class Distro:
         self.uri = uri
         self.type = type
         self.scratchdir = scratchdir
+        if arch == None:
+            arch = platform.machine()
         self.arch = arch
+        self.treeinfo = None
 
     def acquireBootDisk(self, fetcher, progresscb):
         raise "Not implemented"
@@ -45,18 +49,12 @@ class Distro:
         raise "Not implemented"
 
     def isValidStore(self, fetcher, progresscb):
+        """Determine if uri points to a tree of the store's distro"""
         raise "Not implemented"
 
-
-# Base image store for any Red Hat related distros which have
-# a common layout
-class RedHatDistro(Distro):
-    def __init__(self, uri, type=None, scratchdir=None, arch=None):
-        Distro.__init__(self, uri, type, scratchdir)
-        self.treeinfo = None
-
-    def hasTreeinfo(self, fetcher, progresscb):
-        # all Red Hat based distros should have .treeinfo / execute only once
+    def _hasTreeinfo(self, fetcher, progresscb):
+        # all Red Hat based distros should have .treeinfo, perhaps others
+        # will in time
         if not (self.treeinfo is None):
             return True
 
@@ -71,18 +69,103 @@ class RedHatDistro(Distro):
             self.treeinfo.read(tmptreeinfo)
         finally:
             os.unlink(tmptreeinfo)
-
         return True
 
-    def acquireKernel(self, fetcher, progresscb):
-        if self.hasTreeinfo(fetcher, progresscb):
+    def _getTreeinfoMedia(self, fetcher, progresscb, mediaName):
+        if self.type == "xen":
+            type = "xen"
+        else:
+            type = self.treeinfo.get("general", "arch")
+
+        return self.treeinfo.get("images-%s" % type, mediaName)
+
+
+class GenericDistro(Distro):
+    """Generic distro store. Check well known paths for kernel locations
+       as a last resort if we can't recognize any actual distro"""
+    _xen_paths = [ ("images/xen/vmlinuz",
+                    "images/xen/initrd.img"),           # Fedora
+                 ]
+    _hvm_paths = [ ("images/pxeboot/vmlinuz",
+                    "images/pxeboot/initrd.img"),       # Fedora
+                 ]
+    _iso_paths = [ "images/boot.iso",                   # RH/Fedora
+                   "boot/boot.iso",                     # Suse
+                   "current/images/netboot/mini.iso",   # Debian
+                   "install/images/boot.iso",           # Mandriva
+                 ]
+
+    # Holds values to use when actually pulling down media
+    _valid_kernel_path = None
+    _valid_iso_path = None
+
+    def isValidStore(self, fetcher, progresscb):
+        if self._hasTreeinfo(fetcher, progresscb):
+            # Use treeinfo to pull down media paths
             if self.type == "xen":
                 type = "xen"
             else:
                 type = self.treeinfo.get("general", "arch")
+            kernelSection = "images-%s" % type
+            isoSection = "images-%s" % self.treeinfo.get("general", "arch")
 
-            kernelpath = self.treeinfo.get("images-%s" % type, "kernel")
-            initrdpath = self.treeinfo.get("images-%s" % type, "initrd")
+            if self.treeinfo.has_section(kernelSection):
+                self._valid_kernel_path = (self._getTreeinfoMedia(fetcher, progresscb, "kernel"), self._getTreeinfoMedia(fetcher, progresscb, "initrd"))
+            if self.treeinfo.has_section(isoSection):
+                self._valid_iso_path = self.treeinfo.get(isoSection, "boot.iso")
+
+        if self.type == "xen":
+            kern_list = self._xen_paths
+        else:
+            kern_list = self._hvm_paths
+
+        # If validated media paths weren't found (no treeinfo), check against
+        # list of media location paths.
+        for kern, init in kern_list:
+            if self._valid_kernel_path == None \
+               and fetcher.hasFile(kern) and fetcher.hasFile(init):
+                self._valid_kernel_path = (kern, init)
+                break
+        for iso in self._iso_paths:
+            if self._valid_iso_path == None \
+               and fetcher.hasFile(iso):
+                self._valid_iso_path = iso
+                break
+
+        if self._valid_kernel_path or self._valid_iso_path:
+            return True
+        return False
+
+    def acquireKernel(self, fetcher, progresscb):
+        if self._valid_kernel_path == None:
+            raise ValueError(_("Could not find a kernel path for virt type "
+                               "'%s'" % self.type))
+
+        kernel = fetcher.acquireFile(self._valid_kernel_path[0], progresscb)
+        try:
+            initrd = fetcher.acquireFile(self._valid_kernel_path[1], progresscb)
+            if fetcher.location.startswith("/"):
+                return (kernel, initrd, "")
+            else:
+                return (kernel, initrd, "method=" + fetcher.location)
+        except:
+            os.unlink(kernel)
+
+    def acquireBootDisk(self, fetcher, progresscb):
+        if self._valid_iso_path == None:
+            raise ValueError(_("Could not find a boot iso path for this tree."))
+
+        return fetcher.acquireFile(self._valid_iso_path, progresscb)
+
+
+# Base image store for any Red Hat related distros which have
+# a common layout
+class RedHatDistro(Distro):
+
+    def acquireKernel(self, fetcher, progresscb):
+        if self._hasTreeinfo(fetcher, progresscb):
+            kernelpath = self._getTreeinfoMedia(fetcher, progresscb, "kernel")
+            initrdpath = self._getTreeinfoMedia(fetcher, progresscb, "initrd")
         else:
             # fall back to old code
             if self.type is None or self.type == "hvm":
@@ -104,19 +187,17 @@ class RedHatDistro(Distro):
             os.unlink(kernel)
 
     def acquireBootDisk(self, fetcher, progresscb):
-        if self.hasTreeinfo(fetcher, progresscb):
-            if self.type == "xen":
-                type = "xen"
-            else:
-                type = self.treeinfo.get("general", "arch")
-            return fetcher.acquireFile(self.treeinfo.get("images-%s" % type, "boot.iso"), progresscb)
+        if self._hasTreeinfo(fetcher, progresscb):
+            return fetcher.acquireFile(self._getTreeinfoMedia(fetcher,
+                                                              progresscb,
+                                                              "boot.iso"))
         else:
             return fetcher.acquireFile("images/boot.iso", progresscb)
 
 # Fedora distro check
 class FedoraDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
-        if self.hasTreeinfo(fetcher, progresscb):
+        if self._hasTreeinfo(fetcher, progresscb):
             m = re.match(".*Fedora.*", self.treeinfo.get("general", "family"))
             return (m != None)
         else:
@@ -128,7 +209,7 @@ class FedoraDistro(RedHatDistro):
 # Red Hat Enterprise Linux distro check
 class RHELDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
-        if self.hasTreeinfo(fetcher, progresscb):
+        if self._hasTreeinfo(fetcher, progresscb):
             m = re.match(".*Red Hat Enterprise Linux.*", self.treeinfo.get("general", "family"))
             return (m != None)
         else:
@@ -147,7 +228,7 @@ class RHELDistro(RedHatDistro):
 # CentOS distro check
 class CentOSDistro(RedHatDistro):
     def isValidStore(self, fetcher, progresscb):
-        if self.hasTreeinfo(fetcher, progresscb):
+        if self._hasTreeinfo(fetcher, progresscb):
             m = re.match(".*CentOS.*", self.treeinfo.get("general", "family"))
             return (m != None)
         else:
@@ -172,10 +253,9 @@ class SLDistro(RedHatDistro):
 class SuseDistro(Distro):
     def __init__(self, uri, type=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, type, scratchdir, arch)
-        if self.arch is None:
-            self.arch = os.uname()[4]
-            if len(self.arch) == 4 and len[0] == 'i' and len[2:] == "86":
-                self.arch = "i386"
+        if len(self.arch) == 4 and self.arch[0] == 'i' \
+           and self.arch[2:] == "86":
+            self.arch = "i386"
 
     def acquireBootDisk(self, fetcher, progresscb):
         return fetcher.acquireFile("boot/boot.iso", progresscb)

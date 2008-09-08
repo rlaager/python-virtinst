@@ -46,6 +46,7 @@ from OSDistro import DebianDistro
 from OSDistro import UbuntuDistro
 from OSDistro import GentooDistro
 from OSDistro import MandrivaDistro
+from OSDistro import GenericDistro
 
 def _fetcherForURI(uri, scratchdir=None):
     if uri.startswith("http://"): 
@@ -82,6 +83,8 @@ def _storeForDistro(fetcher, baseuri, type, progresscb, arch, distro=None,
         stores.append(GentooDistro(baseuri, type, scratchdir, arch))
     if distro == "mandriva" or distro is None:
         stores.append(MandrivaDistro(baseuri, type, scratchdir, arch))
+
+    stores.append(GenericDistro(baseuri, type, scratchdir, arch))
 
     for store in stores:
         if store.isValidStore(fetcher, progresscb):
