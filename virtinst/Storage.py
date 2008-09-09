@@ -786,10 +786,8 @@ class StorageVolume(StorageObject):
         tar_xml = "  <target>\n" + \
                   "%s" % (self._get_target_xml()) + \
                   "  </target>\n"
-        alloc = self.allocation or self.capacity
-
         return  "  <capacity>%d</capacity>\n" % self.capacity + \
-                "  <allocation>%d</allocation>\n" % alloc + \
+                "  <allocation>%d</allocation>\n" % self.allocation + \
                 "%s" % src_xml + \
                 "%s" % tar_xml
 
