@@ -303,6 +303,14 @@ class DistroInstaller(Guest.Installer):
         return osblob
 
     def post_install_check(self, guest):
+        if util.is_uri_remote(guest.conn.getURI()):
+            # Use block peek for this?
+            return True
+
+        if len(guest._install_disks) == 0 \
+           or guest._install_disks[0].device != VirtualDisk.DEVICE_DISK:
+            return True
+
         # Check for the 0xaa55 signature at the end of the MBR
         try:
             fd = os.open(guest._install_disks[0].path, os.O_RDONLY)
@@ -357,6 +365,14 @@ class PXEInstaller(Guest.Installer):
         return osblob
 
     def post_install_check(self, guest):
+        if util.is_uri_remote(guest.conn.getURI()):
+            # Use block peek for this?
+            return True
+
+        if len(guest._install_disks) == 0 \
+           or guest._install_disks[0].device != VirtualDisk.DEVICE_DISK:
+            return True
+
         # Check for the 0xaa55 signature at the end of the MBR
         try:
             fd = os.open(guest._install_disks[0].path, os.O_RDONLY)
