@@ -28,6 +28,7 @@ import urlgrabber.progress as progress
 import util
 import libvirt
 import __builtin__
+import CapabilitiesParser
 from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
@@ -395,7 +396,9 @@ class Guest(object):
                           hypervisorURI)
             self.conn = libvirt.open(hypervisorURI)
         if self.conn == None:
-            raise RuntimeError, _("Unable to connect to hypervisor, aborting installation!")
+            raise RuntimeError, _("Unable to connect to hypervisor, aborting "
+                                  "installation!")
+        self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
 
         self.disknode = None # this needs to be set in the subclass
 

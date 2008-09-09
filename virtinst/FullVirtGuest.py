@@ -26,6 +26,8 @@ import util
 import DistroManager
 import logging
 import time
+import platform
+
 from VirtualDisk import VirtualDisk
 from DistroManager import PXEInstaller
 from virtinst import _virtinst as _
@@ -168,18 +170,31 @@ class FullVirtGuest(Guest.XenGuest):
         Guest.Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "hd"
         self.features = { "acpi": None, "pae": util.is_pae_capable(), "apic": None }
+        if arch is None:
+            arch = platform.machine
         self.arch = arch
-        if emulator is None:
+
+        self.emulator = emulator
+        self.loader = None
+        guest = self._caps.guestForOSType(type=self.installer.os_type,
+                                          arch=self.arch)
+        if (not self.emulator) and guest:
+            for dom in guest.domains:
+                if dom.hypervisor_type == self.installer.type:
+                    self.emulator = dom.emulator
+                    self.loader = dom.loader
+
+        # Fall back to default hardcoding
+        if self.emulator is None:
             if self.type == "xen":
                 if os.uname()[4] in ("x86_64"):
-                    emulator = "/usr/lib64/xen/bin/qemu-dm"
+                    self.emulator = "/usr/lib64/xen/bin/qemu-dm"
                 else:
-                    emulator = "/usr/lib/xen/bin/qemu-dm"
-        self.emulator = emulator
-        if self.type == "xen":
+                    self.emulator = "/usr/lib/xen/bin/qemu-dm"
+
+        if (not self.loader) and self.type == "xen":
             self.loader = "/usr/lib/xen/boot/hvmloader"
-        else:
-            self.loader = None
+
         self._os_type = None
         self._os_variant = None
 
