@@ -113,10 +113,13 @@ def nice_exit():
     sys.exit(0)
 
 def getConnection(connect):
-    if connect is None or connect.lower()[0:3] == "xen":
+    if connect and connect.lower()[0:3] == "xen":
         if os.geteuid() != 0:
             fail(_("Must be root to create Xen guests"))
+    if connect is None:
+        fail(_("Could not find usable default libvirt connection."))
 
+    logging.debug("Using libvirt URI connect '%s'" % connect)
     return libvirt.open(connect)
 
 #
