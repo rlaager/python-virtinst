@@ -630,9 +630,42 @@ class iSCSIPool(StoragePool):
     """
     Create an iSCSI based storage pool
     """
-    def __init__(self, *args, **kwargs):
-        raise RuntimeError, "Not implemented"
 
+    host = property(StoragePool.get_host, StoragePool.set_host)
+
+    def __init__(self, conn, name, source_path=None, host=None,
+                 target_path=None, uuid=None):
+        StoragePool.__init__(self, name=name, type=StoragePool.TYPE_ISCSI,
+                             uuid=None, target_path=target_path, conn=conn)
+
+        if source_path:
+            self.source_path = source_path
+        if host:
+            self.host = host
+
+    # Need to overwrite pool *_source_path since iscsi device isn't
+    # a fully qualified path
+    def get_source_path(self):
+        return self._source_path
+    def set_source_path(self, val):
+        self._source_path = val
+    source_path = property(get_source_path, set_source_path)
+
+    def _get_default_target_path(self):
+        return DEFAULT_ISCSI_TARGET
+
+    def _get_target_xml(self):
+        xml = "    <path>%s</path>\n" % escape(self.target_path)
+        return xml
+
+    def _get_source_xml(self):
+        if not self.host:
+            raise RuntimeError(_("Hostname is required"))
+        if not self.source_path:
+            raise RuntimeError(_("Host path is required"))
+        xml = """    <host name="%s"/>\n""" % self.host + \
+              """    <device path="%s"/>\n""" % escape(self.source_path)
+        return xml
 
 class StorageVolume(StorageObject):
     """
