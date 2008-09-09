@@ -570,13 +570,62 @@ class LogicalPool(StoragePool):
     def _get_source_xml(self):
         return ""
 
-
 class DiskPool(StoragePool):
     """
-    Create a raw disk storage pool
+    Create a storage pool from a physical disk
     """
-    def __init__(self, *args, **kwargs):
-        raise RuntimeError, "Not implemented"
+
+    # Register applicable property methods from parent class
+    source_path = property(StoragePool.get_source_path,
+                           StoragePool.set_source_path)
+
+    formats = [ "auto", "bsd", "msdos", "dvh", "gpt", "mac", "pc98", "sun" ]
+
+    def get_volume_class():
+        return DiskVolume
+    get_volume_class = staticmethod(get_volume_class)
+
+    def __init__(self, conn, name, source_path=None, host=None,
+                 target_path=None, format="auto", uuid=None):
+        StoragePool.__init__(self, name=name, type=StoragePool.TYPE_DISK,
+                             uuid=None, target_path=target_path, conn=conn)
+        self.format = format
+        if source_path:
+            self.source_path = source_path
+
+    def get_format(self):
+        return self._format
+    def set_format(self, val):
+        if not val in self.formats:
+            raise ValueError(_("Unknown Disk format: %s" % val))
+        self._format = val
+    format = property(get_format, set_format)
+
+    def _get_default_target_path(self):
+        return DEFAULT_DEV_TARGET
+
+    def _get_target_xml(self):
+        xml = "   <path>%s</path>\n" % escape(self.target_path)
+        return xml
+
+    def _get_source_xml(self):
+        if not self.source_path:
+            raise RuntimeError(_("Host path is required"))
+
+        xml = ""
+        # There is no explicit "auto" type for disk pools, but leaving out
+        # the format type seems to do the job for existing formatted disks
+        if self.format != "auto":
+            xml = """    <format type="%s"/>\n""" % self.format
+        xml += """    <device path="%s"/>\n""" % escape(self.source_path)
+        return xml
+
+    def install(self, meter=None, create=False, build=False):
+        if self.format == "auto" and build:
+            raise ValueError(_("Must explicitly specify disk format if "
+                               "formatting disk device."))
+        StoragePool.install(self, meter=meter, create=create, build=build)
+
 class iSCSIPool(StoragePool):
     """
     Create an iSCSI based storage pool
