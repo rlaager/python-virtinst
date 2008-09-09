@@ -444,7 +444,8 @@ class VirtualDisk(VirtualDevice):
         if self.vol_object:
             return
         elif self.vol_install:
-            self.vol_object = self.vol_install.install(meter=progresscb)
+            self._set_vol_object(self.vol_install.install(meter=progresscb),
+                                 validate=False)
             return
         elif self.type == VirtualDisk.TYPE_FILE and self.path is not None \
              and not os.path.exists(self.path):
