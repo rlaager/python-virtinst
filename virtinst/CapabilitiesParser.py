@@ -164,6 +164,8 @@ class Guest(object):
 
 
     def bestDomainType(self, accelerated=None):
+        if len(self.domains) == 0:
+            raise CapabilitiesParserException(_("No domains available for this guest."))
         if accelerated is None:
             # Picking last in list so we favour KVM/KQEMU over QEMU
             return self.domains[-1]
