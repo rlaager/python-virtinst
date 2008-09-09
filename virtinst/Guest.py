@@ -320,7 +320,8 @@ class Installer(object):
 
     def get_scratchdir(self):
         if self.type == "xen":
-            return "/var/lib/xen"
+            if os.path.exists("/var/lib/xen"):
+                return "/var/lib/xen"
         return "/var/lib/libvirt/boot"
     scratchdir = property(get_scratchdir)
 
