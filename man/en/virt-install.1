@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2008-09-05" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2008-09-08" "perl v5.10.0" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -609,6 +609,9 @@ Prevent the domain from automatically rebooting after a graphical install.
 .IX Item "--force"
 Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
+.IP "\-\-prompt" 4
+.IX Item "--prompt"
+Specifically enable prompting. Default prompting is off (as os virtinst 0.400.0)
 .IP "\-\-wait=WAIT" 4
 .IX Item "--wait=WAIT"
 Amount of time to wait (in minutes) for a \s-1VM\s0 to complete its install.

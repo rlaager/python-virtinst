@@ -33,6 +33,7 @@ from virtinst import _virtinst as _
 
 MIN_RAM = 64
 force = False
+doprompt = True
 
 class VirtOptionParser(OptionParser):
     '''Subclass to get print_help to work properly with non-ascii text'''
@@ -126,11 +127,20 @@ def set_force(val=True):
     global force
     force = val
 
+def set_prompt(prompt=True):
+    # Set whether we allow prompts, or fail if a prompt pops up
+    global doprompt
+    doprompt = prompt
+
 def prompt_for_input(prompt = "", val = None):
     if val is not None:
         return val
     if force:
-        raise RuntimeError(_("Force flag is set but input was required. Prompt was: %s" % prompt))
+        raise RuntimeError(_("Force flag is set but input was required. "
+                             "Prompt was: %s" % prompt))
+    if not doprompt:
+        raise RuntimeError(_("Prompting disabled, but input was requested. "
+                             "Prompt was: %s" % prompt))
     print prompt + " ",
     return sys.stdin.readline().strip()
 
@@ -147,6 +157,11 @@ def prompt_for_yes_or_no(prompt):
     if force:
         logging.debug("Forcing return value of True to prompt '%s'")
         return True
+
+    if not doprompt:
+        raise RuntimeError(_("Prompting disabled, but yes/no was requested. "
+                             "Try --force to force 'yes' for such prompts. "
+                             "Prompt was: %s" % prompt))
 
     while 1:
         input = prompt_for_input(prompt, None)

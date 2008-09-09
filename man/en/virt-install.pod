@@ -553,6 +553,10 @@ Prevent the domain from automatically rebooting after a graphical install.
 Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
 
+=item --prompt
+
+Specifically enable prompting. Default prompting is off (as os virtinst 0.400.0)
+
 =item --wait=WAIT
 
 Amount of time to wait (in minutes) for a VM to complete its install.
