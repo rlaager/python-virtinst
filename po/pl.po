@@ -1,18 +1,33 @@
+# translation of pl.po to Polish
+# Piotr Drąg <piotrdrag@gmail.com>, 2007.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: pl\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-09-10 14:00-0400\n"
+"PO-Revision-Date: 2008-03-04 21:30+0200\n"
+"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
+"Language-Team: Polish <pl@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
 #: virt-clone:45
 msgid "What is the name for the cloned virtual machine?"
-msgstr ""
+msgstr "Jak jest nazwa sklonowanej maszyny wirtualnej?"
 
 #: virt-clone:50 virt-clone:60 virt-clone:89 virtinst/cli.py:175
 msgid "ERROR: "
-msgstr ""
+msgstr "BŁĄD: "
 
 #: virt-clone:55
 msgid "What is the name or uuid of the original virtual machine?"
-msgstr ""
+msgstr "Jaka jest nazwa lub UUID oryginalnej maszyny wirtualnej?"
 
 #: virt-clone:83
 msgid "What would you like to use as the cloned disk (file path)?"
-msgstr ""
+msgstr "Czy chcesz użyć jako sklonowany dysk (ścieżka do pliku)?"
 
 #: virt-clone:94
 #, python-format
@@ -20,61 +35,67 @@ msgid "This will overwrite the existing path '%s'!\n"
 msgstr ""
 
 #: virt-clone:96
+#, fuzzy
 msgid "Do you really want to use this disk (yes or no)?"
-msgstr ""
+msgstr "Na pewno chcesz użyć dysku (\"yes\" lub \"no\")?"
 
 #: virt-clone:102 virt-install:202
 #, python-format
 msgid "Disk %s is already in use by another guest!\n"
-msgstr ""
+msgstr "Dysk %s jest już używany przez innego gościa!\n"
 
 #: virt-clone:103 virt-install:203
 msgid "Do you really want to use the disk (yes or no)? "
-msgstr ""
+msgstr "Na pewno chcesz użyć dysku (\"yes\" lub \"no\")?"
 
 #: virt-clone:132
 msgid "Name or uuid for the original guest; The status must be shut off"
-msgstr ""
+msgstr "Nazwa lub UUID oryginalnego gościa; stan musi być wyłączony"
 
 #: virt-clone:136
 msgid "Name for the new guest"
-msgstr ""
+msgstr "Nazwa nowego gościa"
 
 #: virt-clone:141
 msgid "New UUID for the clone guest; Default is a randomly generated UUID"
 msgstr ""
+"Nowy UUID dla sklonowanego gościa; domyślnie jest to losowo utworzony UUID"
 
 #: virt-clone:146
 msgid ""
 "New fixed MAC address for the clone guest. Default is a randomly generated "
 "MAC"
 msgstr ""
+"Nowy stały adres MAC dla sklonowanego gościa. Domyślnie jest to losowo "
+"utworzony MAC"
 
 #: virt-clone:151
 msgid "New file to use as the disk image for the new guest"
-msgstr ""
+msgstr "Nowy plik do użycia jako obraz dysku dla nowego gościa"
 
 #: virt-clone:155 virt-image:128 virt-install:317
 msgid "Connect to hypervisor with URI"
-msgstr ""
+msgstr "Połącz się z nadzorcą za pomocą URI"
 
 #: virt-clone:161
 msgid ""
 "Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-"
 "copy=hdc)"
 msgstr ""
+"Wymuś skopiowanie urządzeń (np. jeśli \"hdc\" jest urządzeniem CD-ROM tylko "
+"do odczytu użyj --force-copy=hdc)"
 
 #: virt-clone:166
 msgid "Do not use a sparse file for the clone's disk image"
-msgstr ""
+msgstr "Nie używaj plików sparse dla obrazu dysku klona"
 
 #: virt-clone:171
 msgid "Preserve a new file to use as the disk image for the new guest"
-msgstr ""
+msgstr "Zachowaj nowy plik do użycia jako obraz dysku dla nowego gościa"
 
 #: virt-clone:175 virt-image:137 virt-install:447 virt-pack:109
 msgid "Print debugging information"
-msgstr ""
+msgstr "Wyświetl informacje o debugowaniu"
 
 #: virt-clone:177 virt-image:143
 msgid ""
@@ -84,11 +105,11 @@ msgstr ""
 
 #: virt-clone:194
 msgid "Must be root to clone Xen guests"
-msgstr ""
+msgstr "Musisz być rootem, aby klonować gości Xena"
 
 #: virt-clone:229 virt-image:242 virt-install:697
 msgid "Installation aborted at user request"
-msgstr ""
+msgstr "Instalacja została przerwana na żądanie użytkownika"
 
 #: virt-image:67
 #, python-format
@@ -98,89 +119,103 @@ msgid ""
 msgstr ""
 
 #: virt-image:71
-#, python-format
+#, fuzzy, python-format
 msgid "The image requires %i network interface"
-msgstr ""
+msgstr "Obraz wymaga jednego interfejsu sieciowego"
 
 #: virt-image:90 virt-install:323
 msgid "Name of the guest instance"
-msgstr ""
+msgstr "Nazwa gościa"
 
 #: virt-image:92 virt-install:325
 msgid "Memory to allocate for guest instance in megabytes"
-msgstr ""
+msgstr "Pamięć do przydzielenia dla gościa w megabajtach"
 
 #: virt-image:95
 msgid ""
 "UUID for the guest; if none is given a random UUID will be generated. If you "
 "specify UUID, you should use a 32-digit hexadecimal number."
 msgstr ""
+"UUID gościa; jeśli żaden nie zostanie podany, zostanie utworzony losowy "
+"UUID. Jeśli podasz UUID, powinieneś użyć 32 znakowej liczby szesnastkowej."
 
 #: virt-image:97 virt-install:334
 msgid "Number of vcpus to configure for your guest"
-msgstr ""
+msgstr "Liczba wirtualnych procesorów do skonfigurowania dla gościa"
 
 #: virt-image:99 virt-install:336
 msgid "Check that vcpus do not exceed physical CPUs and warn if they do."
 msgstr ""
+"Sprawdź, czy wirtualne procesory nie przekraczają liczby fizycznych "
+"procesorów"
 
 #: virt-image:104 virt-install:423
 msgid ""
 "Fixed MAC address for the guest; if none or RANDOM is given a random address "
 "will be used"
 msgstr ""
+"Stały adres MAC dla gościa; jeśli żaden nie zostanie podany lub podasz "
+"LOSOWY, użyty zostanie losowy adres"
 
 #: virt-image:107 virt-install:415
 msgid ""
 "Bridge to connect guest NIC to; if none given, will try to determine the "
 "default"
 msgstr ""
+"Mostek do łączenia NIC gościa; jeśli żaden nie zostanie podany, spróbuje "
+"określić domyślny"
 
 #: virt-image:110 virt-install:419
 msgid ""
 "Connect the guest to a virtual network, forwarding to the physical network "
 "with NAT"
 msgstr ""
+"Połącz gościa z siecią wirtualną, przekazywaną do sieci fizycznej za pomocą "
+"NAT"
 
 #: virt-image:114 virt-install:429
 msgid "Use VNC for graphics support"
-msgstr ""
+msgstr "Użyj VNC dla obsługi grafiki"
 
 #: virt-image:116 virt-install:431
 msgid "Port to use for VNC"
-msgstr ""
+msgstr "Port do używania dla VNC"
 
 #: virt-image:118 virt-install:433
 msgid "Use SDL for graphics support"
-msgstr ""
+msgstr "Użyj SDL do obsługi grafiki"
 
 #: virt-image:120 virt-install:435
 msgid "Don't set up a graphical console for the guest."
-msgstr ""
+msgstr "Nie ustawiaj graficznej konsoli dla gościa."
 
 #: virt-image:124 virt-install:442
 msgid "set up keymap for a graphical console"
-msgstr ""
+msgstr "ustaw mapę klawiatury dla graficznej konsoli"
 
 #: virt-image:132 virt-install:356
 msgid ""
 "Disables APIC for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
 msgstr ""
+"Wyłącza APIC dla w pełni wirtualizowanego gościa (Zastępuje wartości w bazie "
+"danych os-type/os-variant"
 
 #: virt-image:133 virt-install:360
 msgid ""
 "Disables ACPI for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
 msgstr ""
+"Wyłącza ACPI dla w pełni wirtualizowanego gościa (Zastępuje wartości w bazie "
+"danych os-type/os-variant"
 
 #: virt-image:139
 msgid "Print the libvirt XML, but do not start the domain"
-msgstr ""
+msgstr "Wyświetl XML libvirt, ale nie uruchamiaj domeny"
 
 #: virt-image:141
 msgid "The zero-based index of the boot record to use"
-msgstr ""
+msgstr "Użyty pusty indeks sektora startowego"
 
 #: virt-image:146
 msgid "Overwrite, or destroy, an existing image with the same name"
@@ -188,11 +223,12 @@ msgstr ""
 
 #: virt-image:151 virt-pack:113
 msgid "You need to provide an image XML descriptor"
-msgstr ""
+msgstr "Musisz podać deskryptor XML obrazu"
 
 #: virt-image:168
+#, fuzzy
 msgid "Cannot parse"
-msgstr ""
+msgstr "Nie można odczytać %s"
 
 #: virt-image:172
 msgid "Cannot parse capabilities"
@@ -201,7 +237,7 @@ msgstr ""
 #: virt-image:177
 #, python-format
 msgid "The index for --boot must be between 0 and %d"
-msgstr ""
+msgstr "Indeks dla --boot musi być między 0 a %d"
 
 #: virt-image:220
 #, python-format
@@ -210,10 +246,13 @@ msgid ""
 "\n"
 "Creating guest %s..."
 msgstr ""
+"\n"
+"\n"
+"Tworzenie gościa %s..."
 
 #: virt-image:224
 msgid "Guest creation failed"
-msgstr ""
+msgstr "Utworzenie gościa nie powiodło się"
 
 #: virt-image:230
 #, python-format
@@ -223,11 +262,15 @@ msgid ""
 "by running 'virsh start %s'; otherwise, please\n"
 "restart your installation."
 msgstr ""
+"Utworzenie domeny mogło się nie powieść.\n"
+"Jeśli jednak powiodła się, możesz ponownie uruchomić\n"
+"domenę uruchamiając \"virsh start %s\"; w innym\n"
+"przypadku uruchom ponownie instalację."
 
 #: virt-install:73
-#, python-format
+#, fuzzy, python-format
 msgid "Couldn't create default storage pool '%s': %s"
-msgstr ""
+msgstr "Nie można pobrać pliku %s: %s"
 
 #: virt-install:96
 msgid "--disk path must start with path=, pool=, or vol=."
@@ -249,8 +292,9 @@ msgid "Unknown --disk option '%s'."
 msgstr ""
 
 #: virt-install:145
+#, fuzzy
 msgid "Size must be specified with all 'pool='"
-msgstr ""
+msgstr "Położenie do zainstalowania musi zostać podane"
 
 #: virt-install:158
 msgid "Storage volume must be specified as pool=poolname/volname"
@@ -262,12 +306,14 @@ msgid "Error with storage parameters: %s"
 msgstr ""
 
 #: virt-install:210
+#, fuzzy
 msgid " Do you really want to use the disk (yes or no)?"
-msgstr ""
+msgstr "Na pewno chcesz użyć dysku (\"yes\" lub \"no\")?"
 
 #: virt-install:218
+#, fuzzy
 msgid "Cannot use --file, --size, or --disk with --nodisks"
-msgstr ""
+msgstr "Nie można używać --file z --nodisks"
 
 #: virt-install:221
 msgid ""
@@ -281,31 +327,35 @@ msgstr ""
 
 #: virt-install:232
 msgid "Need to pass size for each disk"
-msgstr ""
+msgstr "Musisz podać rozmiar dla każdego dysku"
 
 #: virt-install:259
 msgid "Only one of --pxe, --location and --cdrom can be used"
-msgstr ""
+msgstr "Tylko jedno z --pxe, --location i --cdrom może zostać użyte"
 
 #: virt-install:263
+#, fuzzy
 msgid "Network PXE boot is not supported for paravirtualized guests"
 msgstr ""
+"Uruchamianie sieciowe PXE nie jest obsługiwane dla gości parawirtualizowanych"
 
 #: virt-install:266
 msgid "Paravirtualized guests cannot install off cdrom media."
 msgstr ""
 
 #: virt-install:268
+#, fuzzy
 msgid "location must be specified for paravirtualized guests."
-msgstr ""
+msgstr "Położenie do zainstalowania musi zostać podane"
 
 #: virt-install:271
 msgid "--location can not be specified for remote connections."
 msgstr ""
 
 #: virt-install:280
+#, fuzzy
 msgid "One of --pxe, --location, or cdrom media must be specified."
-msgstr ""
+msgstr "Tylko jedno z --pxe, --location i --cdrom może zostać użyte"
 
 #: virt-install:297
 #, python-format
@@ -315,7 +365,7 @@ msgstr ""
 #: virt-install:303 virt-install:308 virtinst/cli.py:354 virtinst/cli.py:359
 #, python-format
 msgid "%s option requires an argument"
-msgstr ""
+msgstr "Opcja %s wymaga argumentu"
 
 #: virt-install:320
 msgid "General Options"
@@ -323,15 +373,16 @@ msgstr ""
 
 #: virt-install:329
 msgid "The CPU architecture to simulate"
-msgstr ""
+msgstr "Symulowana architektura procesora"
 
 #: virt-install:332
+#, fuzzy
 msgid "UUID for the guest."
-msgstr ""
+msgstr "Nazwa nowego gościa"
 
 #: virt-install:340
 msgid "Set which physical CPUs Domain can use."
-msgstr ""
+msgstr "Ustaw, które procesory fizyczne może używać domena."
 
 #: virt-install:343
 msgid "Full Virtualization specific options."
@@ -345,12 +396,17 @@ msgstr ""
 msgid ""
 "The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
 msgstr ""
+"Typ systemu operacyjnego dla w pełni wirtualizowanych gości, np. \"linux\", "
+"\"unix\", \"windows\""
 
 #: virt-install:352
+#, fuzzy
 msgid ""
 "The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
 "'solaris10', 'win2k'"
 msgstr ""
+"Wariant systemu operacyjnego dla w pełni wirtualizowanych gości, np. "
+"\"fedora6\", \"rhel5\", \"solaris10\", \"win2k\", \"vista\""
 
 #: virt-install:363
 msgid "Virtualization Type Options"
@@ -358,40 +414,49 @@ msgstr ""
 
 #: virt-install:365
 msgid "This guest should be a fully virtualized guest"
-msgstr ""
+msgstr "ten gość powinien być w pełni wirtualizowanym gościem"
 
 #: virt-install:367
 msgid "This guest should be a paravirtualized guest"
-msgstr ""
+msgstr "Ten gość powinien być parawirtualizowany"
 
 #: virt-install:370
+#, fuzzy
 msgid "Use kernel acceleration capabilities (kvm, kqemu, ...)"
-msgstr ""
+msgstr "Użyj możliwości akceleracji jądra"
 
 #: virt-install:374
 msgid "Installation Method Options"
 msgstr ""
 
 #: virt-install:377
+#, fuzzy
 msgid "CD-ROM installation media"
-msgstr ""
+msgstr "Instalacja gościa nie powiodła się"
 
 #: virt-install:380
+#, fuzzy
 msgid ""
 "Installation source (eg, nfs:host:/path, http://host/path, ftp://host/path)"
 msgstr ""
+"Źródło instalacji dla parawirtualizowanego gościa (np. nfs:host:/ścieżka, "
+"http://host/ścieżka, ftp://host/ścieżka)"
 
 #: virt-install:383
+#, fuzzy
 msgid "Boot from the network using the PXE protocol"
-msgstr ""
+msgstr "Uruchom instalator z sieci używając protokołu uruchamiania PXE"
 
 #: virt-install:385
+#, fuzzy
 msgid "Treat the CDROM media is a LiveCD"
-msgstr ""
+msgstr "Określ, czy nośnik CD-ROM jest LiveCD"
 
 #: virt-install:388
+#, fuzzy
 msgid "Additional arguments to pass to the kernel booted from --location"
 msgstr ""
+"Dodatkowe argumenty do przekazania instalatorowi parawirtualizowanych gości"
 
 #: virt-install:392
 msgid "Storage Configuration"
@@ -403,21 +468,23 @@ msgstr ""
 
 #: virt-install:399
 msgid "File to use as the disk image"
-msgstr ""
+msgstr "Użycie obrazu dysku nie powiodło się"
 
 #: virt-install:402
 msgid "Size of the disk image (if it doesn't exist) in gigabytes"
-msgstr ""
+msgstr "Rozmiar obrazu dysku (jeśli nie istnieje) w gigabajtach"
 
 #: virt-install:406
 msgid ""
 "Don't use sparse files for disks.  Note that this will be significantly "
 "slower for guest creation"
 msgstr ""
+"Nie używaj plików sparse dla dysków. Zauważ, że znacznie spowolni to "
+"tworzenie gościa"
 
 #: virt-install:409
 msgid "Don't set up any disks for the guest."
-msgstr ""
+msgstr "Nie ustawiaj żadnych dysków dla gościa."
 
 #: virt-install:412
 msgid "Networking Configuration"
@@ -429,7 +496,7 @@ msgstr ""
 
 #: virt-install:438
 msgid "Don't automatically try to connect to the guest console"
-msgstr ""
+msgstr "Nie próbuj automatycznie łączyć się z konsolą gościa"
 
 #: virt-install:445
 msgid "Miscellaneous Options"
@@ -437,7 +504,7 @@ msgstr ""
 
 #: virt-install:449
 msgid "Disables the automatic rebooting when the installation is complete."
-msgstr ""
+msgstr "Wyłącza automatyczne ponowne uruchamianie po zakończeniu instalacji."
 
 #: virt-install:452
 msgid ""
@@ -460,19 +527,21 @@ msgid ""
 "Unable to connect to graphical console: virt-viewer not installed. Please "
 "install the 'virt-viewer' package."
 msgstr ""
+"Nie można połączyć się z konsolą graficzną: nie zainstalowano virt-viewer. "
+"Zainstaluj pakiet \"virt-viewer\"."
 
 #: virt-install:512
 msgid "Can't do both --hvm and --paravirt"
-msgstr ""
+msgstr "Nie można wykonać jednocześnie --hvm i --paravirt"
 
 #: virt-install:523 virt-install:528
 msgid "default"
 msgstr ""
 
 #: virt-install:527
-#, python-format
+#, fuzzy, python-format
 msgid "Unsupported virtualization type '%s' "
-msgstr ""
+msgstr "Nieobsługiwany typ wirtualizacji"
 
 #: virt-install:530
 #, python-format
@@ -485,10 +554,13 @@ msgid ""
 "\n"
 "Starting install..."
 msgstr ""
+"\n"
+"\n"
+"Uruchamianie instalacji..."
 
 #: virt-install:642
 msgid "Guest installation failed"
-msgstr ""
+msgstr "Instalacja gościa nie powiodła się"
 
 #: virt-install:649
 #, python-format
@@ -508,10 +580,13 @@ msgid "Installation has exceeded specified timelimit. Aborting."
 msgstr ""
 
 #: virt-install:664
+#, fuzzy
 msgid ""
 "Domain installation still in progress. You can reconnect to \n"
 "the console to complete the installation process."
 msgstr ""
+"Trwa instalacja domeny. Możesz ponownie połączyć się z \n"
+"konsolą, aby zakończyć proces instalacji."
 
 #: virt-install:672
 #, python-format
@@ -521,6 +596,10 @@ msgid ""
 " by running 'virsh start %s'; otherwise, please\n"
 " restart your installation."
 msgstr ""
+"Instalacja domeny chyba się nie powiodła. Jeśli jednak\n"
+" powiodła się, możesz ponownie uruchomić domenę\n"
+" uruchamiając \"virsh start %s\"; w innym przypadku\n"
+" uruchom ponownie instalację."
 
 #: virt-install:676
 #, python-format
@@ -528,10 +607,12 @@ msgid ""
 "Guest installation complete... you can restart your domain\n"
 "by running 'virsh start %s'"
 msgstr ""
+"Instalacja gościa została zakończona... Można ponownie uruchomić domenę "
+"wykonując \"virsh start %s\""
 
 #: virt-install:679
 msgid "Guest installation complete... restarting guest."
-msgstr ""
+msgstr "Instalacja gościa została zakończona... Ponowne uruchamianie gościa."
 
 #: virt-install:688
 #, python-format
@@ -541,20 +622,24 @@ msgid ""
 " by running 'virsh start %s'; otherwise, please\n"
 " restart your installation."
 msgstr ""
+"Instalacja domeny chyba się nie powiodła. Jeśli jednak\n"
+" powiodła się, możesz ponownie uruchomić domenę\n"
+" uruchamiając \"virsh start %s\"; w innym przypadku\n"
+" uruchom ponownie instalację."
 
 #: virt-pack:58
 msgid "The image name and version must be present"
 msgstr ""
 
 #: virt-pack:73
-#, python-format
+#, fuzzy, python-format
 msgid "Scratch disk %s does not have a size attribute"
-msgstr ""
+msgstr "Dysk systemowy %s nie istnieje"
 
 #: virt-pack:76
-#, python-format
+#, fuzzy, python-format
 msgid "Disk file %s could not be found"
-msgstr ""
+msgstr "Nie znaleziono wpisu dla dysku \"%s\""
 
 #: virt-pack:93
 #, python-format
@@ -570,26 +655,28 @@ msgid "The image descriptor must contain name and version"
 msgstr ""
 
 #: virt-pack:132
-#, python-format
+#, fuzzy, python-format
 msgid "Validation failed: %s"
-msgstr ""
+msgstr "Instalacja gościa nie powiodła się"
 
 #: virt-pack:138
-#, python-format
+#, fuzzy, python-format
 msgid "Packaging failed: %s"
-msgstr ""
+msgstr "Otwieranie URL-a %s nie powiodło się: %s"
 
 #: virtinst/CapabilitiesParser.py:168
 msgid "No domains available for this guest."
 msgstr ""
 
 #: virtinst/cli.py:112
+#, fuzzy
 msgid "Exiting at user request."
-msgstr ""
+msgstr "Instalacja została przerwana na żądanie użytkownika"
 
 #: virtinst/cli.py:118
+#, fuzzy
 msgid "Must be root to create Xen guests"
-msgstr ""
+msgstr "Musisz być rootem, aby klonować gości Xena"
 
 #: virtinst/cli.py:120
 msgid "Could not find usable default libvirt connection."
@@ -613,17 +700,19 @@ msgid ""
 msgstr ""
 
 #: virtinst/cli.py:185
+#, fuzzy
 msgid "A name is required for the virtual machine."
-msgstr ""
+msgstr "Jak jest nazwa sklonowanej maszyny wirtualnej?"
 
 #: virtinst/cli.py:193
+#, fuzzy
 msgid "Memory amount is required for the virtual machine."
-msgstr ""
+msgstr "Jak jest nazwa sklonowanej maszyny wirtualnej?"
 
 #: virtinst/cli.py:195
-#, python-format
+#, fuzzy, python-format
 msgid "Installs currently require %d megs of RAM."
-msgstr ""
+msgstr "BŁĄD: instalacja obecnie wymaga %d megabajtów RAM-u."
 
 #: virtinst/cli.py:215
 #, python-format
@@ -632,18 +721,21 @@ msgid ""
 "on the host. This will work, but performance will be poor. Are you sure? "
 "(yes or no)"
 msgstr ""
+"Poprosiłeś o więcej procesorów wirtualnych (%d) niż jest procesorów "
+"fizycznych (%d) na hoście. To będzie działało, ale wydajność będzie słaba. "
+"Jesteś pewny?"
 
 #: virtinst/cli.py:270
 msgid "Unknown network type "
-msgstr ""
+msgstr "Nieznany typ sieci "
 
 #: virtinst/cli.py:288
 msgid "Cannot mix both --bridge and --network arguments"
-msgstr ""
+msgstr "Nie można mieszać argumentów --bridge i --network"
 
 #: virtinst/cli.py:297
 msgid "Need to pass equal numbers of networks & mac addresses"
-msgstr ""
+msgstr "Musisz podać równą liczbę sieci i adresów MAC"
 
 #: virtinst/cli.py:319
 msgid "Can't specify more than one of VNC, SDL, or --nographics"
@@ -651,104 +743,110 @@ msgstr ""
 
 #: virtinst/CloneManager.py:74
 msgid "Name or UUID of guest to clone is required"
-msgstr ""
+msgstr "Nazwa lub UUID gościa do sklonowania jest wymagana"
 
 #: virtinst/CloneManager.py:83
 msgid "A valid name or UUID of guest to clone is required"
-msgstr ""
+msgstr "Prawidłowa nNazwa lub UUID gościa do sklonowania jest wymagana"
 
 #: virtinst/CloneManager.py:93
 #, python-format
 msgid "Invalid name for new guest: %s"
-msgstr ""
+msgstr "Nieprawidłowa nazwa nowego gościa: %s"
 
 #: virtinst/CloneManager.py:101
 #, python-format
 msgid "Invalid uuid for new guest: %s"
-msgstr ""
+msgstr "Nieprawidłowy UUID nowego gościa: %s"
 
 #: virtinst/CloneManager.py:109
 msgid "New file to use for disk image is required"
-msgstr ""
+msgstr "Nowy plik do użycia obrazu dysku jest wymagany"
 
 #: virtinst/CloneManager.py:187
 #, python-format
 msgid "Domain %s is not found"
-msgstr ""
+msgstr "Nie znaleziono domeny %s"
 
 #: virtinst/CloneManager.py:204
 msgid "Domain status must be SHUTOFF"
-msgstr ""
+msgstr "Stan domeny musi być SHUTOFF"
 
 #: virtinst/CloneManager.py:211
 #, python-format
 msgid "Domain %s already exists"
-msgstr ""
+msgstr "Domena %s już istnieje"
 
 #: virtinst/CloneManager.py:220 virtinst/Guest.py:871
 msgid "The UUID you entered is already in use by another guest!"
-msgstr ""
+msgstr "Podany UUID jest już używany przez innego gościa!"
 
 #: virtinst/CloneManager.py:264
 #, python-format
 msgid "Missing new file to use disk image for %s"
-msgstr ""
+msgstr "Brak nowego pliku do użycia obrazu dysku dla %s"
 
 #: virtinst/CloneManager.py:547
 #, python-format
 msgid "Cloning from %(src)s to %(dst)s"
-msgstr ""
+msgstr "klonowanie z %(src)s do %(dst)s"
 
 #: virtinst/CloneManager.py:549
 msgid "Cloning domain..."
-msgstr ""
+msgstr "Klonowanie domeny..."
 
 #: virtinst/DistroManager.py:93
 #, python-format
 msgid "Could not find an installable distribution at '%s'"
-msgstr ""
+msgstr "Nie można znaleźć dystrybucji do zainstalowania w \"%s\""
 
 #: virtinst/DistroManager.py:104 virtinst/DistroManager.py:122
 msgid "Invalid install location: "
-msgstr ""
+msgstr "Nieprawidłowe położenie instalacji: "
 
 #: virtinst/DistroManager.py:162
 msgid "Invalid NFS format: No path specified."
-msgstr ""
+msgstr "Nieprawidłowy format NFS: nie podano ścieżki."
 
 #: virtinst/DistroManager.py:177
-#, python-format
+#, fuzzy, python-format
 msgid "Checking installer location failed: %s"
-msgstr ""
+msgstr "Instalacja gościa nie powiodła się"
 
 #: virtinst/DistroManager.py:180
 msgid ""
 "Install media location must be an NFS, HTTP or FTP network install source, "
 "or an existing local file/device"
 msgstr ""
+"Położenie nośnika instalacji musi być źródłem instalacji sieciowej NFS, HTTP "
+"lub FTP, albo lokalnym plikiem/urządzeniem"
 
 #: virtinst/DistroManager.py:185
 msgid "NFS installations are only supported as root"
-msgstr ""
+msgstr "Instalacje NFS są obsługiwane tylko przez roota"
 
 #: virtinst/FullVirtGuest.py:206
+#, fuzzy
 msgid "OS type must be a string."
-msgstr ""
+msgstr "Mapa klawiatury musi być łańcuchem tekstowym"
 
 #: virtinst/FullVirtGuest.py:213
-#, python-format
+#, fuzzy, python-format
 msgid "OS type '%s' does not exist in our dictionary"
-msgstr ""
+msgstr "Typ systemu operacyjnego %s nie istnieje w słowniku"
 
 #: virtinst/FullVirtGuest.py:221
+#, fuzzy
 msgid "OS variant must be a string."
-msgstr ""
+msgstr "UUID musi być łańcuchem tekstowym."
 
 #: virtinst/FullVirtGuest.py:227
-#, python-format
+#, fuzzy, python-format
 msgid ""
 "OS variant '%(var)s; does not exist in our dictionary for OS type '%(ty)s'"
 msgstr ""
+"Wariant systemu operacyjnego %(var)s nie istnieje w słowniku dla typu "
+"systemu operacyjnego %(type)s"
 
 #: virtinst/FullVirtGuest.py:238
 #, python-format
@@ -757,47 +855,52 @@ msgstr ""
 
 #: virtinst/FullVirtGuest.py:323
 msgid "Unable to start domain for guest, aborting installation!"
-msgstr ""
+msgstr "Nie można uruchomić domeny dla gościa, przerywanie instalacji!"
 
 #: virtinst/FullVirtGuest.py:364
-#, python-format
+#, fuzzy, python-format
 msgid "Invalid dictionary entry for device '%s %s'"
-msgstr ""
+msgstr "Nieprawidłowa nazwa nowego gościa: %s"
 
 #: virtinst/Guest.py:54
 msgid "MAC address must be of the format AA:BB:CC:DD:EE:FF"
-msgstr ""
+msgstr "Adres MAC mus być w formacie AA:BB:CC:DD:EE:FF"
 
 #: virtinst/Guest.py:62
 msgid "A network name was not provided"
-msgstr ""
+msgstr "Nie podano nazwy sieci"
 
 #: virtinst/Guest.py:68
 #, python-format
 msgid "Unknown network type %s"
-msgstr ""
+msgstr "Nieznany typ sieci %s"
 
 #: virtinst/Guest.py:105
+#, fuzzy
 msgid ""
 "The MAC address you entered is already in use by another active virtual "
 "machine."
 msgstr ""
+"Podany adres MAC jest już używany przez inną nieaktywną maszynę wirtualną!"
 
 #: virtinst/Guest.py:108
+#, fuzzy
 msgid ""
 "The MAC address you entered conflicts with a device on the physical host."
-msgstr ""
+msgstr "Podany adres MAC jest w konflikcie z fizycznym NIC."
 
 #: virtinst/Guest.py:110
+#, fuzzy
 msgid ""
 "The MAC address you entered is already in use by another inactive virtual "
 "machine."
 msgstr ""
+"Podany adres MAC jest już używany przez inną nieaktywną maszynę wirtualną!"
 
 #: virtinst/Guest.py:181
-#, python-format
+#, fuzzy, python-format
 msgid "'model' must be a string,  was '%s'."
-msgstr ""
+msgstr "Pamięć musi być całkowita, ale wynosi \"%s\""
 
 #: virtinst/Guest.py:184
 #, python-format
@@ -806,19 +909,20 @@ msgstr ""
 
 #: virtinst/Guest.py:204
 msgid "Unknown graphics type"
-msgstr ""
+msgstr "Nieznany typ grafiki"
 
 #: virtinst/Guest.py:221
 msgid "Keymap must be a string"
-msgstr ""
+msgstr "Mapa klawiatury musi być łańcuchem tekstowym"
 
 #: virtinst/Guest.py:223
 msgid "Keymap must be less than 16 characters"
-msgstr ""
+msgstr "Mapa klawiatury musi być mniejsza niż 16 znaków"
 
 #: virtinst/Guest.py:225
 msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr ""
+"Mapa klawiatury może zawierać tylko znaki alfanumeryczne, \"_\" lub \"-\""
 
 #: virtinst/Guest.py:236
 msgid ""
@@ -827,239 +931,258 @@ msgstr ""
 
 #: virtinst/Guest.py:333
 msgid "Guest.cdrom must be a boolean type"
-msgstr ""
+msgstr "Guest.cdrom musi być typem zmiennej logicznej"
 
 #: virtinst/Guest.py:350 virtinst/Guest.py:355 virtinst/Guest.py:359
 msgid "Must pass both a kernel and initrd"
-msgstr ""
+msgstr "Musisz podać zarówno jądro, jak i initrd"
 
 #: virtinst/Guest.py:362
 msgid "Kernel and initrd must be specified by a list, dict, or tuple."
 msgstr ""
+"Jądro i initrd muszą zostać podane w formie listy, słownika lub krotki."
 
 #: virtinst/Guest.py:399
 msgid "Unable to connect to hypervisor, aborting installation!"
-msgstr ""
+msgstr "Nie można połączyć się z nadzorcą, przerywanie instalacji!"
 
 #: virtinst/Guest.py:424
 msgid ""
 "System name must be a string greater than 0 and no more than 50 characters"
 msgstr ""
+"Nazwa systemu musi być łańcuchem tekstowym nie większym niż 0 i nie może "
+"zawierać więcej niż 50 znaków"
 
 #: virtinst/Guest.py:426
 msgid "System name must not be only numeric characters"
-msgstr ""
+msgstr "Nazwa systemu nie może zawierać tylko znaków numerycznych"
 
 #: virtinst/Guest.py:428
+#, fuzzy
 msgid ""
 "System name can only contain: alphanumeric '_', '.', ':', '+', or '-' "
 "characters"
 msgstr ""
+"Nazwa systemu może zawierać tylko znaki alfanumeryczne oraz \"_\", \".\" lub "
+"\"-\""
 
 #: virtinst/Guest.py:439
 msgid "Memory value must be an integer greater than 0"
-msgstr ""
+msgstr "Wartość pamięci mus być całkowita i większa niż 0"
 
 #: virtinst/Guest.py:450
 msgid "Max Memory value must be an integer greater than 0"
-msgstr ""
+msgstr "Wartość maksymalnej pamięci mus być całkowita i większa niż 0"
 
 #: virtinst/Guest.py:461 virtinst/Storage.py:315
 msgid "UUID must be a string."
-msgstr ""
+msgstr "UUID musi być łańcuchem tekstowym."
 
 #: virtinst/Guest.py:467 virtinst/Storage.py:321
 msgid ""
 "UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-"
 "XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
 msgstr ""
+"UUID musi być 32 znakową liczbą szesnastkową. Może być w formie XXXXXXXX-"
+"XXXX-XXXX-XXXX-XXXXXXXXXXXX lub może być bez myślników."
 
 #: virtinst/Guest.py:482
+#, fuzzy
 msgid "Number of vcpus must be a postive integer."
-msgstr ""
+msgstr "Liczba wirtualnych procesorów mus być w zakresie 1-%d"
 
 #: virtinst/Guest.py:485
-#, python-format
+#, fuzzy, python-format
 msgid "Number of vcpus must be no greater than %d for this vm type."
-msgstr ""
+msgstr "Liczba wirtualnych procesorów mus być w zakresie 1-%d"
 
 #: virtinst/Guest.py:494
 msgid "cpuset must be string"
-msgstr ""
+msgstr "cpuset musi być łańcuchem tekstowym"
 
 #: virtinst/Guest.py:496
 msgid "cpuset can only contain numeric, ',', or '-' characters"
-msgstr ""
+msgstr "cpuset może zawierać tylko znaki numeryczne, \",\" lub \"-\""
 
 #: virtinst/Guest.py:503
 msgid "cpuset contains invalid format."
-msgstr ""
+msgstr "cpuset zawiera nieprawidłowy format."
 
 #: virtinst/Guest.py:505 virtinst/Guest.py:508
 msgid "cpuset's pCPU numbers must be less than pCPUs."
 msgstr ""
+"Liczba fizycznych procesorów cpuset musi być mniejsza niż procesorów "
+"fizycznych."
 
 #: virtinst/Guest.py:549
 msgid "Must specify whether graphics are enabled"
-msgstr ""
+msgstr "Musisz określić, czy grafika ma być włączona"
 
 #: virtinst/Guest.py:568
 msgid "Graphics enabled must be True or False"
-msgstr ""
+msgstr "Włączenie grafiki musi być \"True\" lub \"False\""
 
 #: virtinst/Guest.py:611
 msgid "You must specify a valid ISO or CD-ROM location for the installation"
-msgstr ""
+msgstr "Musisz podać prawidłowe położenie ISO lub CD-ROM-u dla instalacji"
 
 #: virtinst/Guest.py:614
 msgid "The specified media path does not exist."
-msgstr ""
+msgstr "Podana ścieżka do nośnika nie istnieje."
 
 #: virtinst/Guest.py:757
-#, python-format
+#, fuzzy, python-format
 msgid "Could not remove old vm '%s': %s"
-msgstr ""
+msgstr "Nie można pobrać pliku %s: %s"
 
 #: virtinst/Guest.py:759
 #, python-format
 msgid "Domain named %s already exists!"
-msgstr ""
+msgstr "Domena o nazwie %s już istnieje!"
 
 #: virtinst/Guest.py:766
 msgid "Creating domain..."
-msgstr ""
+msgstr "Tworzenie domeny..."
 
 #: virtinst/Guest.py:769
 msgid "Unable to create domain for the guest, aborting installation!"
-msgstr ""
+msgstr "Nie można utworzyć domeny dla gościa, przerywanie instalacji!"
 
 #: virtinst/Guest.py:789
 msgid ""
 "It appears that your installation has crashed.  You should be able to find "
 "more information in the logs"
 msgstr ""
+"Wygląda na to, że instalacja zawiesiła się. Powinieneś znaleźć więcej "
+"informacji w dziennikach"
 
 #: virtinst/Guest.py:835
 msgid ""
 "Domain has not existed.  You should be able to find more information in the "
 "logs"
 msgstr ""
+"Domena nie istnieje. Powinieneś znaleźć więcej informacji w dziennikach"
 
 #: virtinst/Guest.py:837
 msgid ""
 "Domain has not run yet.  You should be able to find more information in the "
 "logs"
 msgstr ""
+"Domena nie została jeszcze uruchomiona. Powinieneś znaleźć więcej informacji "
+"w dziennikach"
 
 #: virtinst/Guest.py:852
 msgid "Domain has already been started!"
-msgstr ""
+msgstr "Domena została już uruchomiona!"
 
 #: virtinst/Guest.py:879
 msgid "Name and memory must be specified for all guests!"
-msgstr ""
+msgstr "Nazwa i pamięć muszą zostać podane dla wszystkich gości!"
 
 #: virtinst/ImageFetcher.py:74
 msgid "Verifying install location..."
-msgstr ""
+msgstr "Sprawdzanie położenia instalacji..."
 
 #: virtinst/ImageFetcher.py:78
 #, python-format
 msgid "Opening URL %s failed: %s"
-msgstr ""
+msgstr "Otwieranie URL-a %s nie powiodło się: %s"
 
 #: virtinst/ImageFetcher.py:94
 #, python-format
 msgid "Retrieving file %s..."
-msgstr ""
+msgstr "Pobieranie pliku %s..."
 
 #: virtinst/ImageFetcher.py:96
 #, python-format
 msgid "Couldn't acquire file %s: %s"
-msgstr ""
+msgstr "Nie można pobrać pliku %s: %s"
 
 #: virtinst/ImageFetcher.py:157 virtinst/ImageFetcher.py:159
 msgid "Invalid file location given: "
-msgstr ""
+msgstr "Podano nieprawidłowe położenie pliku: "
 
 #: virtinst/ImageFetcher.py:194
 #, python-format
 msgid "Mounting location %s failed"
-msgstr ""
+msgstr "Montowanie położenie %s nie powiodło się"
 
 #: virtinst/ImageManager.py:43
 msgid "Could not find suitable boot descriptor for this host"
-msgstr ""
+msgstr "Nie można znaleźć odpowiedniego deskryptora startowego dla tego hosta"
 
 #: virtinst/ImageManager.py:49
 msgid "Unsupported virtualization type"
-msgstr ""
+msgstr "Nieobsługiwany typ wirtualizacji"
 
 #: virtinst/ImageManager.py:96
 #, python-format
 msgid "System disk %s does not exist"
-msgstr ""
+msgstr "Dysk systemowy %s nie istnieje"
 
 #: virtinst/ImageParser.py:78
 msgid "Expected exactly one 'domain' element"
-msgstr ""
+msgstr "Oczekiwano dokładnie jeden element \"domain\""
 
 #: virtinst/ImageParser.py:83
 #, python-format
 msgid "Disk entry for '%s' not found"
-msgstr ""
+msgstr "Nie znaleziono wpisu dla dysku \"%s\""
 
 #: virtinst/ImageParser.py:110
 #, python-format
 msgid "Memory must be an integer, but is '%s'"
-msgstr ""
+msgstr "Pamięć musi być całkowita, ale wynosi \"%s\""
 
 #: virtinst/ImageParser.py:219
 #, python-format
 msgid "The format for disk %s must be one of %s"
-msgstr ""
+msgstr "Format dysku %s musi być jednym z %s"
 
 #: virtinst/ImageParser.py:258
 msgid "Root element is not 'image'"
-msgstr ""
+msgstr "Element root nie jest \"image\""
 
 #: virtinst/LiveCDInstaller.py:50
+#, fuzzy
 msgid "Connection does not support HVM virtualisation, cannot boot live CD"
-msgstr ""
+msgstr "Wirtualizacja HVM nie jest obsługiwana; nie można uruchomić Live CD"
 
 #: virtinst/LiveCDInstaller.py:59
+#, fuzzy
 msgid "CDROM media must be specified for the live CD installer."
-msgstr ""
+msgstr "Typ systemu operacyjnego musi zostać podany przed wariantem."
 
 #: virtinst/OSDistro.py:141
-#, python-format
+#, fuzzy, python-format
 msgid "Could not find a kernel path for virt type '%s'"
-msgstr ""
+msgstr "Nie można znaleźć dystrybucji do zainstalowania w \"%s\""
 
 #: virtinst/OSDistro.py:156
+#, fuzzy
 msgid "Could not find a boot iso path for this tree."
-msgstr ""
+msgstr "Nie można znaleźć odpowiedniego deskryptora startowego dla tego hosta"
 
 #: virtinst/OSDistro.py:360
 msgid "Unable to determine kernel RPM path"
-msgstr ""
+msgstr "Nie można określić ścieżko do RPM-a jądra"
 
 #: virtinst/OSDistro.py:362
 msgid "Unable to determine install-initrd RPM path"
-msgstr ""
+msgstr "Nie można określić ścieżko do RPM-a install-initrd"
 
 #: virtinst/OSDistro.py:373
 msgid "Building initrd"
-msgstr ""
+msgstr "Budowanie initrd"
 
 #: virtinst/ParaVirtGuest.py:43
 msgid "A location must be specified to install from"
-msgstr ""
+msgstr "Położenie do zainstalowania musi zostać podane"
 
 #: virtinst/Storage.py:87
-#, python-format
+#, fuzzy, python-format
 msgid "Unknown storage object type: %s"
-msgstr ""
+msgstr "Nieznany typ sieci %s"
 
 #: virtinst/Storage.py:116
 msgid "'conn' must be a libvirt connection object."
@@ -1070,8 +1193,9 @@ msgid "Passed connection is not libvirt storage capable"
 msgstr ""
 
 #: virtinst/Storage.py:129
+#, fuzzy
 msgid "Storage object name must be a string "
-msgstr ""
+msgstr "Mapa klawiatury musi być łańcuchem tekstowym"
 
 #: virtinst/Storage.py:132
 msgid "Storage object name can not be only "
@@ -1119,18 +1243,19 @@ msgid "iSCSI Target"
 msgstr ""
 
 #: virtinst/Storage.py:234 virtinst/Storage.py:271
-#, python-format
+#, fuzzy, python-format
 msgid "Unknown storage pool type: %s"
-msgstr ""
+msgstr "Nieznany typ sieci %s"
 
 #: virtinst/Storage.py:307
+#, fuzzy
 msgid "Host name must be a string"
-msgstr ""
+msgstr "Mapa klawiatury musi być łańcuchem tekstowym"
 
 #: virtinst/Storage.py:337
-#, python-format
+#, fuzzy, python-format
 msgid "Name '%s' already in use by another pool."
-msgstr ""
+msgstr "Dysk %s jest już używany przez innego gościa!\n"
 
 #: virtinst/Storage.py:375
 #, python-format
@@ -1138,9 +1263,9 @@ msgid "Could not define storage pool: %s"
 msgstr ""
 
 #: virtinst/Storage.py:385
-#, python-format
+#, fuzzy, python-format
 msgid "Could not build storage pool: %s"
-msgstr ""
+msgstr "Nie można pobrać pliku %s: %s"
 
 #: virtinst/Storage.py:394
 #, python-format
@@ -1148,31 +1273,32 @@ msgid "Could not start storage pool: %s"
 msgstr ""
 
 #: virtinst/Storage.py:471
-#, python-format
+#, fuzzy, python-format
 msgid "Unknown Filesystem format: %s"
-msgstr ""
+msgstr "Nieznany typ sieci %s"
 
 #: virtinst/Storage.py:486
 msgid "Device path is required"
 msgstr ""
 
 #: virtinst/Storage.py:523
-#, python-format
+#, fuzzy, python-format
 msgid "Unknown Network Filesystem format: %s"
-msgstr ""
+msgstr "Nieznany typ sieci %s"
 
 #: virtinst/Storage.py:537 virtinst/Storage.py:663
+#, fuzzy
 msgid "Hostname is required"
-msgstr ""
+msgstr "Nazwa sieci nie jest wymagana dla %s"
 
 #: virtinst/Storage.py:539 virtinst/Storage.py:613 virtinst/Storage.py:665
 msgid "Host path is required"
 msgstr ""
 
 #: virtinst/Storage.py:600
-#, python-format
+#, fuzzy, python-format
 msgid "Unknown Disk format: %s"
-msgstr ""
+msgstr "Nieznany typ sieci %s"
 
 #: virtinst/Storage.py:625
 msgid "Must explicitly specify disk format if formatting disk device."
@@ -1183,8 +1309,9 @@ msgid "One of pool or pool_name must be specified."
 msgstr ""
 
 #: virtinst/Storage.py:684 virtinst/Storage.py:754
+#, fuzzy
 msgid "'conn' must be specified with 'pool_name'"
-msgstr ""
+msgstr "Położenie do zainstalowania musi zostać podane"
 
 #: virtinst/Storage.py:740
 msgid "Default volume target path range exceeded."
@@ -1199,9 +1326,9 @@ msgid "Connection does not support storage management."
 msgstr ""
 
 #: virtinst/Storage.py:761
-#, python-format
+#, fuzzy, python-format
 msgid "Couldn't find storage pool '%s': %s"
-msgstr ""
+msgstr "Nie można pobrać pliku %s: %s"
 
 #: virtinst/Storage.py:765
 msgid "pool_object must be a virStoragePool"
@@ -1225,14 +1352,14 @@ msgid "pool '%s' must be active."
 msgstr ""
 
 #: virtinst/Storage.py:832
-#, python-format
+#, fuzzy, python-format
 msgid "'%s' is not a valid format."
-msgstr ""
+msgstr "cpuset zawiera nieprawidłowy format."
 
 #: virtinst/Storage.py:842
-#, python-format
+#, fuzzy, python-format
 msgid "Name '%s' already in use by another volume."
-msgstr ""
+msgstr "Dysk %s jest już używany przez innego gościa!\n"
 
 #: virtinst/Storage.py:912
 #, python-format
@@ -1251,12 +1378,12 @@ msgstr ""
 #: virtinst/util.py:45
 #, python-format
 msgid "Invalid line length while parsing %s."
-msgstr ""
+msgstr "Nieprawidłowa długość wiersza podczas analizowania %s."
 
 #: virtinst/util.py:46
 #, python-format
 msgid "Defaulting bridge to xenbr%d"
-msgstr ""
+msgstr "Domyślny mostek to xenbr%d"
 
 #: virtinst/util.py:402 virtinst/VirtualDevice.py:59
 msgid "'conn' must be a virConnect instance."
@@ -1267,28 +1394,29 @@ msgid "'conn' must be a virConnect instance"
 msgstr ""
 
 #: virtinst/VirtualDevice.py:68
-#, python-format
+#, fuzzy, python-format
 msgid "'%s' must be True or False"
-msgstr ""
+msgstr "Włączenie grafiki musi być \"True\" lub \"False\""
 
 #: virtinst/VirtualDevice.py:72
-#, python-format
+#, fuzzy, python-format
 msgid "'%s' must be a string, not '%s'."
-msgstr ""
+msgstr "Ścieżka %s musi być łańcuchem tekstowym lub \"None\"."
 
 #: virtinst/VirtualDisk.py:160
+#, fuzzy
 msgid "'size' must be a number greater than 0."
-msgstr ""
+msgstr "Wartość pamięci mus być całkowita i większa niż 0"
 
 #: virtinst/VirtualDisk.py:170
-#, python-format
+#, fuzzy, python-format
 msgid "Unknown storage type '%s'"
-msgstr ""
+msgstr "Nieznany typ sieci %s"
 
 #: virtinst/VirtualDisk.py:179
-#, python-format
+#, fuzzy, python-format
 msgid "Unknown device type '%s'"
-msgstr ""
+msgstr "Nieznany typ sieci %s"
 
 #: virtinst/VirtualDisk.py:209
 msgid "vol_object must be a virStorageVol instance"
@@ -1299,8 +1427,9 @@ msgid "vol_install must be a StorageVolume  instance."
 msgstr ""
 
 #: virtinst/VirtualDisk.py:258
+#, fuzzy
 msgid "Unknown storage volume type."
-msgstr ""
+msgstr "Nieznany typ sieci "
 
 #: virtinst/VirtualDisk.py:273
 #, python-format
@@ -1329,9 +1458,9 @@ msgid "Connection doesn't support remote storage."
 msgstr ""
 
 #: virtinst/VirtualDisk.py:334
-#, python-format
+#, fuzzy, python-format
 msgid "Size must be specified for non existent path '%s'"
-msgstr ""
+msgstr "Rozmiar musi być podany dla nieistniejących dysków"
 
 #: virtinst/VirtualDisk.py:354
 #, python-format
@@ -1343,22 +1472,24 @@ msgid "Must specify libvirt managed storage if on a remote connection"
 msgstr ""
 
 #: virtinst/VirtualDisk.py:371
-#, python-format
+#, fuzzy, python-format
 msgid "Device type '%s' requires a path"
-msgstr ""
+msgstr "Typ dysku \"%s\" wymaga ścieżki"
 
 #: virtinst/VirtualDisk.py:402
+#, fuzzy
 msgid "The path must be a file or a device, not a directory"
-msgstr ""
+msgstr "Ścieżka %s musi być plikiem lub urządzeniem, a nie folderem"
 
 #: virtinst/VirtualDisk.py:410
-#, python-format
+#, fuzzy, python-format
 msgid "Cannot create storage for %s device."
-msgstr ""
+msgstr "Tworzenie pliku pamięci masowej..."
 
 #: virtinst/VirtualDisk.py:416
+#, fuzzy
 msgid "Local block device path must exist."
-msgstr ""
+msgstr "Podane urządzenie blokowe nie istnieje."
 
 #: virtinst/VirtualDisk.py:421
 #, python-format
@@ -1366,13 +1497,13 @@ msgid "No write access to directory '%s'"
 msgstr ""
 
 #: virtinst/VirtualDisk.py:424
-#, python-format
+#, fuzzy, python-format
 msgid "size is required for non-existent disk '%s'"
-msgstr ""
+msgstr "Rozmiar musi być podany dla nieistniejących dysków"
 
 #: virtinst/VirtualDisk.py:459
 msgid "Creating storage file..."
-msgstr ""
+msgstr "Tworzenie pliku pamięci masowej..."
 
 #: virtinst/VirtualDisk.py:476
 #, python-format
@@ -1410,3 +1541,105 @@ msgstr ""
 #, python-format
 msgid "No more space for disks of type '%s'"
 msgstr ""
+
+#~ msgid ""
+#~ "Warning: image does not support networking, ignoring network related "
+#~ "options"
+#~ msgstr ""
+#~ "Ostrzeżenie: obraz nie obsługuje sieci, ignorowanie opcji związanych z "
+#~ "siecią"
+
+#~ msgid "Must provide the location of an image XML file with --image"
+#~ msgstr "Musisz podać położenie pliku obrazu XML-a za pomocą --image"
+
+#~ msgid ""
+#~ "Would you like a fully virtualized guest (yes or no)?  This will allow "
+#~ "you to run unmodified operating systems."
+#~ msgstr ""
+#~ "Czy chcesz uzyskać w pełni wirtualizowanego gościa (\"yes\" lub \"no\")? "
+#~ "Umożliwi to na uruchamianie niezmodyfikowanych systemów operacyjnych."
+
+#~ msgid "What would you like to use as the disk (file path)?"
+#~ msgstr "Czy chcesz użyć jako dysk (ścieżka do pliku)?"
+
+#~ msgid ""
+#~ "Please enter the path to the file you would like to use for storage. It "
+#~ "will have size %sGB."
+#~ msgstr ""
+#~ "Podaj ścieżkę do pliku, który chciałbyś używać jako pamięć masową. Będzie "
+#~ "miał rozmiar %s GB."
+
+#~ msgid "How large would you like the disk (%s) to be (in gigabytes)?"
+#~ msgstr "Jak duży ma być dysk (%s, w gigabajtach)?"
+
+#~ msgid "What is the install location?"
+#~ msgstr "Jakie jest położenie instalacji?"
+
+#~ msgid "What is the virtual CD image, CD device or install location?"
+#~ msgstr ""
+#~ "Jaki jest wirtualny obraz CD, urządzenie CD lub położenie instalacji?"
+
+#~ msgid "File to use a virtual CD-ROM device for fully virtualized guests"
+#~ msgstr ""
+#~ "Plik do użycia wirtualnego urządzenia CD-ROM dla w pełni wirtualizowanym "
+#~ "gościom"
+
+#~ msgid "LiveCD installations are not supported for paravirt guests"
+#~ msgstr "Instalacje LiveCD nie są obsługiwane dla gości parawirtualizowanych"
+
+#~ msgid "What is the name of your virtual machine?"
+#~ msgstr "Jaka jest nazwa maszyny wirtualnej?"
+
+#~ msgid "How much RAM should be allocated (in megabytes)?"
+#~ msgstr "Ile RAM-u powinno zostać przydzielone (w megabajtach)?"
+
+#~ msgid "How many VCPUs should be attached?"
+#~ msgstr "Ile wirtualnych procesorów powinno zostać dołączonych?"
+
+#~ msgid "Can't do both VNC graphics and nographics"
+#~ msgstr "Nie można wykonać jednocześnie VNC graphics i nographics"
+
+#~ msgid "Can't do both VNC graphics and SDL"
+#~ msgstr "Nie można wykonać jednocześnie VNC graphics i SDL"
+
+#~ msgid "Can't do both SDL and nographics"
+#~ msgstr "Nie można wykonać jednocześnie SDL i nographics"
+
+#~ msgid "Would you like to enable graphics support? (yes or no)"
+#~ msgstr "Czy chcesz włączyć obsługę grafiki (\"yes\" lub \"no\")?"
+
+#~ msgid "The specified path's root directory must exist."
+#~ msgstr "Podana ścieżka do folderu root musi istnieć."
+
+#~ msgid "The %s path must exist."
+#~ msgstr "Ścieżka %s musi istnieć."
+
+#~ msgid "The specified path is a block device, not a regular file."
+#~ msgstr "Podana ścieżka jest urządzeniem blokowym, a nie zwykłym plikiem."
+
+#~ msgid "Disk size must be an int or a float."
+#~ msgstr "Rozmiar dysku musi być liczbą całkowitą lub zmiennoprzecinkową."
+
+#~ msgid "Disk size must not be less than 0."
+#~ msgstr "Rozmiar dysku nie może być mniejszy niż 0."
+
+#~ msgid "The specified path is not a block device."
+#~ msgstr "Podana ścieżka nie jest urządzeniem blokowym."
+
+#~ msgid "Bridge name is not required for %s"
+#~ msgstr "Nazwa mostka nie jest wymagana dla %s"
+
+#~ msgid ""
+#~ "The MAC address you entered is already in use by another virtual machine!"
+#~ msgstr "Podany adres MAC jest już używany przez inną maszynę wirtualną!"
+
+#~ msgid ""
+#~ "Invalid value for vnc port, port number must be in between 5900 and 65535"
+#~ msgstr ""
+#~ "Nieprawidłowa wartość portu VNC, numer portu mus być między 5900 a 65535"
+
+#~ msgid "LiveCD image '%s' does not exist"
+#~ msgstr "Obraz Live CD \"%s\" nie istnieje"
+
+#~ msgid "Can't use more than 16 disks on a PV guest"
+#~ msgstr "Nie można użyć więcej niż 16 dysków dla gościa parawirtualizowanego"
