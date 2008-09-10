@@ -26,20 +26,21 @@ Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 Url: http://virt-manager.et.redhat.com
+Provides: virt-install
+Provides: virt-clone
+Provides: virt-image
+Provides: virt-pack
+Provides: virt-convert
 Requires: libvirt-python >= 0.2.0
 Requires: urlgrabber
 Requires: libxml2-python
 BuildRequires: python-devel
 
 %description
-virtinst is a module to help in starting installations of Fedora/Red
-Hat Enterprise Linux related distributions inside of virtual machines.  It
-supports both paravirt guests (for which only FC and RHEL guests are
-currently supported) as well as fully virtualized guests.  It uses
-libvirt (http://www.libvirt.org) for starting things.
-
-Also contained is a simple script virt-install which uses
-virtinst in a command line mode.
+virtinst is a module that helps build and install libvirt based virtual
+machines. Currently supports KVM, QEmu and Xen virtual machines. Package
+includes several command line utilities, including virt-install (build
+and install new VMs) and virt-clone (clone an existing virtual machine).
 
 %prep
 %setup -q -n %{appname}-%{version}
