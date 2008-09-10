@@ -60,7 +60,8 @@ def get_vcpus(vcpus, image_vcpus, check_cpu, guest, conn):
 
 def get_networks(domain, macs, bridges, networks, guest):
     nnics = domain.interface
-    (macs, networks) = cli.digest_networks(macs, bridges, networks, nnics)
+    (macs, networks) = cli.digest_networks(guest.conn, macs, bridges,
+                                           networks, nnics)
 
     if len(networks) > nnics:
         print >> sys.stderr, (_("Warning: more networks were provided [%i] then nics required [%i]. All extras are ignored") % (len(networks),  nnics))

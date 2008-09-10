@@ -270,7 +270,7 @@ def get_network(mac, network, guest):
         fail(_("Unknown network type ") + network)
     guest.nics.append(n)
 
-def digest_networks(macs, bridges, networks, nics = 0):
+def digest_networks(conn, macs, bridges, networks, nics = 0):
     if type(bridges) != list and bridges != None:
         bridges = [ bridges ]
 
@@ -304,7 +304,7 @@ def digest_networks(macs, bridges, networks, nics = 0):
     if len(macs) < nics:
         for cnt in range(len(macs),nics):
             if os.getuid() == 0:
-                net = util.default_network()
+                net = util.default_network(conn)
                 networks.append(net[0] + ":" + net[1])
             else:
                 networks.append("user")

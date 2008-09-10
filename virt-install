@@ -242,7 +242,8 @@ def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, hvm, conn):
         get_disk(disk, size, sparse, guest, hvm, conn, is_file_path)
 
 def get_networks(macs, bridges, networks, guest):
-    (macs, networks) = cli.digest_networks(macs, bridges, networks, nics=1)
+    (macs, networks) = cli.digest_networks(guest.conn, macs, bridges,
+                                           networks, nics=1)
     map(lambda m, n: cli.get_network(m, n, guest), macs, networks)
 
 

@@ -66,10 +66,10 @@ def default_bridge():
     else:
         return "xenbr%d"%(defn)
 
-def default_network():
+def default_network(conn):
     dev = default_route()
 
-    if dev is not None:
+    if dev is not None and not is_uri_remote(conn.getURI()):
         # New style peth0 == phys dev, eth0 == bridge, eth0 == default route
         if os.path.exists("/sys/class/net/%s/bridge" % dev):
             return ["bridge", dev]
