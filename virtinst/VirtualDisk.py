@@ -330,6 +330,9 @@ class VirtualDisk(VirtualDevice):
                 pool = util.lookup_pool_by_path(self.conn,
                                                 os.path.dirname(self.path))
                 if pool:
+                    if self.size == None:
+                        raise ValueError(_("Size must be specified for non "
+                                           "existent path '%s'" % self.path))
                     logging.debug("Path '%s' is target for pool '%s'. "
                                   "Creating volume '%s'." % \
                                   (os.path.dirname(self.path), pool.name(),
