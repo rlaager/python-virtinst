@@ -1,6 +1,35 @@
    Virt Install News
    =================
 
+Release 0.400.0 (September 10, 2008)
+------------------------------------
+
+This release includes:
+
+  - New tool 'virt-convert': Allows converting between different types of
+      virt configuration files. Currently only supports vmx -> virt-image
+  - New tool 'virt-pack': Converts virt-image xml format to vmx and packs
+      in a tar.gz. (Note this will likely be merged with virt-convert in
+      the future)
+  - virt-install: Support for remote VM installation. Can use install media
+      and disk images on remote host if shared via libvirt. Allows can
+      provisioning storage on remote pools.
+  - virt-install new options:
+      new --wait option, allows putting a hard time limit on installs
+      new --sound option, to create VM with soundcard emulation
+      new --disk option, allows specifying media as a path, storage volume, or
+        a pool to provision storage on, device type, and several other options.
+        Deprecates --file, --size, --nonsparse.
+      new --prompt option. Input prompting is no longer the default, this
+        option turns it back on.
+  - virt-install: allow setting cpu pinning information for qemu/kvm VMs
+  - virt-install: numa support via --cpuset=auto option
+  - virt-image: --replace option to overwrite existing VM image file
+  - virt-image: support multiple network interfaces in virt-image format
+  - use virtio disk/net drivers if chosen os entry supports it (Fedora 9/10,
+      Ubuntu Hardy)
+  - Numerous bug fixes and minor improvements.
+
 Release 0.300.3
 ---------------
 

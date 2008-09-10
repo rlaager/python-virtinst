@@ -75,6 +75,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-convert
 
 %changelog
+* Wed Sep 10 2008 Cole Robinson <crobinso@redhat.com> - 0.400.0-1
+- Add virt-convert tool
+- Add virt-pack tool
+- virt-install --disk option for using/provisioning libvirt storage
+- virt-install remote installation support
+- virt-install --sound option to add soundcard emulation
+
 * Mon Mar 10 2008 Daniel P. Berrange <berrange@redhat.com> - 0.300.3-1
 - Use capabilities XML when installing guests
 - Accept RFC compliant NFS uris
