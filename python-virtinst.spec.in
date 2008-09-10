@@ -9,7 +9,7 @@
 %define _extra_release %{?dist:%{dist}}%{!?dist:%{?extra_release:%{extra_release}}}
 %define appname virtinst
 
-%if "%{fedora}" >= "9"
+%if "%{fedora}" == "9" || "%{fedora}" >= "10"
 %define with_egg 1
 %else
 %define with_egg 0
