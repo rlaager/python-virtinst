@@ -170,8 +170,8 @@ class FullVirtGuest(Guest.XenGuest):
         Guest.Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "hd"
         self.features = { "acpi": None, "pae": util.is_pae_capable(), "apic": None }
-        if arch is None:
-            arch = platform.machine
+        #if arch is None:
+        #arch = platform.machine()
         self.arch = arch
 
         self.emulator = emulator
