@@ -83,7 +83,9 @@ def export_os_params(vm):
     ostype = None
     osvariant = None
 
-    ostype = fv.OS_TYPES.get(vm.os_type)
+    # TODO: Shouldn't be directly using _OS_TYPES here. virt-image libs (
+    # ImageParser?) should handle this info
+    ostype = fv._OS_TYPES.get(vm.os_type)
     if ostype:
         osvariant = ostype.variants.get(vm.os_variant)
 
