@@ -7,6 +7,7 @@
 # to the release. This distinguishes automated builds, from formal
 # Fedora RPM builds
 %define _extra_release %{?dist:%{dist}}%{!?dist:%{?extra_release:%{extra_release}}}
+
 %define appname virtinst
 
 %if "%{fedora}" == "9" || "%{fedora}" >= "10"
@@ -16,16 +17,16 @@
 %endif
 
 
-Summary: Python modules for starting Xen guest installations
+Summary: Python modules and utilities for installing virtual machines
 Name: python-%{appname}
 Version: ::VERSION::
 Release: 1%{_extra_release}
-Source0: http://virt-manager.et.redhat.com/download/sources/%{appname}/%{appname}-%{version}.tar.gz
+Source0: http://virt-manager.org/download/sources/%{appname}/%{appname}-%{version}.tar.gz
 License: GPLv2+
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-Url: http://virt-manager.et.redhat.com
+Url: http://virt-manager.org
 Provides: virt-install
 Provides: virt-clone
 Provides: virt-image
@@ -34,7 +35,12 @@ Provides: virt-convert
 Requires: libvirt-python >= 0.2.0
 Requires: urlgrabber
 Requires: libxml2-python
+Requires: python-urlgrabber
 BuildRequires: python-devel
+BuildRequires: libxml2-python
+BuildRequires: python-urlgrabber
+BuildRequires: libvirt-python
+BuildRequires: gettext
 
 %description
 virtinst is a module that helps build and install libvirt based virtual
