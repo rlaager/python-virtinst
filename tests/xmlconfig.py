@@ -55,7 +55,8 @@ class TestXMLConfig(unittest.TestCase):
     def _get_basic_fullyvirt_guest(self):
         conn = libvirt.openReadOnly("test:///default")
         g = virtinst.FullVirtGuest(connection=conn, type="xen",
-                                   emulator="/usr/lib/xen/bin/qemu-dm")
+                                   emulator="/usr/lib/xen/bin/qemu-dm",
+                                   arch="i686")
         g.name = "TestGuest"
         g.memory = int(200)
         g.maxmemory = int(400)
