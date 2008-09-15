@@ -44,8 +44,6 @@ def parse_args():
     opts.add_option("-a", "--arch", type="string", dest="arch",
                     default=util.get_default_arch(),
                     help=("Machine Architecture Type (i686/x86_64/ppc)"))
-    opts.add_option("-t", "--type", type="string", dest="type",
-                    help=("Output virtualization type (hvm, paravirt"))
     opts.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=("Print debugging information"))
     opts.add_option("-i", "--input-format", action="store",
