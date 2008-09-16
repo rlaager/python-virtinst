@@ -75,7 +75,11 @@ class FullVirtGuest(Guest.XenGuest):
             "fedora6": { "label": "Fedora Core 6", "distro": "fedora" },
             "fedora7": { "label": "Fedora 7", "distro": "fedora" },
             "fedora8": { "label": "Fedora 8", "distro": "fedora" },
-            "fedora9": { "label": "Fedora 9", "distro": "fedora" },
+            "fedora9": { "label": "Fedora 9", "distro": "fedora",
+                          "devices" : {
+                            "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
+                            "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                          }},
             "fedora10": { "label": "Fedora 10", "distro": "fedora",
                           "devices" : {
                             "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
