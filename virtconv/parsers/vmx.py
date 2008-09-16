@@ -42,13 +42,13 @@ def parse_netdev_entry(vm, fullkey, value):
         vm.netdevs[inst] = netdevcfg.netdev(type = netdevcfg.NETDEV_TYPE_UNKNOWN)
 
     # "vlance", "vmxnet", "e1000"
-    if key == "virtualDev":
-        vm.netdevs[inst].driver = lvalue
-    if key == "addressType" and lvalue == "generated":
+    if key == "virtualdev":
+        vm.netdevs[inst].driver = value
+    if key == "addresstype" and lvalue == "generated":
         vm.netdevs[inst].mac = "auto"
     # we ignore .generatedAddress for auto mode
     if key == "address":
-        vm.netdevs[inst].mac = lvalue
+        vm.netdevs[inst].mac = value
 
 def parse_disk_entry(vm, fullkey, value):
     """
@@ -78,19 +78,17 @@ def parse_disk_entry(vm, fullkey, value):
         vm.disks[devid] = diskcfg.disk(bus = bus,
             type = diskcfg.DISK_TYPE_DISK)
 
-    if key == "deviceType":
+    if key == "devicetype":
         if lvalue == "atapi-cdrom" or lvalue == "cdrom-raw":
             vm.disks[devid].type = diskcfg.DISK_TYPE_CDROM
         elif lvalue == "cdrom-image":
             vm.disks[devid].type = diskcfg.DISK_TYPE_ISO
 
-    if key == "fileName":
+    if key == "filename":
         vm.disks[devid].path = value
         vm.disks[devid].format = diskcfg.DISK_FORMAT_RAW
         if lvalue.endswith(".vmdk"):
             vm.disks[devid].format = diskcfg.DISK_FORMAT_VMDK
-
-import re
 
 class vmx_parser(formats.parser):
     """
@@ -147,7 +145,7 @@ class vmx_parser(formats.parser):
         for (line_nr, line) in enumerate(lines):
             try:
                 before_eq, after_eq = line.split("=", 1)
-                key = before_eq.strip()
+                key = before_eq.strip().lower()
                 value = after_eq.strip().strip('"')
                 config[key] = value
 
@@ -164,13 +162,13 @@ class vmx_parser(formats.parser):
                 continue
                 
             # vmx files often have dross left in path for CD entries
-            if (disk.path == "auto detect" or
+            if (disk.path.lower() == "auto detect" or
                 not os.path.exists(disk.path)):
                 vm.disks[devid].path = None
 
-        if not config.get("displayName"):
+        if not config.get("displayname"):
             raise ValueError("No displayName defined in \"%s\"" % input_file)
-        vm.name = config.get("displayName")
+        vm.name = config.get("displayname")
 
         vm.memory = config.get("memsize")
         vm.description = config.get("annotation")
