@@ -621,6 +621,20 @@ def main():
 
     # we've got everything -- try to start the install
     try:
+        def domain_is_shutdown(dom):
+            info     = dom.info()
+            state    = info[0]
+            cpu_time = info[4]
+
+            if state == libvirt.VIR_DOMAIN_SHUTOFF:
+                return True
+
+            # If --wait was specified, the dom object we have was looked up
+            # before initially shutting down, which seems to bogus up the
+            # info data (all 0's). So, if it is bogus, assume the domain is
+            # shutdown. We will catch the error later.
+            return state == libvirt.VIR_DOMAIN_NOSTATE and cpu_time == 0
+
         print _("\n\nStarting install...")
 
         start_time = time.time()
@@ -648,8 +662,15 @@ def main():
                              or "") + \
                             " for domain to shutdown.")
                     while True:
-                        if dom.info()[0] == libvirt.VIR_DOMAIN_SHUTOFF:
+                        if domain_is_shutdown(dom):
                             print _("Domain has shutdown. Continuing.")
+                            try:
+                                # Lookup a new domain object incase current
+                                # one returned bogus data (see comment in
+                                # domain_is_shutdown
+                                dom = guest.conn.lookupByName(guest.name)
+                            except Exception, e:
+                                raise RuntimeError(_("Could not lookup domain after install: %s" % str(e)))
                             break
                         if wait_time < 0 or \
                            ((time.time() - start_time) < wait_time):
