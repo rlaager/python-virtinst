@@ -36,11 +36,8 @@ Requires: libvirt-python >= 0.2.0
 Requires: urlgrabber
 Requires: libxml2-python
 Requires: python-urlgrabber
-BuildRequires: python-devel
-BuildRequires: libxml2-python
-BuildRequires: python-urlgrabber
-BuildRequires: libvirt-python
 BuildRequires: gettext
+BuildRequires: python
 
 %description
 virtinst is a module that helps build and install libvirt based virtual

@@ -7,7 +7,6 @@ from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin, walk
 import os, sys
-import tests.coverage as coverage
 
 pkgs = ['virtinst', 'virtconv', 'virtconv.parsers' ]
 
@@ -33,6 +32,8 @@ class TestCommand(Command):
         '''
         Finds all the tests modules in tests/, and runs them.
         '''
+        import tests.coverage as coverage
+
         testfiles = [ ]
         for t in glob(pjoin(self._dir, 'tests', '*.py')):
             if not t.endswith('__init__.py'):
