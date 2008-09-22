@@ -86,7 +86,10 @@ def default_network(conn):
 def default_connection():
     if os.path.exists("/var/lib/xend") and os.path.exists("/proc/xen"):
         return "xen"
-    elif os.path.exists("/usr/bin/qemu"):
+    elif os.path.exists("/usr/bin/qemu") or \
+         os.path.exists("/usr/bin/qemu-kvm") or \
+         os.path.exists("/usr/bin/kvm") or \
+         os.path.exists("/usr/bin/xenner"):
         if os.getuid() == 0:
             return "qemu:///system"
         else:
