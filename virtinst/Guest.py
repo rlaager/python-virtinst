@@ -323,7 +323,10 @@ class Installer(object):
         if self.type == "xen":
             if os.path.exists("/var/lib/xen"):
                 return "/var/lib/xen"
-        return "/var/lib/libvirt/boot"
+        if os.getuid() == 0:
+            return "/var/lib/libvirt/boot"
+        else:
+            return os.path.expanduser("~/.virtinst/boot")
     scratchdir = property(get_scratchdir)
 
     def get_cdrom(self):
