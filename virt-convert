@@ -28,6 +28,7 @@ import errno
 from optparse import OptionParser
 
 import virtinst.cli as cli
+from virtinst.cli import fail
 import virtinst.util as util
 import virtconv
 import virtconv.formats as formats
@@ -146,8 +147,8 @@ def cleanup(msg, options, vmdef, paths):
             elif os.path.isfile(path):
                 os.remove(path)
     except OSError, e:
-        logging.error("Couldn't clean up output directory \"%s\": %s" %
-            (options.output_dir, e.strerror))
+        fail("Couldn't clean up output directory \"%s\": %s" %
+             (options.output_dir, e.strerror))
 
     sys.exit(1)
 
@@ -163,13 +164,10 @@ def main():
     try:
         vmdef = inp.import_file(options.input_file)
     except IOError, e:
-        logging.error("Couldn't import file \"%s\": %s" %
+        fail("Couldn't import file \"%s\": %s" %
             (options.input_file, e.strerror))
-        sys.exit(1)
     except Exception, e:
-        logging.error("Couldn't import file \"%s\": %s" %
-            (options.input_file, e))
-        sys.exit(1)
+        fail("Couldn't import file \"%s\": %s" % (options.input_file, e))
 
     if options.paravirt:
         vmdef.type = vmcfg.VM_TYPE_PV
@@ -194,9 +192,8 @@ def main():
         clean += [ options.output_dir ]
     except OSError, e:
         if (e.errno != errno.EEXIST):
-            logging.error("Could not create directory %s: %s" %
+            fail("Could not create directory %s: %s" %
                 (options.output_dir, e.strerror))
-            sys.exit(1)
 
     if not options.output_file:
         options.output_file = os.path.join(options.output_dir,
