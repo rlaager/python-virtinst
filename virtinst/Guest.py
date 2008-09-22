@@ -34,6 +34,9 @@ from virtinst import _virtinst as _
 
 import logging
 
+XEN_SCRATCH="/var/lib/xen"
+LIBVIRT_SCRATCH="/var/lib/libvirt/boot"
+
 class VirtualNetworkInterface(object):
 
     TYPE_BRIDGE  = "bridge"
@@ -320,11 +323,10 @@ class Installer(object):
     os_type = property(get_os_type, set_os_type)
 
     def get_scratchdir(self):
-        if self.type == "xen":
-            if os.path.exists("/var/lib/xen"):
-                return "/var/lib/xen"
-        if os.getuid() == 0:
-            return "/var/lib/libvirt/boot"
+        if self.type == "xen" and os.path.exists(XEN_SCRATCH):
+            return XEN_SCRATCH
+        if os.getuid() == 0 and os.path.exists(LIBVIRT_SCRATCH):
+            return LIBVIRT_SCRATCH
         else:
             return os.path.expanduser("~/.virtinst/boot")
     scratchdir = property(get_scratchdir)
