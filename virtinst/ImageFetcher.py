@@ -40,6 +40,8 @@ class ImageFetcher:
         self.scratchdir = scratchdir
 
     def saveTemp(self, fileobj, prefix):
+        if not os.path.exists(self.scratchdir):
+            os.makedirs(self.scratchdir, 0750)
         (fd, fn) = tempfile.mkstemp(prefix="virtinst-" + prefix, dir=self.scratchdir)
         block_size = 16384
         try:
