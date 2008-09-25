@@ -88,7 +88,11 @@ class FullVirtGuest(Guest.XenGuest):
             "sles10": { "label": "Suse Linux Enterprise Server",
                         "distro": "suse" },
             "debianetch": { "label": "Debian Etch", "distro": "debian" },
-            "debianlenny": { "label": "Debian Lenny", "distro": "debian" },
+            "debianlenny": { "label": "Debian Lenny", "distro": "debian",
+                          "devices" : {
+                            "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
+                            "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                          }},
             "ubuntuhardy": { "label": "Ubuntu Hardy", "distro": "ubuntu",
                              "devices" : {
                                 "net"  : { "model" : [ (["kvm"], "virtio") ] }
