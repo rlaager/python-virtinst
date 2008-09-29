@@ -29,6 +29,7 @@ import util
 import libvirt
 import __builtin__
 import CapabilitiesParser
+import VirtualDevice
 from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
@@ -37,14 +38,15 @@ import logging
 XEN_SCRATCH="/var/lib/xen"
 LIBVIRT_SCRATCH="/var/lib/libvirt/boot"
 
-class VirtualNetworkInterface(object):
+class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
     TYPE_BRIDGE  = "bridge"
     TYPE_VIRTUAL = "network"
     TYPE_USER    = "user"
 
     def __init__(self, macaddr=None, type=TYPE_BRIDGE, bridge=None,
-                 network=None, model=None):
+                 network=None, model=None, conn=None):
+        VirtualDevice.VirtualDevice.__init__(self, conn)
 
         if macaddr is not None and \
            __builtin__.type(macaddr) is not __builtin__.type("string"):
