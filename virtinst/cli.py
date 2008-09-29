@@ -265,11 +265,13 @@ def get_network(mac, network, guest):
     if mac == "RANDOM":
         mac = None
     if network == "user":
-        n = VirtualNetworkInterface(mac, type="user")
+        n = VirtualNetworkInterface(mac, type="user", conn=guest.conn)
     elif network[0:6] == "bridge":
-        n = VirtualNetworkInterface(mac, type="bridge", bridge=network[7:])
+        n = VirtualNetworkInterface(mac, type="bridge", bridge=network[7:],
+                                    conn=guest.conn)
     elif network[0:7] == "network":
-        n = VirtualNetworkInterface(mac, type="network", network=network[8:])
+        n = VirtualNetworkInterface(mac, type="network", network=network[8:],
+                                    conn=guest.conn)
     else:
         fail(_("Unknown network type ") + network)
     guest.nics.append(n)

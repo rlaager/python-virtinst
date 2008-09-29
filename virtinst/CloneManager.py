@@ -120,7 +120,7 @@ class CloneDesign(object):
     clone_devices = property(get_clone_devices, set_clone_devices)
 
     def set_clone_mac(self, mac):
-        Guest.VirtualNetworkInterface(mac)
+        Guest.VirtualNetworkInterface(mac, conn=self.original_conn)
         self._clone_mac.append(mac)
     def get_clone_mac(self):
         return self._clone_mac
@@ -341,7 +341,8 @@ class CloneDesign(object):
     # check used mac func
     #
     def _check_mac(self, mac):
-        nic = Guest.VirtualNetworkInterface(macaddr=mac)
+        nic = Guest.VirtualNetworkInterface(macaddr=mac,
+                                            conn=self.original_conn)
         return nic.is_conflict_net(self._hyper_conn)
 
     #

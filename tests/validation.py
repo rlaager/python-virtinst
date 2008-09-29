@@ -198,7 +198,7 @@ class TestValidation(unittest.TestCase):
         self._testArgs(FVGuest, virtinst.FullVirtGuest, 'fvguest')
 
     def testNetworkValidation(self):
-        network = virtinst.VirtualNetworkInterface()
+        network = virtinst.VirtualNetworkInterface(conn=self.guest.conn)
         self._testArgs(network, virtinst.VirtualNetworkInterface, 'network')
 
         # Test MAC Address collision
