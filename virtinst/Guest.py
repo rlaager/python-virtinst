@@ -72,6 +72,29 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         else:
             raise ValueError, _("Unknown network type %s") % (type,)
 
+    def get_network(self):
+        return self._network
+    def set_network(self, newnet):
+        def _is_net_active(netobj):
+            """Apparently the 'info' command was never hooked up for
+               libvirt virNetwork python apis."""
+            if not self.conn:
+                return True
+            return self.conn.listNetworks().count(netobj.name())
+
+        if newnet is not None and self.conn:
+            try:
+                net = self.conn.networkLookupByName(newnet)
+            except libvirt.libvirtError, e:
+                raise ValueError(_("Virtual network '%s' does not exist: %s") \
+                                   % (newnet, str(e)))
+            if not _is_net_active(net):
+                raise ValueError(_("Virtual network '%s' has not been "
+                                   "started.") % newnet)
+
+        self._network = newnet
+    network = property(get_network, set_network)
+
     def is_conflict_net(self, conn):
         """is_conflict_net: determines if mac conflicts with others in system
 
