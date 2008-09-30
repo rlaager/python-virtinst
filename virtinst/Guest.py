@@ -175,6 +175,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                "    </interface>"
 
     def countMACaddr(self, vms):
+        if not self.macaddr:
+            return
         count = 0
         for vm in vms:
             doc = None
@@ -186,7 +188,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             try:
                 for mac in ctx.xpathEval("/domain/devices/interface/mac"):
                     macaddr = mac.xpathEval("attribute::address")[0].content
-                    if util.compareMAC(self.macaddr, macaddr) == 0:
+                    if macaddr and util.compareMAC(self.macaddr, macaddr) == 0:
                         count += 1
             finally:
                 if ctx is not None:
