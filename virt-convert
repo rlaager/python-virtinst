@@ -50,8 +50,7 @@ def parse_args():
     opts.add_option("-i", "--input-format", action="store",
                     dest="input_format", help=("Input format, e.g. 'vmx'"))
     opts.add_option("-o", "--output-format", action="store",
-                    dest="output_format", default="virt-image",
-                    help=("Output format, e.g. 'virt-image'"))
+                    dest="output_format", help=("Output format, e.g. 'virt-image'"))
     opts.add_option("-D", "--disk-format", action="store",
                     dest="disk_format", help=("Output disk format"))
     opts.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
@@ -91,6 +90,8 @@ def parse_args():
         options.output_file = args[1]
         options.output_dir = os.path.dirname(os.path.realpath(args[1]))
 
+    if not options.output_format:
+        opts.error(("Output format must be defined"))
     if options.output_format not in formats.formats():
         opts.error(("Unknown output format \"%s\"" % options.output_format))
     if options.output_format not in formats.output_formats():
@@ -217,6 +218,8 @@ def main():
                 not format and vmcfg.host() == "SunOS"):
                 format = "vdisk"
 
+            elif options.output_format == "vmx":
+                format = "vmdk"
             if not format:
                 format = "raw"
 

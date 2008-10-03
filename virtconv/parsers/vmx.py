@@ -22,9 +22,62 @@ import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
 import virtconv.netdevcfg as netdevcfg
-
+import time
+import sys
 import re
 import os
+
+_VMX_MAIN_TEMPLATE = """
+#!/usr/bin/vmplayer
+
+# Generated %(now)s by %(progname)s
+# http://virt-manager.et.redhat.com/
+
+# This is a Workstation 5 or 5.5 config file and can be used with Player
+config.version = "8"
+virtualHW.version = "4"
+guestOS = "other"
+displayName = "%(vm_name)s"
+annotation = "%(vm_description)s"
+guestinfo.vmware.product.long = "%(vm_name)s"
+guestinfo.vmware.product.url = "http://virt-manager.et.redhat.com/"
+guestinfo.vmware.product.class = "virtual machine"
+numvcpus = "%(vm_nr_vcpus)s"
+memsize = "%(vm_memory)d"
+MemAllowAutoScaleDown = "FALSE"
+MemTrimRate = "-1"
+uuid.action = "create"
+tools.remindInstall = "TRUE"
+hints.hideAll = "TRUE"
+tools.syncTime = "TRUE"
+serial0.present = "FALSE"
+serial1.present = "FALSE"
+parallel0.present = "FALSE"
+logging = "TRUE"
+log.fileName = "%(vm_name)s.log"
+log.append = "TRUE"
+log.keepOld = "3"
+isolation.tools.hgfs.disable = "FALSE"
+isolation.tools.dnd.disable = "FALSE"
+isolation.tools.copy.enable = "TRUE"
+isolation.tools.paste.enabled = "TRUE"
+floppy0.present = "FALSE"
+"""
+_VMX_ETHERNET_TEMPLATE = """
+ethernet%(dev)s.present = "TRUE"
+ethernet%(dev)s.connectionType = "nat"
+ethernet%(dev)s.addressType = "generated"
+ethernet%(dev)s.generatedAddressOffset = "0"
+ethernet%(dev)s.autoDetect = "TRUE"
+"""
+_VMX_IDE_TEMPLATE = """
+# IDE disk
+ide%(dev)s.present = "TRUE"
+ide%(dev)s.fileName = "%(disk_filename)s"
+ide%(dev)s.mode = "persistent"
+ide%(dev)s.startConnected = "TRUE"
+ide%(dev)s.writeThrough = "TRUE"
+"""
 
 def parse_netdev_entry(vm, fullkey, value):
     """
@@ -100,7 +153,7 @@ class vmx_parser(formats.parser):
     name = "vmx"
     suffix = ".vmx"
     can_import = True
-    can_export = False
+    can_export = True
     can_identify = True
 
     @staticmethod
@@ -160,7 +213,7 @@ class vmx_parser(formats.parser):
         for devid, disk in vm.disks.iteritems():
             if disk.type == diskcfg.DISK_TYPE_DISK:
                 continue
-                
+
             # vmx files often have dross left in path for CD entries
             if (disk.path is None
                 or disk.path.lower() == "auto detect" or
@@ -188,7 +241,45 @@ class vmx_parser(formats.parser):
         Raises ValueError if configuration is not suitable, or another
         exception on failure to write the output file.
         """
+        vm.description = vm.description.strip()
+        vm.description = vm.description.replace("\n","|")
+        vmx_out_template = []
+        vmx_dict = {
+            "now": time.strftime("%Y-%m-%dT%H:%M:%S %Z", time.localtime()),
+            "progname": os.path.basename(sys.argv[0]),
+            "vm_name": vm.name,
+            "vm_description": vm.description or "None",
+            "vm_nr_vcpus" : vm.nr_vcpus,
+            "vm_memory": long(vm.memory)/1024
+        }
+        vmx_out = _VMX_MAIN_TEMPLATE % vmx_dict
+        vmx_out_template.append(vmx_out)
 
-        raise NotImplementedError
+        disk_out_template = []
+        ide_count = 0
+        for disk in vm.disks:
+            dev = "%d:%d" % (ide_count / 2, ide_count % 2)
+            disk_dict = {
+                "dev": dev,
+                "disk_filename" : vm.disks[disk].path
+            }
+            disk_out = _VMX_IDE_TEMPLATE % disk_dict
+            disk_out_template.append(disk_out)
+            ide_count = ide_count + 1
+
+        eth_out_template = []
+        if len(vm.netdevs):
+            for devnum in vm.netdevs:
+                eth_dict = {
+                   "dev" : devnum
+                }
+                eth_out = _VMX_ETHERNET_TEMPLATE % eth_dict
+                eth_out_template.append(eth_out)
+
+        outfile = open(output_file, "w")
+        outfile.writelines(vmx_out_template)
+        outfile.writelines(disk_out_template)
+        outfile.writelines(eth_out_template)
+        outfile.close()
 
 formats.register_parser(vmx_parser)

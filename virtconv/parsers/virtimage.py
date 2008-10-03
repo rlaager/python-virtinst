@@ -21,10 +21,12 @@
 import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
+import virtconv.netdevcfg as netdevcfg
 import virtinst.FullVirtGuest as fv
-
+import virtinst.ImageParser as ImageParser
 from xml.sax.saxutils import escape
 from string import ascii_letters
+import os
 import re
 
 pv_boot_template = """
@@ -183,16 +185,20 @@ class virtimage_parser(formats.parser):
     """
     name = "virt-image"
     suffix = ".virt-image.xml"
-    can_import = False
+    can_import = True
     can_export = True
-    can_identify = False
+    can_identify = True
 
     @staticmethod
     def identify_file(input_file):
         """
         Return True if the given file is of this format.
         """
-        raise NotImplementedError
+        try:
+            image = ImageParser.parse_file(input_file)
+        except ImageParser.ParserException, msg:
+            return False
+        return True
 
     @staticmethod
     def import_file(input_file):
@@ -200,7 +206,51 @@ class virtimage_parser(formats.parser):
         Import a configuration file.  Raises if the file couldn't be
         opened, or parsing otherwise failed.
         """
-        raise NotImplementedError
+        vm = vmcfg.vm()
+        try:
+            config  = ImageParser.parse_file(input_file)
+        except Exception, e:        
+            raise ValueError("Couldn't import file '%s': %s" % (input_file, e))
+
+        domain = config.domain
+        boot = domain.boots[0]
+
+        if not config.name:
+            raise ValueError("No Name defined in '%s'" % input_file)
+        vm.name = config.name
+        vm.memory = config.domain.memory
+        if config.descr:
+            vm.description = config.descr
+        vm.nr_vcpus = config.domain.vcpu
+
+        bus = "ide"
+        nr_disk = 0
+
+        for d in boot.drives:
+            disk = d.disk
+            format = None
+            if disk.format == ImageParser.Disk.FORMAT_RAW:
+                format = diskcfg.DISK_FORMAT_RAW
+            elif format == ImageParser.DISK_FORMAT_VMDK:
+                format == diskcfg.DISK_FORMAT_VMDK
+
+            if format is None:
+                raise ValueError("Unable to determine disk format")
+            devid = (bus, nr_disk)
+            vm.disks[devid] = diskcfg.disk(bus = bus,
+                type = diskcfg.DISK_TYPE_DISK)
+            vm.disks[devid].format = format
+            vm.disks[devid].path = disk.file
+            nr_disk = nr_disk + 1
+           
+        nics = domain.interface
+        nic_idx = 0
+        while nic_idx in range(0, nics):
+            vm.netdevs[nic_idx] = netdevcfg.netdev(type = netdevcfg.NETDEV_TYPE_UNKNOWN)
+            nic_idx = nic_idx + 1
+            """  Eventually need to add support for mac addresses if given"""
+        vm.validate()
+        return vm
 
     @staticmethod
     def export_file(vm, output_file):
