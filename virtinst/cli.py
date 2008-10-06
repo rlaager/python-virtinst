@@ -277,24 +277,22 @@ def get_network(mac, network, guest):
     guest.nics.append(n)
 
 def digest_networks(conn, macs, bridges, networks, nics = 0):
-    if type(bridges) != list and bridges != None:
-        bridges = [ bridges ]
+    def listify(l):
+        if l is None:
+            return []
+        elif type(l) != list:
+            return [ l ]
+        else:
+            return l
 
-    if macs is None:
-        macs = []
-    elif type(macs) != list:
-        macs = [ macs ]
-           
-    if networks is None:
-        networks = []
-    elif type(networks) != list:
-        networks = [ macs ]
+    macs     = listify(macs)
+    bridges  = listify(bridges)
+    networks = listify(networks)
 
-    if bridges is not None and networks != None:
+    if bridges and networks:
         fail(_("Cannot mix both --bridge and --network arguments"))
 
-
-    if bridges != None:
+    if bridges:
         networks = map(lambda b: "bridge:" + b, bridges)
     
     # ensure we have less macs then networks. Auto fill in the remaining
