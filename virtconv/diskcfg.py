@@ -34,6 +34,9 @@ DISK_TYPE_DISK = 0
 DISK_TYPE_CDROM = 1
 DISK_TYPE_ISO = 2
 
+CSUM_SHA1 = 0
+CSUM_SHA256 = 1
+
 disk_suffixes = {
     DISK_FORMAT_RAW: ".raw",
     DISK_FORMAT_VMDK: ".vmdk",
@@ -51,6 +54,11 @@ disk_format_names = {
     "raw": DISK_FORMAT_RAW,
     "vmdk": DISK_FORMAT_VMDK,
     "vdisk": DISK_FORMAT_VDISK,
+}
+
+checksum_types = {
+    CSUM_SHA1 : "sha1",
+    CSUM_SHA256 : "sha256",
 }
 
 def ensuredirs(path):
@@ -83,6 +91,7 @@ class disk(object):
         self.bus = bus
         self.type = type
         self.clean = []
+        self.csum_dict = {}
 
     def cleanup(self):
         """
