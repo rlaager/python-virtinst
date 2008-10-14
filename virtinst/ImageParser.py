@@ -203,7 +203,8 @@ class Disk:
         self.file = None
         self.format = None
         self.size = None
-        self.use=None
+        self.use = None
+        self.csum = {}
         if not node is None:
             self.parseXML(node)
 
@@ -214,6 +215,10 @@ class Disk:
         self.size = xpathString(node, "@size")
         self.use = xpathString(node, "@use", Disk.USE_SYSTEM)
 
+        for d in node.xpathEval("checksum"):
+            csumtype = xpathString(d, "@type")
+            csumvalue = xpathString(d, "")
+            self.csum[csumtype] = csumvalue
         formats = [Disk.FORMAT_RAW, Disk.FORMAT_QCOW, Disk.FORMAT_QCOW2, Disk.FORMAT_VMDK, Disk.FORMAT_ISO]
         validate (formats.count(self.format) > 0,
                   _("The format for disk %s must be one of %s") %

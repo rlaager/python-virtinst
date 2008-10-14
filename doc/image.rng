@@ -197,6 +197,15 @@
             </choice>
           </attribute>
         </optional>
+        <optional>
+          <element name="checksum">
+            <attribute name="type">
+              <value>sha1</value>
+              <value>sha256</value>
+            </attribute>
+            <text/>
+          </element>
+        </optional>
       </element>
     </oneOrMore>
   </define>
