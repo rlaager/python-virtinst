@@ -300,6 +300,56 @@ class VirtualDisk(VirtualDevice):
         """
         return (self.vol_object != None or self.vol_install != None)
 
+    def __check_if_path_managed(self):
+        vol = None
+        err = None
+        pool = util.lookup_pool_by_path(self.conn,
+                                        os.path.dirname(self.path))
+        if pool:
+            try:
+                vol = self.conn.storageVolLookupByPath(self.path)
+            except Exception, e:
+                # Pool may need to be refreshed
+                pool.refresh(0)
+                try:
+                    vol = self.conn.storageVolLookupByPath(self.path)
+                except Exception, e:
+                    verr = str(e)
+
+        if not vol:
+            # Path wasn't a volume. See if base of path is a managed
+            # pool, and if so, setup a StorageVolume object
+            if pool:
+                if self.size == None:
+                    raise ValueError(_("Size must be specified for non "
+                                       "existent volume path '%s'" % \
+                                        self.path))
+                logging.debug("Path '%s' is target for pool '%s'. "
+                              "Creating volume '%s'." % \
+                              (os.path.dirname(self.path), pool.name(),
+                               os.path.basename(self.path)))
+                volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
+                cap = (self.size * 1024 * 1024 * 1024)
+                if self.sparse:
+                    alloc = 0
+                else:
+                    #alloc = cap
+                    # XXX: disable setting managed storage as nonsparse
+                    # XXX: since it hoses libvirtd (for now)
+                    alloc = 0
+                vol = volclass(name=os.path.basename(self.path),
+                               capacity=cap, allocation=alloc, pool=pool)
+                self._set_vol_install(vol, validate=False)
+            elif self._is_remote():
+                raise ValueError(_("'%s' is not managed on remote "
+                                   "host: %s" % (self.path, verr)))
+            else:
+                logging.debug("Didn't find path '%s' managed on "
+                              "connection: %s" % (self.path, verr))
+        else:
+            self._set_vol_object(vol, validate=False)
+
+
     def __validate_params(self):
         """
         function to validate all the complex interaction between the various
@@ -314,51 +364,9 @@ class VirtualDisk(VirtualDevice):
         if not storage_capable and self._is_remote():
             raise ValueError, _("Connection doesn't support remote storage.")
 
-
         if storage_capable and self.path is not None \
            and not self.__storage_specified():
-            vol = None
-            verr = None
-            try:
-                vol = self.conn.storageVolLookupByPath(self.path)
-            except Exception, e:
-                verr = str(e)
-
-            if not vol:
-                # Path wasn't a volume. See if base of path is a managed
-                # pool, and if so, setup a StorageVolume object
-                pool = util.lookup_pool_by_path(self.conn,
-                                                os.path.dirname(self.path))
-                if pool:
-                    if self.size == None:
-                        raise ValueError(_("Size must be specified for non "
-                                           "existent path '%s'" % self.path))
-                    logging.debug("Path '%s' is target for pool '%s'. "
-                                  "Creating volume '%s'." % \
-                                  (os.path.dirname(self.path), pool.name(),
-                                   os.path.basename(self.path)))
-                    volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
-                    cap = (self.size * 1024 * 1024 * 1024)
-                    if self.sparse:
-                        alloc = 0
-                    else:
-                        #alloc = cap
-                        # XXX: disable setting managed storage as nonsparse
-                        # XXX: since it hoses libvirtd (for now)
-                        alloc = 0
-                    vol = volclass(name=os.path.basename(self.path),
-                                   capacity=cap, allocation=alloc,
-                                   pool=pool)
-                    self._set_vol_install(vol, validate=False)
-                elif self._is_remote():
-                    raise ValueError(_("'%s' is not managed on remote "
-                                       "host: %s" % (self.path, verr)))
-                else:
-                    logging.debug("Didn't find path '%s' managed on "
-                                  "connection: %s" % (self.path, verr))
-            else:
-                self._set_vol_object(vol, validate=False)
-
+            self.__check_if_path_managed()
 
         if self._is_remote() and not self.__storage_specified():
             raise ValueError, _("Must specify libvirt managed storage if on "
