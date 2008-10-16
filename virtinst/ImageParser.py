@@ -23,6 +23,8 @@ import os.path
 import libxml2
 import CapabilitiesParser
 from virtinst import _virtinst as _
+import logging
+import urlgrabber.progress as progress
 
 class ParserException(Exception):
     def __init__(self, msg):
@@ -223,6 +225,52 @@ class Disk:
         validate (formats.count(self.format) > 0,
                   _("The format for disk %s must be one of %s") %
                   (self.file, ",".join(formats)))
+
+    def check_disk_signature(self):
+        try:
+            import hashlib
+            has_hashlib = True
+        except:
+            import sha
+            has_hashlib = False
+
+        meter_ct = 0
+        m = None
+        disk_size = os.path.getsize(self.file)
+        meter = progress.TextMeter()
+        meter.start(size=disk_size, text=_("Checking disk signature for "
+                                           "%s" % self.file))
+
+        if has_hashlib is True:
+            if self.csum.has_key("sha256"):
+                csumvalue = self.csum["sha256"]
+                m = hashlib.sha256()
+            elif self.csum.has_key("sha1"):
+                csumvalue = self.csum["sha1"]
+                m = hashlib.sha1()
+        else:
+            if self.csum.has_key("sha1"):
+                csumvalue = self.csum["sha1"]
+                m = sha.new()
+
+        if not m:
+            return
+
+        f = open(self.file,"r")
+        while 1:
+            chunk = f.read(65536)
+            if not chunk:
+                break
+            meter.update(meter_ct)
+            meter_ct = meter_ct + 65536
+            m.update(chunk)
+        checksum = m.hexdigest()
+        if checksum != csumvalue:
+              logging.debug(_("Disk signature for %s does not match "
+                              "Expected: %s  Received: %s" % (self.file,
+                              csumvalue,checksum)))
+              raise ValueError (_("Disk signature for %s does not "
+                                  "match" % self.file))
 
 def validate(cond, msg):
     if not cond:
