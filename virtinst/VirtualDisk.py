@@ -302,7 +302,7 @@ class VirtualDisk(VirtualDevice):
 
     def __check_if_path_managed(self):
         vol = None
-        err = None
+        verr = None
         pool = util.lookup_pool_by_path(self.conn,
                                         os.path.dirname(self.path))
         if pool:
