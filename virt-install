@@ -82,6 +82,7 @@ def parse_disk_option(guest, path, size):
     ro = False
     shared = False
     sparse = True
+    bus = None
 
     origpath = path
 
@@ -113,6 +114,8 @@ def parse_disk_option(guest, path, size):
         opt_type, opt_val = opt
         if opt_type == "device":
             devtype = opt_val
+        if opt_type == "bus":
+            bus = opt_val
         elif opt_type == "perms":
             if opt_val == "ro":
                 ro = True
@@ -135,7 +138,7 @@ def parse_disk_option(guest, path, size):
         else:
             fail(_("Unknown --disk option '%s'." % opt))
 
-    # We return (path, (poolname, volname), volinst, device, readonly, shared)
+    # We return (path, (poolname, volname), volinst, device, bus, readonly, shared)
     if path_type == "path=":
         abspath = os.path.abspath(path)
         if os.path.dirname(abspath) == DEFAULT_POOL_PATH:
@@ -166,7 +169,7 @@ def parse_disk_option(guest, path, size):
 
     if not devtype:
         devtype = virtinst.VirtualDisk.DEVICE_DISK
-    ret = (abspath, voltuple, volinst, devtype, ro, shared, size, sparse)
+    ret = (abspath, voltuple, volinst, devtype, bus, ro, shared, size, sparse)
     logging.debug("parse_disk: returning %s" % str(ret))
     return ret
 
@@ -175,20 +178,20 @@ def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
     try:
         # Get disk parameters
         if is_file_path:
-            (path, voltuple, volinst, device, readOnly, shared, size,
+            (path, voltuple, volinst, device, bus, readOnly, shared, size,
              sparse) = \
-             (disk, None, None, virtinst.VirtualDisk.DEVICE_DISK, False,
+             (disk, None, None, virtinst.VirtualDisk.DEVICE_DISK, None, False,
               False, size, sparse)
         else:
             (path, voltuple, volinst,
-             device, readOnly, shared,
+             device, bus, readOnly, shared,
              size, sparse) = parse_disk_option(guest, disk, size)
             if not sparse and volinst:
                 volinst.allocation = volinst.capacity
 
         d = virtinst.VirtualDisk(path=path, size=size, sparse=sparse,
                                  volInstall=volinst, volName=voltuple,
-                                 readOnly=readOnly, device=device,
+                                 readOnly=readOnly, device=device, bus=bus,
                                  conn=guest.conn)
         # Default file backed PV guests to tap driver
         if d.type == virtinst.VirtualDisk.TYPE_FILE \
