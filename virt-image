@@ -145,6 +145,8 @@ def parse_args():
     parser.add_option("", "--replace",action="store_true", dest="replace",
                       help=_("Overwrite, or destroy, an existing image with the same name"),
                       default=False)                      
+    parser.add_option("","--skip-checksum", action="store_true", dest="skipchecksum",
+                      help=_("Skip disk checksum verification process"))
 
     (options,args) = parser.parse_args()
     if len(args) < 1:
@@ -204,6 +206,10 @@ def main():
         if options.noapic:
             guest.features["apic"] = False
 
+    if not options.skipchecksum:
+        for disk in image.storage.values():
+            disk.check_disk_signature()
+    
     progresscb = progress.TextMeter()
 
     # we've got everything -- try to start the install
