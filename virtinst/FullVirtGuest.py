@@ -111,8 +111,9 @@ class FullVirtGuest(Guest.XenGuest):
                         "bus"  : [ (["all"], "usb"), ] },
         },
         "variants": { \
-            "winxp":{ "label": "Microsoft Windows XP",
+            "winxp":{ "label": "Microsoft Windows XP (x86)",
                       "acpi": False, "apic": False },
+            "winxp64":{ "label": "Microsoft Windows XP (x86_64)" },
             "win2k": { "label": "Microsoft Windows 2000",
                        "acpi": False, "apic": False },
             "win2k3": { "label": "Microsoft Windows 2003" },
