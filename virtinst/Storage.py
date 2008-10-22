@@ -579,7 +579,7 @@ class DiskPool(StoragePool):
     source_path = property(StoragePool.get_source_path,
                            StoragePool.set_source_path)
 
-    formats = [ "auto", "bsd", "msdos", "dvh", "gpt", "mac", "pc98", "sun" ]
+    formats = [ "auto", "bsd", "dos", "dvh", "gpt", "mac", "pc98", "sun" ]
 
     def get_volume_class():
         return DiskVolume
