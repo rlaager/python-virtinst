@@ -624,7 +624,8 @@ class DiskPool(StoragePool):
         if self.format == "auto" and build:
             raise ValueError(_("Must explicitly specify disk format if "
                                "formatting disk device."))
-        StoragePool.install(self, meter=meter, create=create, build=build)
+        return StoragePool.install(self, meter=meter, create=create,
+                                   build=build)
 
 class iSCSIPool(StoragePool):
     """
