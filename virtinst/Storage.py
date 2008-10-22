@@ -634,6 +634,10 @@ class iSCSIPool(StoragePool):
 
     host = property(StoragePool.get_host, StoragePool.set_host)
 
+    def get_volume_class():
+        return iSCSIVolume
+    get_volume_class = staticmethod(get_volume_class)
+
     def __init__(self, conn, name, source_path=None, host=None,
                  target_path=None, uuid=None):
         StoragePool.__init__(self, name=name, type=StoragePool.TYPE_ISCSI,
@@ -955,6 +959,13 @@ class FileVolume(StorageVolume):
 class DiskVolume(StorageVolume):
     """
     Build and install xml for use on disk device pools
+    """
+    def __init__(self, *args, **kwargs):
+        raise RuntimeError ("Not Implemented")
+
+class iSCSIVolume(StorageVolume):
+    """
+    Build and install xml for use on iSCSI device pools
     """
     def __init__(self, *args, **kwargs):
         raise RuntimeError ("Not Implemented")
