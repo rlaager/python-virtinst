@@ -80,7 +80,8 @@ msgstr "使用 URI 连接到监控程序"
 msgid ""
 "Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-"
 "copy=hdc)"
-msgstr "强制复制设备（例如：如果 'hdc' 是随机光驱设备，则使用 --force-copy=hdc）"
+msgstr ""
+"强制复制设备（例如：如果 'hdc' 是随机光驱设备，则使用 --force-copy=hdc）"
 
 #: virt-clone:166
 msgid "Do not use a sparse file for the clone's disk image"
@@ -132,7 +133,9 @@ msgstr "以 MB 为单位为客户端事件分配的内存"
 msgid ""
 "UUID for the guest; if none is given a random UUID will be generated. If you "
 "specify UUID, you should use a 32-digit hexadecimal number."
-msgstr "客户端的 UUID；如果没有给定则会随机生成 UUID。如果指定 UUID，则应该使用 32 位十六进制数字。"
+msgstr ""
+"客户端的 UUID；如果没有给定则会随机生成 UUID。如果指定 UUID，则应该使用 32 位"
+"十六进制数字。"
 
 #: virt-image:97 virt-install:334
 msgid "Number of vcpus to configure for your guest"
@@ -298,7 +301,9 @@ msgstr "--nodisks 无法 --file、--size 或者 --disk 共用"
 msgid ""
 "Cannot mix --file, --nonsparse, or --file-size with --disk options. Please "
 "see the manual for --disk syntax."
-msgstr "--disk 选项不能与 --file、--nonsparse 或者 --file-size 混用。请查看手册中的 --disk 语法。"
+msgstr ""
+"--disk 选项不能与 --file、--nonsparse 或者 --file-size 混用。请查看手册中的 "
+"--disk 语法。"
 
 #: virt-install:224
 msgid "A disk must be specified (use --nodisks to override)"
@@ -367,14 +372,16 @@ msgid "Use sound device emulation"
 msgstr "使用仿真声音设备"
 
 #: virt-install:348
-msgid "The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
+msgid ""
+"The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
 msgstr "全虚拟客户端的操作系统类型，例如：'linux'、'unix'、'windows'"
 
 #: virt-install:352
 msgid ""
 "The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
 "'solaris10', 'win2k'"
-msgstr "全虚拟客户端的操作系统变体，例如：'fedora6'、'rhel5'、'solaris10'、'win2k'"
+msgstr ""
+"全虚拟客户端的操作系统变体，例如：'fedora6'、'rhel5'、'solaris10'、'win2k'"
 
 #: virt-install:363
 msgid "Virtualization Type Options"
@@ -401,7 +408,8 @@ msgid "CD-ROM installation media"
 msgstr "光驱安装介质"
 
 #: virt-install:380
-msgid "Installation source (eg, nfs:host:/path, http://host/path, ftp://host/path)"
+msgid ""
+"Installation source (eg, nfs:host:/path, http://host/path, ftp://host/path)"
 msgstr "安装源（例如：nfs:host:/path、http://host/path、ftp://host/path）"
 
 #: virt-install:383
@@ -482,7 +490,8 @@ msgstr "在模糊状态请求用户输入。默认为 false，如果出现提示
 msgid ""
 "Unable to connect to graphical console: virt-viewer not installed. Please "
 "install the 'virt-viewer' package."
-msgstr "无法连接到图形控制台：没有安装 virt-viewer。请安装 'virt-viewer' 软件包。"
+msgstr ""
+"无法连接到图形控制台：没有安装 virt-viewer。请安装 'virt-viewer' 软件包。"
 
 #: virt-install:512
 msgid "Can't do both --hvm and --paravirt"
@@ -648,7 +657,9 @@ msgstr "禁用提示，但需要输入。提示为：%s"
 msgid ""
 "Prompting disabled, but yes/no was requested. Try --force to force 'yes' for "
 "such prompts. Prompt was: %s"
-msgstr "禁用提示，但需要输入 yes/no。请为这种提示尝试使用 --force 强制为 'yes'。提示为：%s"
+msgstr ""
+"禁用提示，但需要输入 yes/no。请为这种提示尝试使用 --force 强制为 'yes'。提示"
+"为：%s"
 
 #: virtinst/cli.py:185
 msgid "A name is required for the virtual machine."
@@ -669,7 +680,9 @@ msgid ""
 "You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
 "on the host. This will work, but performance will be poor. Are you sure? "
 "(yes or no)"
-msgstr "您要求的虚拟 CPU 数（%d）已经超过了主机中的物理 CPU（%d）。这样也可以，但性能会很差。您确定要这样吗？（是或否）"
+msgstr ""
+"您要求的虚拟 CPU 数（%d）已经超过了主机中的物理 CPU（%d）。这样也可以，但性能"
+"会很差。您确定要这样吗？（是或否）"
 
 #: virtinst/cli.py:270
 msgid "Unknown network type "
@@ -763,7 +776,8 @@ msgstr "检查安装程序位置失败：%s"
 msgid ""
 "Install media location must be an NFS, HTTP or FTP network install source, "
 "or an existing local file/device"
-msgstr "安装介质位置必须是 NFS、HTTP 或者 FTP 网络安装源，或者现有本地文件/设备"
+msgstr ""
+"安装介质位置必须是 NFS、HTTP 或者 FTP 网络安装源，或者现有本地文件/设备"
 
 #: virtinst/DistroManager.py:185
 msgid "NFS installations are only supported as root"
@@ -784,7 +798,8 @@ msgstr "操作系统变体必须是一个字符串。"
 
 #: virtinst/FullVirtGuest.py:227
 #, python-format
-msgid "OS variant '%(var)s; does not exist in our dictionary for OS type '%(ty)s'"
+msgid ""
+"OS variant '%(var)s; does not exist in our dictionary for OS type '%(ty)s'"
 msgstr "在我们的操作系统类型 '%(ty)s' 库中不存在操作系统参数 '%(var)s;"
 
 #: virtinst/FullVirtGuest.py:238
@@ -821,7 +836,8 @@ msgid ""
 msgstr "您输入的 MAC 地址已经被另一个激活的虚拟机使用。"
 
 #: virtinst/Guest.py:108
-msgid "The MAC address you entered conflicts with a device on the physical host."
+msgid ""
+"The MAC address you entered conflicts with a device on the physical host."
 msgstr "您输入的 MAC 地址与物理主机中的设备冲突。"
 
 #: virtinst/Guest.py:110
@@ -857,7 +873,8 @@ msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr "Keyap 只能包含数字字母、'_' 或者 '-' 字符。"
 
 #: virtinst/Guest.py:236
-msgid "VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
+msgid ""
+"VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr "VNC 端口必须是 5900 和 65535 之间的，使用 -l 可自动分配"
 
 #: virtinst/Guest.py:333
@@ -877,7 +894,8 @@ msgid "Unable to connect to hypervisor, aborting installation!"
 msgstr "无法连接到监控程序，取消安装！"
 
 #: virtinst/Guest.py:424
-msgid "System name must be a string greater than 0 and no more than 50 characters"
+msgid ""
+"System name must be a string greater than 0 and no more than 50 characters"
 msgstr "系统名称必须是大于 0 小于 50 个字符的字符串"
 
 #: virtinst/Guest.py:426
@@ -906,7 +924,9 @@ msgstr "UUID 必须是一个字符串。"
 msgid ""
 "UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-"
 "XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
-msgstr "UUID 必须是一个 32 位的十六进制数字。格式可以是 XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX，也可以取消所有连字符。"
+msgstr ""
+"UUID 必须是一个 32 位的十六进制数字。格式可以是 XXXXXXXX-XXXX-XXXX-XXXX-"
+"XXXXXXXXXXXX，也可以取消所有连字符。"
 
 #: virtinst/Guest.py:482
 msgid "Number of vcpus must be a postive integer."
@@ -1280,7 +1300,9 @@ msgstr "存储池中没有足够空间来创建卷。（%d M 需要的空间 > %
 msgid ""
 "The requested volume capacity will exceed the available pool space when the "
 "volume is fully allocated. (%d M requested capacity > %d M available)"
-msgstr "当卷已经被全部分配后，需要的卷容量将超过可用池空间。（%d M 需要的容量 > %d M 可用容量）"
+msgstr ""
+"当卷已经被全部分配后，需要的卷容量将超过可用池空间。（%d M 需要的容量 > %d M "
+"可用容量）"
 
 #: virtinst/util.py:45
 #, python-format
@@ -1444,4 +1466,3 @@ msgstr "IDE CDROM 必须是 'hdc'，但目标已经被使用。 "
 #, python-format
 msgid "No more space for disks of type '%s'"
 msgstr "没有 '%s' 类型磁盘可用的空间"
-
