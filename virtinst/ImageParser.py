@@ -226,7 +226,7 @@ class Disk:
                   _("The format for disk %s must be one of %s") %
                   (self.file, ",".join(formats)))
 
-    def check_disk_signature(self):
+    def check_disk_signature(self, meter=None):
         try:
             import hashlib
             has_hashlib = True
@@ -237,9 +237,9 @@ class Disk:
         meter_ct = 0
         m = None
         disk_size = os.path.getsize(self.file)
-        meter = progress.TextMeter()
-        meter.start(size=disk_size, text=_("Checking disk signature for "
-                                           "%s" % self.file))
+        if meter:
+            meter.start(size=disk_size,
+                        text=_("Checking disk signature for %s" % self.file))
 
         if has_hashlib is True:
             if self.csum.has_key("sha256"):
@@ -261,8 +261,9 @@ class Disk:
             chunk = f.read(65536)
             if not chunk:
                 break
-            meter.update(meter_ct)
-            meter_ct = meter_ct + 65536
+            if meter:
+                meter.update(meter_ct)
+                meter_ct = meter_ct + 65536
             m.update(chunk)
         checksum = m.hexdigest()
         if checksum != csumvalue:
