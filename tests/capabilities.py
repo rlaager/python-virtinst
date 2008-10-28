@@ -33,7 +33,7 @@ class TestCapabilities(unittest.TestCase):
             self.assertEqual(features[n],        guest.features[n])
 
     def _testCapabilities(self, path, (host_arch, host_features), guests):
-        caps = capabilities.parse(file(os.path.join("tests", path)).read())
+        caps = capabilities.parse(file(os.path.join("tests/capabilities-xml", path)).read())
 
         self.assertEqual(host_arch,     caps.host.arch)
         for n in host_features:

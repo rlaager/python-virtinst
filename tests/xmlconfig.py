@@ -24,7 +24,7 @@ import urlgrabber.progress as progress
 class TestXMLConfig(unittest.TestCase):
 
     def _compare(self, xenguest, filebase, install):
-        f = open("tests/" + filebase + ".xml", "r")
+        f = open(os.path.join("tests/xmlconfig-xml",filebase + ".xml"), "r")
         expectXML = string.join(f.readlines(), "")
         f.close()
 

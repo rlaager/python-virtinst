@@ -22,7 +22,7 @@ import os
 class TestImageParser(unittest.TestCase):
 
     def testImageParsing(self):
-        file = open(os.path.join("tests", "image.xml"), "r")
+        file = open(os.path.join("tests/image-xml", "image.xml"), "r")
         xml = file.read()
         file.close()
 
@@ -36,7 +36,7 @@ class TestImageParser(unittest.TestCase):
         self.assertEqual("xvdb", boot.drives[1].target)
 
     def testMultipleNics(self):
-        file = open(os.path.join("tests", "image2nics.xml"), "r")
+        file = open(os.path.join("tests/image-xml", "image2nics.xml"), "r")
         xml = file.read()
         file.close()
 
