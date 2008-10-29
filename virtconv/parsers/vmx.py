@@ -232,15 +232,14 @@ class vmx_parser(formats.parser):
         return vm
 
     @staticmethod
-    def export_file(vm, output_file):
+    def export(vm):
         """
-        Export a configuration file.
+        Export a configuration file as a string.
         @vm vm configuration instance
-        @file Output file
 
-        Raises ValueError if configuration is not suitable, or another
-        exception on failure to write the output file.
+        Raises ValueError if configuration is not suitable.
         """
+
         vm.description = vm.description.strip()
         vm.description = vm.description.replace("\n","|")
         vmx_out_template = []
@@ -276,10 +275,22 @@ class vmx_parser(formats.parser):
                 eth_out = _VMX_ETHERNET_TEMPLATE % eth_dict
                 eth_out_template.append(eth_out)
 
+        return "".join(vmx_out_template + disk_out_template + eth_out_template)
+
+    @staticmethod
+    def export_file(vm, output_file):
+        """
+        Export a configuration file.
+        @vm vm configuration instance
+        @output_file Output file
+
+        Raises ValueError if configuration is not suitable, or another
+        exception on failure to write the output file.
+        """
+        output = vmx_parser.export(vm)
+
         outfile = open(output_file, "w")
-        outfile.writelines(vmx_out_template)
-        outfile.writelines(disk_out_template)
-        outfile.writelines(eth_out_template)
+        outfile.writelines(output)
         outfile.close()
 
 formats.register_parser(vmx_parser)

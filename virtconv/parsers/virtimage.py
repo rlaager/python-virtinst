@@ -253,14 +253,12 @@ class virtimage_parser(formats.parser):
         return vm
 
     @staticmethod
-    def export_file(vm, output_file):
+    def export(vm):
         """
-        Export a configuration file.
+        Export a configuration file as a string.
         @vm vm configuration instance
-        @file Output file
 
-        Raises ValueError if configuration is not suitable, or another
-        exception on failure to write the output file.
+        Raises ValueError if configuration is not suitable.
         """
 
         if not vm.memory:
@@ -301,8 +299,22 @@ class virtimage_parser(formats.parser):
             "storage" : "".join(storage),
         }
 
+        return out
+
+    @staticmethod
+    def export_file(vm, output_file):
+        """
+        Export a configuration file.
+        @vm vm configuration instance
+        @output_file Output file
+
+        Raises ValueError if configuration is not suitable, or another
+        exception on failure to write the output file.
+        """
+        output = virtimage_parser.export(vm)
+
         outfile = open(output_file, "w")
-        outfile.writelines(out)
+        outfile.writelines(output)
         outfile.close()
 
 formats.register_parser(virtimage_parser)
