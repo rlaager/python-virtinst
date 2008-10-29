@@ -60,9 +60,7 @@ image_template = """
 <image>
  <name>%(name)s</name>
  <label>%(name)s</label>
- <description>
-  %(description)s
- </description>
+ <description>%(description)s</description>
  <domain>
   %(boot_template)s
   <devices>
