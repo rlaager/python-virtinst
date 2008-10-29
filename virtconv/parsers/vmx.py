@@ -162,13 +162,15 @@ class vmx_parser(formats.parser):
         Return True if the given file is of this format.
         """
         infile = open(input_file, "r")
-        line = infile.readline()
+        content = infile.readlines()
         infile.close()
 
-        # some .vmx files don't bother with the header
-        if re.match(r'^config.version\s+=', line):
-            return True
-        return re.match(r'^#!\s*/usr/bin/vm(ware|player)', line) is not None
+        for line in content:
+            # some .vmx files don't bother with the header
+            if re.match(r'^config.version\s+=', line) or \
+               re.match(r'^#!\s*/usr/bin/vm(ware|player)', line):
+                return True
+        return False
 
     @staticmethod
     def import_file(input_file):
