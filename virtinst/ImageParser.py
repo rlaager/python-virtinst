@@ -100,16 +100,19 @@ class Domain:
     def parseXML(self, node):
         self.boots = [ Boot(b) for b in node.xpathEval("boot") ]
         self.vcpu = xpathString(node, "devices/vcpu", 1)
-        self.memory = xpathString(node, "devices/memory")
+        tmpmem = xpathString(node, "devices/memory")
         self.interface = int(node.xpathEval("count(devices/interface)")) 
         self.graphics = node.xpathEval("count(devices/graphics)") > 0
 
         # FIXME: There must be a better way to check this
-        if self.memory is not None:
+        if tmpmem is not None:
             try:
-                scratch = int(self.memory)
+                self.memory = int(tmpmem)
             except ValueError:
-                raise ParserException(_("Memory must be an integer, but is '%s'") % self.memory)
+                raise ParserException(_("Memory must be an integer, "
+                                        "but is '%s'") % self.memory)
+        else:
+            tmpmem = 0
 
 class ImageFeatures(CapabilitiesParser.Features):
     def __init__(self, node = None):
