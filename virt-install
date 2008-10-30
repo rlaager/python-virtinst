@@ -136,7 +136,7 @@ def parse_disk_option(guest, path, size):
             else:
                 fail(_("Unknown '%s' value '%s'") % (opt_type, opt_val))
         else:
-            fail(_("Unknown --disk option '%s'." % opt))
+            fail(_("Unknown --disk option '%s'.") % (opt,))
 
     # We return (path, (poolname, volname), volinst, device, bus, readonly, shared)
     if path_type == "path=":
