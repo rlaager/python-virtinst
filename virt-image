@@ -207,8 +207,9 @@ def main():
             guest.features["apic"] = False
 
     if not options.skipchecksum:
+        meter = progress.TextMeter()
         for disk in image.storage.values():
-            disk.check_disk_signature()
+            disk.check_disk_signature(meter=meter)
     
     progresscb = progress.TextMeter()
 
