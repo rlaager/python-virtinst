@@ -15,6 +15,7 @@
 # MA 02110-1301 USA.
 
 import string
+import difflib
 import unittest
 import virtinst
 import os
@@ -24,7 +25,8 @@ import urlgrabber.progress as progress
 class TestXMLConfig(unittest.TestCase):
 
     def _compare(self, xenguest, filebase, install):
-        f = open(os.path.join("tests/xmlconfig-xml",filebase + ".xml"), "r")
+        filename = os.path.join("tests/xmlconfig-xml", filebase + ".xml")
+        f = open(filename, "r")
         expectXML = string.join(f.readlines(), "")
         f.close()
 
@@ -36,7 +38,15 @@ class TestXMLConfig(unittest.TestCase):
                 print "Expect: %d bytes '%s'" % (len(expectXML),  expectXML)
                 print "Actual: %d bytes '%s'" % (len(actualXML),  actualXML)
 
-            self.assertEqual(actualXML, expectXML)
+            diff = "".join(difflib.unified_diff(expectXML.splitlines(1),
+                                                actualXML.splitlines(1),
+                                                fromfile=filename,
+                                                tofile="Generated Output"))
+            if diff:
+                raise AssertionError("Conversion outputs did not match.\n"
+                                     "%s" % diff)
+            else:
+                self.assertTrue(True)
         finally:
             xenguest._installer.cleanup()
 
