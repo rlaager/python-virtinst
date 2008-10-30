@@ -216,7 +216,7 @@ class virtimage_parser(formats.parser):
         if not config.name:
             raise ValueError("No Name defined in '%s'" % input_file)
         vm.name = config.name
-        vm.memory = config.domain.memory
+        vm.memory = int(config.domain.memory / 1024)
         if config.descr:
             vm.description = config.descr
         vm.nr_vcpus = config.domain.vcpu

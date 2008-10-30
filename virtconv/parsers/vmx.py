@@ -251,7 +251,7 @@ class vmx_parser(formats.parser):
             "vm_name": vm.name,
             "vm_description": vm.description or "None",
             "vm_nr_vcpus" : vm.nr_vcpus,
-            "vm_memory": long(vm.memory)/1024
+            "vm_memory": long(vm.memory)
         }
         vmx_out = _VMX_MAIN_TEMPLATE % vmx_dict
         vmx_out_template.append(vmx_out)
