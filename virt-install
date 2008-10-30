@@ -114,7 +114,7 @@ def parse_disk_option(guest, path, size):
         opt_type, opt_val = opt
         if opt_type == "device":
             devtype = opt_val
-        if opt_type == "bus":
+        elif opt_type == "bus":
             bus = opt_val
         elif opt_type == "perms":
             if opt_val == "ro":
