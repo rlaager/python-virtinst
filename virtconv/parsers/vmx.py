@@ -26,6 +26,7 @@ import time
 import sys
 import re
 import os
+import logging
 
 _VMX_MAIN_TEMPLATE = """
 #!/usr/bin/vmplayer
@@ -257,16 +258,20 @@ class vmx_parser(formats.parser):
         vmx_out_template.append(vmx_out)
 
         disk_out_template = []
-        ide_count = 0
-        for disk in vm.disks:
-            dev = "%d:%d" % (ide_count / 2, ide_count % 2)
+        for devid, disk in sorted(vm.disks.items()):
+            bus, dev_nr = devid
+            if bus.lower() != "ide":
+                logging.debug("Disk bus '%s' not yet supported. Skipping." % \
+                               bus.lower())
+                continue
+
+            dev = "%d:%d" % (dev_nr / 2, dev_nr % 2)
             disk_dict = {
                 "dev": dev,
-                "disk_filename" : vm.disks[disk].path
+                "disk_filename" : disk.path
             }
             disk_out = _VMX_IDE_TEMPLATE % disk_dict
             disk_out_template.append(disk_out)
-            ide_count = ide_count + 1
 
         eth_out_template = []
         if len(vm.netdevs):
