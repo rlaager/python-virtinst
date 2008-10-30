@@ -487,17 +487,25 @@ class SuseDistro(Distro):
 
 
 class DebianDistro(Distro):
-    def isValidStore(self, fetcher, progresscb):
-        # Don't support any paravirt installs
-        if self.type is not None and self.type != "hvm":
-            return False
+    # location e.g. http://ftp.egr.msu.edu/debian/dists/sarge/main/installer-i386/
 
+    def __init__(self, uri, type=None, scratchdir=None, arch=None):
+        Distro.__init__(self, uri, type, scratchdir, arch)
+        if re.match(r'i[4-9]86', arch):
+            self.arch = 'i386'
+        self._prefix = 'current/images'
+
+    def isValidStore(self, fetcher, progresscb):
         file = None
         try:
             try:
                 file = None
-                if fetcher.hasFile("current/images/MANIFEST"):
-                    file = fetcher.acquireFile("current/images/MANIFEST", 
+                if fetcher.hasFile("%s/MANIFEST" % self._prefix):
+                    file = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
+                                               progresscb)
+                elif fetcher.hasFile("images/daily/MANIFEST"):
+                    self._prefix = "images/daily"
+                    file = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
                                                progresscb)
                 else:
                     logging.debug("Doesn't look like a Debian distro.")
@@ -523,8 +531,26 @@ class DebianDistro(Distro):
         return False
 
     def acquireBootDisk(self, fetcher, progresscb):
-        # eg from http://ftp.egr.msu.edu/debian/dists/sarge/main/installer-i386/
-        return fetcher.acquireFile("current/images/netboot/mini.iso", progresscb)
+        return fetcher.acquireFile("%s/netboot/mini.iso" % self._prefix, progresscb)
+
+    def acquireKernel(self, fetcher, progresscb):
+        if self.type is None or self.type == "hvm":
+            kernelpath = "%s/netboot/debian-installer/%s/linux" % (self._prefix, self.arch)
+            initrdpath = "%s/netboot/debian-installer/%s/initrd.gz" % (self._prefix, self.arch)
+        else:
+            kernelpath = "%s/netboot/xen/vmlinuz" % self._prefix
+            initrdpath = "%s/netboot/xen/initrd.gz" % self._prefix
+
+        kernel = fetcher.acquireFile(kernelpath, progresscb)
+        try:
+            initrd = fetcher.acquireFile(initrdpath, progresscb)
+            if fetcher.location.startswith("/"):
+                # Local host path, so can't pass a location to guest for install method
+                return (kernel, initrd, "")
+            else:
+                return (kernel, initrd, "method=" + fetcher.location)
+        except:
+            os.unlink(kernel)
 
 
 class UbuntuDistro(Distro):
