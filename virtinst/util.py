@@ -292,8 +292,16 @@ def default_keymap():
             s = f.readline()
             if s == "":
                 break
-            if re.search("KEYTABLE", s) != None:
-                kt = s.split('"')[1]
+            if re.search("KEYTABLE", s) != None or \
+               (re.search("KEYBOARD", s) != None and
+                re.search("KEYBOARDTYPE", s) == None):
+                if s.count('"'):
+                    delim = '"'
+                elif s.count('='):
+                    delim = '='
+                else:
+                    continue
+                kt = s.split(delim)[1].strip()
                 if keytable.keytable.has_key(kt.lower()):
                     keymap = keytable.keytable[kt]
                 else:
