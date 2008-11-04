@@ -125,7 +125,7 @@ Disk device type. Value can be 'cdrom', 'disk', or 'floppy'. Default is
 'disk'. If a 'cdrom' is specified, and no install method is chosen, the
 cdrom is used as the install media.
 
-=item B<device>
+=item B<bux>
 
 Disk bus type. Value can be 'ide', 'scsi', 'usb', 'virtio' or 'xen'.  The
 default is hypervisor dependent since not all hypervisors support all bus
