@@ -14,13 +14,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import string
 import unittest
-import virtinst
 from virtinst.Storage import StoragePool, StorageVolume
-import os
 import libvirt
-import urlgrabber.progress as progress
 
 class TestStorage(unittest.TestCase):
 

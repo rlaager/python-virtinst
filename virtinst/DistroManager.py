@@ -23,10 +23,7 @@
 import logging
 import os
 import errno
-import gzip
-import re
 import struct
-import tempfile
 import util
 import Guest
 from VirtualDisk import VirtualDisk

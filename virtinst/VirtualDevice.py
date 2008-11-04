@@ -20,7 +20,6 @@
 # MA 02110-1301 USA.
 
 import libvirt
-import logging
 
 import CapabilitiesParser
 import util

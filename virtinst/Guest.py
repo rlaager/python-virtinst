@@ -20,8 +20,7 @@
 # MA 02110-1301 USA.
 
 import os, os.path
-import statvfs
-import stat, sys, time
+import time
 import re
 import libxml2
 import urlgrabber.progress as progress
@@ -30,7 +29,6 @@ import libvirt
 import __builtin__
 import CapabilitiesParser
 import VirtualDevice
-from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
 import logging

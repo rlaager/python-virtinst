@@ -26,7 +26,6 @@ import virtinst.FullVirtGuest as fv
 import virtinst.ImageParser as ImageParser
 from xml.sax.saxutils import escape
 from string import ascii_letters
-import os
 import re
 
 pv_boot_template = """

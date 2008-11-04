@@ -22,7 +22,6 @@ import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
 import virtconv.netdevcfg as netdevcfg
-import time
 import sys
 import re
 import os

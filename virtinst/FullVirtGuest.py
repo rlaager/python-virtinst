@@ -20,7 +20,6 @@
 # MA 02110-1301 USA.
 
 import os
-import libvirt
 import Guest
 import util
 import DistroManager

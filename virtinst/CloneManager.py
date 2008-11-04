@@ -19,9 +19,7 @@
 # MA 02110-1301 USA.
 
 import os
-import sys
 import stat
-import re
 import libxml2
 import logging
 import urlgrabber.progress as progress

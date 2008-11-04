@@ -50,7 +50,6 @@ import libvirt
 
 import re
 import logging
-import libxml2
 from xml.sax.saxutils import escape
 
 import util

@@ -27,7 +27,7 @@ from optparse import OptionValueError, OptionParser
 
 import libvirt
 import util
-from virtinst import Guest, CapabilitiesParser, VirtualNetworkInterface, \
+from virtinst import CapabilitiesParser, VirtualNetworkInterface, \
                      VirtualGraphics, VirtualAudio
 from virtinst import _virtinst as _
 

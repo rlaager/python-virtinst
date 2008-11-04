@@ -17,11 +17,8 @@
 import unittest
 import difflib
 import string
-import virtinst
 import virtconv
 import os, os.path, glob
-import libvirt
-import urlgrabber.progress as progress
 
 vmx2virtimage_dir = "tests/virtconv-files/vmx2virtimage"
 vmx2virtimage_files = [ "test" ]

@@ -20,12 +20,8 @@
 # MA 02110-1301 USA.
 
 
-import os, sys, string
-from optparse import OptionParser, OptionValueError
-import subprocess
-import libxml2
+import os, sys
 import logging
-import libvirt
 import virtinst
 import virtinst.CloneManager as clmgr
 

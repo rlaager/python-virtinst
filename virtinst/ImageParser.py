@@ -24,7 +24,6 @@ import libxml2
 import CapabilitiesParser
 from virtinst import _virtinst as _
 import logging
-import urlgrabber.progress as progress
 
 class ParserException(Exception):
     def __init__(self, msg):

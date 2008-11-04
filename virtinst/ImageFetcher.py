@@ -24,7 +24,6 @@ import os
 import stat
 import subprocess
 import urlgrabber.grabber as grabber
-import urlgrabber.progress as progress
 import urllib2
 import urlparse
 import ftplib

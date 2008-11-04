@@ -23,7 +23,6 @@ import os, stat, statvfs
 import libxml2
 import logging
 import libvirt
-import __builtin__
 
 import util
 import Storage

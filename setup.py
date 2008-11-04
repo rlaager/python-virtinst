@@ -5,7 +5,7 @@ from distutils.command.install_lib import install_lib as _install_lib
 from distutils.command.install import install as _install
 from unittest import TextTestRunner, TestLoader
 from glob import glob
-from os.path import splitext, basename, join as pjoin, walk
+from os.path import splitext, basename, join as pjoin
 import os, sys
 
 pkgs = ['virtinst', 'virtconv', 'virtconv.parsers' ]

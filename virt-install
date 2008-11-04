@@ -21,13 +21,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import os, sys, string
+import os, sys
 import time
 import errno
-from optparse import OptionParser, OptionValueError, OptionGroup
-import subprocess
+from optparse import OptionValueError, OptionGroup
 import logging
-import libxml2
 import urlgrabber.progress as progress
 
 import libvirt
