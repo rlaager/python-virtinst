@@ -773,7 +773,7 @@ class Guest(object):
         try:
             vm = self.conn.lookupByName(self.name)
         except libvirt.libvirtError:
-           pass
+            pass
 
         if vm is not None:
             if removeOld :
@@ -911,4 +911,4 @@ class Guest(object):
 
 # Back compat class to avoid ABI break
 class XenGuest(Guest):
-	pass
+    pass

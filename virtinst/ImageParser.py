@@ -42,7 +42,7 @@ class Image:
             if filename is not None:
                 self.base = os.path.dirname(filename)
                 if self.base == '' :
-                     self.base ="."
+                    self.base ="."
             else:
                 self.base ="."
         else:
@@ -272,11 +272,11 @@ class Disk:
             m.update(chunk)
         checksum = m.hexdigest()
         if checksum != csumvalue:
-              logging.debug(_("Disk signature for %s does not match "
-                              "Expected: %s  Received: %s" % (self.file,
-                              csumvalue,checksum)))
-              raise ValueError (_("Disk signature for %s does not "
-                                  "match" % self.file))
+            logging.debug(_("Disk signature for %s does not match "
+                            "Expected: %s  Received: %s" % (self.file,
+                             csumvalue,checksum)))
+            raise ValueError (_("Disk signature for %s does not "
+                                "match" % self.file))
 
 def validate(cond, msg):
     if not cond:

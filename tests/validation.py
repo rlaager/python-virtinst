@@ -221,9 +221,9 @@ class TestValidation(unittest.TestCase):
                 " Exception was: %s: %s" % (str(e), "".join(traceback.format_exc()))
 
     def testDistroInstaller(self):
-       dinstall = virtinst.DistroInstaller()
-       self._testArgs(dinstall, virtinst.DistroInstaller, 'installer')
-       self._testArgs(dinstall, virtinst.DistroInstaller, 'distroinstaller')
+        dinstall = virtinst.DistroInstaller()
+        self._testArgs(dinstall, virtinst.DistroInstaller, 'installer')
+        self._testArgs(dinstall, virtinst.DistroInstaller, 'distroinstaller')
 
     def testCloneManager(self):
         cman = virtinst.CloneManager.CloneDesign(self.guest.conn)

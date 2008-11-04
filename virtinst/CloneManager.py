@@ -69,7 +69,7 @@ class CloneDesign(object):
         return self._original_guest
     def set_original_guest(self, original_guest):
         if type(original_guest) is not type("str") or len(original_guest)==0:
-           raise ValueError, _("Name or UUID of guest to clone is required")
+            raise ValueError, _("Name or UUID of guest to clone is required")
 
         try:
             self._valid_guest.set_uuid(original_guest)
@@ -451,10 +451,10 @@ class CloneDesign(object):
 
         for i in cln_dev_lst:
             if os.path.exists(i) ==  False:
-               size.append(0)
-               # if not exists, create file necessary
-               type.append(True)
-               continue
+                size.append(0)
+                # if not exists, create file necessary
+                type.append(True)
+                continue
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
                 dummy, str = commands.getstatusoutput('fdisk -s %s' % i)
@@ -593,7 +593,7 @@ def _do_duplicate(design):
             dst_fd = None
     finally:
         if src_fd is not None:
-           os.close(src_fd)
+            os.close(src_fd)
         if dst_fd is not None:
-           os.close(dst_fd)
+            os.close(dst_fd)
 

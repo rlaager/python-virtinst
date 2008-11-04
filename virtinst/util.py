@@ -178,11 +178,11 @@ def randomMAC(type = "xen"):
     ouis = { 'xen': [ 0x00, 0x16, 0x36 ], 'qemu': [ 0x54, 0x52, 0x00 ] }
 
     try:
-         oui = ouis[type]
+        oui = ouis[type]
     except KeyError:
-         oui = ouis['xen']
+        oui = ouis['xen']
 
-    mac = oui + [ 
+    mac = oui + [
             random.randint(0x00, 0x7f),
             random.randint(0x00, 0xff),
             random.randint(0x00, 0xff) ]
