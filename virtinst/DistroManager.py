@@ -58,30 +58,30 @@ def _fetcherForURI(uri, scratchdir=None):
         else:
             return MountedImageFetcher(uri, scratchdir)
 
-def _storeForDistro(fetcher, baseuri, type, progresscb, arch, distro=None,
+def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
                     scratchdir=None):
     stores = []
     logging.debug("Attempting to detect distro:")
     if distro == "fedora" or distro is None:
-        stores.append(FedoraDistro(baseuri, type, scratchdir, arch))
+        stores.append(FedoraDistro(baseuri, typ, scratchdir, arch))
     if distro == "rhel" or distro is None:
-        stores.append(RHELDistro(baseuri, type, scratchdir, arch))
+        stores.append(RHELDistro(baseuri, typ, scratchdir, arch))
     if distro == "centos" or distro is None:
-        stores.append(CentOSDistro(baseuri, type, scratchdir, arch))
+        stores.append(CentOSDistro(baseuri, typ, scratchdir, arch))
     if distro == "sl" or distro is None:
-        stores.append(SLDistro(baseuri, type, scratchdir, arch))
+        stores.append(SLDistro(baseuri, typ, scratchdir, arch))
     if distro == "suse" or distro is None:
-        stores.append(SuseDistro(baseuri, type, scratchdir, arch))
+        stores.append(SuseDistro(baseuri, typ, scratchdir, arch))
     if distro == "debian" or distro is None:
-        stores.append(DebianDistro(baseuri, type, scratchdir, arch))
+        stores.append(DebianDistro(baseuri, typ, scratchdir, arch))
     if distro == "ubuntu" or distro is None:
-        stores.append(UbuntuDistro(baseuri, type, scratchdir, arch))
+        stores.append(UbuntuDistro(baseuri, typ, scratchdir, arch))
     if distro == "gentoo" or distro is None:
-        stores.append(GentooDistro(baseuri, type, scratchdir, arch))
+        stores.append(GentooDistro(baseuri, typ, scratchdir, arch))
     if distro == "mandriva" or distro is None:
-        stores.append(MandrivaDistro(baseuri, type, scratchdir, arch))
+        stores.append(MandrivaDistro(baseuri, typ, scratchdir, arch))
 
-    stores.append(GenericDistro(baseuri, type, scratchdir, arch))
+    stores.append(GenericDistro(baseuri, typ, scratchdir, arch))
 
     for store in stores:
         if store.isValidStore(fetcher, progresscb):
@@ -101,7 +101,7 @@ def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None,
         raise ValueError, _("Invalid install location: ") + str(e)
 
     try:
-        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type,
+        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=type,
                                 progresscb=progresscb, distro=distro,
                                 scratchdir=scratchdir, arch=arch)
         return store.acquireKernel(fetcher, progresscb)
@@ -119,7 +119,7 @@ def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
         raise ValueError, _("Invalid install location: ") + str(e)
 
     try:
-        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, type=type,
+        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=type,
                                 progresscb=progresscb, distro=distro,
                                 scratchdir=scratchdir, arch=arch)
         return store.acquireBootDisk(fetcher, progresscb)

@@ -239,7 +239,7 @@ class CloneDesign(object):
 
         doc = libxml2.parseDoc(self._clone_xml)
         ctx = doc.xpathNewContext()
-        type = ctx.xpathEval("/domain")[0].prop("type")
+        typ = ctx.xpathEval("/domain")[0].prop("type")
 
         # changing name
         node = ctx.xpathEval("/domain/name")
@@ -279,7 +279,7 @@ class CloneDesign(object):
                 node[0].setContent(self._clone_mac[i-1])
             except Exception:
                 while 1:
-                    mac = util.randomMAC(type)
+                    mac = util.randomMAC(typ)
                     dummy, msg = self._check_mac(mac)
                     if msg is not None:
                         continue
@@ -374,9 +374,9 @@ class CloneDesign(object):
     #
     def _get_original_devices_info(self, xml):
 
-        list = []
+        lst  = []
         size = []
-        type = []
+        typ  = []
 
         doc = libxml2.parseDoc(xml)
         ctx = doc.xpathNewContext()
@@ -386,32 +386,32 @@ class CloneDesign(object):
                 node = self._get_available_cloning_device(ctx, i, self._force_target)
                 if node == None:
                     continue
-                list.append(node[0].get_properties().getContent())
+                lst.append(node[0].get_properties().getContent())
         finally:
             if ctx is not None:
                 ctx.xpathFreeContext()
             if doc is not None:
                 doc.freeDoc()
-        logging.debug("original device list: %s" % (list))
+        logging.debug("original device list: %s" % (lst))
 
-        for i in list:
+        for i in lst:
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
-                dummy, str = commands.getstatusoutput('fdisk -s %s' % i)
+                dummy, msg = commands.getstatusoutput('fdisk -s %s' % i)
                 # check
-                if str.isdigit() == False:
-                    lines = str.splitlines()
+                if msg.isdigit() == False:
+                    lines = msg.splitlines()
                     # retry eg. for the GPT disk
-                    str = lines[len(lines)-1]
-                size.append(int(str) * 1024)
-                type.append(False)
+                    msg = lines[len(lines)-1]
+                size.append(int(msg) * 1024)
+                typ.append(False)
             elif stat.S_ISREG(mode):
                 size.append(os.path.getsize(i))
-                type.append(True)
+                typ.append(True)
         logging.debug("original device size: %s" % (size))
-        logging.debug("original device type: %s" % (type))
+        logging.debug("original device type: %s" % (typ))
 
-        return (list, size, type)
+        return (lst, size, typ)
 
     #
     # get available original device for clone
@@ -447,33 +447,33 @@ class CloneDesign(object):
     def _get_clone_devices_info(self, cln_dev_lst):
 
         size = []
-        type = []
+        typ  = []
 
         for i in cln_dev_lst:
             if os.path.exists(i) ==  False:
                 size.append(0)
                 # if not exists, create file necessary
-                type.append(True)
+                typ.append(True)
                 continue
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
-                dummy, str = commands.getstatusoutput('fdisk -s %s' % i)
+                dummy, msg = commands.getstatusoutput('fdisk -s %s' % i)
                 # check
-                if str.isdigit() == False:
-                    lines = str.splitlines()
+                if msg.isdigit() == False:
+                    lines = msg.splitlines()
                     # retry eg. for the GPT disk
-                    str = lines[len(lines)-1]
-                size.append(int(str) * 1024)
-                type.append(False)
+                    msg = lines[len(lines)-1]
+                size.append(int(msg) * 1024)
+                typ.append(False)
             elif stat.S_ISREG(mode):
                 size.append(os.path.getsize(i))
-                type.append(True)
+                typ.append(True)
 
         logging.debug("clone device list: %s" % (cln_dev_lst))
         logging.debug("clone device size: %s" % (size))
-        logging.debug("clone device type: %s" % (type))
+        logging.debug("clone device type: %s" % (typ))
 
-        return (size, type)
+        return (size, typ)
 
     #
     # change disk type in XML

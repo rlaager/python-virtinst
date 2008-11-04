@@ -149,8 +149,8 @@ class disk(object):
                 stubpath = os.path.dirname(self.path)
 
                 for item in stdout:
-                    type, path = item.strip().split(':', 1)
-                    if not (type == "snapshot" or type == "file"):
+                    typ, path = item.strip().split(':', 1)
+                    if not (typ == "snapshot" or typ == "file"):
                         continue
                     infile = os.path.join(indir, stubpath, path)
                     outfile = os.path.join(outdir, stubpath, path)
@@ -241,8 +241,8 @@ class disk(object):
         stubpath = os.path.dirname(relin)
 
         for item in stdout:
-            type, path = item.strip().split(':', 1)
-            if type == "store":
+            typ, path = item.strip().split(':', 1)
+            if typ == "store":
                 path = os.path.join(stubpath, path)
                 self.clean += [ os.path.join(outdir, path) ]
                 self.format = out_format

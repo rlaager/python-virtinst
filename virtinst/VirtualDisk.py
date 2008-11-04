@@ -589,13 +589,13 @@ class VirtualDisk(VirtualDevice):
         vms = []
         # get working domain's name
         ids = conn.listDomainsID();
-        for id in ids:
+        for i in ids:
             try:
-                vm = conn.lookupByID(id)
+                vm = conn.lookupByID(i)
                 vms.append(vm)
             except libvirt.libvirtError:
                 # guest probably in process of dieing
-                logging.warn("Failed to lookup domain id %d" % id)
+                logging.warn("Failed to lookup domain id %d" % i)
         # get defined domain
         names = conn.listDefinedDomains()
         for name in names:

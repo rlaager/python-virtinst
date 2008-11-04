@@ -106,13 +106,13 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         # get Running Domains
         ids = conn.listDomainsID();
         vms = []
-        for id in ids:
+        for i in ids:
             try:
-                vm = conn.lookupByID(id)
+                vm = conn.lookupByID(i)
                 vms.append(vm)
             except libvirt.libvirtError:
                 # guest probably in process of dieing
-                logging.warn("conflict_net: Failed to lookup domain id %d" % id)
+                logging.warn("conflict_net: Failed to lookup domain id %d" % i)
         # get inactive Domains
         inactive_vm = []
         names = conn.listDefinedDomains()
@@ -675,8 +675,8 @@ class Guest(object):
 
     def _get_input_xml(self, install = True):
         """Get the input device config in libvirt XML format."""
-        (type,bus) = self.get_input_device()
-        return "    <input type='%s' bus='%s'/>" % (type, bus)
+        (devtype, bus) = self.get_input_device()
+        return "    <input type='%s' bus='%s'/>" % (devtype, bus)
 
     def _get_sound_xml(self):
         """Get the sound device configuration in libvirt XML format."""

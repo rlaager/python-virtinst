@@ -167,12 +167,12 @@ def export_disks(vm):
         diskout.append("""<drive disk="%s" target="%s%s" />\n""" %
             (path, disk_prefix, drive_nr))
 
-        type = "raw"
+        typ = "raw"
         if disk.type == diskcfg.DISK_TYPE_ISO:
-            type = "iso"
+            typ = "iso"
         storage.append(
             """<disk file="%s" use="system" format="%s"/>\n""" %
-                (path, type))
+                (path, typ))
 
     return storage, diskout
 

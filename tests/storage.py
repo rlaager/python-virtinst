@@ -25,11 +25,11 @@ class TestStorage(unittest.TestCase):
     def setUp(self):
         self.conn = libvirt.open("test:///default")
 
-    def _createPool(self, type, poolname=None, format=None):
-        poolclass = StoragePool.get_pool_class(type)
+    def _createPool(self, ptype, poolname=None, format=None):
+        poolclass = StoragePool.get_pool_class(ptype)
 
         if poolname is None:
-            poolname = str(type) + "-pool"
+            poolname = str(ptype) + "-pool"
 
         pool_inst = poolclass(conn=self.conn, name=poolname)
 

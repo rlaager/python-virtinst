@@ -33,9 +33,9 @@ from virtinst import _virtinst as _
 # ISO image, or a kernel+initrd  pair for a particular OS distribution
 class Distro:
 
-    def __init__(self, uri, type=None, scratchdir=None, arch=None):
+    def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         self.uri = uri
-        self.type = type
+        self.type = vmtype
         self.scratchdir = scratchdir
         if arch == None:
             arch = platform.machine()
@@ -73,11 +73,11 @@ class Distro:
 
     def _getTreeinfoMedia(self, fetcher, progresscb, mediaName):
         if self.type == "xen":
-            type = "xen"
+            t = "xen"
         else:
-            type = self.treeinfo.get("general", "arch")
+            t = self.treeinfo.get("general", "arch")
 
-        return self.treeinfo.get("images-%s" % type, mediaName)
+        return self.treeinfo.get("images-%s" % t, mediaName)
 
 
 class GenericDistro(Distro):
@@ -103,10 +103,10 @@ class GenericDistro(Distro):
         if self._hasTreeinfo(fetcher, progresscb):
             # Use treeinfo to pull down media paths
             if self.type == "xen":
-                type = "xen"
+                typ = "xen"
             else:
-                type = self.treeinfo.get("general", "arch")
-            kernelSection = "images-%s" % type
+                typ = self.treeinfo.get("general", "arch")
+            kernelSection = "images-%s" % typ
             isoSection = "images-%s" % self.treeinfo.get("general", "arch")
 
             if self.treeinfo.has_section(kernelSection):
@@ -251,8 +251,8 @@ class SLDistro(RedHatDistro):
 # Suse  image store is harder - we fetch the kernel RPM and a helper
 # RPM and then munge bits together to generate a initrd
 class SuseDistro(Distro):
-    def __init__(self, uri, type=None, scratchdir=None, arch=None):
-        Distro.__init__(self, uri, type, scratchdir, arch)
+    def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
+        Distro.__init__(self, uri, vmtype, scratchdir, arch)
         if len(self.arch) == 4 and self.arch[0] == 'i' \
            and self.arch[2:] == "86":
             self.arch = "i386"
@@ -333,28 +333,28 @@ class SuseDistro(Distro):
 
             installinitrdrpm = None
             kernelrpm = None
-            dir = None
+            dirname = None
             while 1:
                 data = filelistData.readline()
                 if not data:
                     break
-                if dir is None:
+                if dirname is None:
                     for arch in arches:
                         wantdir = "/suse/" + arch
                         if data == "." + wantdir + ":\n":
-                            dir = wantdir
+                            dirname = wantdir
                             break
                 else:
                     if data == "\n":
-                        dir = None
+                        dirname = None
                     else:
                         if data[:5] != "total":
                             filename = re.split("\s+", data)[8]
 
                             if filename[:14] == "install-initrd":
-                                installinitrdrpm = dir + "/" + filename
+                                installinitrdrpm = dirname + "/" + filename
                             elif filename[:len(kernelname)] == kernelname:
-                                kernelrpm = dir + "/" + filename
+                                kernelrpm = dirname + "/" + filename
 
             if kernelrpm is None:
                 raise Exception(_("Unable to determine kernel RPM path"))
@@ -489,24 +489,24 @@ class SuseDistro(Distro):
 class DebianDistro(Distro):
     # location e.g. http://ftp.egr.msu.edu/debian/dists/sarge/main/installer-i386/
 
-    def __init__(self, uri, type=None, scratchdir=None, arch=None):
-        Distro.__init__(self, uri, type, scratchdir, arch)
+    def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
+        Distro.__init__(self, uri, vmtype, scratchdir, arch)
         if re.match(r'i[4-9]86', arch):
             self.arch = 'i386'
         self._prefix = 'current/images'
 
     def isValidStore(self, fetcher, progresscb):
-        file = None
+        f = None
         try:
             try:
-                file = None
+                f = None
                 if fetcher.hasFile("%s/MANIFEST" % self._prefix):
-                    file = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
-                                               progresscb)
+                    f = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
+                                                   progresscb)
                 elif fetcher.hasFile("images/daily/MANIFEST"):
                     self._prefix = "images/daily"
-                    file = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
-                                               progresscb)
+                    f = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
+                                                   progresscb)
                 else:
                     logging.debug("Doesn't look like a Debian distro.")
                     return False
@@ -514,20 +514,20 @@ class DebianDistro(Distro):
             except ValueError, e:
                 logging.debug("Doesn't look like a Debian distro " + str(e))
                 return False
-            f = open(file, "r")
+            fobj = open(f, "r")
             try:
                 while 1:
-                    buf = f.readline()
+                    buf = fobj.readline()
                     if not buf:
                         break
                     if re.match(".*debian.*", buf):
                         logging.debug("Detected a Debian distro")
                         return True
             finally:
-                f.close()
+                fobj.close()
         finally:
-            if file is not None:
-                os.unlink(file)
+            if f is not None:
+                os.unlink(f)
         return False
 
     def acquireBootDisk(self, fetcher, progresscb):

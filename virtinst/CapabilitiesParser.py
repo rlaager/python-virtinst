@@ -58,7 +58,7 @@ class Features(object):
 
             self._extractFeature(feature, d, n)
 
-    def _extractFeature(self, feature, dict, node):
+    def _extractFeature(self, feature, d, node):
         """Extract the value of FEATURE from NODE and set DICT[FEATURE] to
         its value. Abstract method, must be overridden"""
         raise NotImplementedError("Abstract base class")
@@ -174,9 +174,9 @@ class Guest(object):
             if not accelerated:
                 priority.reverse()
 
-            for type in priority:
+            for t in priority:
                 for d in self.domains:
-                    if d.hypervisor_type == type:
+                    if d.hypervisor_type == t:
                         return d
 
             # Fallback, just return last item in list
@@ -319,8 +319,8 @@ def parse(xml):
     class ErrorHandler:
         def __init__(self):
             self.msg = ""
-        def handler(self, ctx, str):
-            self.msg += str
+        def handler(self, ctx, s):
+            self.msg += s
     error = ErrorHandler()
     libxml2.registerErrorHandler(error.handler, None)
 

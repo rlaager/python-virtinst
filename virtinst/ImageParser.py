@@ -296,8 +296,8 @@ def parse(xml, filename):
     class ErrorHandler:
         def __init__(self):
             self.msg = ""
-        def handler(self, ctx, str):
-            self.msg += str
+        def handler(self, ctx, s):
+            self.msg += s
     error = ErrorHandler()
     libxml2.registerErrorHandler(error.handler, None)
 
@@ -323,7 +323,7 @@ def parse(xml, filename):
     return image
 
 def parse_file(filename):
-    file = open(filename, "r")
-    xml = file.read()
-    file.close()
+    f = open(filename, "r")
+    xml = f.read()
+    f.close()
     return parse(xml, filename = filename)

@@ -534,17 +534,17 @@ def main():
         hvm = False
 
     domain = guest.bestDomainType(options.accelerate)
-    type = domain.hypervisor_type
-    logging.debug("Hypervisor type is '%s'" % type)
+    htype = domain.hypervisor_type
+    logging.debug("Hypervisor type is '%s'" % htype)
 
     if options.livecd:
-        installer = virtinst.LiveCDInstaller(type = type, os_type = os_type,
+        installer = virtinst.LiveCDInstaller(type = htype, os_type = os_type,
                                              conn = conn)
     elif options.pxe:
-        installer = virtinst.PXEInstaller(type = type, os_type = os_type,
+        installer = virtinst.PXEInstaller(type = htype, os_type = os_type,
                                           conn = conn)
     else:
-        installer = virtinst.DistroInstaller(type = type, os_type = os_type,
+        installer = virtinst.DistroInstaller(type = htype, os_type = os_type,
                                              conn = conn)
 
     if hvm:

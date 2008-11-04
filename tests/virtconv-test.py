@@ -37,14 +37,14 @@ class TestVirtConv(unittest.TestCase):
     def setUp(self):
         pass
 
-    def _compare(self, actual_out, file):
-        f = open(file, "r")
+    def _compare(self, actual_out, filename):
+        f = open(filename, "r")
         expect_out = string.join(f.readlines(), "")
         f.close()
 
         diff = "".join(difflib.unified_diff(expect_out.splitlines(1),
                                             actual_out.splitlines(1),
-                                            fromfile=file,
+                                            fromfile=filename,
                                             tofile="Generated Output"))
         if diff:
             raise AssertionError("Conversion outputs did not match.\n"
@@ -52,9 +52,9 @@ class TestVirtConv(unittest.TestCase):
         else:
             self.assertTrue(True)
 
-    def _convert_helper(self, dir, filebase, input_type, output_type):
-        infile  = os.path.join(dir, filebase + "." + input_type)
-        outfile = os.path.join(dir, filebase + "." + output_type)
+    def _convert_helper(self, dirname, filebase, input_type, output_type):
+        infile  = os.path.join(dirname, filebase + "." + input_type)
+        outfile = os.path.join(dirname, filebase + "." + output_type)
 
         inp  = virtconv.formats.find_parser_by_file(infile)
         outp = virtconv.formats.parser_by_name(output_type)
@@ -77,10 +77,10 @@ class TestVirtConv(unittest.TestCase):
                                  "vmx", "virt-image")
 
     def testVMX2VMX(self):
-        for dir in vmx2vmx_dirs:
-            for filepath in glob.glob(os.path.join(dir, "*.vmx")):
+        for dirname in vmx2vmx_dirs:
+            for filepath in glob.glob(os.path.join(dirname, "*.vmx")):
                 filename = os.path.splitext(os.path.basename(filepath))[0]
-                self._convert_helper(dir, filename, "vmx", "vmx")
+                self._convert_helper(dirname, filename, "vmx", "vmx")
 
     def testVirtImage2VMX(self):
         for filename in virtimage2vmx_files:
@@ -88,8 +88,9 @@ class TestVirtConv(unittest.TestCase):
                                  "virt-image", "vmx")
 
     def testVirtImage2VirtImage(self):
-        for dir in virtimage2virtimage_dirs:
-            for filepath in glob.glob(os.path.join(dir, "*.virt-image")):
+        for dirname in virtimage2virtimage_dirs:
+            for filepath in glob.glob(os.path.join(dirname, "*.virt-image")):
                 filename = os.path.splitext(os.path.basename(filepath))[0]
-                self._convert_helper(dir, filename, "virt-image", "virt-image")
+                self._convert_helper(dirname, filename, "virt-image",
+                                     "virt-image")
 

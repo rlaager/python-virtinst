@@ -38,8 +38,8 @@ doprompt = True
 class VirtOptionParser(OptionParser):
     '''Subclass to get print_help to work properly with non-ascii text'''
 
-    def _get_encoding(self, file):
-        encoding = getattr(file, "encoding", None)
+    def _get_encoding(self, f):
+        encoding = getattr(f, "encoding", None)
         if not encoding:
             (dummy, encoding) = locale.getlocale()
         return encoding
@@ -98,8 +98,8 @@ def setupLogging(appname, debug=False):
     # Register python error handler to log exceptions
     def exception_log(type, val, tb):
         import traceback
-        str = traceback.format_exception(type, val, tb)
-        logging.exception("".join(str))
+        s = traceback.format_exception(type, val, tb)
+        logging.exception("".join(s))
         sys.__excepthook__(type, val, tb)
     sys.excepthook = exception_log
 
@@ -171,9 +171,9 @@ def prompt_for_yes_or_no(prompt):
                              "Prompt was: %s" % prompt))
 
     while 1:
-        input = prompt_for_input(prompt, None)
+        inp = prompt_for_input(prompt, None)
         try:
-            res = yes_or_no(input)
+            res = yes_or_no(inp)
             break
         except ValueError, e:
             print _("ERROR: "), e

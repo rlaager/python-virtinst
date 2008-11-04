@@ -208,8 +208,8 @@ def uuidFromString(s):
 # the following function quotes from python2.5/uuid.py
 def get_host_network_devices():
     device = []
-    for dir in ['', '/sbin/', '/usr/sbin']:
-        executable = os.path.join(dir, "ifconfig")
+    for dirname in ['', '/sbin/', '/usr/sbin']:
+        executable = os.path.join(dirname, "ifconfig")
         if not os.path.exists(executable):
             continue
         try:
@@ -231,10 +231,10 @@ def get_max_vcpus(conn, type=None):
     if type is None:
         type = conn.getType()
     try:
-        max = conn.getMaxVcpus(type.lower())
+        m = conn.getMaxVcpus(type.lower())
     except libvirt.libvirtError:
-        max = 32
-    return max
+        m = 32
+    return m
 
 def get_phy_cpus(conn):
     """Get number of physical CPUs."""
@@ -438,14 +438,14 @@ def get_xml_path(xml, path):
         doc = libxml2.parseDoc(xml)
         ctx = doc.xpathNewContext()
         ret = ctx.xpathEval(path)
-        str = None
+        val = None
         if ret != None:
             if type(ret) == list:
                 if len(ret) == 1:
-                    str = ret[0].content
+                    val = ret[0].content
             else:
-                str = ret
-        result = str
+                val = ret
+        result = val
     finally:
         if doc:
             doc.freeDoc()

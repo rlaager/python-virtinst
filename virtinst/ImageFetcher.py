@@ -81,7 +81,7 @@ class URIImageFetcher(ImageFetcher):
             return False
 
     def acquireFile(self, filename, progresscb):
-        file = None
+        f = None
         try:
             path = self.location
             if not path.endswith("/"):
@@ -90,18 +90,18 @@ class URIImageFetcher(ImageFetcher):
             path += filename
             logging.debug("Fetching URI " + path)
             try:
-                file = grabber.urlopen(path,
-                                       progress_obj = progresscb, \
-                                       text = _("Retrieving file %s...") % base)
+                f = grabber.urlopen(path,
+                                    progress_obj = progresscb,
+                                    text = _("Retrieving file %s...") % base)
             except IOError, e:
-                raise ValueError, _("Couldn't acquire file %s: %s") %\
+                raise ValueError, _("Couldn't acquire file %s: %s") % \
                                     (path, str(e))
-            tmpname = self.saveTemp(file, prefix=base + ".")
+            tmpname = self.saveTemp(f, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
             return tmpname
         finally:
-            if file:
-                file.close()
+            if f:
+                f.close()
 
 class HTTPImageFetcher(URIImageFetcher):
 
@@ -148,7 +148,7 @@ class LocalImageFetcher(ImageFetcher):
         self.srcdir = srcdir
 
     def acquireFile(self, filename, progresscb):
-        file = None
+        f = None
         try:
             logging.debug("Acquiring file from " + self.srcdir + "/" + filename)
             base = os.path.basename(filename)
@@ -158,18 +158,18 @@ class LocalImageFetcher(ImageFetcher):
                     logging.debug("Found a directory")
                     return None
                 else:
-                    file = open(src, "r")
+                    f = open(src, "r")
             except IOError, e:
                 raise ValueError, _("Invalid file location given: ") + str(e)
             except OSError, (errno, msg):
                 raise ValueError, \
                       _("Invalid file location given: %s: %s") % (errno, msg)
-            tmpname = self.saveTemp(file, prefix=base + ".")
+            tmpname = self.saveTemp(f, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
             return tmpname
         finally:
-            if file:
-                file.close()
+            if f:
+                f.close()
 
     def hasFile(self, filename):
         if os.path.exists(os.path.abspath(self.srcdir + "/" + filename)):

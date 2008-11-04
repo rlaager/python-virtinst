@@ -135,8 +135,8 @@ class TestValidation(unittest.TestCase):
 
     guest = virtinst.Guest(hypervisorURI="test:///default", type="xen")
 
-    def _testArgs(self, object, testclass, name):
-        """@object Object to test parameters against
+    def _testArgs(self, obj, testclass, name):
+        """@obj Object to test parameters against
            @testclass Full class to test initialization against
            @name String name indexing args"""
         for paramname in args[name]:
@@ -146,7 +146,7 @@ class TestValidation(unittest.TestCase):
                     if paramname is '__init__':
                         testclass(*(), **val)                    
                     else:
-                        setattr(object, paramname, val)
+                        setattr(obj, paramname, val)
                     msg = "Expected TypeError or ValueError: None raised.\n"
                     msg += "For '%s' object, paramname '%s', val '%s':" % \
                         (name, paramname, val)
@@ -171,7 +171,7 @@ class TestValidation(unittest.TestCase):
                     if paramname is '__init__':
                         testclass(*(), **val)                    
                     else:
-                        setattr(object, paramname, val)
+                        setattr(obj, paramname, val)
                 except Exception, e:
                     msg = "Validation case failed, expected success.\n"
                     msg +="Exception received was: %s\n" % e
