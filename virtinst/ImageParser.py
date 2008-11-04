@@ -35,7 +35,10 @@ class Image:
     def __init__(self, node = None, base = None, filename = None):
         self.storage = {}
         self.domain = None
-        self.filename = os.path.abspath(filename)
+        if filename == None:
+            self.filename = None
+        else:
+            self.filename = os.path.abspath(filename)
         if base is None:
             if filename is not None:
                 self.base = os.path.dirname(filename)
