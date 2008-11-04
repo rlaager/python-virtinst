@@ -123,7 +123,12 @@ class HTTPImageFetcher(URIImageFetcher):
 class FTPImageFetcher(URIImageFetcher):
 
     def hasFile(self, filename):
-        url = urlparse.urlparse(self.location + "/" + filename)
+        path = self.location
+        if not path.endswith("/"):
+            path += "/"
+        path += filename
+
+        url = urlparse.urlparse(path)
         try:
             ftp = ftplib.FTP(url[1])
             ftp.login()
