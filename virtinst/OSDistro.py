@@ -392,7 +392,7 @@ class SuseDistro(Distro):
 
             # Build a list of all .ko files
             modpaths = {}
-            for root, dirs, files in os.walk(cpiodir + "/kernel/lib/modules", topdown=False):
+            for root, dummy, files in os.walk(cpiodir + "/kernel/lib/modules", topdown=False):
                 for name in files:
                     if name.endswith(".ko"):
                         modpaths[name] = os.path.join(root, name)

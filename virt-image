@@ -158,7 +158,6 @@ def main():
     cli.set_force(options.force)
 
     conn = cli.getConnection(options.connect)
-    type = None
 
     try:
     	image = virtinst.ImageParser.parse_file(options.image)

@@ -828,9 +828,9 @@ class Guest(object):
 
         if child and wait: # if we connected the console, wait for it to finish
             try:
-                (pid, status) = os.waitpid(child, 0)
+                os.waitpid(child, 0)
             except OSError, (errno, msg):
-                print __name__, "waitpid:", msg
+                print __name__, "waitpid: %s: %s" % (errno, msg)
 
             # ensure there's time for the domain to finish destroying if the
             # install has finished or the guest crashed
@@ -873,9 +873,10 @@ class Guest(object):
 
         if child and wait: # if we connected the console, wait for it to finish
             try:
-                (pid, status) = os.waitpid(child, 0)
+                os.waitpid(child, 0)
             except OSError, (errno, msg):
-                raise RuntimeError, "waiting console pid error: %s" % msg
+                raise RuntimeError, \
+                      "waiting console pid error: %s: %s" % (errno, msg)
 
     def validate_parms(self):
         if self.domain is not None:

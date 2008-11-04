@@ -168,8 +168,8 @@ class DistroInstaller(Guest.Installer):
             # If conn is specified, pass the path to a VirtualDisk object
             # and see what comes back
             try:
-                v = VirtualDisk(path=val, device=VirtualDisk.DEVICE_CDROM,
-                                conn=self.conn)
+                VirtualDisk(path=val, device=VirtualDisk.DEVICE_CDROM,
+                            conn=self.conn)
             except Exception, e:
                 raise ValueError(_("Checking installer location failed: %s" %\
                                  str(e)))

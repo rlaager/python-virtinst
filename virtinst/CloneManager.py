@@ -73,10 +73,10 @@ class CloneDesign(object):
 
         try:
             self._valid_guest.set_uuid(original_guest)
-        except ValueError, e:
+        except ValueError:
             try:
                 self._valid_guest.set_name(original_guest)
-            except ValueError, e:
+            except ValueError:
                 raise ValueError, \
                     _("A valid name or UUID of guest to clone is required")
         self._original_guest = original_guest
@@ -107,10 +107,8 @@ class CloneDesign(object):
             raise ValueError, _("New file to use for disk image is required")
         cdev      = []
         cdev_size = []
-        cdev_type = []
         cdev.append(devices)
-        cdev_size,\
-        cdev_type = self._get_clone_devices_info(cdev)
+        cdev_size, dummy = self._get_clone_devices_info(cdev)
         devices = self._check_file(self._hyper_conn, devices, cdev_size[0])
         self._clone_devices.append(devices)
     def get_clone_devices(self):
@@ -181,7 +179,7 @@ class CloneDesign(object):
         logging.debug("setup_original in")
         try:
             self._original_dom = self._hyper_conn.lookupByName(self._original_guest)
-        except libvirt.libvirtError, e:
+        except libvirt.libvirtError:
             raise RuntimeError, _("Domain %s is not found") % self._original_guest
 
         #
@@ -226,7 +224,6 @@ class CloneDesign(object):
                 if ret:
                     raise RuntimeError, msg
                 else:
-                    print >> sys.stderr, msg
                     logging.warning(msg)
 
         logging.debug("setup_original out")
@@ -258,7 +255,7 @@ class CloneDesign(object):
             node = node[0].get_properties()
             try:
                 node.setContent(clone_devices.next())
-            except Exception, e:
+            except Exception:
                 raise ValueError, _("Missing new file to use disk image for %s") % node.getContent()
 
         # changing uuid
@@ -280,10 +277,10 @@ class CloneDesign(object):
             node = ctx.xpathEval("/domain/devices/interface[%d]/mac/@address" % i)
             try:
                 node[0].setContent(self._clone_mac[i-1])
-            except Exception, e:
+            except Exception:
                 while 1:
                     mac = util.randomMAC(type)
-                    ret, msg = self._check_mac(mac)
+                    dummy, msg = self._check_mac(mac)
                     if msg is not None:
                         continue
                     else:
@@ -323,7 +320,7 @@ class CloneDesign(object):
                     check = True
                 else:
                     pass
-            except libvirt.libvirtError, e:
+            except libvirt.libvirtError:
                 pass
         return check
 
@@ -400,7 +397,7 @@ class CloneDesign(object):
         for i in list:
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
-                ret,str = commands.getstatusoutput('fdisk -s %s' % i)
+                dummy, str = commands.getstatusoutput('fdisk -s %s' % i)
                 # check
                 if str.isdigit() == False:
                     lines = str.splitlines()
@@ -460,7 +457,7 @@ class CloneDesign(object):
                continue
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
-                ret,str = commands.getstatusoutput('fdisk -s %s' % i)
+                dummy, str = commands.getstatusoutput('fdisk -s %s' % i)
                 # check
                 if str.isdigit() == False:
                     lines = str.splitlines()

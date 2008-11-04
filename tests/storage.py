@@ -59,19 +59,19 @@ class TestStorage(unittest.TestCase):
 
     def testDirPool(self):
         poolobj = self._createPool(StoragePool.TYPE_DIR)
-        volobj = self._createVol(poolobj)
+        self._createVol(poolobj)
 
     def testFSPool(self):
         poolobj = self._createPool(StoragePool.TYPE_FS)
-        volobj = self._createVol(poolobj)
+        self._createVol(poolobj)
 
     def testNetFSPool(self):
         poolobj = self._createPool(StoragePool.TYPE_NETFS)
-        volobj = self._createVol(poolobj)
+        self._createVol(poolobj)
 
     def testLVPool(self):
         poolobj = self._createPool(StoragePool.TYPE_LOGICAL)
-        volobj = self._createVol(poolobj)
+        self._createVol(poolobj)
 
     def testDiskPool(self):
         poolobj = self._createPool(StoragePool.TYPE_DISK, format="dos")

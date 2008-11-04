@@ -731,14 +731,13 @@ class StorageVolume(StorageObject):
                                                         conn=conn)
         pool_object.refresh(0)
 
-        vol = None
         for i in range(0, 100000):
             tryname = name
             if i != 0:
                 tryname += ("-%d" % i)
             tryname += suffix
             try:
-                vol = pool_object.storageVolLookupByName(tryname)
+                pool_object.storageVolLookupByName(tryname)
             except libvirt.libvirtError:
                 return tryname
         raise ValueError(_("Default volume target path range exceeded."))
@@ -850,7 +849,7 @@ class StorageVolume(StorageObject):
         col = None
         try:
             col = self.conn.storageVolLookupByPath(path)
-        except libvirt.libvirtError, e:
+        except libvirt.libvirtError:
             pass
         if col:
             return True
@@ -864,7 +863,7 @@ class StorageVolume(StorageObject):
         raise RuntimeError, "Must be implemented in subclass"
 
     def _get_storage_xml(self):
-        src_xml = format_xml = ""
+        src_xml = ""
         if self._get_source_xml() != "":
             src_xml = "  <source>\n" + \
                       "%s" % (self._get_source_xml()) + \

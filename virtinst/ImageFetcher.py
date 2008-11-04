@@ -113,8 +113,8 @@ class HTTPImageFetcher(URIImageFetcher):
             path += filename
             request = urllib2.Request(path)
             request.get_method = lambda: "HEAD"
-            http_file = urllib2.urlopen(request)
-        except Exception, e:
+            urllib2.urlopen(request)
+        except Exception:
             logging.debug("HTTP hasFile: didn't find %s" % path)
             return False
         return True
@@ -133,9 +133,9 @@ class FTPImageFetcher(URIImageFetcher):
             ftp.login()
             try:
                 ftp.size(url[2])   # If a file
-            except ftplib.all_errors, e:
+            except ftplib.all_errors:
                 ftp.cwd(url[2])    # If a dir
-        except ftplib.all_errors, e:
+        except ftplib.all_errors:
             logging.debug("FTP hasFile: couldn't access %s/%s" % \
                           (url[1], url[2]))
             return False
@@ -162,7 +162,8 @@ class LocalImageFetcher(ImageFetcher):
             except IOError, e:
                 raise ValueError, _("Invalid file location given: ") + str(e)
             except OSError, (errno, msg):
-                raise ValueError, _("Invalid file location given: ") + msg
+                raise ValueError, \
+                      _("Invalid file location given: %s: %s") % (errno, msg)
             tmpname = self.saveTemp(file, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
             return tmpname
@@ -204,7 +205,7 @@ class MountedImageFetcher(LocalImageFetcher):
     def cleanupLocation(self):
         logging.debug("Cleaning up mount at " + self.srcdir)
         cmd = ["umount", self.srcdir]
-        ret = subprocess.call(cmd)
+        subprocess.call(cmd)
         try:
             os.rmdir(self.srcdir)
         except:

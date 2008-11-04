@@ -192,8 +192,8 @@ class virtimage_parser(formats.parser):
         Return True if the given file is of this format.
         """
         try:
-            image = ImageParser.parse_file(input_file)
-        except ImageParser.ParserException, msg:
+            ImageParser.parse_file(input_file)
+        except ImageParser.ParserException:
             return False
         return True
 

@@ -195,7 +195,7 @@ def randomMAC(type = "xen"):
 def randomUUID():
     """Generate a random UUID."""
 
-    return [ random.randint(0, 255) for _ in range(0, 16) ]
+    return [ random.randint(0, 255) for dummy in range(0, 16) ]
 
 def uuidToString(u):
     return "-".join(["%02x" * 4, "%02x" * 2, "%02x" * 2, "%02x" * 2,
@@ -364,7 +364,9 @@ def uri_split(uri):
 
 def is_uri_remote(uri):
     try:
-        (scheme, username, netloc, path, query, fragment) = uri_split(uri)
+        split_uri = uri_split(uri)
+        netloc = split_uri[2]
+
         if netloc == "":
             return False
         return True
@@ -374,7 +376,8 @@ def is_uri_remote(uri):
 
 def get_uri_hostname(uri):
     try:
-        (scheme, username, netloc, path, query, fragment) = uri_split(uri)
+        split_uri = uri_split(uri)
+        netloc = split_uri[2]
 
         if netloc != "":
             return netloc
@@ -384,7 +387,10 @@ def get_uri_hostname(uri):
 
 def get_uri_transport(uri):
     try:
-        (scheme, username, netloc, path, query, fragment) = uri_split(uri)
+        split_uri = uri_split(uri)
+        scheme = split_uri[0]
+        username = split_uri[1]
+
         if scheme:
             offset = scheme.index("+")
             if offset > 0:
@@ -395,13 +401,15 @@ def get_uri_transport(uri):
 
 def get_uri_driver(uri):
     try:
-        (scheme, username, netloc, path, query, fragment) = uri_split(uri)
+        split_uri = uri_split(uri)
+        scheme = split_uri[0]
+
         if scheme:
             offset = scheme.find("+")
             if offset > 0:
                 return scheme[:offset]
             return scheme
-    except Exception, e:
+    except Exception:
         pass
     return "xen"
 
@@ -414,7 +422,7 @@ def is_storage_capable(conn):
     try:
         if not dir(conn).count("listStoragePools"):
             return False
-        n = conn.listStoragePools()
+        conn.listStoragePools()
     except libvirt.libvirtError, e:
         if e.get_error_code() == libvirt.VIR_ERR_RPC or \
            e.get_error_code() == libvirt.VIR_ERR_NO_SUPPORT:

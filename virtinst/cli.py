@@ -41,7 +41,7 @@ class VirtOptionParser(OptionParser):
     def _get_encoding(self, file):
         encoding = getattr(file, "encoding", None)
         if not encoding:
-            (language, encoding) = locale.getlocale()
+            (dummy, encoding) = locale.getlocale()
         return encoding
 
     def print_help(self, file=None):
@@ -300,13 +300,13 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
     if len(macs) > len(networks):
         fail(_("Need to pass equal numbers of networks & mac addresses"))
     else:
-        for cnt in range (len(macs),len(networks)):
+        for dummy in range (len(macs),len(networks)):
             macs.append(None)
             
     
     # Create extra networks up to the number of nics requested 
     if len(macs) < nics:
-        for cnt in range(len(macs),nics):
+        for dummy in range(len(macs),nics):
             if os.getuid() == 0:
                 net = util.default_network(conn)
                 networks.append(net[0] + ":" + net[1])
