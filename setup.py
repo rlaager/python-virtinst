@@ -13,7 +13,6 @@ pkgs = ['virtinst', 'virtconv', 'virtconv.parsers' ]
 datafiles = [('share/man/man1', ['man/en/virt-install.1',
                                  'man/en/virt-clone.1',
                                  'man/en/virt-image.1',
-                                 'man/en/virt-pack.1',
                                  'man/en/virt-convert.1']),
              ('share/man/man5', ['man/en/virt-image.5'])]
 locale = None
@@ -120,8 +119,7 @@ setup(name='virtinst',
       license='GPL',
       url='http://virt-manager.et.redhat.com',
       package_dir={'virtinst': 'virtinst'},
-      scripts = ["virt-install","virt-clone", "virt-image", "virt-pack",
-                 "virt-convert"],
+      scripts = ["virt-install","virt-clone", "virt-image", "virt-convert"],
       packages=pkgs,
       data_files = datafiles,
       cmdclass = { 'test': TestCommand, 'build': build, \
