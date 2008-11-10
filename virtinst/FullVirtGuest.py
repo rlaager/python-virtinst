@@ -406,16 +406,10 @@ class FullVirtGuest(Guest.XenGuest):
 
         disk_bus  = self._lookup_device_param("disk", "bus")
         net_model = self._lookup_device_param("net", "model")
-        pxe_skipped = False
 
         # Only overwrite params if they weren't already specified
         for net in self._install_nics:
             if net_model and not net.model:
-                if net_model == "virtio":
-                    # virtio net doesn't seem to support pxe, skip first interface
-                    if not pxe_skipped and isinstance(self.installer, PXEInstaller):
-                        pxe_skipped = True
-                        continue
                 net.model = net_model
         for disk in self._install_disks:
             if disk_bus and not disk.bus:
