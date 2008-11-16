@@ -325,12 +325,6 @@ class Installer(object):
 
         self._tmpfiles = []
 
-    def cleanup(self):
-        for f in self._tmpfiles:
-            logging.debug("Removing " + f)
-            os.unlink(f)
-        self._tmpfiles = []
-
     def get_install_disk(self):
         return self._install_disk
     install_disk = property(get_install_disk)
@@ -403,7 +397,29 @@ class Installer(object):
         self._extraargs = val
     extraargs = property(get_extra_args, set_extra_args)
 
-    # Installer methods
+
+    # Method definitions
+
+    def cleanup(self):
+        """
+        Remove any temporary files retrieved during installation
+        """
+        for f in self._tmpfiles:
+            logging.debug("Removing " + f)
+            os.unlink(f)
+        self._tmpfiles = []
+
+    def prepare(self, guest, meter, distro=None):
+        """
+        Fetch any files needed for installation.
+        @param guest: guest instance being installed
+        @type L{Guest}
+        @param meter: progress meter
+        @type Urlgrabber ProgressMeter
+        @param distro: Name of distro being installed
+        @type C{str} name from Guest os dictionary
+        """
+        raise NotImplementedError("Must be implemented in subclass")
 
     def post_install_check(self, guest):
         """
@@ -946,6 +962,7 @@ class Guest(object):
             self.vcpus = 1
         if self.name is None or self.memory is None:
             raise RuntimeError, _("Name and memory must be specified for all guests!")
+
 
 # Back compat class to avoid ABI break
 class XenGuest(Guest):
