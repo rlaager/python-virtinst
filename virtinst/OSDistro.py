@@ -255,11 +255,12 @@ class SLDistro(RedHatDistro):
 class SuseDistro(Distro):
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
-        if len(self.arch) == 4 and self.arch[0] == 'i' \
-           and self.arch[2:] == "86":
-            self.arch = "i386"
+        if re.match(r'i[4-9]86', arch):
+            self.arch = 'i386'
 
     def acquireBootDisk(self, fetcher, progresscb):
+        if not fetcher.hasFile("boot/boot.iso"):
+            raise RuntimeError(_("Could not find boot.iso in suse tree."))
         return fetcher.acquireFile("boot/boot.iso", progresscb)
 
     def acquireKernel(self, fetcher, progresscb):
