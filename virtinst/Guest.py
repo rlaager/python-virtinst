@@ -397,6 +397,40 @@ class Installer(object):
         self._extraargs = val
     extraargs = property(get_extra_args, set_extra_args)
 
+    # Private methods
+
+    def _get_osblob_helper(self, isinstall, ishvm, arch=None, loader=None,
+                           conn=None, kernel=None, bootdev=None):
+        osblob = ""
+        if not isinstall and not ishvm:
+            return "<bootloader>%s</bootloader>" % util.pygrub_path(conn)
+
+        osblob = "<os>\n"
+
+        os_type = self.os_type
+        # Hack for older libvirt Xen driver
+        if os_type == "xen" and self.type == "xen":
+            os_type = "linux"
+
+        if arch:
+            osblob += "    <type arch='%s'>%s</type>\n" % (arch, os_type)
+        else:
+            osblob += "    <type>%s</type>\n" % os_type
+
+        if loader:
+            osblob += "    <loader>%s</loader>\n" % loader
+
+        if isinstall and kernel and kernel["kernel"]:
+            osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(kernel["kernel"])
+            osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(kernel["initrd"])
+            osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(kernel["extraargs"])
+        elif bootdev is not None:
+            osblob += "    <boot dev='%s'/>\n" % bootdev
+
+        osblob += "  </os>"
+
+        return osblob
+
 
     # Method definitions
 

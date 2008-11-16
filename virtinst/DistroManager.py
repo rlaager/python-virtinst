@@ -269,39 +269,16 @@ class DistroInstaller(Guest.Installer):
         else:
             self._prepare_kernel_and_initrd(guest, distro, meter)
 
-    def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
-        osblob = ""
-        if install or hvm:
-            osblob = "<os>\n"
-
-            os_type = self.os_type
-            # Hack for older libvirt Xen driver
-            if os_type == "xen" and self.type == "xen":
-                os_type = "linux"
-
-            if arch:
-                osblob += "    <type arch='%s'>%s</type>\n" % (arch, os_type)
-            else:
-                osblob += "    <type>%s</type>\n" % os_type
-
-            if loader:
-                osblob += "    <loader>%s</loader>\n" % loader
-
-            if install and self.install["kernel"]:
-                osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self.install["kernel"])
-                osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(self.install["initrd"])
-                osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(self.install["extraargs"])
-            else:
-                if install:
-                    osblob += "    <boot dev='cdrom'/>\n"
-                else:
-                    osblob += "    <boot dev='hd'/>\n"
-
-            osblob += "  </os>"
+    def _get_osblob(self, install, hvm, arch = None, loader = None,
+                     conn = None):
+        if install:
+            bootdev = "cdrom"
         else:
-            osblob += "<bootloader>%s</bootloader>" % util.pygrub_path(conn)
+            bootdev = "hd"
 
-        return osblob
+        return self._get_osblob_helper(isinstall=install, ishvm=hvm,
+                                       arch=arch, loader=loader, conn=conn,
+                                       kernel=self.install, bootdev=bootdev)
 
 
 class PXEInstaller(Guest.Installer):
@@ -314,30 +291,12 @@ class PXEInstaller(Guest.Installer):
         pass
 
     def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
-        osblob = ""
-        if install or hvm:
-            osblob = "<os>\n"
-
-            os_type = self.os_type
-            # Hack for older libvirt Xen driver
-            if os_type == "xen" and self.type == "xen":
-                os_type = "linux"
-
-            if arch:
-                osblob += "    <type arch='%s'>%s</type>\n" % (arch, os_type)
-            else:
-                osblob += "    <type>%s</type>\n" % os_type
-
-            if loader:
-                osblob += "    <loader>%s</loader>\n" % loader
-
-            if install:
-                osblob += "    <boot dev='network'/>\n"
-            else:
-                osblob += "    <boot dev='hd'/>\n"
-
-            osblob += "  </os>"
+        if install:
+            bootdev="network"
         else:
-            osblob += "<bootloader>%s</bootloader>" % util.pygrub_path(conn)
+            bootdev = "hd"
 
-        return osblob
+        return self._get_osblob_helper(isinstall=install, ishvm=hvm,
+                                       arch=arch, loader=loader, conn=conn,
+                                       kernel=None, bootdev=bootdev)
+

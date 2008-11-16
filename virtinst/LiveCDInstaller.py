@@ -64,24 +64,15 @@ class LiveCDInstaller(Guest.Installer):
                                readOnly = True)
             guest._install_disks.insert(0, disk)
 
-    def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
+    def _get_osblob(self, install, hvm, arch=None, loader=None, conn=None):
         if install:
+            # XXX: This seems wrong? If install is True, maybe we should
+            # error and say that isn't a valid value for LiveCD?
             return None
 
-        os_type = self.os_type
-        # Hack for older libvirt Xen driver
-        if os_type == "xen" and self.type == "xen":
-            os_type = "linux"
-
-        osblob  = "<os>\n"
-        osblob += "    <type>%s</type>\n" % os_type
-        if loader:
-            osblob += "    <loader>%s</loader>\n" % loader
-        osblob += "    <boot dev='cdrom'/>\n"
-        osblob += "  </os>"
-
-        return osblob
+        return self._get_osblob_helper(isinstall=install, ishvm=hvm,
+                                       arch=arch, loader=loader, conn=conn,
+                                       kernel=None, bootdev="cdrom")
 
     def post_install_check(self, guest):
         return True
-
