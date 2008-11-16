@@ -16,10 +16,11 @@
 
 import difflib
 import unittest
-import virtinst
 import os
 import libvirt
 import urlgrabber.progress as progress
+
+import virtinst
 
 class TestXMLConfig(unittest.TestCase):
 
@@ -189,6 +190,15 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK))
         self._compare(g, "install-fullyvirt-disk-block", True)
 
+    def testInstallFVPXE(self):
+        g = self._get_basic_fullyvirt_guest()
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm", conn=g.conn)
+        self._compare(g, "install-fullyvirt-pxe", True)
+
+    def testInstallFVLiveCD(self):
+        g = self._get_basic_fullyvirt_guest()
+        g.installer = virtinst.LiveCDInstaller(type="xen", os_type="hvm", conn=g.conn, location="/dev/loop0")
+        self._compare(g, "install-fullyvirt-livecd", False)
 
     def testXMLEscaping(self):
         g = self._get_basic_fullyvirt_guest()
