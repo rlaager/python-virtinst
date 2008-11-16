@@ -28,7 +28,6 @@ import platform
 
 from Guest import Guest
 from VirtualDisk import VirtualDisk
-from DistroManager import PXEInstaller
 from virtinst import _virtinst as _
 
 

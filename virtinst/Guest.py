@@ -20,6 +20,8 @@
 # MA 02110-1301 USA.
 
 import os, os.path
+import errno
+import struct
 import time
 import re
 import libxml2
@@ -29,6 +31,8 @@ import libvirt
 import __builtin__
 import CapabilitiesParser
 import VirtualDevice
+
+from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
 import logging
@@ -399,7 +403,37 @@ class Installer(object):
         self._extraargs = val
     extraargs = property(get_extra_args, set_extra_args)
 
-    
+    # Installer methods
+
+    def post_install_check(self, guest):
+        """
+        Attempt to verify that installing to disk was successful.
+        @param guest: guest instance that was installed
+        @type L{Guest}
+        """
+
+        if util.is_uri_remote(guest.conn.getURI()):
+            # XXX: Use block peek for this?
+            return True
+
+        if len(guest.disks) == 0 \
+           or guest.disks[0].device != VirtualDisk.DEVICE_DISK:
+            return True
+
+        # Check for the 0xaa55 signature at the end of the MBR
+        try:
+            fd = os.open(guest.disks[0].path, os.O_RDONLY)
+        except OSError, (err, msg):
+            logging.debug("Failed to open guest disk: %s" % msg)
+            if err == errno.EACCES and os.geteuid() != 0:
+                return True # non root might not have access to block devices
+            else:
+                raise
+        buf = os.read(fd, 512)
+        os.close(fd)
+        return (len(buf) == 512 and
+                struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,))
+
 
 class Guest(object):
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
@@ -834,8 +868,8 @@ class Guest(object):
         if child and wait: # if we connected the console, wait for it to finish
             try:
                 os.waitpid(child, 0)
-            except OSError, (errno, msg):
-                print __name__, "waitpid: %s: %s" % (errno, msg)
+            except OSError, (err_no, msg):
+                print __name__, "waitpid: %s: %s" % (err_no, msg)
 
             # ensure there's time for the domain to finish destroying if the
             # install has finished or the guest crashed
@@ -878,9 +912,9 @@ class Guest(object):
         if child and wait: # if we connected the console, wait for it to finish
             try:
                 os.waitpid(child, 0)
-            except OSError, (errno, msg):
+            except OSError, (err_no, msg):
                 raise RuntimeError, \
-                      "waiting console pid error: %s: %s" % (errno, msg)
+                      "waiting console pid error: %s: %s" % (err_no, msg)
 
     def validate_parms(self):
         if self.domain is not None:
