@@ -740,13 +740,16 @@ class Guest(object):
     cdrom = property(get_cdrom, set_cdrom)
     # END DEPRECATED PROPERTIES
 
-
     def _create_devices(self,progresscb):
         """Ensure that devices are setup"""
         for disk in self._install_disks:
             disk.setup(progresscb)
         for nic in self._install_nics:
             nic.setup(self.conn)
+
+    def _get_disk_xml(self, install=True):
+        """Return xml for disk devices (Must be implemented in subclass)"""
+        raise NotImplementedError
 
     def _get_network_xml(self):
         """Get the network config in the libvirt XML format"""
@@ -763,9 +766,14 @@ class Guest(object):
             return ""
         return self._graphics_dev.get_xml_config()
 
+    def _get_input_device(self):
+        """ Return a tuple of the form (devtype, bus) for the desired
+            input device. (Must be implemented in subclass) """
+        raise NotImplementedError
+
     def _get_input_xml(self):
         """Get the input device config in libvirt XML format."""
-        (devtype, bus) = self.get_input_device()
+        (devtype, bus) = self._get_input_device()
         return "    <input type='%s' bus='%s'/>" % (devtype, bus)
 
     def _get_sound_xml(self):
@@ -792,6 +800,9 @@ class Guest(object):
                 xml += devxml
         return xml
 
+    def _get_osblob(self, install):
+        """Return os, features, and clock xml (Implemented in subclass)"""
+        raise NotImplementedError
 
     def get_config_xml(self, install = True, disk_boot = False):
         if install:
@@ -999,5 +1010,4 @@ class Guest(object):
 
 
 # Back compat class to avoid ABI break
-class XenGuest(Guest):
-    pass
+XenGuest = Guest

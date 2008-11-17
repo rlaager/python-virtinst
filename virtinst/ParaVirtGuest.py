@@ -33,7 +33,7 @@ class ParaVirtGuest(Guest):
     def _get_osblob(self, install):
         return self.installer._get_osblob(install, hvm = False, conn = self.conn)
 
-    def get_input_device(self):
+    def _get_input_device(self):
         return ("mouse", "xen")
 
     def validate_parms(self):
