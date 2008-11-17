@@ -32,6 +32,7 @@ import __builtin__
 import CapabilitiesParser
 import VirtualDevice
 
+import osdict
 from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
@@ -486,6 +487,27 @@ class Installer(object):
 
 
 class Guest(object):
+
+    # OS Dictionary static variables and methods
+    _DEFAULTS = osdict.DEFAULTS
+    _OS_TYPES = osdict.OS_TYPES
+
+    def list_os_types():
+        return Guest._OS_TYPES.keys()
+    list_os_types = staticmethod(list_os_types)
+
+    def list_os_variants(type):
+        return Guest._OS_TYPES[type]["variants"].keys()
+    list_os_variants = staticmethod(list_os_variants)
+
+    def get_os_type_label(type):
+        return Guest._OS_TYPES[type]["label"]
+    get_os_type_label = staticmethod(get_os_type_label)
+
+    def get_os_variant_label(type, variant):
+        return Guest._OS_TYPES[type]["variants"][variant]["label"]
+    get_os_variant_label = staticmethod(get_os_variant_label)
+
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
         self._installer = installer
         self._name = None
@@ -1007,6 +1029,42 @@ class Guest(object):
             self.vcpus = 1
         if self.name is None or self.memory is None:
             raise RuntimeError, _("Name and memory must be specified for all guests!")
+
+    # Guest Dictionary Helper methods
+
+    def _lookup_osdict_key(self, key):
+        """
+        Using self.os_type and self.os_variant to find key in OSTYPES
+        @returns: dict value, or None if os_type/variant wasn't set
+        """
+        typ = self.os_type
+        var = self.os_variant
+        if typ:
+            if var and self._OS_TYPES[typ]["variants"][var].has_key(key):
+                return self._OS_TYPES[typ]["variants"][var][key]
+            elif self._OS_TYPES[typ].has_key(key):
+                return self._OS_TYPES[typ][key]
+        return self._DEFAULTS[key]
+
+    def _lookup_device_param(self, device_key, param):
+        """
+        Check the OS dictionary for the prefered device setting for passed
+        device type and param (bus, model, etc.)
+        """
+        os_devs = self._lookup_osdict_key("devices")
+        default_devs = self._DEFAULTS["devices"]
+        for devs in [os_devs, default_devs]:
+            if not devs.has_key(device_key):
+                continue
+            for ent in devs[device_key][param]:
+                hv_types = ent[0]
+                param_value = ent[1]
+                if self.type in hv_types:
+                    return param_value
+                elif "all" in hv_types:
+                    return param_value
+        raise RuntimeError(_("Invalid dictionary entry for device '%s %s'" % \
+                             (device_key, param)))
 
 
 # Back compat class to avoid ABI break
