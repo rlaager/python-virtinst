@@ -79,6 +79,32 @@ class Distro:
 
         return self.treeinfo.get("images-%s" % t, mediaName)
 
+    def _fetchAndMatchRegex(self, fetcher, progresscb, filename, regex):
+        # Fetch 'filename' and return True/False if it matches the regex
+        local_file = None
+        try:
+            try:
+                local_file = fetcher.acquireFile(filename, progresscb)
+            except:
+                return False
+
+            f = open(local_file, "r")
+            try:
+                while 1:
+                    buf = f.readline()
+                    if not buf:
+                        break
+                    if re.match(regex, buf):
+                        return True
+            finally:
+                f.close()
+        finally:
+            if local_file is not None:
+                os.unlink(local_file)
+
+        return False
+
+
 
 class GenericDistro(Distro):
     """Generic distro store. Check well known paths for kernel locations
@@ -500,41 +526,24 @@ class DebianDistro(Distro):
         self._prefix = 'current/images'
 
     def isValidStore(self, fetcher, progresscb):
-        f = None
-        try:
-            try:
-                f = None
 
-                # For regular trees
-                if fetcher.hasFile("%s/MANIFEST" % self._prefix):
-                    f = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
-                                                   progresscb)
-                # For daily trees
-                elif fetcher.hasFile("images/daily/MANIFEST"):
-                    self._prefix = "images/daily"
-                    f = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
-                                                   progresscb)
-                else:
-                    logging.debug("Doesn't look like a Debian distro.")
-                    return False
+        # For regular trees
+        if fetcher.hasFile("%s/MANIFEST" % self._prefix):
+            pass
+        # For daily trees
+        elif fetcher.hasFile("images/daily/MANIFEST"):
+            self._prefix = "images/daily"
+        else:
+            logging.debug("Doesn't look like a Debian distro.")
+            return False
 
-            except ValueError, e:
-                logging.debug("Doesn't look like a Debian distro " + str(e))
-                return False
-            fobj = open(f, "r")
-            try:
-                while 1:
-                    buf = fobj.readline()
-                    if not buf:
-                        break
-                    if re.match(".*debian-installer.*", buf):
-                        logging.debug("Detected a Debian distro")
-                        return True
-            finally:
-                fobj.close()
-        finally:
-            if f is not None:
-                os.unlink(f)
+        filename = "%s/MANIFEST" % self._prefix
+
+        if self._fetchAndMatchRegex(fetcher, progresscb, filename,
+                                    ".*debian-installer.*"):
+            logging.debug("Detected a Debian distro")
+            return True
+
         return False
 
     def acquireBootDisk(self, fetcher, progresscb):
@@ -583,23 +592,10 @@ class MandrivaDistro(Distro):
         # Mandriva websites / media appear to have a VERSION
         # file in top level which we can use as our 'magic'
         # check for validity
-        version = None
-        try:
-            try:
-                version = fetcher.acquireFile("VERSION", progresscb)
-            except:
-                return False
-            f = open(version, "r")
-            try:
-                info = f.readline()
-                if info.startswith("Mandriva"):
-                    logging.debug("Detected a Mandriva distro")
-                    return True
-            finally:
-                f.close()
-        finally:
-            if version is not None:
-                os.unlink(version)
+        if self._fetchAndMatchRegex(fetcher, progresscb, "VERSION",
+                                    ".*Mandriva.*"):
+            logging.debug("Detected a Mandriva distro")
+            return True
 
         return False
 
