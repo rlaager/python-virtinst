@@ -25,8 +25,9 @@ import virtconv.netdevcfg as netdevcfg
 import virtinst.FullVirtGuest as fv
 import virtinst.ImageParser as ImageParser
 from xml.sax.saxutils import escape
-from string import ascii_letters
 import re
+
+ide_letters = list("abcdefghijklmnopqrstuvwxyz")
 
 pv_boot_template = """
   <boot type="xen">
@@ -153,7 +154,7 @@ def export_disks(vm):
             continue
 
         path = disk.path
-        drive_nr = ascii_letters[int(instance) % 26]
+        drive_nr = ide_letters[int(instance) % 26]
 
         disk_prefix = "xvd"
         if vm.type == vmcfg.VM_TYPE_HVM:
