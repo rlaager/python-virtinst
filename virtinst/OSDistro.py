@@ -104,6 +104,20 @@ class Distro:
 
         return False
 
+    def _kernelFetchHelper(self, fetcher, progresscb, kernelpath, initrdpath):
+        # Simple helper for fetching kernel + initrd and performing
+        # cleanup if neccessary
+        kernel = fetcher.acquireFile(kernelpath, progresscb)
+        try:
+            initrd = fetcher.acquireFile(initrdpath, progresscb)
+            if fetcher.location.startswith("/"):
+                # Local host path, so can't pass a location to guest
+                #for install method
+                return (kernel, initrd, "")
+            else:
+                return (kernel, initrd, "method=" + fetcher.location)
+        except:
+            os.unlink(kernel)
 
 
 class GenericDistro(Distro):
@@ -168,15 +182,9 @@ class GenericDistro(Distro):
             raise ValueError(_("Could not find a kernel path for virt type "
                                "'%s'" % self.type))
 
-        kernel = fetcher.acquireFile(self._valid_kernel_path[0], progresscb)
-        try:
-            initrd = fetcher.acquireFile(self._valid_kernel_path[1], progresscb)
-            if fetcher.location.startswith("/"):
-                return (kernel, initrd, "")
-            else:
-                return (kernel, initrd, "method=" + fetcher.location)
-        except:
-            os.unlink(kernel)
+        return self._kernelFetchHelper(fetcher, progresscb,
+                                       self._valid_kernel_path[0],
+                                       self._valid_kernel_path[1])
 
     def acquireBootDisk(self, fetcher, progresscb):
         if self._valid_iso_path == None:
@@ -205,16 +213,8 @@ class RedHatDistro(Distro):
                 kernelpath = "images/%s/vmlinuz" % (self.type)
                 initrdpath = "images/%s/initrd.img" % (self.type)
 
-        kernel = fetcher.acquireFile(kernelpath, progresscb)
-        try:
-            initrd = fetcher.acquireFile(initrdpath, progresscb)
-            if fetcher.location.startswith("/"):
-                # Local host path, so can't pass a location to guest for install method
-                return (kernel, initrd, "")
-            else:
-                return (kernel, initrd, "method=" + fetcher.location)
-        except:
-            os.unlink(kernel)
+        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
+                                       initrdpath)
 
     def acquireBootDisk(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
@@ -290,32 +290,28 @@ class SuseDistro(Distro):
         return fetcher.acquireFile("boot/boot.iso", progresscb)
 
     def acquireKernel(self, fetcher, progresscb):
-        kernel_args = ""
-        if not fetcher.location.startswith("/"):
-            kernel_args = "method=" + fetcher.location
+        kernelpath = None
+        initrdpath = None
 
         # If installing a fullvirt guest
         if self.type is None or self.type == "hvm":
             # Tested with Opensuse 10, 11, and sles 10
-            kernel = fetcher.acquireFile("boot/%s/loader/linux" % self.arch,
-                                         progresscb)
-            initrd = fetcher.acquireFile("boot/%s/loader/initrd" % self.arch,
-                                         progresscb)
-            return (kernel, initrd, kernel_args)
+            kernelpath = "boot/%s/loader/linux" % self.arch
+            initrdpath = "boot/%s/loader/initrd" % self.arch
 
         # Else we are looking for a paravirt kernel
-        if fetcher.hasFile("boot/%s/vmlinuz-xen" % self.arch):
+        elif fetcher.hasFile("boot/%s/vmlinuz-xen" % self.arch):
             # Should match opensuse > 10.2 and sles 10
-            kernel = fetcher.acquireFile("boot/%s/vmlinuz-xen" % self.arch,
-                                         progresscb)
-            initrd = fetcher.acquireFile("boot/%s/initrd-xen" % self.arch,
-                                         progresscb)
-            return (kernel, initrd, kernel_args)
+            kernelpath = "boot/%s/vmlinuz-xen" % self.arch
+            initrdpath = "boot/%s/initrd-xen" % self.arch
 
-        # For Opensuse <= 10.2, we need to perform some heinous stuff
-        logging.debug("Trying Opensuse 10 PV rpm hacking")
-        return self._findXenRPMS(fetcher, progresscb)
+        else:
+            # For Opensuse <= 10.2, we need to perform some heinous stuff
+            logging.debug("Trying Opensuse 10 PV rpm hacking")
+            return self._findXenRPMS(fetcher, progresscb)
 
+        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
+                                       initrdpath)
 
     def _findXenRPMS(self, fetcher, progresscb):
         kernelrpm = None
@@ -564,16 +560,8 @@ class DebianDistro(Distro):
             kernelpath = "%s/netboot/xen/vmlinuz" % self._prefix
             initrdpath = "%s/netboot/xen/initrd.gz" % self._prefix
 
-        kernel = fetcher.acquireFile(kernelpath, progresscb)
-        try:
-            initrd = fetcher.acquireFile(initrdpath, progresscb)
-            if fetcher.location.startswith("/"):
-                # Local host path, so can't pass a location to guest for install method
-                return (kernel, initrd, "")
-            else:
-                return (kernel, initrd, "method=" + fetcher.location)
-        except:
-            os.unlink(kernel)
+        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
+                                       initrdpath)
 
 
 class UbuntuDistro(DebianDistro):
@@ -600,17 +588,8 @@ class UbuntuDistro(DebianDistro):
         initrdpath = "%s/netboot/ubuntu-installer/%s/initrd.gz" % \
                      (self._prefix, self._treeArch)
 
-        kernel = fetcher.acquireFile(kernelpath, progresscb)
-        try:
-            initrd = fetcher.acquireFile(initrdpath, progresscb)
-            if fetcher.location.startswith("/"):
-                # Local host path, so can't pass a location to guest
-                #for install method
-                return (kernel, initrd, "")
-            else:
-                return (kernel, initrd, "method=" + fetcher.location)
-        except:
-            os.unlink(kernel)
+        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
+                                       initrdpath)
 
 
 class GentooDistro(Distro):
