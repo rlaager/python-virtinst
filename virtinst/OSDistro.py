@@ -490,7 +490,8 @@ class SuseDistro(Distro):
 
 
 class DebianDistro(Distro):
-    # location e.g. http://ftp.egr.msu.edu/debian/dists/sarge/main/installer-i386/
+    # ex. http://ftp.egr.msu.edu/debian/dists/sarge/main/installer-i386/
+    # daily builds: http://people.debian.org/~joeyh/d-i/
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
@@ -503,9 +504,12 @@ class DebianDistro(Distro):
         try:
             try:
                 f = None
+
+                # For regular trees
                 if fetcher.hasFile("%s/MANIFEST" % self._prefix):
                     f = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
                                                    progresscb)
+                # For daily trees
                 elif fetcher.hasFile("images/daily/MANIFEST"):
                     self._prefix = "images/daily"
                     f = fetcher.acquireFile("%s/MANIFEST" % self._prefix,
@@ -513,7 +517,7 @@ class DebianDistro(Distro):
                 else:
                     logging.debug("Doesn't look like a Debian distro.")
                     return False
-                    
+
             except ValueError, e:
                 logging.debug("Doesn't look like a Debian distro " + str(e))
                 return False
@@ -523,7 +527,7 @@ class DebianDistro(Distro):
                     buf = fobj.readline()
                     if not buf:
                         break
-                    if re.match(".*debian.*", buf):
+                    if re.match(".*debian-installer.*", buf):
                         logging.debug("Detected a Debian distro")
                         return True
             finally:
