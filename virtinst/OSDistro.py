@@ -592,13 +592,6 @@ class UbuntuDistro(DebianDistro):
                                        initrdpath)
 
 
-class GentooDistro(Distro):
-    def isValidStore(self, fetcher, progresscb):
-        # Don't support any paravirt installs
-        if self.type is not None and self.type != "hvm":
-            return False
-        return False
-
 class MandrivaDistro(Distro):
     # Ex. ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2007.1/x86_64/
 

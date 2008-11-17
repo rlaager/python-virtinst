@@ -39,7 +39,6 @@ from OSDistro import SLDistro
 from OSDistro import SuseDistro
 from OSDistro import DebianDistro
 from OSDistro import UbuntuDistro
-from OSDistro import GentooDistro
 from OSDistro import MandrivaDistro
 from OSDistro import GenericDistro
 
@@ -74,8 +73,6 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
         stores.append(DebianDistro(baseuri, typ, scratchdir, arch))
     if distro == "ubuntu" or distro is None:
         stores.append(UbuntuDistro(baseuri, typ, scratchdir, arch))
-    if distro == "gentoo" or distro is None:
-        stores.append(GentooDistro(baseuri, typ, scratchdir, arch))
     if distro == "mandriva" or distro is None:
         stores.append(MandrivaDistro(baseuri, typ, scratchdir, arch))
 
