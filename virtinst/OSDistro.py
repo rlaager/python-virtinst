@@ -600,6 +600,8 @@ class GentooDistro(Distro):
         return False
 
 class MandrivaDistro(Distro):
+    # Ex. ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2007.1/x86_64/
+
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
         if self.type is not None and self.type != "hvm":
@@ -616,8 +618,13 @@ class MandrivaDistro(Distro):
         return False
 
     def acquireBootDisk(self, fetcher, progresscb):
-        #
         return fetcher.acquireFile("install/images/boot.iso", progresscb)
 
     def acquireKernel(self, fetcher, progresscb):
-        raise NotImplementedError
+        # Kernels for HVM: valid for releases 2007.1, 2008.*, 2009.0
+        kernelpath = "isolinux/alt0/vmlinuz"
+        initrdpath = "isolinux/alt0/all.rdz"
+
+        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
+                                       initrdpath)
+
