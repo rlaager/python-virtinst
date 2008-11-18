@@ -126,9 +126,6 @@ class FullVirtGuest(Guest):
                 """    <console type='pty'/>\n""" +
                 Guest._get_device_xml(self, install))
 
-    def validate_parms(self):
-        Guest.validate_parms(self)
-
     def _prepare_install(self, meter):
         Guest._prepare_install(self, meter)
         self._installer.prepare(guest = self,
