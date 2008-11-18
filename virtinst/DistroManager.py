@@ -132,6 +132,12 @@ class DistroInstaller(Guest.Installer):
         Guest.Installer.__init__(self, type, location, boot, extraargs,
                                  os_type, conn=conn)
 
+        self.install = {
+            "kernel" : "",
+            "initrd" : "",
+            "extraargs" : "",
+        }
+
     def get_location(self):
         return self._location
     def set_location(self, val):

@@ -229,7 +229,7 @@ class virtimage_parser(formats.parser):
             if disk.format == ImageParser.Disk.FORMAT_RAW:
                 format = diskcfg.DISK_FORMAT_RAW
             elif format == ImageParser.DISK_FORMAT_VMDK:
-                format == diskcfg.DISK_FORMAT_VMDK
+                format = diskcfg.DISK_FORMAT_VMDK
 
             if format is None:
                 raise ValueError("Unable to determine disk format")

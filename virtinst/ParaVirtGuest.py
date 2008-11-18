@@ -19,15 +19,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import Guest
-import DistroManager
+from Guest import Guest
+from DistroManager import DistroInstaller
 from virtinst import _virtinst as _
 
-class ParaVirtGuest(Guest.XenGuest):
+class ParaVirtGuest(Guest):
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
         if not installer:
-            installer = DistroManager.DistroInstaller(type = type, os_type = "linux")
-        Guest.Guest.__init__(self, type, connection, hypervisorURI, installer)
+            installer = DistroInstaller(type = type, os_type = "linux")
+        Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "xvd"
 
     def _get_osblob(self, install):
@@ -39,10 +39,10 @@ class ParaVirtGuest(Guest.XenGuest):
     def validate_parms(self):
         if not self.location and not self.boot:
             raise ValueError, _("A location must be specified to install from")
-        Guest.Guest.validate_parms(self)
+        Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
-        Guest.Guest._prepare_install(self, meter)
+        Guest._prepare_install(self, meter)
         self._installer.prepare(guest = self, meter = meter)
         if self._installer.install_disk is not None:
             self._install_disks.append(self._installer.install_disk)

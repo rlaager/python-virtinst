@@ -173,13 +173,13 @@ def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
     try:
         # Get disk parameters
         if is_file_path:
-            (path, voltuple, volinst, device, bus, readOnly, shared, size,
+            (path, voltuple, volinst, device, bus, readOnly, ignore, size,
              sparse) = \
              (disk, None, None, virtinst.VirtualDisk.DEVICE_DISK, None, False,
               False, size, sparse)
         else:
             (path, voltuple, volinst,
-             device, bus, readOnly, shared,
+             device, bus, readOnly, ignore,
              size, sparse) = parse_disk_option(guest, disk, size)
             if not sparse and volinst:
                 volinst.allocation = volinst.capacity
@@ -474,10 +474,8 @@ def vnc_console(dom, uri):
         except OSError, (err, msg):
             if err == errno.ENOENT:
                 print _("Unable to connect to graphical console: virt-viewer not installed. Please install the 'virt-viewer' package.")
-            else: 
+            else:
                 raise OSError, (err, msg)
-        except e:
-            raise
         os._exit(1)
 
     return child
@@ -708,11 +706,11 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except SystemExit, e:
-        sys.exit(e.code)
-    except KeyboardInterrupt, e:
+    except SystemExit, sys_e:
+        sys.exit(sys_e.code)
+    except KeyboardInterrupt:
         print >> sys.stderr, _("Installation aborted at user request")
-    except Exception, e:
-        logging.exception(e)
+    except Exception, main_e:
+        logging.exception(main_e)
         sys.exit(1)
 

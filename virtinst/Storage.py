@@ -96,11 +96,10 @@ class StorageObject(object):
 
 
     ## Properties
-    """object_type: pool or volume"""
     def get_object_type(self):
+        # 'pool' or 'volume'
         return self._object_type
     object_type = property(get_object_type)
-
     def get_type(self):
         raise RuntimeError, "Must be implemented in child class."
     type = property(get_type, doc=\
@@ -169,13 +168,14 @@ class StorageObject(object):
         raise RuntimeError, "Must be implemented in subclass"
 
     def _get_perms_xml(self):
-        if not self.perms:
+        perms = self.get_perms()
+        if not perms:
             return ""
         return "    <permissions>\n" + \
-               "      <mode>%o</mode>\n" % self.perms["mode"] + \
-               "      <owner>%d</owner>\n" % self.perms["owner"] + \
-               "      <group>%d</group>\n" % self.perms["group"] + \
-               "      <label>%s</label>\n" % self.perms["label"] + \
+               "      <mode>%o</mode>\n" % perms["mode"] + \
+               "      <owner>%d</owner>\n" % perms["owner"] + \
+               "      <group>%d</group>\n" % perms["group"] + \
+               "      <label>%s</label>\n" % perms["label"] + \
                "    </permissions>\n"
 
 
@@ -506,7 +506,7 @@ class NetworkFilesystemPool(StoragePool):
     def __init__(self, conn, name, source_path=None, host=None,
                  target_path=None, format="auto", uuid=None):
         StoragePool.__init__(self, name=name, type=StoragePool.TYPE_NETFS,
-                             uuid=None, target_path=target_path, conn=conn)
+                             uuid=uuid, target_path=target_path, conn=conn)
 
         self.format = format
 
@@ -584,10 +584,10 @@ class DiskPool(StoragePool):
         return DiskVolume
     get_volume_class = staticmethod(get_volume_class)
 
-    def __init__(self, conn, name, source_path=None, host=None,
-                 target_path=None, format="auto", uuid=None):
+    def __init__(self, conn, name, source_path=None, target_path=None,
+                 format="auto", uuid=None):
         StoragePool.__init__(self, name=name, type=StoragePool.TYPE_DISK,
-                             uuid=None, target_path=target_path, conn=conn)
+                             uuid=uuid, target_path=target_path, conn=conn)
         self.format = format
         if source_path:
             self.source_path = source_path
@@ -640,7 +640,7 @@ class iSCSIPool(StoragePool):
     def __init__(self, conn, name, source_path=None, host=None,
                  target_path=None, uuid=None):
         StoragePool.__init__(self, name=name, type=StoragePool.TYPE_ISCSI,
-                             uuid=None, target_path=target_path, conn=conn)
+                             uuid=uuid, target_path=target_path, conn=conn)
 
         if source_path:
             self.source_path = source_path

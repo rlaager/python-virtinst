@@ -247,11 +247,11 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except SystemExit, e:
-        sys.exit(e.code)
-    except KeyboardInterrupt, e:
+    except SystemExit, sys_e:
+        sys.exit(sys_e.code)
+    except KeyboardInterrupt:
         print >> sys.stderr, "Aborted at user request"
-    except Exception, e:
-        logging.exception(e)
+    except Exception, main_e:
+        logging.exception(main_e)
         sys.exit(1)
 

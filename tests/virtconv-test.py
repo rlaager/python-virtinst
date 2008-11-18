@@ -16,7 +16,6 @@
 
 import unittest
 import difflib
-import string
 import virtconv
 import os, os.path, glob
 
@@ -39,7 +38,7 @@ class TestVirtConv(unittest.TestCase):
 
     def _compare(self, actual_out, filename):
         f = open(filename, "r")
-        expect_out = string.join(f.readlines(), "")
+        expect_out = f.read()
         f.close()
 
         diff = "".join(difflib.unified_diff(expect_out.splitlines(1),

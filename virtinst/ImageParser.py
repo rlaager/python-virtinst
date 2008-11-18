@@ -296,7 +296,7 @@ def parse(xml, filename):
     class ErrorHandler:
         def __init__(self):
             self.msg = ""
-        def handler(self, ctx, s):
+        def handler(self, ignore, s):
             self.msg += s
     error = ErrorHandler()
     libxml2.registerErrorHandler(error.handler, None)

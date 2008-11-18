@@ -89,7 +89,7 @@ def setupLogging(appname, debug=False):
     rootLogger.addHandler(streamHandler)
 
     # Register libvirt handler
-    def libvirt_callback(ctx, err):
+    def libvirt_callback(ignore, err):
         if err[3] != libvirt.VIR_ERR_ERROR:
             # Don't log libvirt errors: global error handler will do that
             logging.warn("Non-error from libvirt: '%s'" % err[2])
@@ -246,7 +246,7 @@ def get_cpuset(cpuset, mem, guest, conn):
             if cell_mem[i] > mem and len(cells[i].cpus) != 0:
                 # Find smallest cell that fits
                 if cell_id < 0 or cell_mem[i] < cell_mem[cell_id]:
-                    cell_id = i;
+                    cell_id = i
         if cell_id < 0:
             logging.debug("Could not find any usable NUMA cell/cpu combinations. Not setting cpuset.")
             return

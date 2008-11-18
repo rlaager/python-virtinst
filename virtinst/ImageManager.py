@@ -26,7 +26,7 @@ import os
 import util
 from virtinst import _virtinst as _
 
-class ImageInstallerException(RuntimeError):
+class ImageInstallerException(Exception):
     def __init__(self, msg):
         Exception.__init__(self, msg)
 

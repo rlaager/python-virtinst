@@ -69,14 +69,14 @@ class parser(object):
         raise NotImplementedError
 
 
-def register_parser(parser):
+def register_parser(new_parser):
     """
     Register a particular config format parser.  This should be called by each
     config plugin on import.
     """
 
     global _parsers
-    _parsers += [ parser ]
+    _parsers += [ new_parser ]
 
 def parser_by_name(name):
     """

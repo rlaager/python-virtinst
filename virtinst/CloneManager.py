@@ -329,7 +329,7 @@ class CloneDesign(object):
     # ret : Use File Path
     #
     def _check_file(self, conn, disk, size):
-        d = VirtualDisk(disk, size)
+        d = VirtualDisk(disk, size, conn=conn)
         return d.path
 
     #

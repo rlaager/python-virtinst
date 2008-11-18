@@ -113,6 +113,23 @@ class VirtualDisk(VirtualDevice):
         """
 
         VirtualDevice.__init__(self, conn=conn)
+
+        self._path = None
+        self._size = None
+        self._type = None
+        self._device = None
+        self._sparse = None
+        self._readOnly = None
+        self._vol_object = None
+        self._vol_install = None
+        self._bus = None
+
+        # XXX: No property methods for these
+        self.transient = transient
+        self._driverName = driverName
+        self._driverType = driverType
+        self.target = None
+
         self.set_read_only(readOnly, validate=False)
         self.set_sparse(sparse, validate=False)
         self.set_type(type, validate=False)
@@ -122,11 +139,6 @@ class VirtualDisk(VirtualDevice):
         self._set_vol_object(volObject, validate=False)
         self._set_vol_install(volInstall, validate=False)
         self._set_bus(bus, validate=False)
-
-        self.transient = transient
-        self._driverName = driverName
-        self._driverType = driverType
-        self.target = None
 
         if volName:
             self.__lookup_vol_name(volName)
@@ -227,6 +239,9 @@ class VirtualDisk(VirtualDevice):
     bus = property(_get_bus, _set_bus)
 
     # Validation assistance methods
+
+    # Initializes attribute if it hasn't been done, then validates args.
+    # If validation fails, reset attribute to original value and raise error
     def __validate_wrapper(self, varname, newval, validate=True):
         try:
             orig = getattr(self, varname)
@@ -588,7 +603,7 @@ class VirtualDisk(VirtualDevice):
         """
         vms = []
         # get working domain's name
-        ids = conn.listDomainsID();
+        ids = conn.listDomainsID()
         for i in ids:
             try:
                 vm = conn.lookupByID(i)

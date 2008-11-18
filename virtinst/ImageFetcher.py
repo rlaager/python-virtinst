@@ -60,10 +60,10 @@ class ImageFetcher:
         pass
 
     def acquireFile(self, src, progresscb):
-        raise "Must be implemented in subclass"
+        raise NotImplementedError("Must be implemented in subclass")
 
     def hasFile(self, src):
-        raise "Must be implemented in subclass"
+        raise NotImplementedError("Must be implemented in subclass")
 
 # Base class for downloading from FTP / HTTP
 class URIImageFetcher(ImageFetcher):
@@ -78,7 +78,6 @@ class URIImageFetcher(ImageFetcher):
             logging.debug("Opening URL %s failed." % (self.location,) + " " + str(e))
             raise ValueError(_("Opening URL %s failed: %s") % \
                               (self.location, e))
-            return False
 
     def acquireFile(self, filename, progresscb):
         f = None
@@ -199,7 +198,6 @@ class MountedImageFetcher(LocalImageFetcher):
             self.cleanupLocation()
             logging.debug("Mounting location %s failed" % (self.location,))
             raise ValueError(_("Mounting location %s failed") % (self.location))
-            return False
         return True
 
     def cleanupLocation(self):

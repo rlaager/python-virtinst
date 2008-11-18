@@ -14,7 +14,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import string
 import difflib
 import unittest
 import virtinst
@@ -27,7 +26,7 @@ class TestXMLConfig(unittest.TestCase):
     def _compare(self, xenguest, filebase, install):
         filename = os.path.join("tests/xmlconfig-xml", filebase + ".xml")
         f = open(filename, "r")
-        expectXML = string.join(f.readlines(), "")
+        expectXML = f.read()
         f.close()
 
         xenguest._prepare_install(progress.BaseMeter())
@@ -48,7 +47,7 @@ class TestXMLConfig(unittest.TestCase):
             else:
                 self.assertTrue(True)
         finally:
-            xenguest._installer.cleanup()
+            xenguest.installer.cleanup()
 
     def _get_basic_paravirt_guest(self):
         conn = libvirt.openReadOnly("test:///default")

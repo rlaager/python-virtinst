@@ -20,19 +20,19 @@
 # MA 02110-1301 USA.
 
 import os
-import Guest
 import util
 import DistroManager
 import logging
 import time
 import platform
 
+from Guest import Guest
 from VirtualDisk import VirtualDisk
 from DistroManager import PXEInstaller
 from virtinst import _virtinst as _
 
 
-class FullVirtGuest(Guest.XenGuest):
+class FullVirtGuest(Guest):
 
     """
     Default values for OS_TYPES keys. Can be overwritten at os_type or
@@ -175,7 +175,7 @@ class FullVirtGuest(Guest.XenGuest):
     def __init__(self, type=None, arch=None, connection=None, hypervisorURI=None, emulator=None, installer=None):
         if not installer:
             installer = DistroManager.DistroInstaller(type = type, os_type = "hvm")
-        Guest.Guest.__init__(self, type, connection, hypervisorURI, installer)
+        Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "hd"
         self.features = { "acpi": None, "pae": util.is_pae_capable(), "apic": None }
         if arch is None:
@@ -298,21 +298,20 @@ class FullVirtGuest(Guest.XenGuest):
         val = self._lookup_osdict_key("clock")
         return """<clock offset="%s"/>""" % val
 
-    def _get_device_xml(self, install = True):
-        if self.emulator is None:
-            return """    <console type='pty'/>
-""" + Guest.Guest._get_device_xml(self, install)
-        else:
-            return ("""    <emulator>%(emulator)s</emulator>
-    <console type='pty'/>
-""" % { "emulator": self.emulator }) + \
-        Guest.Guest._get_device_xml(self, install)
+    def _get_device_xml(self, install=True):
+        emu_xml = ""
+        if self.emulator is not None:
+            emu_xml = "    <emulator>%s</emulator>\n" % self.emulator
+
+        return (emu_xml +
+                """    <console type='pty'/>\n""" +
+                Guest._get_device_xml(self, install))
 
     def validate_parms(self):
-        Guest.Guest.validate_parms(self)
+        Guest.validate_parms(self)
 
     def _prepare_install(self, meter):
-        Guest.Guest._prepare_install(self, meter)
+        Guest._prepare_install(self, meter)
         self._installer.prepare(guest = self,
                                 meter = meter,
                                 distro = self.os_distro)
@@ -401,7 +400,7 @@ class FullVirtGuest(Guest.XenGuest):
         return ret
 
     def _set_defaults(self):
-        Guest.Guest._set_defaults(self)
+        Guest._set_defaults(self)
 
         disk_bus  = self._lookup_device_param("disk", "bus")
         net_model = self._lookup_device_param("net", "model")

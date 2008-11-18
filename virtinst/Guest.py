@@ -104,7 +104,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         if self.macaddr is None:
             return (False, None)
         # get Running Domains
-        ids = conn.listDomainsID();
+        ids = conn.listDomainsID()
         vms = []
         for i in ids:
             try:
@@ -399,6 +399,8 @@ class Installer(object):
         self._extraargs = val
     extraargs = property(get_extra_args, set_extra_args)
 
+    
+
 class Guest(object):
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
         self._installer = installer
@@ -442,7 +444,7 @@ class Guest(object):
     def get_type(self):
         return self._installer.type
     def set_type(self, val):
-        self._installer.type = type
+        self._installer.type = val
     type = property(get_type, set_type)
 
 
@@ -583,10 +585,14 @@ class Guest(object):
                 if val.has_key("opts"):
                     port = val["opts"]
         elif type(val) == tuple:
-            if len(val) >= 1: enabled = val[0]
-            if len(val) >= 2: gtype = val[1]
-            if len(val) >= 3: port = val[2]
-            if len(val) >= 4: keymap = val[3]
+            if len(val) >= 1:
+                enabled = val[0]
+            if len(val) >= 2:
+                gtype = val[1]
+            if len(val) >= 3:
+                port = val[2]
+            if len(val) >= 4:
+                keymap = val[3]
         else:
             if val in ("vnc", "sdl"):
                 gtype = val
@@ -658,7 +664,7 @@ class Guest(object):
         for nic in self._install_nics:
             nic.setup(self.conn)
 
-    def _get_network_xml(self, install = True):
+    def _get_network_xml(self):
         """Get the network config in the libvirt XML format"""
         ret = ""
         for n in self._install_nics:
@@ -667,13 +673,13 @@ class Guest(object):
             ret += n.get_xml_config()
         return ret
 
-    def _get_graphics_xml(self, install = True):
+    def _get_graphics_xml(self):
         """Get the graphics config in the libvirt XML format."""
         if self._graphics_dev is None:
             return ""
         return self._graphics_dev.get_xml_config()
 
-    def _get_input_xml(self, install = True):
+    def _get_input_xml(self):
         """Get the input device config in libvirt XML format."""
         (devtype, bus) = self.get_input_device()
         return "    <input type='%s' bus='%s'/>" % (devtype, bus)
@@ -687,13 +693,13 @@ class Guest(object):
             xml += sound_dev.get_xml_config()
         return xml
 
-    def _get_device_xml(self, install = True):
+    def _get_device_xml(self, install=True):
 
         xml = ""
         diskxml     = self._get_disk_xml(install)
-        netxml      = self._get_network_xml(install)
-        inputxml    = self._get_input_xml(install)
-        graphicsxml = self._get_graphics_xml(install)
+        netxml      = self._get_network_xml()
+        inputxml    = self._get_input_xml()
+        graphicsxml = self._get_graphics_xml()
         soundxml    = self._get_sound_xml()
         for devxml in [diskxml, netxml, inputxml, graphicsxml, soundxml]:
             if devxml:
@@ -811,7 +817,6 @@ class Guest(object):
                     break
                 except libvirt.libvirtError, e:
                     logging.debug("No guest running yet " + str(e))
-                    pass
                 num += 1
                 time.sleep(0.25)
 
@@ -857,7 +862,6 @@ class Guest(object):
             except libvirt.libvirtError, e:
                 logging.debug("No guest existing " + str(e))
                 self.domain = None
-                pass
             num += 1
             time.sleep(0.25)
 

@@ -43,14 +43,14 @@ class Distro:
         self.treeinfo = None
 
     def acquireBootDisk(self, fetcher, progresscb):
-        raise "Not implemented"
+        raise NotImplementedError
 
     def acquireKernel(self, fetcher, progresscb):
-        raise "Not implemented"
+        raise NotImplementedError
 
     def isValidStore(self, fetcher, progresscb):
         """Determine if uri points to a tree of the store's distro"""
-        raise "Not implemented"
+        raise NotImplementedError
 
     def _hasTreeinfo(self, fetcher, progresscb):
         # all Red Hat based distros should have .treeinfo, perhaps others
@@ -71,7 +71,7 @@ class Distro:
             os.unlink(tmptreeinfo)
         return True
 
-    def _getTreeinfoMedia(self, fetcher, progresscb, mediaName):
+    def _getTreeinfoMedia(self, mediaName):
         if self.type == "xen":
             t = "xen"
         else:
@@ -110,7 +110,8 @@ class GenericDistro(Distro):
             isoSection = "images-%s" % self.treeinfo.get("general", "arch")
 
             if self.treeinfo.has_section(kernelSection):
-                self._valid_kernel_path = (self._getTreeinfoMedia(fetcher, progresscb, "kernel"), self._getTreeinfoMedia(fetcher, progresscb, "initrd"))
+                self._valid_kernel_path = (self._getTreeinfoMedia("kernel"),
+                                           self._getTreeinfoMedia("initrd"))
             if self.treeinfo.has_section(isoSection):
                 self._valid_iso_path = self.treeinfo.get(isoSection, "boot.iso")
 
@@ -162,10 +163,13 @@ class GenericDistro(Distro):
 # a common layout
 class RedHatDistro(Distro):
 
+    def isValidStore(self, fetcher, progresscb):
+        raise NotImplementedError
+
     def acquireKernel(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
-            kernelpath = self._getTreeinfoMedia(fetcher, progresscb, "kernel")
-            initrdpath = self._getTreeinfoMedia(fetcher, progresscb, "initrd")
+            kernelpath = self._getTreeinfoMedia("kernel")
+            initrdpath = self._getTreeinfoMedia("initrd")
         else:
             # fall back to old code
             if self.type is None or self.type == "hvm":
@@ -188,9 +192,7 @@ class RedHatDistro(Distro):
 
     def acquireBootDisk(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
-            return fetcher.acquireFile(self._getTreeinfoMedia(fetcher,
-                                                              progresscb,
-                                                              "boot.iso"))
+            return fetcher.acquireFile(self._getTreeinfoMedia("boot.iso"))
         else:
             return fetcher.acquireFile("images/boot.iso", progresscb)
 
@@ -579,7 +581,7 @@ class MandrivaDistro(Distro):
         version = None
         try:
             try:
-                version = fetcher.acquireFile("VERSION")
+                version = fetcher.acquireFile("VERSION", progresscb)
             except:
                 return False
             f = open(version, "r")
@@ -599,3 +601,6 @@ class MandrivaDistro(Distro):
     def acquireBootDisk(self, fetcher, progresscb):
         #
         return fetcher.acquireFile("install/images/boot.iso", progresscb)
+
+    def acquireKernel(self, fetcher, progresscb):
+        raise NotImplementedError
