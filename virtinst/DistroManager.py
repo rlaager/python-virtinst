@@ -59,6 +59,10 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
                     scratchdir=None):
     stores = []
     logging.debug("Attempting to detect distro:")
+
+    # FIXME: This 'distro ==' doesn't cut it. 'distro' is from our os
+    # dictionary, so would look like 'fedora9' or 'rhel5', so this needs
+    # to be a bit more intelligent
     if distro == "fedora" or distro is None:
         stores.append(FedoraDistro(baseuri, typ, scratchdir, arch))
     if distro == "rhel" or distro is None:

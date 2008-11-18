@@ -935,8 +935,7 @@ class Guest(object):
         self._set_defaults()
 
         self._installer.prepare(guest = self,
-                                meter = meter,
-                                distro = self.os_distro)
+                                meter = meter)
         if self._installer.install_disk is not None:
             self._install_disks.append(self._installer.install_disk)
 
