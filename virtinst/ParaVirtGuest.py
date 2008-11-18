@@ -41,13 +41,6 @@ class ParaVirtGuest(Guest):
             raise ValueError, _("A location must be specified to install from")
         Guest.validate_parms(self)
 
-    def _prepare_install(self, meter):
-        Guest._prepare_install(self, meter)
-        self._installer.prepare(guest = self, meter = meter)
-        if self._installer.install_disk is not None:
-            self._install_disks.append(self._installer.install_disk)
-
-
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
         ret = ""

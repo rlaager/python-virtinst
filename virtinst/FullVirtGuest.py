@@ -126,14 +126,6 @@ class FullVirtGuest(Guest):
                 """    <console type='pty'/>\n""" +
                 Guest._get_device_xml(self, install))
 
-    def _prepare_install(self, meter):
-        Guest._prepare_install(self, meter)
-        self._installer.prepare(guest = self,
-                                meter = meter,
-                                distro = self.os_distro)
-        if self._installer.install_disk is not None:
-            self._install_disks.append(self._installer.install_disk)
-
     def get_continue_inst(self):
         return self._lookup_osdict_key("continue")
 

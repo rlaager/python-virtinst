@@ -934,6 +934,12 @@ class Guest(object):
         self._install_nics = self.nics[:]
         self._set_defaults()
 
+        self._installer.prepare(guest = self,
+                                meter = meter,
+                                distro = self.os_distro)
+        if self._installer.install_disk is not None:
+            self._install_disks.append(self._installer.install_disk)
+
     def _do_install(self, consolecb, meter, removeOld=False, wait=True):
         vm = None
         try:
