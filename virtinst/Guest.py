@@ -518,6 +518,9 @@ class Guest(object):
         self._cpuset = None
         self._graphics_dev = None
 
+        self._os_type = None
+        self._os_variant = None
+
         # Public device lists unaltered by install process
         self.disks = []
         self.nics = []
@@ -652,6 +655,46 @@ class Guest(object):
     def set_graphics_dev(self, val):
         self._graphics_dev = val
     graphics_dev = property(get_graphics_dev, set_graphics_dev)
+
+    def get_os_type(self):
+        return self._os_type
+    def set_os_type(self, val):
+        if type(val) is not str:
+            raise ValueError(_("OS type must be a string."))
+        val = val.lower()
+        if self._OS_TYPES.has_key(val):
+            self._os_type = val
+            # Invalidate variant, since it may not apply to the new os type
+            self._os_variant = None
+        else:
+            raise ValueError, _("OS type '%s' does not exist in our "
+                                "dictionary") % val
+    os_type = property(get_os_type, set_os_type)
+
+    def get_os_variant(self):
+        return self._os_variant
+    def set_os_variant(self, val):
+        if type(val) is not str:
+            raise ValueError(_("OS variant must be a string."))
+        val = val.lower()
+        if self.os_type:
+            if self._OS_TYPES[self.os_type]["variants"].has_key(val):
+                self._os_variant = val
+            else:
+                raise ValueError, _("OS variant '%(var)s; does not exist in "
+                                    "our dictionary for OS type '%(ty)s'" ) % \
+                                    {'var' : val, 'ty' : self._os_type}
+        else:
+            for ostype in self.list_os_types():
+                if self._OS_TYPES[ostype]["variants"].has_key(val):
+                    logging.debug("Setting os type to '%s' for variant '%s'" %\
+                                  (ostype, val))
+                    self.os_type = ostype
+                    self._os_variant = val
+                    return
+            raise ValueError, _("Unknown OS variant '%s'" % val)
+    os_variant = property(get_os_variant, set_os_variant)
+
 
     # DEPRECATED PROPERTIES
     # Deprecated: Should set graphics_dev.keymap directly

@@ -64,48 +64,6 @@ class FullVirtGuest(Guest):
         if (not self.loader) and self.type == "xen":
             self.loader = "/usr/lib/xen/boot/hvmloader"
 
-        self._os_type = None
-        self._os_variant = None
-
-
-    def get_os_type(self):
-        return self._os_type
-    def set_os_type(self, val):
-        if type(val) is not str:
-            raise ValueError(_("OS type must be a string."))
-        val = val.lower()
-        if self._OS_TYPES.has_key(val):
-            self._os_type = val
-            # Invalidate variant, since it may not apply to the new os type
-            self._os_variant = None
-        else:
-            raise ValueError, _("OS type '%s' does not exist in our "
-                                "dictionary") % val
-    os_type = property(get_os_type, set_os_type)
-
-    def get_os_variant(self):
-        return self._os_variant
-    def set_os_variant(self, val):
-        if type(val) is not str:
-            raise ValueError(_("OS variant must be a string."))
-        val = val.lower()
-        if self._os_type:
-            if self._OS_TYPES[self._os_type]["variants"].has_key(val):
-                self._os_variant = val
-            else:
-                raise ValueError, _("OS variant '%(var)s; does not exist in "
-                                    "our dictionary for OS type '%(ty)s'" ) % \
-                                    {'var' : val, 'ty' : self._os_type}
-        else:
-            for ostype in self.list_os_types():
-                if self._OS_TYPES[ostype]["variants"].has_key(val):
-                    logging.debug("Setting os type to '%s' for variant '%s'" %\
-                                  (ostype, val))
-                    self.os_type = ostype
-                    self._os_variant = val
-                    return
-            raise ValueError, _("Unknown OS variant '%s'" % val)
-    os_variant = property(get_os_variant, set_os_variant)
 
     def os_features(self):
         """Determine the guest features, based on explicit settings in FEATURES
