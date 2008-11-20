@@ -200,8 +200,10 @@
         <optional>
           <element name="checksum">
             <attribute name="type">
-              <value>sha1</value>
-              <value>sha256</value>
+              <choice>
+                <value>sha1</value>
+                <value>sha256</value>
+              </choice>
             </attribute>
             <text/>
           </element>
