@@ -1,4 +1,5 @@
 from distutils.core import setup, Command
+from distutils.command.sdist import sdist as _sdist
 from distutils.command.build import build as _build
 from distutils.command.install_data import install_data as _install_data
 from distutils.command.install_lib import install_lib as _install_lib
@@ -17,6 +18,8 @@ datafiles = [('share/man/man1', ['man/en/virt-install.1',
              ('share/man/man5', ['man/en/virt-image.5'])]
 locale = None
 builddir = None
+
+VERSION="0.400.0"
 
 class TestCommand(Command):
 
@@ -52,6 +55,15 @@ class TestCommand(Command):
             sys.exit(1)
         else:
             sys.exit(0)
+
+class sdist(_sdist):
+    """ custom sdist command, to prep virtinst.spec file for inclusion """
+
+    def run(self):
+        cmd = (""" sed -e "s/::VERSION::/%s/g" < python-virtinst.spec.in """ %
+               VERSION) + " > python-virtinst.spec"
+        os.system(cmd)
+        _sdist.run(self)
 
 class build(_build):
     """ custom build command to compile i18n files"""
@@ -114,7 +126,7 @@ class install_data(_install_data):
         _install_data.run(self)
 
 setup(name='virtinst',
-      version='0.400.0',
+      version=VERSION,
       description='Virtual machine installation',
       author='Jeremy Katz, Daniel Berrange, Cole Robinson',
       author_email='crobinso@redhat.com',
@@ -124,8 +136,8 @@ setup(name='virtinst',
       scripts = ["virt-install","virt-clone", "virt-image", "virt-convert"],
       packages=pkgs,
       data_files = datafiles,
-      cmdclass = { 'test': TestCommand, 'build': build, \
-                    'install_data' : install_data, \
-                    'install_lib' : install_lib, 
+      cmdclass = { 'test': TestCommand, 'sdist': sdist, 'build': build,
+                    'install_data' : install_data,
+                    'install_lib' : install_lib,
                     'install' : install}
       )
