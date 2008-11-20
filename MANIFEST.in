@@ -1,24 +1,11 @@
 include README AUTHORS NEWS ChangeLog COPYING INSTALL
 include python-virtinst.spec
-include *.py
-include virtinst/*.py
-include virtinst/*.in
-include virtconv/*.py
-include virtconv/parsers/*.py
-include tests/*.py
-include tests/capabilities-xml/*
-include tests/image-xml/*
-include tests/xmlconfig-xml/*
-include tests/virtconv-files/*
-include virt-install
-include virt-clone
-include virt-image
-include virt-convert
-include virt-pack
+include setup.py
+recursive-include virtinst *.py
+recursive-include virtconv *.py
+recursive-include tests *.py *.xml *.vmx *.virt-image
+include virt-install virt-clone virt-image virt-convert
 include autobuild.sh
 include doc/*
-include man/*/*.1
-include man/*/*.5
-include man/*/*.pod
-include po/*.po
-include po/*.pot
+recursive-include man *.1 *.5 *.pod
+recursive-include po *.po *.pot

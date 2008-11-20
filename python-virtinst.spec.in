@@ -74,7 +74,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-install
 %{_bindir}/virt-clone
 %{_bindir}/virt-image
-%{_bindir}/virt-pack
 %{_bindir}/virt-convert
 
 %changelog
