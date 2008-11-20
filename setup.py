@@ -19,6 +19,9 @@ locale = None
 builddir = None
 
 class TestCommand(Command):
+
+    description = "Runs a quick unit test suite"
+
     user_options = [ ]
 
     def initialize_options(self):
