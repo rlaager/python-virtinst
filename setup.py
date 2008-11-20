@@ -56,6 +56,25 @@ class TestCommand(Command):
         else:
             sys.exit(0)
 
+class custom_rpm(Command):
+
+    user_options = []
+
+    description = "Build a non-binary rpm."
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        """
+        Run sdist, then 'rpmbuild' the tar.gz
+        """
+        self.run_command('sdist')
+        os.system('rpmbuild -ta dist/virtinst-%s.tar.gz' % VERSION)
+
 class sdist(_sdist):
     """ custom sdist command, to prep virtinst.spec file for inclusion """
 
@@ -136,7 +155,8 @@ setup(name='virtinst',
       scripts = ["virt-install","virt-clone", "virt-image", "virt-convert"],
       packages=pkgs,
       data_files = datafiles,
-      cmdclass = { 'test': TestCommand, 'sdist': sdist, 'build': build,
+      cmdclass = { 'test': TestCommand, 'rpm' : custom_rpm,
+                    'sdist': sdist, 'build': build,
                     'install_data' : install_data,
                     'install_lib' : install_lib,
                     'install' : install}
