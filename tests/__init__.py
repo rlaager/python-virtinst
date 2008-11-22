@@ -19,3 +19,18 @@ import validation
 import xmlconfig
 import image
 import storage
+
+import difflib
+
+def diff_compare(actual_out, filename):
+    """Compare passed string output to contents of filename"""
+    f = open(filename, "r")
+    expect_out = f.read()
+    f.close()
+
+    diff = "".join(difflib.unified_diff(expect_out.splitlines(1),
+                                        actual_out.splitlines(1),
+                                        fromfile=filename,
+                                        tofile="Generated Output"))
+    if diff:
+        raise AssertionError("Conversion outputs did not match.\n%s" % diff)

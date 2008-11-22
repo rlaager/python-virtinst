@@ -14,39 +14,22 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import difflib
 import unittest
 import os
 import libvirt
 import urlgrabber.progress as progress
 
 import virtinst
+import tests
 
 class TestXMLConfig(unittest.TestCase):
 
     def _compare(self, xenguest, filebase, install):
         filename = os.path.join("tests/xmlconfig-xml", filebase + ".xml")
-        f = open(filename, "r")
-        expectXML = f.read()
-        f.close()
-
         xenguest._prepare_install(progress.BaseMeter())
         try:
             actualXML = xenguest.get_config_xml(install=install)
-
-            if os.environ.has_key("DEBUG_TESTS") and os.environ["DEBUG_TESTS"] == "1" and actualXML != expectXML:
-                print "Expect: %d bytes '%s'" % (len(expectXML),  expectXML)
-                print "Actual: %d bytes '%s'" % (len(actualXML),  actualXML)
-
-            diff = "".join(difflib.unified_diff(expectXML.splitlines(1),
-                                                actualXML.splitlines(1),
-                                                fromfile=filename,
-                                                tofile="Generated Output"))
-            if diff:
-                raise AssertionError("Conversion outputs did not match.\n"
-                                     "%s" % diff)
-            else:
-                self.assertTrue(True)
+            tests.diff_compare(actualXML, filename)
         finally:
             xenguest.installer.cleanup()
 

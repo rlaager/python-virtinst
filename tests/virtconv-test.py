@@ -15,9 +15,9 @@
 # MA 02110-1301 USA.
 
 import unittest
-import difflib
 import virtconv
 import os, os.path, glob
+import tests
 
 vmx2virtimage_dir = "tests/virtconv-files/vmx2virtimage"
 vmx2virtimage_files = [ "test" ]
@@ -36,21 +36,6 @@ class TestVirtConv(unittest.TestCase):
     def setUp(self):
         pass
 
-    def _compare(self, actual_out, filename):
-        f = open(filename, "r")
-        expect_out = f.read()
-        f.close()
-
-        diff = "".join(difflib.unified_diff(expect_out.splitlines(1),
-                                            actual_out.splitlines(1),
-                                            fromfile=filename,
-                                            tofile="Generated Output"))
-        if diff:
-            raise AssertionError("Conversion outputs did not match.\n"
-                                 "%s" % diff)
-        else:
-            self.assertTrue(True)
-
     def _convert_helper(self, dirname, filebase, input_type, output_type):
         infile  = os.path.join(dirname, filebase + "." + input_type)
         outfile = os.path.join(dirname, filebase + "." + output_type)
@@ -68,7 +53,7 @@ class TestVirtConv(unittest.TestCase):
 
         vmdef = inp.import_file(infile)
         out_expect = outp.export(vmdef)
-        self._compare(out_expect, outfile)
+        tests.diff_compare(out_expect, outfile)
 
     def testVMX2VirtImage(self):
         for filename in vmx2virtimage_files:
