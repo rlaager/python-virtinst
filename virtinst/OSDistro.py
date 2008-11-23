@@ -521,6 +521,13 @@ class DebianDistro(Distro):
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
+        if uri.count("installer-i386"):
+            self._treeArch = "i386"
+        elif uri.count("installer-amd64"):
+            self._treeArch = "amd64"
+        else:
+            self._treeArch = "i386"
+
         if re.match(r'i[4-9]86', arch):
             self.arch = 'i386'
         self._prefix = 'current/images'
@@ -551,8 +558,8 @@ class DebianDistro(Distro):
 
     def acquireKernel(self, fetcher, progresscb):
         if self.type is None or self.type == "hvm":
-            kernelpath = "%s/netboot/debian-installer/%s/linux" % (self._prefix, self.arch)
-            initrdpath = "%s/netboot/debian-installer/%s/initrd.gz" % (self._prefix, self.arch)
+            kernelpath = "%s/netboot/debian-installer/%s/linux" % (self._prefix, self._treeArch)
+            initrdpath = "%s/netboot/debian-installer/%s/initrd.gz" % (self._prefix, self._treeArch)
         else:
             kernelpath = "%s/netboot/xen/vmlinuz" % self._prefix
             initrdpath = "%s/netboot/xen/initrd.gz" % self._prefix
@@ -569,12 +576,42 @@ class DebianDistro(Distro):
             os.unlink(kernel)
 
 
-class UbuntuDistro(Distro):
+class UbuntuDistro(DebianDistro):
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
         if self.type is not None and self.type != "hvm":
             return False
+
+        # For regular trees
+        if not fetcher.hasFile("%s/MANIFEST" % self._prefix):
+            return False
+
+        if self._fetchAndMatchRegex(fetcher, progresscb,
+                                    "%s/MANIFEST" % self._prefix,
+                                    ".*ubuntu-installer.*"):
+            logging.debug("Detected an Ubuntu distro")
+            return True
+
         return False
+
+    def acquireKernel(self, fetcher, progresscb):
+        kernelpath = "%s/netboot/ubuntu-installer/%s/linux" % (self._prefix,
+                                                               self._treeArch)
+        initrdpath = "%s/netboot/ubuntu-installer/%s/initrd.gz" % \
+                     (self._prefix, self._treeArch)
+
+        kernel = fetcher.acquireFile(kernelpath, progresscb)
+        try:
+            initrd = fetcher.acquireFile(initrdpath, progresscb)
+            if fetcher.location.startswith("/"):
+                # Local host path, so can't pass a location to guest
+                #for install method
+                return (kernel, initrd, "")
+            else:
+                return (kernel, initrd, "method=" + fetcher.location)
+        except:
+            os.unlink(kernel)
+
 
 class GentooDistro(Distro):
     def isValidStore(self, fetcher, progresscb):
