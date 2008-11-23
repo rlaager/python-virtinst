@@ -34,6 +34,7 @@ from virtinst import _virtinst as _
 class Distro:
 
     name = ""
+    _boot_iso_paths = []
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         self.uri = uri
@@ -121,6 +122,16 @@ class Distro:
         except:
             os.unlink(kernel)
 
+    def acquireBootDisk(self, fetcher, progresscb):
+        if self._hasTreeinfo(fetcher, progresscb):
+            return fetcher.acquireFile(self._getTreeinfoMedia("boot.iso"))
+        else:
+            for path in self._boot_iso_paths:
+                if fetcher.hasFile(path):
+                    return fetcher.acquireFile(path, progresscb)
+            raise RuntimeError(_("Could not find boot.iso in %s tree." % \
+                               self.name))
+
 
 class GenericDistro(Distro):
     """Generic distro store. Check well known paths for kernel locations
@@ -203,6 +214,7 @@ class GenericDistro(Distro):
 class RedHatDistro(Distro):
 
     name = "Red Hat"
+    _boot_iso_paths = [ "images/boot.iso" ]
 
     def isValidStore(self, fetcher, progresscb):
         raise NotImplementedError
@@ -222,12 +234,6 @@ class RedHatDistro(Distro):
 
         return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
                                        initrdpath)
-
-    def acquireBootDisk(self, fetcher, progresscb):
-        if self._hasTreeinfo(fetcher, progresscb):
-            return fetcher.acquireFile(self._getTreeinfoMedia("boot.iso"))
-        else:
-            return fetcher.acquireFile("images/boot.iso", progresscb)
 
 # Fedora distro check
 class FedoraDistro(RedHatDistro):
@@ -286,6 +292,7 @@ class CentOSDistro(RedHatDistro):
 class SLDistro(RedHatDistro):
 
     name = "Scientific Linux"
+    _boot_iso_paths = RedHatDistro._boot_iso_paths + [ "images/SL/boot.iso" ]
 
     def isValidStore(self, fetcher, progresscb):
         if fetcher.hasFile("SL"):
@@ -300,16 +307,20 @@ class SLDistro(RedHatDistro):
 class SuseDistro(Distro):
 
     name = "SUSE"
+    _boot_iso_paths = [ "boot/boot.iso" ]
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
         if re.match(r'i[4-9]86', arch):
             self.arch = 'i386'
 
-    def acquireBootDisk(self, fetcher, progresscb):
-        if not fetcher.hasFile("boot/boot.iso"):
-            raise RuntimeError(_("Could not find boot.iso in suse tree."))
-        return fetcher.acquireFile("boot/boot.iso", progresscb)
+    def isValidStore(self, fetcher, progresscb):
+        # Suse distros always have a 'directory.yast' file in the top
+        # level of install tree, which we use as the magic check
+        if fetcher.hasFile("directory.yast"):
+            logging.debug("Detected a Suse distro.")
+            return True
+        return False
 
     def acquireKernel(self, fetcher, progresscb):
         kernelpath = None
@@ -524,20 +535,13 @@ class SuseDistro(Distro):
             os.system("rm -rf " + cpiodir)
 
 
-    def isValidStore(self, fetcher, progresscb):
-        # Suse distros always have a 'directory.yast' file in the top
-        # level of install tree, which we use as the magic check
-        if fetcher.hasFile("directory.yast"):
-            logging.debug("Detected a Suse distro.")
-            return True
-        return False
-
-
 class DebianDistro(Distro):
     # ex. http://ftp.egr.msu.edu/debian/dists/sarge/main/installer-i386/
     # daily builds: http://people.debian.org/~joeyh/d-i/
 
     name = "Debian"
+    _boot_iso_paths = [ "current/images/netboot/mini.iso",
+                        "images/daily/netboot/mini.iso" ]
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
@@ -572,9 +576,6 @@ class DebianDistro(Distro):
             return True
 
         return False
-
-    def acquireBootDisk(self, fetcher, progresscb):
-        return fetcher.acquireFile("%s/netboot/mini.iso" % self._prefix, progresscb)
 
     def acquireKernel(self, fetcher, progresscb):
         if self.type is None or self.type == "hvm":
@@ -623,6 +624,7 @@ class MandrivaDistro(Distro):
     # Ex. ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2007.1/x86_64/
 
     name = "Mandriva"
+    _boot_iso_paths = [ "install/images/boot.iso" ]
 
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
@@ -638,9 +640,6 @@ class MandrivaDistro(Distro):
             return True
 
         return False
-
-    def acquireBootDisk(self, fetcher, progresscb):
-        return fetcher.acquireFile("install/images/boot.iso", progresscb)
 
     def acquireKernel(self, fetcher, progresscb):
         # Kernels for HVM: valid for releases 2007.1, 2008.*, 2009.0
