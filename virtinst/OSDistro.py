@@ -35,6 +35,8 @@ class Distro:
 
     name = ""
     _boot_iso_paths = []
+    _hvm_kernel_paths = []
+    _xen_kernel_paths = []
     _uses_treeinfo = False
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
@@ -46,15 +48,46 @@ class Distro:
         self.arch = arch
         self.treeinfo = None
 
-    def acquireBootDisk(self, fetcher, progresscb):
-        raise NotImplementedError
-
-    def acquireKernel(self, fetcher, progresscb):
-        raise NotImplementedError
-
     def isValidStore(self, fetcher, progresscb):
         """Determine if uri points to a tree of the store's distro"""
         raise NotImplementedError
+
+    def acquireKernel(self, fetcher, progresscb):
+        kernelpath = None
+        initrdpath = None
+        if self._hasTreeinfo(fetcher, progresscb):
+            kernelpath = self._getTreeinfoMedia("kernel")
+            initrdpath = self._getTreeinfoMedia("initrd")
+        else:
+            # fall back to old code
+            if self.type is None or self.type == "hvm":
+                paths = self._hvm_kernel_paths
+            else:
+                paths = self._xen_kernel_paths
+
+            for kpath, ipath in paths:
+                if fetcher.hasFile(kpath) and fetcher.hasFile(ipath):
+                    kernelpath = kpath
+                    initrdpath = ipath
+
+        if not kernelpath or not initrdpath:
+            raise RuntimeError(_("Couldn't find %(type)s kernel for "
+                                 "%(distro)s tree.") % \
+                                 { "distro": self.name, "type" : self.type })
+
+        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
+                                       initrdpath)
+
+    def acquireBootDisk(self, fetcher, progresscb):
+        if self._hasTreeinfo(fetcher, progresscb):
+            return fetcher.acquireFile(self._getTreeinfoMedia("boot.iso"))
+        else:
+            for path in self._boot_iso_paths:
+                if fetcher.hasFile(path):
+                    return fetcher.acquireFile(path, progresscb)
+            raise RuntimeError(_("Could not find boot.iso in %s tree." % \
+                               self.name))
+
 
     def _hasTreeinfo(self, fetcher, progresscb):
         # all Red Hat based distros should have .treeinfo, perhaps others
@@ -122,16 +155,6 @@ class Distro:
                 return (kernel, initrd, "method=" + fetcher.location)
         except:
             os.unlink(kernel)
-
-    def acquireBootDisk(self, fetcher, progresscb):
-        if self._hasTreeinfo(fetcher, progresscb):
-            return fetcher.acquireFile(self._getTreeinfoMedia("boot.iso"))
-        else:
-            for path in self._boot_iso_paths:
-                if fetcher.hasFile(path):
-                    return fetcher.acquireFile(path, progresscb)
-            raise RuntimeError(_("Could not find boot.iso in %s tree." % \
-                               self.name))
 
 
 class GenericDistro(Distro):
@@ -217,26 +240,15 @@ class RedHatDistro(Distro):
 
     name = "Red Hat"
     _uses_treeinfo = True
-    _boot_iso_paths = [ "images/boot.iso" ]
+    _boot_iso_paths   = [ "images/boot.iso" ]
+    _hvm_kernel_paths = [ ("images/pxeboot/vmlinuz",
+                           "images/pxeboot/initrd.img") ]
+    _xen_kernel_paths = [ ("images/xen/vmlinuz",
+                           "images/xen/initrd.img") ]
 
     def isValidStore(self, fetcher, progresscb):
         raise NotImplementedError
 
-    def acquireKernel(self, fetcher, progresscb):
-        if self._hasTreeinfo(fetcher, progresscb):
-            kernelpath = self._getTreeinfoMedia("kernel")
-            initrdpath = self._getTreeinfoMedia("initrd")
-        else:
-            # fall back to old code
-            if self.type is None or self.type == "hvm":
-                kernelpath = "images/pxeboot/vmlinuz"
-                initrdpath = "images/pxeboot/initrd.img"
-            else:
-                kernelpath = "images/%s/vmlinuz" % (self.type)
-                initrdpath = "images/%s/initrd.img" % (self.type)
-
-        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
-                                       initrdpath)
 
 # Fedora distro check
 class FedoraDistro(RedHatDistro):
@@ -296,6 +308,9 @@ class SLDistro(RedHatDistro):
 
     name = "Scientific Linux"
     _boot_iso_paths = RedHatDistro._boot_iso_paths + [ "images/SL/boot.iso" ]
+    _hvm_kernel_paths = RedHatDistro._hvm_kernel_paths + \
+                        [ ("images/SL/pxeboot/vmlinuz",
+                           "images/SL/pxeboot/initrd.img") ]
 
     def isValidStore(self, fetcher, progresscb):
         if fetcher.hasFile("SL"):
@@ -310,12 +325,21 @@ class SLDistro(RedHatDistro):
 class SuseDistro(Distro):
 
     name = "SUSE"
-    _boot_iso_paths = [ "boot/boot.iso" ]
+    _boot_iso_paths   = [ "boot/boot.iso" ]
+    _hvm_kernel_paths = []
+    _xen_kernel_paths = []
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
         if re.match(r'i[4-9]86', arch):
             self.arch = 'i386'
+
+        # Tested with Opensuse 10, 11, and sles 10
+        self._hvm_kernel_paths += [ ("boot/%s/loader/linux" % self.arch,
+                                     "boot/%s/loader/initrd" % self.arch) ]
+        # Matches Opensuse > 10.2 and sles 10
+        self._xen_kernel_paths += [ ("boot/%s/vmlinuz-xen" % self.arch,
+                                     "boot/%s/initrd-xen" % self.arch) ]
 
     def isValidStore(self, fetcher, progresscb):
         # Suse distros always have a 'directory.yast' file in the top
@@ -326,28 +350,15 @@ class SuseDistro(Distro):
         return False
 
     def acquireKernel(self, fetcher, progresscb):
-        kernelpath = None
-        initrdpath = None
-
         # If installing a fullvirt guest
-        if self.type is None or self.type == "hvm":
-            # Tested with Opensuse 10, 11, and sles 10
-            kernelpath = "boot/%s/loader/linux" % self.arch
-            initrdpath = "boot/%s/loader/initrd" % self.arch
+        if self.type is None or self.type == "hvm" or \
+           fetcher.hasFile("boot/%s/vmlinuz-xen" % self.arch):
+            return Distro.acquireKernel(self, fetcher, progresscb)
 
-        # Else we are looking for a paravirt kernel
-        elif fetcher.hasFile("boot/%s/vmlinuz-xen" % self.arch):
-            # Should match opensuse > 10.2 and sles 10
-            kernelpath = "boot/%s/vmlinuz-xen" % self.arch
-            initrdpath = "boot/%s/initrd-xen" % self.arch
+        # For Opensuse <= 10.2, we need to perform some heinous stuff
+        logging.debug("Trying Opensuse 10 PV rpm hacking")
+        return self._findXenRPMS(fetcher, progresscb)
 
-        else:
-            # For Opensuse <= 10.2, we need to perform some heinous stuff
-            logging.debug("Trying Opensuse 10 PV rpm hacking")
-            return self._findXenRPMS(fetcher, progresscb)
-
-        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
-                                       initrdpath)
 
     def _findXenRPMS(self, fetcher, progresscb):
         kernelrpm = None
@@ -543,8 +554,6 @@ class DebianDistro(Distro):
     # daily builds: http://people.debian.org/~joeyh/d-i/
 
     name = "Debian"
-    _boot_iso_paths = [ "current/images/netboot/mini.iso",
-                        "images/daily/netboot/mini.iso" ]
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
@@ -557,7 +566,19 @@ class DebianDistro(Distro):
 
         if re.match(r'i[4-9]86', arch):
             self.arch = 'i386'
+
         self._prefix = 'current/images'
+        self._set_media_paths()
+
+    def _set_media_paths(self):
+        # Use self._prefix to set media paths
+        self._boot_iso_paths   = [ "%s/netboot/mini.iso" % self._prefix ]
+        hvmroot = "%s/netboot/debian-installer/%s/" % (self._prefix,
+                                                       self._treeArch)
+        xenroot = "%s/netboot/xen/" % self._prefix
+        self._hvm_kernel_paths = [ (hvmroot + "linux", hvmroot + "initrd.gz") ]
+        self._xen_kernel_paths = [ (xenroot + "vmlinuz",
+                                    xenroot + "initrd.gz") ]
 
     def isValidStore(self, fetcher, progresscb):
 
@@ -567,6 +588,7 @@ class DebianDistro(Distro):
         # For daily trees
         elif fetcher.hasFile("images/daily/MANIFEST"):
             self._prefix = "images/daily"
+            self._set_media_paths()
         else:
             logging.debug("Doesn't look like a Debian distro.")
             return False
@@ -580,21 +602,17 @@ class DebianDistro(Distro):
 
         return False
 
-    def acquireKernel(self, fetcher, progresscb):
-        if self.type is None or self.type == "hvm":
-            kernelpath = "%s/netboot/debian-installer/%s/linux" % (self._prefix, self._treeArch)
-            initrdpath = "%s/netboot/debian-installer/%s/initrd.gz" % (self._prefix, self._treeArch)
-        else:
-            kernelpath = "%s/netboot/xen/vmlinuz" % self._prefix
-            initrdpath = "%s/netboot/xen/initrd.gz" % self._prefix
-
-        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
-                                       initrdpath)
-
 
 class UbuntuDistro(DebianDistro):
 
     name = "Ubuntu"
+
+    def _set_media_paths(self):
+        DebianDistro._set_media_paths(self)
+        root = "%s/netboot/ubuntu-installer/%s/" % (self._prefix,
+                                                    self._treeArch)
+        self._hvm_kernel_paths = [ (root + "linux", root + "initrd.gz") ]
+        self._xen_kernel_paths = []
 
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
@@ -613,21 +631,15 @@ class UbuntuDistro(DebianDistro):
 
         return False
 
-    def acquireKernel(self, fetcher, progresscb):
-        kernelpath = "%s/netboot/ubuntu-installer/%s/linux" % (self._prefix,
-                                                               self._treeArch)
-        initrdpath = "%s/netboot/ubuntu-installer/%s/initrd.gz" % \
-                     (self._prefix, self._treeArch)
-
-        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
-                                       initrdpath)
-
 
 class MandrivaDistro(Distro):
     # Ex. ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2007.1/x86_64/
 
     name = "Mandriva"
     _boot_iso_paths = [ "install/images/boot.iso" ]
+    # Kernels for HVM: valid for releases 2007.1, 2008.*, 2009.0
+    _hvm_kernel_paths = [ ("isolinux/alt0/vmlinuz", "isolinux/alt0/all.rdz")]
+    _xen_kernel_paths = []
 
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
@@ -643,12 +655,4 @@ class MandrivaDistro(Distro):
             return True
 
         return False
-
-    def acquireKernel(self, fetcher, progresscb):
-        # Kernels for HVM: valid for releases 2007.1, 2008.*, 2009.0
-        kernelpath = "isolinux/alt0/vmlinuz"
-        initrdpath = "isolinux/alt0/all.rdz"
-
-        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
-                                       initrdpath)
 
