@@ -86,9 +86,8 @@ class install_lib(_install_lib):
     """ custom install_lib command to place locale location into library"""
 
     def run(self):
-        tmplocale = locale.replace("/", "\/") # Escape path to call sed
-        cmd = "sed -e \"s/::LOCALEDIR::/%s/\" < virtinst/__init__.py > " % tmplocale +\
-              "%s/virtinst/__init__.py" % builddir
+        cmd = (("""sed -e "s,::LOCALEDIR::,%s," < virtinst/__init__.py > """ %\
+                locale) + "%s/virtinst/__init__.py" % builddir)
         os.system(cmd)
         _install_lib.run(self)
 
