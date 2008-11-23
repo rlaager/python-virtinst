@@ -68,6 +68,13 @@ class ImageFetcher:
 # Base class for downloading from FTP / HTTP
 class URIImageFetcher(ImageFetcher):
 
+    def _make_path(self, filename):
+        path = self.location
+        if not path.endswith("/"):
+            path += "/"
+        path += filename
+        return path
+
     def prepareLocation(self, progresscb):
         try:
             grabber.urlopen(self.location,
@@ -82,11 +89,8 @@ class URIImageFetcher(ImageFetcher):
     def acquireFile(self, filename, progresscb):
         f = None
         try:
-            path = self.location
-            if not path.endswith("/"):
-                path += "/"
+            path = self._make_path(filename)
             base = os.path.basename(filename)
-            path += filename
             logging.debug("Fetching URI " + path)
             try:
                 f = grabber.urlopen(path,
@@ -106,10 +110,7 @@ class HTTPImageFetcher(URIImageFetcher):
 
     def hasFile(self, filename):
         try:
-            path = self.location
-            if not path.endswith("/"):
-                path += "/"
-            path += filename
+            path = self._make_path(filename)
             request = urllib2.Request(path)
             request.get_method = lambda: "HEAD"
             urllib2.urlopen(request)
@@ -121,10 +122,7 @@ class HTTPImageFetcher(URIImageFetcher):
 class FTPImageFetcher(URIImageFetcher):
 
     def hasFile(self, filename):
-        path = self.location
-        if not path.endswith("/"):
-            path += "/"
-        path += filename
+        path = self._make_path(filename)
 
         url = urlparse.urlparse(path)
         try:
