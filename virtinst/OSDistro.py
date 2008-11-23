@@ -33,6 +33,8 @@ from virtinst import _virtinst as _
 # ISO image, or a kernel+initrd  pair for a particular OS distribution
 class Distro:
 
+    name = ""
+
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         self.uri = uri
         self.type = vmtype
@@ -123,6 +125,9 @@ class Distro:
 class GenericDistro(Distro):
     """Generic distro store. Check well known paths for kernel locations
        as a last resort if we can't recognize any actual distro"""
+
+    name = "Generic"
+
     _xen_paths = [ ("images/xen/vmlinuz",
                     "images/xen/initrd.img"),           # Fedora
                  ]
@@ -197,6 +202,8 @@ class GenericDistro(Distro):
 # a common layout
 class RedHatDistro(Distro):
 
+    name = "Red Hat"
+
     def isValidStore(self, fetcher, progresscb):
         raise NotImplementedError
 
@@ -224,6 +231,9 @@ class RedHatDistro(Distro):
 
 # Fedora distro check
 class FedoraDistro(RedHatDistro):
+
+    name = "Fedora"
+
     def isValidStore(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
             m = re.match(".*Fedora.*", self.treeinfo.get("general", "family"))
@@ -236,6 +246,9 @@ class FedoraDistro(RedHatDistro):
 
 # Red Hat Enterprise Linux distro check
 class RHELDistro(RedHatDistro):
+
+    name = "Red Hat Enterprise Linux"
+
     def isValidStore(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
             m = re.match(".*Red Hat Enterprise Linux.*", self.treeinfo.get("general", "family"))
@@ -255,6 +268,9 @@ class RHELDistro(RedHatDistro):
 
 # CentOS distro check
 class CentOSDistro(RedHatDistro):
+
+    name = "CentOS"
+
     def isValidStore(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
             m = re.match(".*CentOS.*", self.treeinfo.get("general", "family"))
@@ -268,6 +284,9 @@ class CentOSDistro(RedHatDistro):
 
 # Scientific Linux distro check
 class SLDistro(RedHatDistro):
+
+    name = "Scientific Linux"
+
     def isValidStore(self, fetcher, progresscb):
         if fetcher.hasFile("SL"):
             logging.debug("Detected a Scientific Linux distro")
@@ -279,6 +298,9 @@ class SLDistro(RedHatDistro):
 # Suse  image store is harder - we fetch the kernel RPM and a helper
 # RPM and then munge bits together to generate a initrd
 class SuseDistro(Distro):
+
+    name = "SUSE"
+
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
         if re.match(r'i[4-9]86', arch):
@@ -515,6 +537,8 @@ class DebianDistro(Distro):
     # ex. http://ftp.egr.msu.edu/debian/dists/sarge/main/installer-i386/
     # daily builds: http://people.debian.org/~joeyh/d-i/
 
+    name = "Debian"
+
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
         if uri.count("installer-i386"):
@@ -565,6 +589,9 @@ class DebianDistro(Distro):
 
 
 class UbuntuDistro(DebianDistro):
+
+    name = "Ubuntu"
+
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
         if self.type is not None and self.type != "hvm":
@@ -594,6 +621,8 @@ class UbuntuDistro(DebianDistro):
 
 class MandrivaDistro(Distro):
     # Ex. ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2007.1/x86_64/
+
+    name = "Mandriva"
 
     def isValidStore(self, fetcher, progresscb):
         # Don't support any paravirt installs
