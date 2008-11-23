@@ -508,7 +508,11 @@ class Guest(object):
         return Guest._OS_TYPES[type]["variants"][variant]["label"]
     get_os_variant_label = staticmethod(get_os_variant_label)
 
-    def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
+    def __init__(self, type=None, connection=None, hypervisorURI=None,
+                 installer=None):
+        # We specifically ignore the 'type' parameter here, since
+        # it has been replaced by installer.type, and child classes can
+        # use it when creating a default installer.
         self._installer = installer
         self._name = None
         self._uuid = None
