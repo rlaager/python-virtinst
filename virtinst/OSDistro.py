@@ -35,6 +35,7 @@ class Distro:
 
     name = ""
     _boot_iso_paths = []
+    _uses_treeinfo = False
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         self.uri = uri
@@ -61,7 +62,7 @@ class Distro:
         if not (self.treeinfo is None):
             return True
 
-        if not fetcher.hasFile(".treeinfo"):
+        if not self._uses_treeinfo or not fetcher.hasFile(".treeinfo"):
             return False
 
         logging.debug("Detected .treeinfo file")
@@ -138,6 +139,7 @@ class GenericDistro(Distro):
        as a last resort if we can't recognize any actual distro"""
 
     name = "Generic"
+    _uses_treeinfo = True
 
     _xen_paths = [ ("images/xen/vmlinuz",
                     "images/xen/initrd.img"),           # Fedora
@@ -214,6 +216,7 @@ class GenericDistro(Distro):
 class RedHatDistro(Distro):
 
     name = "Red Hat"
+    _uses_treeinfo = True
     _boot_iso_paths = [ "images/boot.iso" ]
 
     def isValidStore(self, fetcher, progresscb):
