@@ -313,10 +313,15 @@ class SLDistro(RedHatDistro):
                            "images/SL/pxeboot/initrd.img") ]
 
     def isValidStore(self, fetcher, progresscb):
-        if fetcher.hasFile("SL"):
-            logging.debug("Detected a Scientific Linux distro")
-            return True
-        return False
+        if self._hasTreeinfo(fetcher, progresscb):
+            m = re.match(".*Scientific Linux.*",
+                         self.treeinfo.get("general", "family"))
+            return (m != None)
+        else:
+            if fetcher.hasFile("SL"):
+                logging.debug("Detected a Scientific Linux distro")
+                return True
+            return False
 
 
 
