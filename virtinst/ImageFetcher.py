@@ -75,16 +75,14 @@ class URIImageFetcher(ImageFetcher):
         path += filename
         return path
 
+    def hasFile(self, filename):
+        raise NotImplementedError
+
     def prepareLocation(self, progresscb):
-        try:
-            grabber.urlopen(self.location,
-                            progress_obj = progresscb,
-                            text = _("Verifying install location..."))
-            return True
-        except IOError, e:
-            logging.debug("Opening URL %s failed." % (self.location,) + " " + str(e))
-            raise ValueError(_("Opening URL %s failed: %s") % \
-                              (self.location, e))
+        if not self.hasFile(""):
+            raise ValueError(_("Opening URL %s failed.") % \
+                              (self.location))
+
 
     def acquireFile(self, filename, progresscb):
         f = None
