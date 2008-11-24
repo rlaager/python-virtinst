@@ -1,4 +1,4 @@
-include README AUTHORS NEWS ChangeLog COPYING INSTALL
+include README AUTHORS NEWS ChangeLog COPYING INSTALL HACKING
 include python-virtinst.spec
 include setup.py
 recursive-include virtinst *.py
