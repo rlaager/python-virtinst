@@ -59,7 +59,7 @@ class TestCommand(TestBaseCommand):
         testfiles = []
         for t in glob(pjoin(self._dir, 'tests', '*.py')):
             if not t.endswith('__init__.py') and \
-               not t.endswith("fetch-test.py"):
+               not t.endswith("urltest.py"):
                 testfiles.append('.'.join(
                     ['tests', splitext(basename(t))[0]])
                 )
@@ -88,6 +88,18 @@ class TestURLFetch(TestBaseCommand):
         self._testfiles = [ "tests.urltest" ]
         tests.urltest.MATCH_FILTER = self.match
         TestBaseCommand.run(self)
+
+class CheckPylint(Command):
+    user_options = []
+    description = "Run static analysis script against codebase."
+
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        os.system("tests/pylint-virtinst.sh")
 
 class custom_rpm(Command):
 
@@ -189,6 +201,7 @@ setup(name='virtinst',
       packages=pkgs,
       data_files = datafiles,
       cmdclass = { 'test': TestCommand, 'test_urls' : TestURLFetch,
+                    'check': CheckPylint,
                     'rpm' : custom_rpm,
                     'sdist': sdist, 'build': build,
                     'install_data' : install_data,
