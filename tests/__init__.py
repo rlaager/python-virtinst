@@ -19,6 +19,7 @@ import validation
 import xmlconfig
 import image
 import storage
+import urltest
 
 import libvirt
 import difflib

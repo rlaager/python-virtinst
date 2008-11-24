@@ -32,13 +32,10 @@ class TestBaseCommand(Command):
         self._dir = os.getcwd()
 
     def finalize_options(self):
-        pass
-
-    def run(self):
-
         if self.debug and not os.environ.has_key("DEBUG_TESTS"):
             os.environ["DEBUG_TESTS"] = "1"
 
+    def run(self):
         import tests.coverage as coverage
         tests = TestLoader().loadTestsFromNames(self._testfiles)
         t = TextTestRunner(verbosity = 1)
@@ -67,6 +64,29 @@ class TestCommand(TestBaseCommand):
                     ['tests', splitext(basename(t))[0]])
                 )
         self._testfiles = testfiles
+        TestBaseCommand.run(self)
+
+class TestURLFetch(TestBaseCommand):
+
+    description = "Test fetching kernels and isos from various distro trees"
+
+    user_options = TestBaseCommand.user_options + \
+                   [("match=", None, "Regular expression of dist names to "
+                                     "match [default: '.*']")]
+
+    def initialize_options(self):
+        TestBaseCommand.initialize_options(self)
+        self.match = None
+
+    def finalize_options(self):
+        TestBaseCommand.finalize_options(self)
+        if self.match is None:
+            self.match = ".*"
+
+    def run(self):
+        import tests
+        self._testfiles = [ "tests.urltest" ]
+        tests.urltest.MATCH_FILTER = self.match
         TestBaseCommand.run(self)
 
 class custom_rpm(Command):
@@ -168,7 +188,8 @@ setup(name='virtinst',
       scripts = ["virt-install","virt-clone", "virt-image", "virt-convert"],
       packages=pkgs,
       data_files = datafiles,
-      cmdclass = { 'test': TestCommand, 'rpm' : custom_rpm,
+      cmdclass = { 'test': TestCommand, 'test_urls' : TestURLFetch,
+                    'rpm' : custom_rpm,
                     'sdist': sdist, 'build': build,
                     'install_data' : install_data,
                     'install_lib' : install_lib,
