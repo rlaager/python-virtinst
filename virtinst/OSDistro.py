@@ -29,6 +29,37 @@ import ConfigParser
 
 from virtinst import _virtinst as _
 
+def distroFromTreeinfo(fetcher, progresscb, uri, vmtype=None,
+                       scratchdir=None, arch=None):
+    # Parse treeinfo 'family' field, and return the associated Distro class
+    # None if no treeinfo, GenericDistro if unknown family type.
+    if not fetcher.hasFile(".treeinfo"):
+        return None
+
+    tmptreeinfo = fetcher.acquireFile(".treeinfo", progresscb)
+    try:
+        treeinfo = ConfigParser.SafeConfigParser()
+        treeinfo.read(tmptreeinfo)
+    finally:
+        os.unlink(tmptreeinfo)
+
+    fam = treeinfo.get("general", "family")
+
+    if re.match(".*Fedora.*", fam):
+        ob = FedoraDistro(uri, vmtype, scratchdir, arch)
+    elif re.match(".*CentOS.*", fam):
+        ob = CentOSDistro(uri, vmtype, scratchdir, arch)
+    elif re.match(".*Red Hat Enterprise Linux.*", fam):
+        ob = RHELDistro(uri, vmtype, scratchdir, arch)
+    elif re.match(".*Scientific Linux.*", fam):
+        ob = SLDistro(uri, vmtype, scratchdir, arch)
+    else:
+        ob = GenericDistro(uri, vmtype, scratchdir, arch)
+
+    ob.treeinfo = treeinfo
+    return ob
+
+
 # An image store is a base class for retrieving either a bootable
 # ISO image, or a kernel+initrd  pair for a particular OS distribution
 class Distro:
@@ -37,7 +68,7 @@ class Distro:
     _boot_iso_paths = []
     _hvm_kernel_paths = []
     _xen_kernel_paths = []
-    _uses_treeinfo = False
+    uses_treeinfo = False
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         self.uri = uri
@@ -95,7 +126,7 @@ class Distro:
         if not (self.treeinfo is None):
             return True
 
-        if not self._uses_treeinfo or not fetcher.hasFile(".treeinfo"):
+        if not self.uses_treeinfo or not fetcher.hasFile(".treeinfo"):
             return False
 
         logging.debug("Detected .treeinfo file")
@@ -162,7 +193,7 @@ class GenericDistro(Distro):
        as a last resort if we can't recognize any actual distro"""
 
     name = "Generic"
-    _uses_treeinfo = True
+    uses_treeinfo = True
 
     _xen_paths = [ ("images/xen/vmlinuz",
                     "images/xen/initrd.img"),           # Fedora
@@ -239,7 +270,7 @@ class GenericDistro(Distro):
 class RedHatDistro(Distro):
 
     name = "Red Hat"
-    _uses_treeinfo = True
+    uses_treeinfo = True
     _boot_iso_paths   = [ "images/boot.iso" ]
     _hvm_kernel_paths = [ ("images/pxeboot/vmlinuz",
                            "images/pxeboot/initrd.img") ]

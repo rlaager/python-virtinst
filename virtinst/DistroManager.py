@@ -27,6 +27,7 @@ import Guest
 from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
+import virtinst
 from ImageFetcher import MountedImageFetcher
 from ImageFetcher import FTPImageFetcher
 from ImageFetcher import HTTPImageFetcher
@@ -58,7 +59,14 @@ def _fetcherForURI(uri, scratchdir=None):
 def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
                     scratchdir=None):
     stores = []
+    skip_treeinfo = False
     logging.debug("Attempting to detect distro:")
+
+    dist = virtinst.OSDistro.distroFromTreeinfo(fetcher, progresscb, baseuri,
+                                                typ, scratchdir, arch)
+    if dist:
+        return dist
+    skip_treeinfo = True
 
     # FIXME: This 'distro ==' doesn't cut it. 'distro' is from our os
     # dictionary, so would look like 'fedora9' or 'rhel5', so this needs
@@ -83,6 +91,8 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
     stores.append(GenericDistro(baseuri, typ, scratchdir, arch))
 
     for store in stores:
+        if skip_treeinfo:
+            store.uses_treeinfo = False
         if store.isValidStore(fetcher, progresscb):
             return store
 
