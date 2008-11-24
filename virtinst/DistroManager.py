@@ -93,9 +93,9 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
 def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None,
                   distro=None, arch=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
-    
+
     try:
-        fetcher.prepareLocation(progresscb)
+        fetcher.prepareLocation()
     except ValueError, e:
         raise ValueError, _("Invalid install location: ") + str(e)
 
@@ -113,7 +113,7 @@ def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
     fetcher = _fetcherForURI(baseuri, scratchdir)
 
     try:
-        fetcher.prepareLocation(progresscb)
+        fetcher.prepareLocation()
     except ValueError, e:
         raise ValueError, _("Invalid install location: ") + str(e)
 

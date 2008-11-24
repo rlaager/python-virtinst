@@ -53,7 +53,7 @@ class ImageFetcher:
             os.close(fd)
         return fn
 
-    def prepareLocation(self, progresscb):
+    def prepareLocation(self):
         return True
 
     def cleanupLocation(self):
@@ -78,11 +78,10 @@ class URIImageFetcher(ImageFetcher):
     def hasFile(self, filename):
         raise NotImplementedError
 
-    def prepareLocation(self, progresscb):
+    def prepareLocation(self):
         if not self.hasFile(""):
             raise ValueError(_("Opening URL %s failed.") % \
                               (self.location))
-
 
     def acquireFile(self, filename, progresscb):
         f = None
@@ -178,7 +177,7 @@ class LocalImageFetcher(ImageFetcher):
 # or loopback mounted file, or local CDROM device
 class MountedImageFetcher(LocalImageFetcher):
 
-    def prepareLocation(self, progresscb):
+    def prepareLocation(self):
         cmd = None
         self.srcdir = tempfile.mkdtemp(prefix="virtinstmnt.", dir=self.scratchdir)
         logging.debug("Preparing mount at " + self.srcdir)
@@ -207,6 +206,6 @@ class MountedImageFetcher(LocalImageFetcher):
 
 class DirectImageFetcher(LocalImageFetcher):
 
-    def prepareLocation(self, progresscb):
+    def prepareLocation(self):
         self.srcdir = self.location
 
