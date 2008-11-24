@@ -42,7 +42,7 @@ UBUNTU_BASEURL="http://us.archive.ubuntu.com/ubuntu/dists/%s/main/installer-%s"
 DEBIAN_BASEURL = "http://ftp.us.debian.org/debian/dists/%s/main/installer-%s/"
 
 # Static URLs
-CURCENTOS_BASEURL = "http://mirrors.cmich.edu/centos/%s/os/%s/"
+CURCENTOS_BASEURL = "http://ftp.linux.ncsu.edu/pub/CentOS/%s/os/%s/"
 OLDCENTOS_BASEURL = "http://vault.centos.org/%s/os/%s"
 MANDRIVA_BASEURL = "ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/%s/%s/"
 SCIENTIFIC_BASEURL = "http://ftp.scientificlinux.org/linux/scientific/%s/%s/"
@@ -238,6 +238,7 @@ class TestURLFetch(unittest.TestCase):
                 self.fail()
 
         def fakeAcquireFile(filename, ignore=None):
+            logging.debug("Fake acquiring %s" % filename)
             return fetcher.hasFile(filename)
 
         # Replace acquireFile with hasFile, so we don't actually have to fetch
