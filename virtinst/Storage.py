@@ -581,7 +581,7 @@ class DiskPool(StoragePool):
     formats = [ "auto", "bsd", "dos", "dvh", "gpt", "mac", "pc98", "sun" ]
 
     def get_volume_class():
-        return DiskVolume
+        raise NotImplementedError
     get_volume_class = staticmethod(get_volume_class)
 
     def __init__(self, conn, name, source_path=None, target_path=None,
@@ -634,7 +634,7 @@ class iSCSIPool(StoragePool):
     host = property(StoragePool.get_host, StoragePool.set_host)
 
     def get_volume_class():
-        return iSCSIVolume
+        raise NotImplementedError
     get_volume_class = staticmethod(get_volume_class)
 
     def __init__(self, conn, name, source_path=None, host=None,
@@ -954,19 +954,19 @@ class FileVolume(StorageVolume):
     def _get_source_xml(self):
         return ""
 
-class DiskVolume(StorageVolume):
-    """
-    Build and install xml for use on disk device pools
-    """
-    def __init__(self, *args, **kwargs):
-        raise RuntimeError ("Not Implemented")
+#class DiskVolume(StorageVolume):
+#    """
+#    Build and install xml for use on disk device pools
+#    """
+#    def __init__(self, *args, **kwargs):
+#        raise NotImplementedError
 
-class iSCSIVolume(StorageVolume):
-    """
-    Build and install xml for use on iSCSI device pools
-    """
-    def __init__(self, *args, **kwargs):
-        raise RuntimeError ("Not Implemented")
+#class iSCSIVolume(StorageVolume):
+#    """
+#    Build and install xml for use on iSCSI device pools
+#    """
+#    def __init__(self, *args, **kwargs):
+#        raise NotImplementedError
 
 class LogicalVolume(StorageVolume):
     """
