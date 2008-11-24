@@ -21,31 +21,26 @@ builddir = None
 
 VERSION="0.400.0"
 
-class TestCommand(Command):
+class TestBaseCommand(Command):
 
-    description = "Runs a quick unit test suite"
-
-    user_options = [ ]
+    user_options = [('debug', 'd', 'Show debug output')]
+    boolean_options = ['debug']
 
     def initialize_options(self):
+        self.debug = 0
+        self._testfiles = []
         self._dir = os.getcwd()
 
     def finalize_options(self):
         pass
 
     def run(self):
-        '''
-        Finds all the tests modules in tests/, and runs them.
-        '''
-        import tests.coverage as coverage
 
-        testfiles = [ ]
-        for t in glob(pjoin(self._dir, 'tests', '*.py')):
-            if not t.endswith('__init__.py'):
-                testfiles.append('.'.join(
-                    ['tests', splitext(basename(t))[0]])
-                )
-        tests = TestLoader().loadTestsFromNames(testfiles)
+        if self.debug and not os.environ.has_key("DEBUG_TESTS"):
+            os.environ["DEBUG_TESTS"] = "1"
+
+        import tests.coverage as coverage
+        tests = TestLoader().loadTestsFromNames(self._testfiles)
         t = TextTestRunner(verbosity = 1)
         coverage.erase()
         coverage.start()
@@ -55,6 +50,24 @@ class TestCommand(Command):
             sys.exit(1)
         else:
             sys.exit(0)
+
+class TestCommand(TestBaseCommand):
+
+    description = "Runs a quick unit test suite"
+
+    def run(self):
+        '''
+        Finds all the tests modules in tests/, and runs them.
+        '''
+        testfiles = []
+        for t in glob(pjoin(self._dir, 'tests', '*.py')):
+            if not t.endswith('__init__.py') and \
+               not t.endswith("fetch-test.py"):
+                testfiles.append('.'.join(
+                    ['tests', splitext(basename(t))[0]])
+                )
+        self._testfiles = testfiles
+        TestBaseCommand.run(self)
 
 class custom_rpm(Command):
 

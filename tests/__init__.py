@@ -20,7 +20,31 @@ import xmlconfig
 import image
 import storage
 
+import libvirt
 import difflib
+import logging
+import os, sys
+
+# Setup logging
+rootLogger = logging.getLogger()
+for handler in rootLogger.handlers:
+    rootLogger.removeHandler(handler)
+
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(levelname)-8s %(message)s")
+
+if os.environ.has_key("DEBUG_TESTS") and os.environ["DEBUG_TESTS"] == "1":
+    rootLogger.setLevel(logging.DEBUG)
+    debug = True
+else:
+    rootLogger.setLevel(logging.ERROR)
+    debug = False
+
+# Register libvirt handler
+def libvirt_callback(ignore, err):
+    logging.warn("libvirt errmsg: %s" % err[2])
+libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
+
 
 def diff_compare(actual_out, filename):
     """Compare passed string output to contents of filename"""
