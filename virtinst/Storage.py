@@ -581,7 +581,7 @@ class DiskPool(StoragePool):
     formats = [ "auto", "bsd", "dos", "dvh", "gpt", "mac", "pc98", "sun" ]
 
     def get_volume_class():
-        raise NotImplementedError
+        raise NotImplementedError(_("Disk volume creation is not implemented."))
     get_volume_class = staticmethod(get_volume_class)
 
     def __init__(self, conn, name, source_path=None, target_path=None,
@@ -634,7 +634,8 @@ class iSCSIPool(StoragePool):
     host = property(StoragePool.get_host, StoragePool.set_host)
 
     def get_volume_class():
-        raise NotImplementedError
+        raise NotImplementedError(_("iSCSI volume creation is not "
+                                    "implemented."))
     get_volume_class = staticmethod(get_volume_class)
 
     def __init__(self, conn, name, source_path=None, host=None,
