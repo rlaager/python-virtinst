@@ -111,7 +111,7 @@ specifying a 'size' value.
 =item B<vol>
 
 An existing libvirt storage volume to use. This is specified as
-'poolname:volname'.
+'poolname/volname'.
 
 =back
 
