@@ -48,12 +48,12 @@ PROT_MEM_BUGS="protected member (_get_osblob|_prepare_install|_create_devices|_i
 UNUSED_ARGS="SuseDistro.isValidStore.*Unused argument 'progresscb'|LiveCDInstaller.prepare.*Unused argument|ImageInstaller.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"
 
 DMSG=""
-function addmsg {
+addmsg() {
     DMSG="${DMSG},$1"
     }
 
 DCHECKERS=""
-function addchecker {
+addchecker() {
     DCHECKERS="${DCHECKERS},$1"
 }
 
