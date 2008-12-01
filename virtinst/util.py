@@ -33,6 +33,7 @@ from virtinst import CapabilitiesParser
 
 
 KEYBOARD_DIR = "/etc/sysconfig/keyboard"
+XORG_CONF = "/etc/X11/xorg.conf"
 
 def default_route():
     route_file = "/proc/net/route"
@@ -276,6 +277,27 @@ def compareMAC(p, q):
             return -1
     return 0
 
+def _xorg_keymap():
+    """Look in /etc/X11/xorg.conf for the host machine's keymap, and attempt to
+       map it to a keymap supported by qemu"""
+
+    kt = None
+    try:
+        f = open(XORG_CONF, "r")
+    except IOError, e:
+        logging.debug('Could not open "%s": %s ' % (XORG_CONF, str(e)))
+    else:
+        keymap_re = re.compile(r'\s*Option\s+"XkbLayout"\s+"(?P<kt>[a-z-]+)"')
+        for line in f:
+            m = keymap_re.match(line)
+            if m:
+                kt = m.group('kt')
+                break
+        else:
+            logging.debug("Didn't find keymap in '%s'!" % XORG_CONF)
+        f.close()
+    return kt
+
 def default_keymap():
     """Look in /etc/sysconfig for the host machine's keymap, and attempt to
        map it to a keymap supported by qemu"""
@@ -283,10 +305,12 @@ def default_keymap():
     # Set keymap to same as hosts
     import keytable
     keymap = "en-us"
+    kt = None
     try:
         f = open(KEYBOARD_DIR, "r")
     except IOError, e:
         logging.debug('Could not open "/etc/sysconfig/keyboard" ' + str(e))
+        kt = _xorg_keymap()
     else:
         while 1:
             s = f.readline()
@@ -302,11 +326,12 @@ def default_keymap():
                 else:
                     continue
                 kt = s.split(delim)[1].strip()
-                if keytable.keytable.has_key(kt.lower()):
-                    keymap = keytable.keytable[kt]
-                else:
-                    logging.debug("Didn't find keymap '%s' in keytable!" % kt)
         f.close()
+
+    if kt and keytable.keytable.has_key(kt.lower()):
+        keymap = keytable.keytable[kt]
+    else:
+        logging.debug("Didn't find keymap '%s' in keytable!" % kt)
     return keymap
 
 def pygrub_path(conn=None):
