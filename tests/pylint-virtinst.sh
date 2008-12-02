@@ -82,6 +82,9 @@ addchecker "Design"         # Things like "Too many func arguments",
                             #             "Too man public methods"
 addchecker "Similarities"   # Finds duplicate code (enable this later?)
 
+AWK=awk
+[ `uname -s` = 'SunOS' ] && AWK=nawk
+
 pylint --ignore=coverage.py, $FILES \
   --reports=n \
   --output-format=colorized \
@@ -99,7 +102,7 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$URLTEST_ACCESS" \
         -ve "$UNUSED_ARGS" \
         -ve "$PROT_MEM_BUGS" | \
-  awk '\
+  $AWK '\
 # Strip out any "*** Module name" lines if we dont list any errors for them
 BEGIN { found=0; cur_line="" }
 {
