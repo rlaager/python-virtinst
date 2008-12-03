@@ -143,11 +143,11 @@ def prompt_for_input(prompt = "", val = None):
     if val is not None:
         return val
     if force:
-        raise RuntimeError(_("Force flag is set but input was required. "
-                             "Prompt was: %s" % prompt))
+        fail(_("Force flag is set but input was required. "
+               "Prompt was: %s" % prompt))
     if not doprompt:
-        raise RuntimeError(_("Prompting disabled, but input was requested. "
-                             "Prompt was: %s" % prompt))
+        fail(_("Prompting disabled, but input was requested. "
+               "Prompt was: %s" % prompt))
     print prompt + " ",
     return sys.stdin.readline().strip()
 
@@ -166,9 +166,9 @@ def prompt_for_yes_or_no(prompt):
         return True
 
     if not doprompt:
-        raise RuntimeError(_("Prompting disabled, but yes/no was requested. "
-                             "Try --force to force 'yes' for such prompts. "
-                             "Prompt was: %s" % prompt))
+        fail(_("Prompting disabled, but yes/no was requested. "
+               "Try --force to force 'yes' for such prompts. "
+               "Prompt was: %s" % prompt))
 
     while 1:
         inp = prompt_for_input(prompt, None)
