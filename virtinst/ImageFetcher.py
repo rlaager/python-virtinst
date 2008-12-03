@@ -180,14 +180,23 @@ class MountedImageFetcher(LocalImageFetcher):
     def prepareLocation(self):
         cmd = None
         self.srcdir = tempfile.mkdtemp(prefix="virtinstmnt.", dir=self.scratchdir)
+        mountcmd = "/bin/mount"
+        if os.uname()[0] == "SunOS":
+            mountcmd = "/usr/sbin/mount"
+
         logging.debug("Preparing mount at " + self.srcdir)
         if self.location.startswith("nfs:"):
-            cmd = ["mount", "-o", "ro", self.location[4:], self.srcdir]
+            cmd = [mountcmd, "-o", "ro", self.location[4:], self.srcdir]
         else:
             if stat.S_ISBLK(os.stat(self.location)[stat.ST_MODE]):
-                cmd = ["mount", "-o", "ro", self.location, self.srcdir]
+                mountopt = "ro"
             else:
-                cmd = ["mount", "-o", "ro,loop", self.location, self.srcdir]
+                mountopt = "ro,loop"
+            if os.uname()[0] == 'SunOS':
+                cmd = [mountcmd, "-F", "hsfs", "-o",
+                        mountopt, self.location, self.srcdir]
+            else:
+                cmd = [mountcmd, "-o", mountopt, self.location, self.srcdir]
         ret = subprocess.call(cmd)
         if ret != 0:
             self.cleanupLocation()
@@ -197,7 +206,10 @@ class MountedImageFetcher(LocalImageFetcher):
 
     def cleanupLocation(self):
         logging.debug("Cleaning up mount at " + self.srcdir)
-        cmd = ["umount", self.srcdir]
+        if os.uname()[0] == "SunOS":
+            cmd = ["/usr/sbin/umount", self.srcdir]
+        else:
+            cmd = ["/bin/umount", self.srcdir]
         subprocess.call(cmd)
         try:
             os.rmdir(self.srcdir)
