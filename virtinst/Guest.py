@@ -485,7 +485,6 @@ class Installer(object):
         return (len(buf) == 512 and
                 struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,))
 
-
 class Guest(object):
 
     # OS Dictionary static variables and methods
@@ -493,11 +492,11 @@ class Guest(object):
     _OS_TYPES = osdict.OS_TYPES
 
     def list_os_types():
-        return Guest._OS_TYPES.keys()
+        return osdict.sort_helper(Guest._OS_TYPES)
     list_os_types = staticmethod(list_os_types)
 
     def list_os_variants(type):
-        return Guest._OS_TYPES[type]["variants"].keys()
+        return osdict.sort_helper(Guest._OS_TYPES[type]["variants"])
     list_os_variants = staticmethod(list_os_variants)
 
     def get_os_type_label(type):

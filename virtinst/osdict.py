@@ -41,6 +41,24 @@ DEFAULTS = { \
     }
 }
 
+def sort_helper(tosort):
+    """Helps properly sorting os dictionary entires"""
+    key_mappings = {}
+    keys = []
+    retlist = []
+
+    for key in tosort.keys():
+        sortby = tosort[key].get("sortby")
+        if not sortby:
+            sortby = key
+        key_mappings[sortby] = key
+        keys.append(sortby)
+
+    keys.sort()
+    for key in keys:
+        retlist.append(key_mappings[key])
+
+    return retlist
 
 # NOTE: keep variant keys using only lowercase so we can do case
 #       insensitive checks on user passed input
@@ -56,11 +74,16 @@ OS_TYPES = {\
                    "distro": "rhel" },
         "rhel5": { "label": "Red Hat Enterprise Linux 5",
                    "distro": "rhel" },
-        "fedora5": { "label": "Fedora Core 5", "distro": "fedora" },
-        "fedora6": { "label": "Fedora Core 6", "distro": "fedora" },
-        "fedora7": { "label": "Fedora 7", "distro": "fedora" },
-        "fedora8": { "label": "Fedora 8", "distro": "fedora" },
-        "fedora9": { "label": "Fedora 9", "distro": "fedora",
+        "fedora5": { "sortby": "fedora05",
+                     "label": "Fedora Core 5", "distro": "fedora" },
+        "fedora6": { "sortby": "fedora06",
+                     "label": "Fedora Core 6", "distro": "fedora" },
+        "fedora7": { "sortby": "fedora07",
+                     "label": "Fedora 7", "distro": "fedora" },
+        "fedora8": { "sortby": "fedora08",
+                     "label": "Fedora 8", "distro": "fedora" },
+        "fedora9": { "sortby":  "fedora09",
+                     "label": "Fedora 9", "distro": "fedora",
                       "devices" : {
                         # Apparently F9 has selinux errors when installing
                         # with virtio:
