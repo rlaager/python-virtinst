@@ -491,7 +491,8 @@ def lookup_pool_by_path(conn, path):
     pool_list = conn.listStoragePools() + conn.listDefinedStoragePools()
     for name in pool_list:
         pool = conn.storagePoolLookupByName(name)
-        if get_xml_path(pool.XMLDesc(0), "/pool/target/path") == path:
+        xml_path = get_xml_path(pool.XMLDesc(0), "/pool/target/path")
+        if os.path.abspath(xml_path) == path:
             return pool
     return None
 
