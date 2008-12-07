@@ -295,6 +295,15 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
     if bridges:
         networks = map(lambda b: "bridge:" + b, bridges)
     
+    # With just one mac, create a default network if one is not
+    # specified.
+    if len(macs) == 1 and len(networks) == 0:
+        if util.privileged_user():
+            net = util.default_network(conn)
+            networks.append(net[0] + ":" + net[1])
+        else:
+            networks.append("user")
+
     # ensure we have less macs then networks. Auto fill in the remaining
     # macs       
     if len(macs) > len(networks):
