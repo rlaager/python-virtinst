@@ -62,7 +62,10 @@ OS_TYPES = {\
         "fedora8": { "label": "Fedora 8", "distro": "fedora" },
         "fedora9": { "label": "Fedora 9", "distro": "fedora",
                       "devices" : {
-                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
+                        # Apparently F9 has selinux errors when installing
+                        # with virtio:
+                        # https://bugzilla.redhat.com/show_bug.cgi?id=470386
+                        #"disk" : { "bus"   : [ (["kvm"], "virtio") ] },
                         "net"  : { "model" : [ (["kvm"], "virtio") ] }
                       }},
         "fedora10": { "label": "Fedora 10", "distro": "fedora",
