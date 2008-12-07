@@ -133,11 +133,29 @@ OS_TYPES = {\
     },
 },
 
+"solaris": {
+    "label": "Solaris",
+    "clock": "localtime",
+    "variants": {
+        "solaris9": { "label": "Sun Solaris 9", },
+        "solaris10": { "label": "Sun Solaris 10",
+                       "devices" : { "input" : {
+                         "type" : [ (["all"], "tablet") ],
+                         "bus"  : [ (["all"], "usb"), ]
+                         } },
+                       },
+        "opensolaris": { "label": "Sun OpenSolaris",
+                       "devices" : { "input" : {
+                           "type" : [ (["all"], "tablet") ],
+                           "bus"  : [ (["all"], "usb"), ]
+                         } },
+                       },
+    },
+},
+
 "unix": {
     "label": "UNIX",
     "variants": { \
-        "solaris9": { "label": "Sun Solaris 9" },
-        "solaris10": { "label": "Sun Solaris 10" },
         "freebsd6": { "label": "Free BSD 6.x" ,
                       # http://www.nabble.com/Re%3A-Qemu%3A-bridging-on-FreeBSD-7.0-STABLE-p15919603.html
                       "devices" : {
