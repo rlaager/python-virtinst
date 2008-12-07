@@ -257,6 +257,15 @@ def xml_escape(str):
     str = str.replace("<", "&lt;")
     str = str.replace(">", "&gt;")
     return str
+ 
+def blkdev_size(path):
+    """Return the size of the block device.  We can't use os.stat() as
+    that returns zero on many platforms."""
+    fd = os.open(path, os.O_RDONLY)
+    # os.SEEK_END is not present on all systems
+    size = os.lseek(fd, 0, 2)
+    os.close(fd)
+    return size
 
 def compareMAC(p, q):
     """Compare two MAC addresses"""

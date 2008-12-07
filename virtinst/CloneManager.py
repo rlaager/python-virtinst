@@ -24,7 +24,6 @@ import libxml2
 import logging
 import urlgrabber.progress as progress
 import util
-import commands
 import libvirt
 import Guest
 from VirtualDisk import VirtualDisk
@@ -397,13 +396,7 @@ class CloneDesign(object):
         for i in lst:
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
-                dummy, msg = commands.getstatusoutput('fdisk -s %s' % i)
-                # check
-                if msg.isdigit() == False:
-                    lines = msg.splitlines()
-                    # retry eg. for the GPT disk
-                    msg = lines[len(lines)-1]
-                size.append(int(msg) * 1024)
+                size.append(util.blkdev_size(i))
                 typ.append(False)
             elif stat.S_ISREG(mode):
                 size.append(os.path.getsize(i))
@@ -457,13 +450,7 @@ class CloneDesign(object):
                 continue
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
-                dummy, msg = commands.getstatusoutput('fdisk -s %s' % i)
-                # check
-                if msg.isdigit() == False:
-                    lines = msg.splitlines()
-                    # retry eg. for the GPT disk
-                    msg = lines[len(lines)-1]
-                size.append(int(msg) * 1024)
+                size.append(util.blkdev_size(i))
                 typ.append(False)
             elif stat.S_ISREG(mode):
                 size.append(os.path.getsize(i))
