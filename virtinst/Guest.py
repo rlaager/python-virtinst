@@ -28,6 +28,7 @@ import libxml2
 import urlgrabber.progress as progress
 import util
 import libvirt
+import platform
 import __builtin__
 import CapabilitiesParser
 import VirtualDevice
@@ -347,9 +348,11 @@ class Installer(object):
     os_type = property(get_os_type, set_os_type)
 
     def get_scratchdir(self):
+        if platform.system() == 'SunOS':
+            return '/var/tmp'
         if self.type == "xen" and os.path.exists(XEN_SCRATCH):
             return XEN_SCRATCH
-        if os.getuid() == 0 and os.path.exists(LIBVIRT_SCRATCH):
+        if util.privileged_user() and os.path.exists(LIBVIRT_SCRATCH):
             return LIBVIRT_SCRATCH
         else:
             return os.path.expanduser("~/.virtinst/boot")
@@ -476,7 +479,7 @@ class Installer(object):
             fd = os.open(guest.disks[0].path, os.O_RDONLY)
         except OSError, (err, msg):
             logging.debug("Failed to open guest disk: %s" % msg)
-            if err == errno.EACCES and os.geteuid() != 0:
+            if err == errno.EACCES and not util.privileged_user():
                 return True # non root might not have access to block devices
             else:
                 raise

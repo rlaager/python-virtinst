@@ -193,7 +193,7 @@ class DistroInstaller(Guest.Installer):
                                "or FTP network install source, or an existing "
                                "local file/device"))
 
-        if os.geteuid() != 0 and val.startswith("nfs:"):
+        if val.startswith("nfs:") and not util.privileged_user():
             raise ValueError(_("NFS installations are only supported as root"))
 
         self._location = val

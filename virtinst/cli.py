@@ -118,7 +118,7 @@ def nice_exit():
 
 def getConnection(connect):
     if connect and connect.lower()[0:3] == "xen":
-        if os.geteuid() != 0:
+        if not util.privileged_user():
             fail(_("Must be root to create Xen guests"))
     if connect is None:
         fail(_("Could not find usable default libvirt connection."))
@@ -307,7 +307,7 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
     # Create extra networks up to the number of nics requested 
     if len(macs) < nics:
         for dummy in range(len(macs),nics):
-            if os.getuid() == 0:
+            if util.privileged_user():
                 net = util.default_network(conn)
                 networks.append(net[0] + ":" + net[1])
             else:

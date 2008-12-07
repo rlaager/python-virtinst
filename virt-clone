@@ -185,7 +185,7 @@ def main():
     logging.debug("start clone with HV " + options.connect)
 
     if options.connect is None or options.connect.lower()[0:3] == "xen":
-        if os.geteuid() != 0:
+        if not virtinst.util.privileged_user():
             fail(_("Must be root to clone Xen guests"))
 
     conn = cli.getConnection(options.connect)

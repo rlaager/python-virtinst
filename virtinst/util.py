@@ -91,7 +91,7 @@ def default_connection():
          os.path.exists("/usr/bin/qemu-kvm") or \
          os.path.exists("/usr/bin/kvm") or \
          os.path.exists("/usr/bin/xenner"):
-        if os.getuid() == 0:
+        if privileged_user():
             return "qemu:///system"
         else:
             return "qemu:///session"
@@ -504,6 +504,14 @@ def lookup_pool_by_path(conn, path):
         if os.path.abspath(xml_path) == path:
             return pool
     return None
+
+def privileged_user():
+    """
+    Return true if the user is privileged enough.  On Linux, this
+    equates to being root.  On Solaris, it's more complicated, so we
+    just assume we're OK.
+    """
+    return os.uname()[0] == 'SunOS' or os.geteuid() == 0
 
 def _test():
     import doctest
