@@ -692,7 +692,8 @@ class Guest(object):
                                     {'var' : val, 'ty' : self._os_type}
         else:
             for ostype in self.list_os_types():
-                if self._OS_TYPES[ostype]["variants"].has_key(val):
+                if self._OS_TYPES[ostype]["variants"].has_key(val) and \
+                   not self._OS_TYPES[ostype]["variants"][val].get("skip"):
                     logging.debug("Setting os type to '%s' for variant '%s'" %\
                                   (ostype, val))
                     self.os_type = ostype

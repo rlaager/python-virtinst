@@ -48,6 +48,9 @@ def sort_helper(tosort):
     retlist = []
 
     for key in tosort.keys():
+        if tosort[key].get("skip"):
+            continue
+
         sortby = tosort[key].get("sortby")
         if not sortby:
             sortby = key
@@ -191,3 +194,12 @@ OS_TYPES = {\
         "generic": { "label": "Generic" },
     },
 },}
+
+# Back compatibility entries
+solaris_compat = OS_TYPES["unix"]["variants"]
+
+solaris_compat["solaris9"] = OS_TYPES["solaris"]["variants"]["solaris9"].copy()
+solaris_compat["solaris9"]["skip"] = True
+
+solaris_compat["solaris10"] = OS_TYPES["solaris"]["variants"]["solaris10"].copy()
+solaris_compat["solaris10"]["skip"] = True
