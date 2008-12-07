@@ -193,11 +193,15 @@ class VirtualDisk(VirtualDevice):
 
     def get_driver_name(self):
         return self._driverName
-    driver_name = property(get_driver_name)
+    def set_driver_name(self, val):
+        self._driverName = val
+    driver_name = property(get_driver_name, set_driver_name)
 
     def get_driver_type(self):
         return self._driverType
-    driver_type = property(get_driver_type)
+    def set_driver_type(self, val):
+        self._driverType = val
+    driver_type = property(get_driver_type, set_driver_type)
 
     def get_sparse(self):
         return self._sparse
