@@ -484,8 +484,7 @@ class VirtualDisk(VirtualDevice):
                 try:
                     fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
                     if self.sparse:
-                        os.lseek(fd, size_bytes, 0)
-                        os.write(fd, '\x00')
+                        os.ftruncate(fd, size_bytes)
                         if progresscb:
                             progresscb.update(self.size)
                     else:

@@ -557,8 +557,7 @@ def _do_duplicate(design):
                 design.clone_bs = 4096
                 sparse_copy_mode = True
                 fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
-                os.lseek(fd, dst_siz, 0)
-                os.write(fd, '\x00')
+                os.ftruncate(fd, dst_siz)
                 os.close(fd)
             else:
                 design.clone_bs = 1024*1024*10
