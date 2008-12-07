@@ -110,6 +110,13 @@ OS_TYPES = {\
                          }},
         "generic24": { "label": "Generic 2.4.x kernel" },
         "generic26": { "label": "Generic 2.6.x kernel" },
+        "virtio26": { "sortby": "genericvirtio26",
+                      "label": "Generic 2.6.25 or later kernel with virtio",
+                      "devices" : {
+                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
+                        "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                    }},
+
     },
 },
 
