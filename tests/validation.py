@@ -26,44 +26,53 @@ import os
 #                       '__init__'  : { 'invalid' : [{'initparam':val}],\
 #                                       'valid'   : [{'initparam':val}]}\
 
-args = { 'guest'    : { \
-                        'name'      : { 'invalid' : ['123456789', 'im_invalid!', '', 0, 'verylongnameverylongnameverylongnameverylongnameveryvery'], \
-                                        'valid'   : ['Valid_name.01'] }, \
-                        'memory'    : { 'invalid' : [-1, 0, ''], \
-                                        'valid'   : [200, 2000] }, \
-                        'maxmemory' : { 'invalid' : [-1, 0, ''], \
-                                        'valid'   : [200, 2000], }, \
-                        'uuid'      : { 'invalid' : [ '', 0, '1234567812345678123456781234567x'], \
-                                        'valid'   : ['12345678123456781234567812345678','12345678-1234-1234-ABCD-ABCDEF123456']}, \
-                        'vcpus'     : { 'invalid' : [-1, 0, 1000, ''], \
-                                        'valid'   : [ 1, 32 ] }, \
-                        'graphics'  : { 'invalid' : ['', True, 'unknown', {},\
-('', '', '', 0), ('','','', 'longerthan16chars'), ('','','','invalid!!ch@r'),\
-                                                    {}], \
-                                        'valid'   : [False, 'sdl', 'vnc', \
-                                                    (True, 'sdl', '',\
-                                                    'key_map-2'),\
-                                                    {'enabled' : True, \
-                                                     'type':'vnc', 'opts':5900}\
-                                                    ]},\
-                        'type'      : { 'invalid' : [], \
-                                        'valid'   : ['sometype'] }, \
-                        'cdrom'     : { 'invalid' : ['', 0, '/somepath'],\
-                                        'valid'   : ['/dev/loop0']}\
-                      },\
-         'fvguest'  : { \
-                        'os_type'   : { 'invalid' : ['notpresent',0,''],\
-                                        'valid'   : ['other', 'windows',\
-                                                     'unix', 'linux']}, \
-                        'os_variant': { 'invalid' : ['', 0, 'invalid'], \
-                                        'valid'   : ['rhel5', \
-                                                     'sles10']}, \
-                      },\
-         'disk' :
-            { '__init__' :
+args = { \
 
-                { 'invalid' :
-                    [{ 'path' : 0},
+'guest' : { \
+    'name'  : {
+        'invalid' : ['123456789', 'im_invalid!', '', 0,
+                     'verylongnameverylongnameverylongnamevery'
+                     'longnameveryvery'],
+        'valid'   : ['Valid_name.01'] },
+    'memory' : { \
+        'invalid' : [-1, 0, ''],
+        'valid'   : [200, 2000] },
+    'maxmemory' : { \
+        'invalid' : [-1, 0, ''],
+        'valid'   : [200, 2000], },
+    'uuid'      : { \
+        'invalid' : [ '', 0, '1234567812345678123456781234567x'],
+        'valid'   : ['12345678123456781234567812345678',
+                     '12345678-1234-1234-ABCD-ABCDEF123456']},
+    'vcpus'     : { \
+        'invalid' : [-1, 0, 1000, ''],
+        'valid'   : [ 1, 32 ] },
+    'graphics'  : { \
+        'invalid' : ['', True, 'unknown', {}, ('', '', '', 0),
+                     ('','','', 'longerthan16chars'),
+                     ('','','','invalid!!ch@r')],
+        'valid'   : [False, 'sdl', 'vnc', (True, 'sdl', '', 'key_map-2'),
+                     {'enabled' : True, 'type':'vnc', 'opts':5900} ]},
+    'type'      : { \
+        'invalid' : [],
+        'valid'   : ['sometype'] },
+    'cdrom'     : {
+        'invalid' : ['', 0, '/somepath'],
+        'valid'   : ['/dev/loop0'] }
+    },
+
+'fvguest'  : { \
+    'os_type'   : { \
+        'invalid' : ['notpresent',0,''],
+        'valid'   : ['other', 'windows', 'unix', 'linux']},
+    'os_variant': { \
+        'invalid' : ['', 0, 'invalid'],
+        'valid'   : ['rhel5', 'sles10']},
+    },
+
+'disk' : { \
+    '__init__' : { \
+        'invalid' : [{ 'path' : 0},
                      { 'path' : '/root' },
                      { 'path' : 'valid', 'size' : None },
                      { 'path' : "valid", 'size' : 'invalid' },
@@ -74,61 +83,50 @@ args = { 'guest'    : { \
                      { 'path' : "noexist", 'size' : 900000, 'sparse' : False },
                     ],
 
-                  'valid' :
-                    [{ 'path' : '/dev/loop0' },
+        'valid' :   [{ 'path' : '/dev/loop0' },
                      { 'path' : 'nonexist', 'size' : 1 },
                      { 'path' :'/dev/null'},
                      { 'path' : None, 'device' : VirtualDisk.DEVICE_CDROM},
                      { 'path' : None, 'device' : VirtualDisk.DEVICE_FLOPPY},
                     ]
                 },
-            },
+},
 
-         'installer' : { \
-                        'boot'      : { 'invalid' : ['', 0, ('1element'),\
-                                                     ['1el', '2el', '3el'],\
-                                                     {'1element': '1val'},\
-                                                     {'kernel' : 'a',\
-                                                      'wronglabel' : 'b'}],\
-                                        'valid'   : [('kern', 'init'),\
-                                                     ['kern', 'init'],\
-                                                     { 'kernel' : 'a',\
-                                                       'initrd' : 'b'}]}, \
-                        'extraargs' : { 'invalid' : [], \
-                                        'valid'   : ['someargs']}, \
-                             },\
-         'distroinstaller' : { \
-                        'location'  : { 'invalid' : ['nogood', \
-                                                     'http:/nogood'],\
-                                        'valid'   : ['/dev/null',\
-                                                     'http://web',\
-                                                     'ftp://ftp',\
-                                                     'nfs:nfsserv']}\
-                             },\
-         'network'   : { \
-                        '__init__'  : { 'invalid' : [{'macaddr':0}, \
-                                                     {'macaddr':''},\
-                                                     {'macaddr':'$%XD'}, \
-                                                     {'type':'network'}, \
-                                                    ],
-                                        'valid'   : []}, \
-                     },\
-         'clonedesign' : {\
-                        'original_guest' :{\
-                                        'invalid' : ['', 0, 'invalid_name&',\
-                                        '123456781234567812345678123456789'],\
-                                        'valid'   : ['some.valid-name_9', \
-                                        '12345678123456781234567812345678']},\
-                        'clone_name': { 'invalid' : [0],
-                                        'valid'   : ['some.valid-name_9']},
-                        'clone_uuid': { 'invalid' : [0],
-                                        'valid'   :
-                                        ['12345678123456781234567812345678']},\
-                        'clone_mac' : { 'invalid' : ['badformat'],
-                                        'valid'   : ['AA:BB:CC:DD:EE:FF']},\
-                        'clone_bs'  : { 'invalid' : [],
-                                        'valid'   : ['valid']}}\
-       }
+'installer' : { \
+    'boot' : { \
+        'invalid' : ['', 0, ('1element'), ['1el', '2el', '3el'],
+                     {'1element': '1val'},
+                     {'kernel' : 'a', 'wronglabel' : 'b'}],
+        'valid'   : [('kern', 'init'), ['kern', 'init'],
+                     { 'kernel' : 'a', 'initrd' : 'b'}]},
+    'extraargs' : { \
+        'invalid' : [],
+        'valid'   : ['someargs']}, },
+
+'distroinstaller' : { \
+    'location'  : { \
+        'invalid' : ['nogood', 'http:/nogood'],
+        'valid'   : ['/dev/null', 'http://web', 'ftp://ftp', 'nfs:nfsserv']}},
+
+'network'   : { \
+    '__init__'  : { \
+        'invalid' : [ {'macaddr':0}, {'macaddr':''}, {'macaddr':'$%XD'},
+                      {'type':'network'} ],
+        'valid'   : []} },
+
+'clonedesign' : {
+    'original_guest' :{
+        'invalid' : ['', 0, 'invalid_name&',
+                     '123456781234567812345678123456789'],
+        'valid'   : ['some.valid-name_1', '12345678123456781234567812345678']},
+    'clone_name': { 'invalid' : [0],
+                    'valid'   : ['some.valid-name_9']},
+    'clone_uuid': { 'invalid' : [0],
+                    'valid'   : ['12345678123456781234567812345678']},
+    'clone_mac' : { 'invalid' : ['badformat'],
+                    'valid'   : ['AA:BB:CC:DD:EE:FF']},
+    'clone_bs'  : { 'invalid' : [], 'valid'   : ['valid']}}
+}
 
 class TestValidation(unittest.TestCase):
 
@@ -144,7 +142,7 @@ class TestValidation(unittest.TestCase):
 
                 try:
                     if paramname is '__init__':
-                        testclass(*(), **val)                    
+                        testclass(*(), **val)
                     else:
                         setattr(obj, paramname, val)
                     msg = "Expected TypeError or ValueError: None raised.\n"
@@ -162,14 +160,14 @@ class TestValidation(unittest.TestCase):
                     msg += "For '%s' object, paramname '%s', val '%s':" % \
                         (name, paramname, val)
                     raise AssertionError, msg
-                
+
             for val in args[name][paramname]['valid']:
                 try:
                     # Skip NFS test as non-root
                     if name == "distroinstaller" and paramname == "location" and val[0:3] == "nfs" and os.geteuid() != 0:
                         continue
                     if paramname is '__init__':
-                        testclass(*(), **val)                    
+                        testclass(*(), **val)
                     else:
                         setattr(obj, paramname, val)
                 except Exception, e:
@@ -210,7 +208,7 @@ class TestValidation(unittest.TestCase):
             network = virtinst.VirtualNetworkInterface(*(), **params)
             self.assertRaises(RuntimeError, network.setup, \
                               self.guest.conn)
-        
+
         # Test dynamic MAC/Bridge success
         try:
             network = virtinst.VirtualNetworkInterface()
@@ -228,7 +226,7 @@ class TestValidation(unittest.TestCase):
     def testCloneManager(self):
         cman = virtinst.CloneManager.CloneDesign(self.guest.conn)
         self._testArgs(cman, virtinst.CloneManager.CloneDesign, 'clonedesign')
-    
+
 
 if __name__ == "__main__":
     unittest.main()
