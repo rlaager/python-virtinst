@@ -717,7 +717,7 @@ class Guest(object):
     # Deprecated: Should set guest.graphics_dev = VirtualGraphics(...)
     def get_graphics(self):
         if self._graphics_dev is None:
-            return { "enabled " : False }
+            return { "enabled" : False }
         return { "enabled" : True, "type" : self._graphics_dev, \
                  "keymap"  : self._graphics_dev.keymap}
     def set_graphics(self, val):
