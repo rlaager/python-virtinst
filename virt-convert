@@ -25,6 +25,7 @@ import sys
 import os
 import logging
 import errno
+from optparse import OptionGroup
 
 import virtinst.cli as cli
 from virtinst.cli import fail
@@ -38,34 +39,52 @@ def parse_args():
     usage = "%prog [options] inputdir|input.vmx [outputdir|output.xml]"
     opts = cli.VirtOptionParser(usage=usage)
 
-    opts.add_option("-q", "--quiet", action="store_true", dest="quiet",
-                    help=("Don't be verbose"))
-    opts.add_option("-a", "--arch", type="string", dest="arch",
-                    default=util.get_default_arch(),
-                    help=("Machine Architecture Type (i686/x86_64/ppc)"))
-    opts.add_option("-d", "--debug", action="store_true", dest="debug",
-                    help=("Print debugging information"))
-    opts.add_option("-i", "--input-format", action="store",
+    cong = OptionGroup(opts, "Conversion Options")
+    cong.add_option("-i", "--input-format", action="store",
                     dest="input_format", help=("Input format, e.g. 'vmx'"))
-    opts.add_option("-o", "--output-format", action="store",
+    cong.add_option("-o", "--output-format", action="store",
                     dest="output_format", default="virt-image",
                     help=("Output format, e.g. 'virt-image'"))
-    opts.add_option("-D", "--disk-format", action="store",
+    cong.add_option("-D", "--disk-format", action="store",
                     dest="disk_format", help=("Output disk format"))
-    opts.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
+    opts.add_option_group(cong)
+
+    virg = OptionGroup(opts, "Virtualization Type Options")
+    virg.add_option("-v", "--hvm", action="store_true", dest="fullvirt",
                     help=("This guest should be a fully virtualized guest"))
-    opts.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
+    virg.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
                     help=("This guest should be a paravirtualized guest"))
-    opts.add_option("", "--os-type", type="string", dest="os_type",
-                      action="callback", callback=cli.check_before_store,
-                      help=("The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"))
-    opts.add_option("", "--os-variant", type="string", dest="os_variant",
-                      action="callback", callback=cli.check_before_store,
-                      help=("The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k', 'vista'"))
-    opts.add_option("", "--noapic", action="store_true", dest="noapic",
-        help=("Disables APIC for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
-    opts.add_option("", "--noacpi", action="store_true", dest="noacpi",
-        help=("Disables ACPI for fully virtualized guest (overrides value in os-type/os-variant db)"), default=False)
+    opts.add_option_group(virg)
+
+    cfgg = OptionGroup(opts, "Guest Configuration Options")
+    cfgg.add_option("-a", "--arch", type="string", dest="arch",
+                    default=util.get_default_arch(),
+                    help=("Machine Architecture Type (i686/x86_64/ppc)"))
+    cfgg.add_option("", "--os-type", type="string", dest="os_type",
+                    action="callback", callback=cli.check_before_store,
+                    help=("The OS type for fully virtualized guests, e.g. "
+                          "'linux', 'unix', 'windows'"))
+    cfgg.add_option("", "--os-variant", type="string", dest="os_variant",
+                    action="callback", callback=cli.check_before_store,
+                    help=("The OS variant for fully virtualized guests, e.g. "
+                          "'fedora6', 'rhel5', 'solaris10', 'win2k', 'vista'"))
+    cfgg.add_option("", "--noapic", action="store_true", dest="noapic",
+                    help=("Disables APIC for fully virtualized guest "
+                          "(overrides value in os-type/os-variant db)"),
+                    default=False)
+    cfgg.add_option("", "--noacpi", action="store_true", dest="noacpi",
+                    help=("Disables ACPI for fully virtualized guest "
+                          "(overrides value in os-type/os-variant db)"),
+                    default=False)
+    opts.add_option_group(cfgg)
+
+    misc = OptionGroup(opts, "Miscellaneous Options")
+    misc.add_option("-q", "--quiet", action="store_true", dest="quiet",
+                    help=("Don't be verbose"))
+    misc.add_option("-d", "--debug", action="store_true", dest="debug",
+                    help=("Print debugging information"))
+    opts.add_option_group(misc)
+
 
     (options, args) = opts.parse_args()
     if len(args) < 1:
