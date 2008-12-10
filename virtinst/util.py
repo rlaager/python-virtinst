@@ -37,8 +37,8 @@ from sys import stderr
 
 import libvirt
 from virtinst import _virtinst as _
-from virtinst import CapabilitiesParser
-from virtinst import User
+import CapabilitiesParser
+from User import User
 
 
 KEYBOARD_DIR = "/etc/sysconfig/keyboard"
