@@ -96,12 +96,12 @@ def parse_netdev_entry(vm, fullkey, value):
 
     # "vlance", "vmxnet", "e1000"
     if key == "virtualdev":
-        vm.netdevs[inst].driver = value
+        vm.netdevs[inst].driver = lvalue
     if key == "addresstype" and lvalue == "generated":
         vm.netdevs[inst].mac = "auto"
     # we ignore .generatedAddress for auto mode
     if key == "address":
-        vm.netdevs[inst].mac = value
+        vm.netdevs[inst].mac = lvalue
 
 def parse_disk_entry(vm, fullkey, value):
     """
@@ -124,7 +124,10 @@ def parse_disk_entry(vm, fullkey, value):
     # Does anyone else think it's scary that we're still doing things
     # like this?
     if bus == "ide":
-        inst = int(inst) + int(bus_nr) * 2
+        inst = int(bus_nr) * 2 + (int(inst) % 2)
+    elif bus == "scsi":
+        inst = int(bus_nr) * 16 + (int(inst) % 16)
+
 
     devid = (bus, inst)
     if not vm.disks.get(devid):

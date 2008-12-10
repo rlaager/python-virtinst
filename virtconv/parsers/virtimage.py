@@ -262,8 +262,9 @@ class virtimage_parser(formats.parser):
         if not vm.memory:
             raise ValueError("VM must have a memory setting")
 
-        # xend wants the name to match r'^[A-Za-z0-9_\-\.\:\/\+]+$'
-        vmname = re.sub(r'[^A-Za-z0-9_.:/+-]+',  '_', vm.name)
+        # xend wants the name to match r'^[A-Za-z0-9_\-\.\:\/\+]+$', and
+        # the schema agrees.
+        vmname = re.sub(r'[^A-Za-z0-9_\-\.:\/\+]+',  '_', vm.name)
 
         # Hmm.  Any interface is a good interface?
         interface = None
