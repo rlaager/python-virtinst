@@ -20,7 +20,7 @@
 # MA 02110-1301 USA.
 
 import os
-import util
+import _util
 import DistroManager
 import logging
 import time
@@ -38,7 +38,7 @@ class FullVirtGuest(Guest):
             installer = DistroManager.DistroInstaller(type = type, os_type = "hvm")
         Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "hd"
-        self.features = { "acpi": None, "pae": util.is_pae_capable(), "apic": None }
+        self.features = { "acpi": None, "pae": _util.is_pae_capable(), "apic": None }
         if arch is None:
             arch = platform.machine()
         self.arch = arch

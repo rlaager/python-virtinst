@@ -52,7 +52,7 @@ import re
 import logging
 from xml.sax.saxutils import escape
 
-import util
+import _util
 from virtinst import _virtinst as _
 
 DEFAULT_DEV_TARGET = "/dev"
@@ -112,7 +112,7 @@ class StorageObject(object):
     def set_conn(self, val):
         if not isinstance(val, libvirt.virConnect):
             raise ValueError(_("'conn' must be a libvirt connection object."))
-        if not util.is_storage_capable(val):
+        if not _util.is_storage_capable(val):
             raise ValueError(_("Passed connection is not libvirt storage "
                                "capable"))
         self._conn = val
@@ -278,7 +278,7 @@ class StoragePool(StorageObject):
         self._source_path = None
         if not uuid:
             self._uuid = None
-        self._random_uuid = util.uuidToString(util.randomUUID())
+        self._random_uuid = _util.uuidToString(_util.randomUUID())
 
     # Properties used by all pools
     def get_type(self):
@@ -705,7 +705,7 @@ class StorageVolume(StorageObject):
         pool_object = StorageVolume.lookup_pool_by_name(pool_object=pool_object,
                                                         pool_name=pool_name,
                                                         conn=conn)
-        return StoragePool.get_volume_for_pool(util.get_xml_path(pool_object.XMLDesc(0), "/pool/@type"))
+        return StoragePool.get_volume_for_pool(_util.get_xml_path(pool_object.XMLDesc(0), "/pool/@type"))
     get_volume_for_pool = staticmethod(get_volume_for_pool)
 
     def find_free_name(name, pool_object=None, pool_name=None, conn=None,
@@ -756,7 +756,7 @@ class StorageVolume(StorageObject):
         if pool_name is not None and pool_object is None:
             if conn is None:
                 raise ValueError(_("'conn' must be specified with 'pool_name'"))
-            if not util.is_storage_capable(conn):
+            if not _util.is_storage_capable(conn):
                 raise ValueError(_("Connection does not support storage "
                                    "management."))
             try:

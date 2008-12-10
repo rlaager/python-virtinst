@@ -22,9 +22,10 @@
 
 import logging
 import os
-import util
+import _util
 import Guest
 from VirtualDisk import VirtualDisk
+from User import User
 from virtinst import _virtinst as _
 
 import virtinst
@@ -158,7 +159,7 @@ class DistroInstaller(Guest.Installer):
             logging.debug("DistroInstaller location is a (poolname, volname)"
                           " tuple")
         elif os.path.exists(os.path.abspath(val)) \
-             and (not self.conn or not util.is_uri_remote(self.conn.getURI())):
+             and (not self.conn or not _util.is_uri_remote(self.conn.getURI())):
             val = os.path.abspath(val)
             logging.debug("DistroInstaller location is a local "
                           "file/path: %s" % val)
@@ -178,8 +179,8 @@ class DistroInstaller(Guest.Installer):
         elif (val.startswith("http://") or val.startswith("ftp://") or
               val.startswith("nfs:")):
             logging.debug("DistroInstaller location is a network source.")
-        elif self.conn and util.is_storage_capable(self.conn) and \
-             util.is_uri_remote(self.conn.getURI()):
+        elif self.conn and _util.is_storage_capable(self.conn) and \
+             _util.is_uri_remote(self.conn.getURI()):
             # If conn is specified, pass the path to a VirtualDisk object
             # and see what comes back
             try:
@@ -193,8 +194,9 @@ class DistroInstaller(Guest.Installer):
                                "or FTP network install source, or an existing "
                                "local file/device"))
 
-        if val.startswith("nfs:") and not util.privileged_user():
-            raise ValueError(_("NFS installations are only supported as root"))
+        if (val.startswith("nfs:") and not
+            User.current().has_priv(User.PRIV_NFS_MOUNT, self.conn.getURI())):
+            raise ValueError(_('Privilege is required for NFS installations'))
 
         self._location = val
     location = property(get_location, set_location)

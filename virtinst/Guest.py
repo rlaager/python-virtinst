@@ -26,7 +26,7 @@ import time
 import re
 import libxml2
 import urlgrabber.progress as progress
-import util
+import _util
 import libvirt
 import platform
 import __builtin__
@@ -131,7 +131,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                 logging.warn("conflict_net: Failed to lookup domain %d" % name)
 
         # get the Host's NIC MACaddress
-        hostdevs = util.get_host_network_devices()
+        hostdevs = _util.get_host_network_devices()
 
         if self.countMACaddr(vms) > 0:
             return (True, _("The MAC address you entered is already in use by another active virtual machine."))
@@ -145,7 +145,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     def setup(self, conn):
         if self.macaddr is None:
             while 1:
-                self.macaddr = util.randomMAC(type=conn.getType().lower())
+                self.macaddr = _util.randomMAC(type=conn.getType().lower())
                 if self.is_conflict_net(conn)[1] is not None:
                     continue
                 else:
@@ -159,7 +159,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                     raise RuntimeError(msg)
 
         if not self.bridge and self.type == "bridge":
-            self.bridge = util.default_bridge()
+            self.bridge = _util.default_bridge()
 
     def get_xml_config(self):
         src_xml = ""
@@ -192,7 +192,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             try:
                 for mac in ctx.xpathEval("/domain/devices/interface/mac"):
                     macaddr = mac.xpathEval("attribute::address")[0].content
-                    if macaddr and util.compareMAC(self.macaddr, macaddr) == 0:
+                    if macaddr and _util.compareMAC(self.macaddr, macaddr) == 0:
                         count += 1
             finally:
                 if ctx is not None:
@@ -250,7 +250,7 @@ class VirtualGraphics(object):
         return self._keymap
     def set_keymap(self, val):
         if not val:
-            val = util.default_keymap()
+            val = _util.default_keymap()
         if not val or type(val) != type("string"):
             raise ValueError, _("Keymap must be a string")
         if len(val) > 16:
@@ -352,7 +352,7 @@ class Installer(object):
             return '/var/tmp'
         if self.type == "xen" and os.path.exists(XEN_SCRATCH):
             return XEN_SCRATCH
-        if util.privileged_user() and os.path.exists(LIBVIRT_SCRATCH):
+        if os.geteuid() == 0 and os.path.exists(LIBVIRT_SCRATCH):
             return LIBVIRT_SCRATCH
         else:
             return os.path.expanduser("~/.virtinst/boot")
@@ -407,7 +407,7 @@ class Installer(object):
                            conn=None, kernel=None, bootdev=None):
         osblob = ""
         if not isinstall and not ishvm:
-            return "<bootloader>%s</bootloader>" % util.pygrub_path(conn)
+            return "<bootloader>%s</bootloader>" % _util.pygrub_path(conn)
 
         osblob = "<os>\n"
 
@@ -425,9 +425,9 @@ class Installer(object):
             osblob += "    <loader>%s</loader>\n" % loader
 
         if isinstall and kernel and kernel["kernel"]:
-            osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(kernel["kernel"])
-            osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(kernel["initrd"])
-            osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(kernel["extraargs"])
+            osblob += "    <kernel>%s</kernel>\n"   % _util.xml_escape(kernel["kernel"])
+            osblob += "    <initrd>%s</initrd>\n"   % _util.xml_escape(kernel["initrd"])
+            osblob += "    <cmdline>%s</cmdline>\n" % _util.xml_escape(kernel["extraargs"])
         elif bootdev is not None:
             osblob += "    <boot dev='%s'/>\n" % bootdev
 
@@ -466,7 +466,7 @@ class Installer(object):
         @type L{Guest}
         """
 
-        if util.is_uri_remote(guest.conn.getURI()):
+        if _util.is_uri_remote(guest.conn.getURI()):
             # XXX: Use block peek for this?
             return True
 
@@ -479,7 +479,7 @@ class Installer(object):
             fd = os.open(guest.disks[0].path, os.O_RDONLY)
         except OSError, (err, msg):
             logging.debug("Failed to open guest disk: %s" % msg)
-            if err == errno.EACCES and not util.privileged_user():
+            if err == errno.EACCES and os.geteuid() != 0:
                 return True # non root might not have access to block devices
             else:
                 raise
@@ -624,7 +624,7 @@ class Guest(object):
     def get_vcpus(self):
         return self._vcpus
     def set_vcpus(self, val):
-        maxvcpus = util.get_max_vcpus(self.conn, self.type)
+        maxvcpus = _util.get_max_vcpus(self.conn, self.type)
         if type(val) is not int or val < 1:
             raise ValueError, _("Number of vcpus must be a postive integer.")
         if val > maxvcpus:
@@ -642,7 +642,7 @@ class Guest(object):
         if re.match("^[0-9,-]*$", val) is None:
             raise ValueError, _("cpuset can only contain numeric, ',', or '-' characters")
 
-        pcpus = util.get_phy_cpus(self.conn)
+        pcpus = _util.get_phy_cpus(self.conn)
         for c in val.split(','):
             if c.find('-') != -1:
                 (x, y) = c.split('-')
@@ -1061,7 +1061,7 @@ class Guest(object):
     def _set_defaults(self):
         if self.uuid is None:
             while 1:
-                self.uuid = util.uuidToString(util.randomUUID())
+                self.uuid = _util.uuidToString(_util.randomUUID())
                 try:
                     if self.conn.lookupByUUIDString(self.uuid) is not None:
                         continue

@@ -34,3 +34,4 @@ from DistroManager import DistroInstaller, PXEInstaller
 from LiveCDInstaller import LiveCDInstaller
 from ImageManager import ImageInstaller
 from CloneManager import CloneDesign
+from User import User

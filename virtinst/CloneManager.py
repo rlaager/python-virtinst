@@ -23,7 +23,7 @@ import stat
 import libxml2
 import logging
 import urlgrabber.progress as progress
-import util
+import _util
 import libvirt
 import Guest
 from VirtualDisk import VirtualDisk
@@ -263,7 +263,7 @@ class CloneDesign(object):
             node[0].setContent(self._clone_uuid)
         else:
             while 1:
-                uuid = util.uuidToString(util.randomUUID())
+                uuid = _util.uuidToString(_util.randomUUID())
                 if self._check_uuid(uuid) == True:
                     continue
                 else:
@@ -278,7 +278,7 @@ class CloneDesign(object):
                 node[0].setContent(self._clone_mac[i-1])
             except Exception:
                 while 1:
-                    mac = util.randomMAC(typ)
+                    mac = _util.randomMAC(typ)
                     dummy, msg = self._check_mac(mac)
                     if msg is not None:
                         continue
@@ -396,7 +396,7 @@ class CloneDesign(object):
         for i in lst:
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
-                size.append(util.blkdev_size(i))
+                size.append(_util.blkdev_size(i))
                 typ.append(False)
             elif stat.S_ISREG(mode):
                 size.append(os.path.getsize(i))
@@ -450,7 +450,7 @@ class CloneDesign(object):
                 continue
             mode = os.stat(i)[stat.ST_MODE]
             if stat.S_ISBLK(mode):
-                size.append(util.blkdev_size(i))
+                size.append(_util.blkdev_size(i))
                 typ.append(False)
             elif stat.S_ISREG(mode):
                 size.append(os.path.getsize(i))

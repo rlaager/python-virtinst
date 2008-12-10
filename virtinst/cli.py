@@ -26,9 +26,9 @@ import locale
 from optparse import OptionValueError, OptionParser
 
 import libvirt
-import util
+import _util
 from virtinst import CapabilitiesParser, VirtualNetworkInterface, \
-                     VirtualGraphics, VirtualAudio
+                     VirtualGraphics, VirtualAudio, User
 from virtinst import _virtinst as _
 
 MIN_RAM = 64
@@ -117,9 +117,8 @@ def nice_exit():
     sys.exit(0)
 
 def getConnection(connect):
-    if connect and connect.lower()[0:3] == "xen":
-        if not util.privileged_user():
-            fail(_("Must be root to create Xen guests"))
+    if not User.current().has_priv(User.PRIV_CREATE_DOMAIN, connect):
+        fail(_("Must be root to create Xen guests"))
     if connect is None:
         fail(_("Could not find usable default libvirt connection."))
 
@@ -298,8 +297,8 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
     # With just one mac, create a default network if one is not
     # specified.
     if len(macs) == 1 and len(networks) == 0:
-        if util.privileged_user():
-            net = util.default_network(conn)
+        if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
+            net = _util.default_network(conn)
             networks.append(net[0] + ":" + net[1])
         else:
             networks.append("user")
@@ -316,8 +315,8 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
     # Create extra networks up to the number of nics requested 
     if len(macs) < nics:
         for dummy in range(len(macs),nics):
-            if util.privileged_user():
-                net = util.default_network(conn)
+            if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
+                net = _util.default_network(conn)
                 networks.append(net[0] + ":" + net[1])
             else:
                 networks.append("user")

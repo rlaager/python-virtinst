@@ -29,6 +29,7 @@ import gettext
 import locale
 import virtinst.cli as cli
 from virtinst.cli import fail
+from virtinst.User import User
 
 locale.setlocale(locale.LC_ALL, '')
 gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
@@ -184,9 +185,8 @@ def main():
 
     logging.debug("start clone with HV " + options.connect)
 
-    if options.connect is None or options.connect.lower()[0:3] == "xen":
-        if not virtinst.util.privileged_user():
-            fail(_("Must be root to clone Xen guests"))
+    if not User.current().has_priv(User.PRIV_CLONE, options.connect):
+        fail(_("Must be privileged to clone Xen guests"))
 
     conn = cli.getConnection(options.connect)
     design = clmgr.CloneDesign(connection=conn)

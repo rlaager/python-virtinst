@@ -19,6 +19,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+#
+# WARNING: the contents of this file, somewhat unfortunately, are legacy
+# API. No incompatible changes are allowed to this file, and no new
+# code should be added here (utility functions live in _util.py).
+# Clients of virtinst shouldn't use these functions: if you think you
+# need to, tell us why.
+#
+
 import platform
 import random
 import os.path
@@ -30,6 +38,7 @@ from sys import stderr
 import libvirt
 from virtinst import _virtinst as _
 from virtinst import CapabilitiesParser
+from virtinst import User
 
 
 KEYBOARD_DIR = "/etc/sysconfig/keyboard"
@@ -54,7 +63,6 @@ def default_route():
             continue
     return None
 
-# Legacy for compat only.
 def default_bridge():
     rt = default_route()
     if rt is None:
@@ -91,7 +99,7 @@ def default_connection():
          os.path.exists("/usr/bin/qemu-kvm") or \
          os.path.exists("/usr/bin/kvm") or \
          os.path.exists("/usr/bin/xenner"):
-        if privileged_user():
+        if User.current().has_priv(User.PRIV_QEMU_SYSTEM):
             return "qemu:///system"
         else:
             return "qemu:///session"
@@ -258,15 +266,6 @@ def xml_escape(str):
     str = str.replace(">", "&gt;")
     return str
  
-def blkdev_size(path):
-    """Return the size of the block device.  We can't use os.stat() as
-    that returns zero on many platforms."""
-    fd = os.open(path, os.O_RDONLY)
-    # os.SEEK_END is not present on all systems
-    size = os.lseek(fd, 0, 2)
-    os.close(fd)
-    return size
-
 def compareMAC(p, q):
     """Compare two MAC addresses"""
     pa = p.split(":")
@@ -504,14 +503,6 @@ def lookup_pool_by_path(conn, path):
         if os.path.abspath(xml_path) == path:
             return pool
     return None
-
-def privileged_user():
-    """
-    Return true if the user is privileged enough.  On Linux, this
-    equates to being root.  On Solaris, it's more complicated, so we
-    just assume we're OK.
-    """
-    return os.uname()[0] == 'SunOS' or os.geteuid() == 0
 
 def _test():
     import doctest

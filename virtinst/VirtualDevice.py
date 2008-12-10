@@ -22,7 +22,7 @@
 import libvirt
 
 import CapabilitiesParser
-import util
+import _util
 from virtinst import _virtinst as _
 
 class VirtualDevice(object):
@@ -45,7 +45,7 @@ class VirtualDevice(object):
 
         self.__remote = None
         if self.conn:
-            self.__remote = util.is_uri_remote(self.conn.getURI())
+            self.__remote = _util.is_uri_remote(self.conn.getURI())
 
         self._caps = None
         if self.conn:

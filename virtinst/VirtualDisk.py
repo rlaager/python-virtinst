@@ -24,7 +24,7 @@ import libxml2
 import logging
 import libvirt
 
-import util
+import _util
 import Storage
 from VirtualDevice import VirtualDevice
 from virtinst import _virtinst as _
@@ -302,7 +302,7 @@ class VirtualDisk(VirtualDevice):
                                "('poolname', 'volname')"))
         if not self.conn:
             raise ValueError(_("'volName' requires a passed connection."))
-        if not util.is_storage_capable(self.conn):
+        if not _util.is_storage_capable(self.conn):
             raise ValueError(_("Connection does not support storage lookup."))
         try:
             pool = self.conn.storagePoolLookupByName(name_tuple[0])
@@ -321,7 +321,7 @@ class VirtualDisk(VirtualDevice):
     def __check_if_path_managed(self):
         vol = None
         verr = None
-        pool = util.lookup_pool_by_path(self.conn,
+        pool = _util.lookup_pool_by_path(self.conn,
                                         os.path.dirname(self.path))
         if pool:
             try:
@@ -378,7 +378,7 @@ class VirtualDisk(VirtualDevice):
         # if no obj: if remote, error
         storage_capable = False
         if self.conn:
-            storage_capable = util.is_storage_capable(self.conn)
+            storage_capable = _util.is_storage_capable(self.conn)
         if not storage_capable and self._is_remote():
             raise ValueError, _("Connection doesn't support remote storage.")
 
@@ -528,7 +528,7 @@ class VirtualDisk(VirtualDevice):
         elif self.path:
             path = self.path
         if path:
-            path = util.xml_escape(path)
+            path = _util.xml_escape(path)
 
         ret = "    <disk type='%(type)s' device='%(device)s'>\n" % { "type": self.type, "device": self.device }
         if not(self.driver_name is None):

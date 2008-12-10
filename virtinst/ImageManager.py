@@ -23,7 +23,7 @@ import ImageParser
 import CapabilitiesParser as Cap
 from VirtualDisk import VirtualDisk
 import os
-import util
+import _util
 from virtinst import _virtinst as _
 
 class ImageInstallerException(Exception):
@@ -101,7 +101,7 @@ class ImageInstaller(Guest.Installer):
             d = VirtualDisk(p, s,
                             device = device,
                             type = VirtualDisk.TYPE_FILE)
-            if self.boot_caps.type == "xen" and util.is_blktap_capable():
+            if self.boot_caps.type == "xen" and _util.is_blktap_capable():
                 d.driver_name = VirtualDisk.DRIVER_TAP
             d.target = m.target
 
@@ -127,9 +127,9 @@ class ImageInstaller(Guest.Installer):
         if loader:
             osblob += "    <loader>%s</loader>\n" % loader
         if self.boot_caps.kernel:
-            osblob += "    <kernel>%s</kernel>\n"   % util.xml_escape(self._abspath(self.boot_caps.kernel))
-            osblob += "    <initrd>%s</initrd>\n"   % util.xml_escape(self._abspath(self.boot_caps.initrd))
-            osblob += "    <cmdline>%s</cmdline>\n" % util.xml_escape(self.boot_caps.cmdline)
+            osblob += "    <kernel>%s</kernel>\n"   % _util.xml_escape(self._abspath(self.boot_caps.kernel))
+            osblob += "    <initrd>%s</initrd>\n"   % _util.xml_escape(self._abspath(self.boot_caps.initrd))
+            osblob += "    <cmdline>%s</cmdline>\n" % _util.xml_escape(self.boot_caps.cmdline)
             osblob += "  </os>"
         elif hvm:
             if self.boot_caps.bootdev:
@@ -137,7 +137,7 @@ class ImageInstaller(Guest.Installer):
             osblob += "  </os>"
         elif self.boot_caps.loader == "pygrub" or (self.boot_caps.loader is None and self.boot_caps.type == "xen"):
             osblob += "  </os>\n"
-            osblob += "  <bootloader>%s</bootloader>" % util.pygrub_path(conn)
+            osblob += "  <bootloader>%s</bootloader>" % _util.pygrub_path(conn)
 
         return osblob
 
