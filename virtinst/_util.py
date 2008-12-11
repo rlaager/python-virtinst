@@ -23,10 +23,30 @@
 # not be used by clients.
 #
 
+import stat
 import os
 
 from virtinst import util
 
+def stat_disk(path):
+    """Returns the tuple (isreg, size)."""
+    if not os.path.exists(path):
+        return True, 0
+
+    mode = os.stat(path)[stat.ST_MODE]
+   
+    # os.path.getsize('/dev/..') can be zero on some platforms
+    if stat.S_ISBLK(mode):
+        fd = os.open(path, os.O_RDONLY)
+        # os.SEEK_END is not present on all systems
+        size = os.lseek(fd, 0, 2)
+        os.close(fd)
+        return False, size
+    elif stat.S_ISREG(mode):
+        return True, os.path.getsize(path)
+
+    return True, 0
+  
 def blkdev_size(path):
     """Return the size of the block device.  We can't use os.stat() as
     that returns zero on many platforms."""

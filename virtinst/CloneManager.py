@@ -19,7 +19,6 @@
 # MA 02110-1301 USA.
 
 import os
-import stat
 import libxml2
 import logging
 import urlgrabber.progress as progress
@@ -394,13 +393,9 @@ class CloneDesign(object):
         logging.debug("original device list: %s" % (lst))
 
         for i in lst:
-            mode = os.stat(i)[stat.ST_MODE]
-            if stat.S_ISBLK(mode):
-                size.append(_util.blkdev_size(i))
-                typ.append(False)
-            elif stat.S_ISREG(mode):
-                size.append(os.path.getsize(i))
-                typ.append(True)
+            (t, sz) = _util.stat_disk(i)
+            typ.append(t)
+            size.append(sz)
         logging.debug("original device size: %s" % (size))
         logging.debug("original device type: %s" % (typ))
 
@@ -443,18 +438,9 @@ class CloneDesign(object):
         typ  = []
 
         for i in cln_dev_lst:
-            if os.path.exists(i) ==  False:
-                size.append(0)
-                # if not exists, create file necessary
-                typ.append(True)
-                continue
-            mode = os.stat(i)[stat.ST_MODE]
-            if stat.S_ISBLK(mode):
-                size.append(_util.blkdev_size(i))
-                typ.append(False)
-            elif stat.S_ISREG(mode):
-                size.append(os.path.getsize(i))
-                typ.append(True)
+            (t, sz) = _util.stat_disk(i)
+            typ.append(t)
+            size.append(sz)
 
         logging.debug("clone device list: %s" % (cln_dev_lst))
         logging.debug("clone device size: %s" % (size))
