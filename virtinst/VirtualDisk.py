@@ -108,6 +108,9 @@ class VirtualDisk(VirtualDevice):
         @type volObject: libvirt.virStorageVol
         @param volInstall: StorageVolume instance to build for new storage
         @type volInstall: L{StorageVolume}
+        @param volName: StorageVolume lookup information,
+                        (parent pool name, volume name)
+        @type volName: C{tuple} of (C{str}, C{str})
         @param bus: Emulated bus type (ide, scsi, virtio, ...)
         @type bus: C{str}
         """
@@ -261,7 +264,7 @@ class VirtualDisk(VirtualDevice):
 
     def __set_dev_type(self):
         """
-        Detect disk 'type' from passed storage parameters
+        Detect disk 'type' () from passed storage parameters
         """
 
         dtype = None
@@ -319,10 +322,14 @@ class VirtualDisk(VirtualDevice):
         return (self.vol_object != None or self.vol_install != None)
 
     def __check_if_path_managed(self):
+        """
+        Determine if we can use libvirt storage apis to create or lookup
+        'self.path'
+        """
         vol = None
         verr = None
         pool = _util.lookup_pool_by_path(self.conn,
-                                        os.path.dirname(self.path))
+                                         os.path.dirname(self.path))
         if pool:
             try:
                 vol = self.conn.storageVolLookupByPath(self.path)
@@ -368,6 +375,29 @@ class VirtualDisk(VirtualDevice):
             self._set_vol_object(vol, validate=False)
 
 
+    def __sync_params(self):
+        """
+        Sync some parameters between storage objects and the older
+        VirtualDisk fields
+        """
+
+        if self.vol_object and self.path != self.vol_object.path():
+            logging.debug("Overwriting 'path' from passed volume object.")
+            self._set_path(self.vol_object.path(), validate=False)
+
+        if self.vol_install:
+            newsize = self.vol_install.capacity/1024.0/1024.0/1024.0
+            if self.size != newsize:
+                logging.debug("Overwriting 'size' with value from "
+                              "StorageVolume")
+                self._set_size(newsize, validate=False)
+
+        # Remove this piece when storage volume creation is async
+        if self.sparse and self.vol_install and \
+           self.vol_install.allocation != 0:
+            logging.debug("Setting vol_install allocation to 0 (sparse).")
+            self.vol_install.allocation = 0
+
     def __validate_params(self):
         """
         function to validate all the complex interaction between the various
@@ -379,65 +409,60 @@ class VirtualDisk(VirtualDevice):
         storage_capable = False
         if self.conn:
             storage_capable = _util.is_storage_capable(self.conn)
+
         if not storage_capable and self._is_remote():
             raise ValueError, _("Connection doesn't support remote storage.")
 
+        # If the user didn't pass storage parameters, try to determine them
+        # from the passed path
         if storage_capable and self.path is not None \
            and not self.__storage_specified():
             self.__check_if_path_managed()
 
-        if self._is_remote() and not self.__storage_specified():
-            raise ValueError, _("Must specify libvirt managed storage if on "
-                                "a remote connection")
+        # Sync parameters between VirtualDisk and potentially passed
+        # storage objects.
+        self.__sync_params()
 
-        # Only floppy or cdrom can be created w/o media
-        if self.path is None and not self.__storage_specified():
+        # One small caveat: if self.path isn't set at this point, we are
+        # basically done.
+        if self.path is None:
             if self.device != self.DEVICE_FLOPPY and \
                self.device != self.DEVICE_CDROM:
                 raise ValueError, _("Device type '%s' requires a path") % \
                                   self.device
-            # If no path, our work is done
             return True
 
-        if self.vol_object:
-            logging.debug("Overwriting 'path' from passed volume object.")
-            self._set_path(self.vol_object.path(), validate=False)
 
-        if self.vol_install:
-            logging.debug("Overwriting 'size' with value from StorageVolume")
-            self._set_size(self.vol_install.capacity*1024*1024*1024,
-                           validate=False)
+        # The main distinctions from this point forward:
+        # Are we doing storage API operations or local media checks?
+        using_storage = self.__storage_specified() or self.path is None
+        # Do we need to create the storage?
+        create_storage = not ((using_storage and self.vol_object) or \
+                              (self.path and os.path.exists(self.path)))
 
-        if self.__storage_specified():
-            logging.debug("Using storage api objects for VirtualDisk")
-            using_path = False
-        else:
-            logging.debug("Using self.path for VirtualDisk.")
-            using_path = True
+        if self._is_remote() and not using_storage:
+            raise ValueError, _("Must specify libvirt managed storage if on "
+                                "a remote connection")
 
-        if self.sparse and self.vol_install and \
-           self.vol_install.allocation != 0:
-            logging.debug("Setting vol_install allocation to 0 (sparse).")
-            self.vol_install.allocation = 0
+        # If not creating the storage, our job is easy
+        if not create_storage:
+            # Make sure we have access to the local path
+            if not using_storage:
+                if os.path.isdir(self.path):
+                    raise ValueError(_("The path must be a file or a device,"
+                                       " not a directory"))
+                # XXX: Any selinux validation checks should go here
 
-        if ((using_path and os.path.exists(self.path))
-                        or self.vol_object):
-            logging.debug("VirtualDisk storage exists.")
-
-            if using_path and os.path.isdir(self.path):
-                raise ValueError, _("The path must be a file or a device,"
-                                    " not a directory")
             self.__set_dev_type()
             return True
 
-        logging.debug("VirtualDisk storage does not exist.")
+
         if self.device == self.DEVICE_FLOPPY or \
            self.device == self.DEVICE_CDROM:
             raise ValueError, _("Cannot create storage for %s device.") % \
                                 self.device
 
-        if using_path:
-            # Not true for api?
+        if not using_storage:
             if self.type is self.TYPE_BLOCK:
                 raise ValueError, _("Local block device path must exist.")
             self.set_type(self.TYPE_FILE, validate=False)
@@ -452,6 +477,7 @@ class VirtualDisk(VirtualDevice):
         else:
             self.__set_dev_type()
 
+        # Applicable for managed or local storage
         ret = self.is_size_conflict()
         if ret[0]:
             raise ValueError, ret[1]
