@@ -25,7 +25,6 @@ import sys
 import os
 import logging
 import errno
-from optparse import OptionParser
 
 import virtinst.cli as cli
 from virtinst.cli import fail
@@ -36,9 +35,9 @@ import virtconv.diskcfg as diskcfg
 
 def parse_args():
     """Parse and verify command line."""
-    opts = OptionParser()
-    opts.set_usage("%prog [options] inputdir|input.vmx "
-        "[outputdir|output.xml]")
+    usage = "%prog [options] inputdir|input.vmx [outputdir|output.xml]"
+    opts = cli.VirtOptionParser(usage=usage)
+
     opts.add_option("-q", "--quiet", action="store_true", dest="quiet",
                     help=("Don't be verbose"))
     opts.add_option("-a", "--arch", type="string", dest="arch",
