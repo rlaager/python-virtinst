@@ -33,6 +33,7 @@ import os.path
 import re
 import libxml2
 import logging
+import subprocess
 from sys import stderr
 
 import libvirt
@@ -44,7 +45,19 @@ from User import User
 KEYBOARD_DIR = "/etc/sysconfig/keyboard"
 XORG_CONF = "/etc/X11/xorg.conf"
 
-def default_route():
+def default_route(nic = None):
+    if platform.system() == 'SunOS':
+        cmd = [ '/usr/bin/netstat', '-rn' ]
+        if nic:
+            cmd += [ '-I', nic ]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        for line in proc.stdout.readlines():
+            vals = line.split()
+            if len(vals) > 1 and vals[0] == 'default':
+                return vals[1]
+        return None
+
     route_file = "/proc/net/route"
     d = file(route_file)
 
@@ -63,7 +76,29 @@ def default_route():
             continue
     return None
 
+def _default_nic():
+    """Return the default NIC to use, if one is specified.
+       This is NOT part of the API and may change at will."""
+
+    dev = ''
+
+    if platform.system() != 'SunOS':
+        return dev
+
+    # XXX: fails without PRIV_XVM_CONTROL
+    proc = subprocess.Popen(['/usr/lib/xen/bin/xenstore-read',
+        'device-misc/vif/default-nic'], stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    out = proc.stdout.readlines()
+    if len(out) > 0:
+        dev = out[0].rstrip()
+
+    return dev
+
 def default_bridge():
+    if platform.system() == 'SunOS':
+        return _default_nic()
+
     rt = default_route()
     if rt is None:
         defn = None
@@ -76,6 +111,9 @@ def default_bridge():
         return "xenbr%d"%(defn)
 
 def default_network(conn):
+    if platform.system() == 'SunOS':
+        return ["bridge", _default_nic()]
+
     dev = default_route()
 
     if dev is not None and not is_uri_remote(conn.getURI()):
@@ -93,12 +131,16 @@ def default_network(conn):
     return ["network", "default"]
 
 def default_connection():
-    if os.path.exists("/var/lib/xend") and os.path.exists("/proc/xen"):
-        return "xen"
-    elif os.path.exists("/usr/bin/qemu") or \
-         os.path.exists("/usr/bin/qemu-kvm") or \
-         os.path.exists("/usr/bin/kvm") or \
-         os.path.exists("/usr/bin/xenner"):
+    if os.path.exists('/var/lib/xend'):
+        if os.path.exists('/dev/xen/evtchn'):
+            return 'xen' 
+        if os.path.exists("/proc/xen"):
+            return 'xen' 
+
+    if os.path.exists("/usr/bin/qemu") or \
+        os.path.exists("/usr/bin/qemu-kvm") or \
+        os.path.exists("/usr/bin/kvm") or \
+        os.path.exists("/usr/bin/xenner"):
         if User.current().has_priv(User.PRIV_QEMU_SYSTEM):
             return "qemu:///system"
         else:
@@ -106,6 +148,9 @@ def default_connection():
     return None
 
 def get_cpu_flags():
+    if platform.system() == 'SunOS':
+        raise OSError('CPU flags not available')
+
     f = open("/proc/cpuinfo")
     lines = f.readlines()
     f.close()
@@ -119,15 +164,16 @@ def get_cpu_flags():
         return flst
     return []
 
-def is_pae_capable():
+def is_pae_capable(conn = None):
     """Determine if a machine is PAE capable or not."""
-    flags = get_cpu_flags()
-    if "pae" in flags:
-        return True
-    return False
+    if not conn:
+        conn = libvirt.open('')
+    return "pae" in conn.getCapabilities()
 
 def is_hvm_capable():
     """Determine if a machine is HVM capable or not."""
+    if platform.system() == 'SunOS':
+        raise OSError('HVM capability not determinible')
 
     caps = ""
     if os.path.exists("/sys/hypervisor/properties/capabilities"):
@@ -143,6 +189,9 @@ def is_kvm_capable():
     return os.path.exists("/dev/kvm")
 
 def is_blktap_capable():
+    if platform.system() == 'SunOS':
+        return False
+
     #return os.path.exists("/dev/xen/blktapctrl")
     f = open("/proc/modules")
     lines = f.readlines()

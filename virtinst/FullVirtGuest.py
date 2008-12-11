@@ -38,7 +38,8 @@ class FullVirtGuest(Guest):
             installer = DistroManager.DistroInstaller(type = type, os_type = "hvm")
         Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "hd"
-        self.features = { "acpi": None, "pae": _util.is_pae_capable(), "apic": None }
+        self.features = { "acpi": None, "pae":
+            _util.is_pae_capable(connection), "apic": None }
         if arch is None:
             arch = platform.machine()
         self.arch = arch
