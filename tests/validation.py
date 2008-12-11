@@ -133,54 +133,65 @@ class TestValidation(unittest.TestCase):
 
     guest = virtinst.Guest(hypervisorURI="test:///default", type="xen")
 
+    def _testInvalid(self, name, obj, testclass, paramname, paramvalue):
+        try:
+            if paramname == '__init__':
+                testclass(*(), **paramvalue)
+            else:
+                setattr(obj, paramname, paramvalue)
+
+            msg = ("Expected TypeError or ValueError: None Raised.\n"
+                   "For '%s' object, paramname '%s', val '%s':" %
+                   (name, paramname, paramvalue))
+            raise AssertionError, msg
+
+        except AssertionError:
+            raise
+        except ValueError:
+            # This is an expected error
+            pass
+        except TypeError:
+            # This is an expected error
+            pass
+        except Exception, e:
+            msg = ("Unexpected exception raised: %s\n" % e +
+                   "Original traceback was: \n%s\n" % traceback.format_exc() +
+                   "For '%s' object, paramname '%s', val '%s':" %
+                   (name, paramname, paramvalue))
+            raise AssertionError, msg
+
+    def _testValid(self, name, obj, testclass, paramname, paramvalue):
+        # Skip NFS test as non-root
+        if name == "distroinstaller" and paramname == "location" and \
+           paramvalue[0:3] == "nfs" and os.geteuid() != 0:
+            return
+
+        try:
+            if paramname is '__init__':
+                testclass(*(), **paramvalue)
+            else:
+                setattr(obj, paramname, paramvalue)
+        except Exception, e:
+            msg = ("Validation case failed, expected success.\n" +
+                   "Exception received was: %s\n" % e +
+                   "Original traceback was: \n%s\n" % traceback.format_exc() +
+                   "For '%s' object, paramname '%s', val '%s':" %
+                   (name, paramname, paramvalue))
+            raise AssertionError, msg
+
     def _testArgs(self, obj, testclass, name):
         """@obj Object to test parameters against
            @testclass Full class to test initialization against
            @name String name indexing args"""
         for paramname in args[name]:
             for val in args[name][paramname]['invalid']:
-
-                try:
-                    if paramname is '__init__':
-                        testclass(*(), **val)
-                    else:
-                        setattr(obj, paramname, val)
-                    msg = "Expected TypeError or ValueError: None raised.\n"
-                    msg += "For '%s' object, paramname '%s', val '%s':" % \
-                        (name, paramname, val)
-                    raise AssertionError, msg
-                except AssertionError, e:
-                    raise e
-                except ValueError:
-                    pass
-                except Exception, e:
-                    msg = "Unexpected exception raised: %s\n" % e
-                    msg += "Original traceback was: \n%s\n" % \
-                           traceback.format_exc()
-                    msg += "For '%s' object, paramname '%s', val '%s':" % \
-                        (name, paramname, val)
-                    raise AssertionError, msg
+                self._testInvalid(name, obj, testclass, paramname, val)
 
             for val in args[name][paramname]['valid']:
-                try:
-                    # Skip NFS test as non-root
-                    if name == "distroinstaller" and paramname == "location" and val[0:3] == "nfs" and os.geteuid() != 0:
-                        continue
-                    if paramname is '__init__':
-                        testclass(*(), **val)
-                    else:
-                        setattr(obj, paramname, val)
-                except Exception, e:
-                    msg = "Validation case failed, expected success.\n"
-                    msg +="Exception received was: %s\n" % e
-                    msg += "Original traceback was: \n%s\n" % \
-                           traceback.format_exc()
-                    msg += "For '%s' object, paramname '%s', val '%s':" % \
-                        (name, paramname, val)
-                    raise AssertionError, msg
+                self._testValid(name, obj, testclass, paramname, val)
+
 
     # Actual Tests
-
     def testGuestValidation(self):
         PVGuest = virtinst.ParaVirtGuest(hypervisorURI="test:///default",\
                                          type="xen")
