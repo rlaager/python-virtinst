@@ -44,9 +44,12 @@ class ImageInstaller(Guest.Installer):
         else:
             self._boot_caps = image.domain.boots[boot_index]
 
-        self._guest = self._capabilities.guestForOSType(self._boot_caps.type, self._boot_caps.arch)
+        self._guest = self._capabilities.guestForOSType(self.boot_caps.type,
+                                                        self.boot_caps.arch)
         if self._guest is None:
-            raise PlatformMatchException(_("Unsupported virtualization type"))
+            raise PlatformMatchException(_("Unsupported virtualization type: "
+                                           "%s %s" % (self.boot_caps.type,
+                                                      self.boot_caps.arch)))
 
         self._domain = self._guest.bestDomainType()
         self.type = self._domain.hypervisor_type
