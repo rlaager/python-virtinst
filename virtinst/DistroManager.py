@@ -339,10 +339,6 @@ class DistroInstaller(Guest.Installer):
 
 
 class PXEInstaller(Guest.Installer):
-    def __init__(self, type = "xen", location = None, boot = None,
-                 extraargs = None, os_type = None, conn = None):
-        Guest.Installer.__init__(self, type, location, boot, extraargs,
-                                 os_type, conn=conn)
 
     def prepare(self, guest, meter, distro = None):
         pass
