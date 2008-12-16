@@ -14,17 +14,56 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import libvirt
 import virtinst
 from virtinst import VirtualDisk
+
+# Test helpers
+from storage import createPool, createVol
+
 import unittest
+import logging
 import traceback
 import os
 
 # Template for adding arguments to test
-#      { 'label'    : { 'VAR'       : { 'invalid' : [param],\
-#                                       'valid'   : [param]},\
-#                       '__init__'  : { 'invalid' : [{'initparam':val}],\
-#                                       'valid'   : [{'initparam':val}]}\
+# { 'label' : { \
+#       'VAR' : { \
+#           'invalid' : [param],
+#           'valid'   : [param]},
+#       '__init__'  : { \
+#           'invalid' : [{'initparam':val}],
+#           'valid'   : [{'initparam':val}]}
+#
+#   Anything in 'valid' should throw no error
+#   Anything in 'invalid' should throw ValueError or TypeError
+
+# We install several storage pools on the connection to ensure
+# we aren't bumping up against errors in that department.
+logging.debug("Starting 'validation' storage setup.")
+testconn = libvirt.open("test:///default")
+
+offdskpaths = [ "/dev", ]
+for path in offdskpaths:
+    createPool(testconn, virtinst.Storage.StoragePool.TYPE_DISK,
+               tpath=path, start=False, format="dos")
+
+dirpaths = [ "/var/lib/libvirt/images", "/", "/tmp" ]
+for path in dirpaths:
+    createPool(testconn, virtinst.Storage.StoragePool.TYPE_DIR,
+               tpath=path, start=True)
+
+dskpaths = [ "/somedev", "/dev/disk/by-uuid" ]
+for path in dskpaths:
+    createPool(testconn, virtinst.Storage.StoragePool.TYPE_DISK,
+               format="dos", tpath=path, start=False)
+
+# Create a usable pool/vol pairs
+p = createPool(testconn, virtinst.Storage.StoragePool.TYPE_DIR,
+               tpath="/pool-exist", start=True, poolname="pool-exist")
+dirvol = createVol(p, "vol-exist")
+volinst = virtinst.Storage.StorageVolume(pool=p, name="somevol", capacity=1)
+logging.debug("Ending 'validation' storage setup.")
 
 args = { \
 
@@ -71,6 +110,7 @@ args = { \
     },
 
 'disk' : { \
+    'init_conns' : [ testconn, None ],
     '__init__' : { \
         'invalid' : [{ 'path' : 0},
                      { 'path' : '/root' },
@@ -81,6 +121,14 @@ args = { \
                      { 'path' :'/dev/null', 'type' : VirtualDisk.TYPE_BLOCK},
                      { 'path' : None },
                      { 'path' : "noexist", 'size' : 900000, 'sparse' : False },
+                     { 'path' : "noexist", 'type' : VirtualDisk.DEVICE_CDROM},
+                     { 'volName' : ("pool-exist", "vol-exist")},
+                     { 'conn' : testconn, 'volName' : ("pool-noexist",
+                                                       "vol-exist")},
+                     { 'conn' : testconn, 'volName' : ("pool-exist",
+                                                       "vol-noexist")},
+                     { 'conn' : testconn, 'volName' : ( 1234,
+                                                       "vol-noexist")},
                     ],
 
         'valid' :   [{ 'path' : '/dev/loop0' },
@@ -88,11 +136,18 @@ args = { \
                      { 'path' :'/dev/null'},
                      { 'path' : None, 'device' : VirtualDisk.DEVICE_CDROM},
                      { 'path' : None, 'device' : VirtualDisk.DEVICE_FLOPPY},
+                     { 'conn' : testconn, 'volName' : ("pool-exist",
+                                                       "vol-exist")},
+                     { 'conn' : testconn, 'path' : "/pool-exist/vol-exist" },
+                     { 'conn' : testconn, 'path' : "/pool-exist/vol-noexist",
+                       'size' : 1 },
+                     { 'conn' : testconn, 'volInstall': volinst},
                     ]
                 },
 },
 
 'installer' : { \
+    'init_conns' : [ testconn, None ],
     'boot' : { \
         'invalid' : ['', 0, ('1element'), ['1el', '2el', '3el'],
                      {'1element': '1val'},
@@ -104,11 +159,18 @@ args = { \
         'valid'   : ['someargs']}, },
 
 'distroinstaller' : { \
+    'init_conns' : [ testconn, None ],
     'location'  : { \
-        'invalid' : ['nogood', 'http:/nogood'],
-        'valid'   : ['/dev/null', 'http://web', 'ftp://ftp', 'nfs:nfsserv']}},
+        'invalid' : ['nogood', 'http:/nogood', [], None,
+                     ("pool-noexist", "vol-exist"),
+                     ("pool-exist", "vol-noexist"),
+                    ],
+        'valid'   : ['/dev/null', 'http://web', 'ftp://ftp', 'nfs:nfsserv',
+                     ("pool-exist", "vol-exist"),
+                    ]}},
 
 'network'   : { \
+    'init_conns' : [ testconn, None ],
     '__init__'  : { \
         'invalid' : [ {'macaddr':0}, {'macaddr':''}, {'macaddr':'$%XD'},
                       {'type':'network'} ],
@@ -130,13 +192,22 @@ args = { \
 
 class TestValidation(unittest.TestCase):
 
+    def _getInitConns(self, label):
+        if args[label].has_key("init_conns"):
+            return args[label]["init_conns"]
+        return [testconn]
 
-    guest = virtinst.Guest(hypervisorURI="test:///default", type="xen")
+    def _runObjInit(self, testclass, valuedict, defaultsdict=None):
+        if defaultsdict:
+            for key in defaultsdict.keys():
+                if not valuedict.has_key(key):
+                    valuedict[key] = defaultsdict.get(key)
+        testclass(*(), **valuedict)
 
     def _testInvalid(self, name, obj, testclass, paramname, paramvalue):
         try:
             if paramname == '__init__':
-                testclass(*(), **paramvalue)
+                self._runObjInit(testclass, paramvalue)
             else:
                 setattr(obj, paramname, paramvalue)
 
@@ -161,14 +232,15 @@ class TestValidation(unittest.TestCase):
             raise AssertionError, msg
 
     def _testValid(self, name, obj, testclass, paramname, paramvalue):
-        # Skip NFS test as non-root
-        if name == "distroinstaller" and paramname == "location" and \
-           paramvalue[0:3] == "nfs" and os.geteuid() != 0:
-            return
 
         try:
             if paramname is '__init__':
-                testclass(*(), **paramvalue)
+                conns = self._getInitConns(name)
+                if paramvalue.has_key("conn"):
+                    conns = [paramvalue["conn"]]
+                for conn in conns:
+                    paramvalue["conn"] = conn
+                    self._runObjInit(testclass, paramvalue)
             else:
                 setattr(obj, paramname, paramvalue)
         except Exception, e:
@@ -179,21 +251,30 @@ class TestValidation(unittest.TestCase):
                    (name, paramname, paramvalue))
             raise AssertionError, msg
 
-    def _testArgs(self, obj, testclass, name):
+    def _testArgs(self, obj, testclass, name, exception_check=None):
         """@obj Object to test parameters against
            @testclass Full class to test initialization against
            @name String name indexing args"""
-        for paramname in args[name]:
-            for val in args[name][paramname]['invalid']:
+        logging.debug("Testing '%s'" % name)
+        testdict = args[name]
+
+        for paramname in testdict.keys():
+            if paramname == "init_conns":
+                continue
+
+            for val in testdict[paramname]['invalid']:
                 self._testInvalid(name, obj, testclass, paramname, val)
 
-            for val in args[name][paramname]['valid']:
+            for val in testdict[paramname]['valid']:
+                if exception_check:
+                    if exception_check(obj, paramname, val):
+                        continue
                 self._testValid(name, obj, testclass, paramname, val)
 
 
     # Actual Tests
     def testGuestValidation(self):
-        PVGuest = virtinst.ParaVirtGuest(hypervisorURI="test:///default",\
+        PVGuest = virtinst.ParaVirtGuest(connection=testconn,
                                          type="xen")
         self._testArgs(PVGuest, virtinst.Guest, 'guest')
 
@@ -202,12 +283,12 @@ class TestValidation(unittest.TestCase):
         self._testArgs(disk, VirtualDisk, 'disk')
 
     def testFVGuestValidation(self):
-        FVGuest = virtinst.FullVirtGuest(hypervisorURI="test:///default",\
+        FVGuest = virtinst.FullVirtGuest(connection=testconn,
                                          type="xen")
         self._testArgs(FVGuest, virtinst.FullVirtGuest, 'fvguest')
 
     def testNetworkValidation(self):
-        network = virtinst.VirtualNetworkInterface(conn=self.guest.conn)
+        network = virtinst.VirtualNetworkInterface(conn=testconn)
         self._testArgs(network, virtinst.VirtualNetworkInterface, 'network')
 
         # Test MAC Address collision
@@ -218,25 +299,43 @@ class TestValidation(unittest.TestCase):
         for params in ({'macaddr' : hostmac},):
             network = virtinst.VirtualNetworkInterface(*(), **params)
             self.assertRaises(RuntimeError, network.setup, \
-                              self.guest.conn)
+                              testconn)
 
         # Test dynamic MAC/Bridge success
         try:
             network = virtinst.VirtualNetworkInterface()
-            network.setup(self.guest.conn)
+            network.setup(testconn)
         except Exception, e:
             raise AssertionError, \
                 "Network setup with no params failed, expected success." + \
                 " Exception was: %s: %s" % (str(e), "".join(traceback.format_exc()))
 
     def testDistroInstaller(self):
-        dinstall = virtinst.DistroInstaller()
-        self._testArgs(dinstall, virtinst.DistroInstaller, 'installer')
-        self._testArgs(dinstall, virtinst.DistroInstaller, 'distroinstaller')
+        def exception_check(obj, paramname, paramvalue):
+            if paramname == "location":
+                # Skip NFS test as non-root
+                if paramvalue[0:3] == "nfs" and os.geteuid() != 0:
+                    return True
+
+                # Don't pass a tuple location if installer has no conn
+                if not obj.conn and type(paramvalue) == tuple:
+                    return True
+
+            return False
+
+        label = 'distroinstaller'
+        for conn in self._getInitConns(label):
+            dinstall = virtinst.DistroInstaller(conn=conn)
+            self._testArgs(dinstall, virtinst.DistroInstaller, 'installer',
+                           exception_check)
+            self._testArgs(dinstall, virtinst.DistroInstaller, label,
+                           exception_check)
 
     def testCloneManager(self):
-        cman = virtinst.CloneManager.CloneDesign(self.guest.conn)
-        self._testArgs(cman, virtinst.CloneManager.CloneDesign, 'clonedesign')
+        label = 'clonedesign'
+        for conn in self._getInitConns(label):
+            cman = virtinst.CloneManager.CloneDesign(conn)
+            self._testArgs(cman, virtinst.CloneManager.CloneDesign, label)
 
 
 if __name__ == "__main__":
