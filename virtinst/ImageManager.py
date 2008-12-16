@@ -18,12 +18,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import os
+import logging
+
 import Guest
 import ImageParser
 import CapabilitiesParser as Cap
-from VirtualDisk import VirtualDisk
-import os
 import _util
+from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
 class ImageInstallerException(Exception):
@@ -51,6 +53,7 @@ class ImageInstaller(Guest.Installer):
                                            "%s %s" % (self.boot_caps.type,
                                                       self.boot_caps.arch)))
 
+        self.os_type = self.boot_caps.type
         self._domain = self._guest.bestDomainType()
         self.type = self._domain.hypervisor_type
         self.arch = self._guest.arch
@@ -110,39 +113,37 @@ class ImageInstaller(Guest.Installer):
 
             guest._install_disks.append(d)
 
-    def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
-        osblob = "<os>\n"
+    def _get_osblob(self, install, hvm, arch=None, loader=None, conn=None):
 
-        if hvm:
-            os_type = "hvm"
-        else:
-            # Hack for older libvirt Xen driver
-            if self.type == "xen":
-                os_type = "linux"
-            else:
-                os_type = "xen"
+        kernel = { "kernel" : self.boot_caps.kernel,
+                   "initrd" : self.boot_caps.initrd,
+                   "extrargs" : self.boot_caps.cmdline }
 
-        if arch:
-            osblob += "    <type arch='%s'>%s</type>\n" % (arch, os_type)
-        else:
-            osblob += "    <type>%s</type>\n" % os_type
-
-        if loader:
-            osblob += "    <loader>%s</loader>\n" % loader
         if self.boot_caps.kernel:
-            osblob += "    <kernel>%s</kernel>\n"   % _util.xml_escape(self._abspath(self.boot_caps.kernel))
-            osblob += "    <initrd>%s</initrd>\n"   % _util.xml_escape(self._abspath(self.boot_caps.initrd))
-            osblob += "    <cmdline>%s</cmdline>\n" % _util.xml_escape(self.boot_caps.cmdline)
-            osblob += "  </os>"
-        elif hvm:
-            if self.boot_caps.bootdev:
-                osblob += "    <boot dev='%s'/>\n" % self.boot_caps.bootdev
-            osblob += "  </os>"
-        elif self.boot_caps.loader == "pygrub" or (self.boot_caps.loader is None and self.boot_caps.type == "xen"):
-            osblob += "  </os>\n"
-            osblob += "  <bootloader>%s</bootloader>" % _util.pygrub_path(conn)
+            install = True
+        else:
+            install = False
 
-        return osblob
+        # XXX: The installer/guest dichotomy here is kind of messed up,
+        # XXX: since the installer has the 'image' object which contains
+        # XXX: a lot of info that the guest does as well. Take the installers
+        # XXX: data over the guests.
+        arch   = self.boot_caps.arch or arch
+
+        # self.boot_caps.loader is _not_ analagous to guest loader tag
+        loader = loader
+        ishvm  = self.boot_caps.type == "hvm"
+
+        if ishvm != hvm:
+            logging.debug("Guest and ImageInstaller do not agree on virt "
+                          "type. Using Guests'.")
+            ishvm = hvm
+
+        return self._get_osblob_helper(isinstall=install, ishvm=ishvm,
+                                       arch=arch, loader=loader,
+                                       conn=conn, kernel=kernel,
+                                       bootdev=self.boot_caps.bootdev)
+
 
     def post_install_check(self, guest):
         return True
