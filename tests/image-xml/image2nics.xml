@@ -5,7 +5,7 @@
     <boot type='xen'>
       <guest>
         <os_type>xen</os_type>
-        <arch>i386</arch>
+        <arch>i686</arch>
         <features><pae/></features>
       </guest>
       <os>

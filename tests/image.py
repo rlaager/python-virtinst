@@ -19,6 +19,9 @@ import virtinst
 import virtinst.ImageParser
 import os
 
+import tests
+import xmlconfig
+
 class TestImageParser(unittest.TestCase):
 
     def testImageParsing(self):
@@ -42,5 +45,35 @@ class TestImageParser(unittest.TestCase):
 
         img = virtinst.ImageParser.parse(xml, ".")
         self.assertEqual(2, img.domain.interface)
+
+
+    # Build libvirt XML from the image xml
+    # XXX: This doesn't set up devices, so the guest xml will be pretty
+    # XXX: sparse. There should really be a helper in the Image classes
+    # XXX: that turns virt-image xml into a minimal Guest object, but
+    # XXX: maybe that's just falling into the realm of virt-convert
+    def testImage2XML(self):
+        basedir = "tests/image-xml/"
+        image2guestdir = basedir + "image2guest/"
+        image = virtinst.ImageParser.parse_file(basedir + "image.xml")
+
+        # ( boot index from virt-image xml, filename to compare against)
+        matrix = [ (0, "image-xenpv32.xml"),
+                   (1, "image-xenfv32.xml") ]
+
+        g = xmlconfig.get_basic_paravirt_guest()
+        caps = virtinst.CapabilitiesParser.parse(g.conn.getCapabilities())
+        for idx, fname in matrix:
+            inst = virtinst.ImageInstaller(image, caps, boot_index=idx)
+
+            if inst.is_hvm():
+                g = xmlconfig.get_basic_fullyvirt_guest()
+            else:
+                g = xmlconfig.get_basic_paravirt_guest()
+
+            g.installer = inst
+            tests.diff_compare(g.get_config_xml(install=True),
+                               image2guestdir + fname)
+
 if __name__ == "__main__":
     unittest.main()
