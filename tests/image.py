@@ -15,6 +15,7 @@
 # MA 02110-1301 USA.
 
 import unittest
+import libvirt
 import virtinst
 import virtinst.ImageParser
 import os
@@ -24,8 +25,12 @@ import xmlconfig
 
 class TestImageParser(unittest.TestCase):
 
+    basedir = "tests/image-xml/"
+    conn = libvirt.open("test:///default")
+    caps = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
+
     def testImageParsing(self):
-        f = open(os.path.join("tests/image-xml", "image.xml"), "r")
+        f = open(os.path.join(self.basedir, "image.xml"), "r")
         xml = f.read()
         f.close()
 
@@ -39,13 +44,19 @@ class TestImageParser(unittest.TestCase):
         self.assertEqual("xvdb", boot.drives[1].target)
 
     def testMultipleNics(self):
-        f = open(os.path.join("tests/image-xml", "image2nics.xml"), "r")
+        f = open(os.path.join(self.basedir, "image2nics.xml"), "r")
         xml = f.read()
         f.close()
 
         img = virtinst.ImageParser.parse(xml, ".")
         self.assertEqual(2, img.domain.interface)
 
+    def testBadArch(self):
+        """Makes sure we sanitize i386->i686"""
+        image = virtinst.ImageParser.parse_file(self.basedir +
+                                                "image-bad-arch.xml")
+        virtinst.ImageInstaller(image, self.caps, 0)
+        self.assertTrue(True)
 
     # Build libvirt XML from the image xml
     # XXX: This doesn't set up devices, so the guest xml will be pretty
@@ -53,18 +64,15 @@ class TestImageParser(unittest.TestCase):
     # XXX: that turns virt-image xml into a minimal Guest object, but
     # XXX: maybe that's just falling into the realm of virt-convert
     def testImage2XML(self):
-        basedir = "tests/image-xml/"
-        image2guestdir = basedir + "image2guest/"
-        image = virtinst.ImageParser.parse_file(basedir + "image.xml")
+        image2guestdir = self.basedir + "image2guest/"
+        image = virtinst.ImageParser.parse_file(self.basedir + "image.xml")
 
         # ( boot index from virt-image xml, filename to compare against)
         matrix = [ (0, "image-xenpv32.xml"),
                    (1, "image-xenfv32.xml") ]
 
-        g = xmlconfig.get_basic_paravirt_guest()
-        caps = virtinst.CapabilitiesParser.parse(g.conn.getCapabilities())
         for idx, fname in matrix:
-            inst = virtinst.ImageInstaller(image, caps, boot_index=idx)
+            inst = virtinst.ImageInstaller(image, self.caps, boot_index=idx)
 
             if inst.is_hvm():
                 g = xmlconfig.get_basic_fullyvirt_guest()
