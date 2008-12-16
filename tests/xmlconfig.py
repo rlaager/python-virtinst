@@ -59,6 +59,10 @@ class TestXMLConfig(unittest.TestCase):
         try:
             actualXML = xenguest.get_config_xml(install=install)
             tests.diff_compare(actualXML, filename)
+
+            # Should probably break this out into a separate function
+            dom = xenguest.conn.defineXML(actualXML)
+            dom.create()
         finally:
             xenguest.installer.cleanup()
 
