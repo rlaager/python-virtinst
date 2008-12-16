@@ -33,13 +33,14 @@ from virtinst import _virtinst as _
 
 class FullVirtGuest(Guest):
 
-    def __init__(self, type=None, arch=None, connection=None, hypervisorURI=None, emulator=None, installer=None):
+    def __init__(self, type=None, arch=None, connection=None,
+                 hypervisorURI=None, emulator=None, installer=None):
         if not installer:
             installer = DistroManager.DistroInstaller(type = type, os_type = "hvm")
         Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "hd"
         self.features = { "acpi": None, "pae":
-            _util.is_pae_capable(connection), "apic": None }
+            _util.is_pae_capable(self.conn), "apic": None }
         if arch is None:
             arch = platform.machine()
         self.arch = arch
