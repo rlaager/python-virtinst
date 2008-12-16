@@ -25,6 +25,7 @@
 
 import stat
 import os
+import re
 
 from virtinst import util
 
@@ -34,7 +35,7 @@ def stat_disk(path):
         return True, 0
 
     mode = os.stat(path)[stat.ST_MODE]
-   
+
     # os.path.getsize('/dev/..') can be zero on some platforms
     if stat.S_ISBLK(mode):
         fd = os.open(path, os.O_RDONLY)
@@ -46,7 +47,7 @@ def stat_disk(path):
         return True, os.path.getsize(path)
 
     return True, 0
-  
+
 def blkdev_size(path):
     """Return the size of the block device.  We can't use os.stat() as
     that returns zero on many platforms."""
@@ -55,6 +56,18 @@ def blkdev_size(path):
     size = os.lseek(fd, 0, 2)
     os.close(fd)
     return size
+
+def sanitize_arch(arch):
+    """Ensure passed architecture string is the format we expect it.
+       Returns the sanitized result"""
+    if not arch:
+        return arch
+    tmparch = arch.lower().strip()
+    if re.match(r'i[3-9]86', tmparch):
+        return "i686"
+    elif tmparch == "amd64":
+        return "x86_64"
+    return arch
 
 #
 # These functions accidentally ended up in the API under virtinst.util

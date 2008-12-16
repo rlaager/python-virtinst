@@ -23,6 +23,7 @@ import os.path
 import libxml2
 import CapabilitiesParser
 from virtinst import _virtinst as _
+import _util
 import logging
 
 class ParserException(Exception):
@@ -157,7 +158,7 @@ class Boot:
         self.kernel = xpathString(node, "os/kernel")
         self.initrd = xpathString(node, "os/initrd")
         self.cmdline = xpathString(node, "os/cmdline")
-        self.arch = xpathString(node, "guest/arch")
+        self.arch = _util.sanitize_arch(xpathString(node, "guest/arch"))
 
         fl = node.xpathEval("guest/features")
         if len(fl) > 1:
