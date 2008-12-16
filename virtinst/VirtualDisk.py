@@ -108,7 +108,7 @@ class VirtualDisk(VirtualDevice):
         @type volObject: libvirt.virStorageVol
         @param volInstall: StorageVolume instance to build for new storage
         @type volInstall: L{StorageVolume}
-        @param volName: StorageVolume lookup information,
+        @param volName: Existing StorageVolume lookup information,
                         (parent pool name, volume name)
         @type volName: C{tuple} of (C{str}, C{str})
         @param bus: Emulated bus type (ide, scsi, virtio, ...)
@@ -331,12 +331,21 @@ class VirtualDisk(VirtualDevice):
         pool = _util.lookup_pool_by_path(self.conn,
                                          os.path.dirname(self.path))
         if pool:
+            # Is pool running?
+            if pool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
+                pool = None
+
             try:
                 vol = self.conn.storageVolLookupByPath(self.path)
             except Exception, e:
-                # Pool may need to be refreshed
-                pool.refresh(0)
                 try:
+                    try:
+                        # Pool may need to be refreshed, but if it errors,
+                        # invalidate it
+                        pool.refresh(0)
+                    except:
+                        pool = None
+                        raise
                     vol = self.conn.storageVolLookupByPath(self.path)
                 except Exception, e:
                     verr = str(e)
@@ -368,9 +377,6 @@ class VirtualDisk(VirtualDevice):
             elif self._is_remote():
                 raise ValueError(_("'%s' is not managed on remote "
                                    "host: %s" % (self.path, verr)))
-            else:
-                logging.debug("Didn't find path '%s' managed on "
-                              "connection: %s" % (self.path, verr))
         else:
             self._set_vol_object(vol, validate=False)
 
@@ -381,9 +387,17 @@ class VirtualDisk(VirtualDevice):
         VirtualDisk fields
         """
 
-        if self.vol_object and self.path != self.vol_object.path():
+        newpath = None
+        if self.vol_object:
+            newpath = self.vol_object.path()
+        elif self.vol_install:
+            newpath = _util.get_xml_path(self.vol_install.pool.XMLDesc(0),
+                                         "/pool/target/path") + \
+                      self.vol_install.name
+
+        if newpath and newpath != self.path:
             logging.debug("Overwriting 'path' from passed volume object.")
-            self._set_path(self.vol_object.path(), validate=False)
+            self._set_path(newpath, validate=False)
 
         if self.vol_install:
             newsize = self.vol_install.capacity/1024.0/1024.0/1024.0
@@ -435,19 +449,19 @@ class VirtualDisk(VirtualDevice):
 
         # The main distinctions from this point forward:
         # Are we doing storage API operations or local media checks?
-        using_storage = self.__storage_specified() or self.path is None
+        managed_storage = self.__storage_specified() or self.path is None
         # Do we need to create the storage?
-        create_storage = not ((using_storage and self.vol_object) or \
-                              (self.path and os.path.exists(self.path)))
+        create_media = not ((managed_storage and self.vol_object) or \
+                            (self.path and os.path.exists(self.path)))
 
-        if self._is_remote() and not using_storage:
+        if self._is_remote() and not managed_storage:
             raise ValueError, _("Must specify libvirt managed storage if on "
                                 "a remote connection")
 
         # If not creating the storage, our job is easy
-        if not create_storage:
+        if not create_media:
             # Make sure we have access to the local path
-            if not using_storage:
+            if not managed_storage:
                 if os.path.isdir(self.path):
                     raise ValueError(_("The path must be a file or a device,"
                                        " not a directory"))
@@ -462,7 +476,7 @@ class VirtualDisk(VirtualDevice):
             raise ValueError, _("Cannot create storage for %s device.") % \
                                 self.device
 
-        if not using_storage:
+        if not managed_storage:
             if self.type is self.TYPE_BLOCK:
                 raise ValueError, _("Local block device path must exist.")
             self.set_type(self.TYPE_FILE, validate=False)
