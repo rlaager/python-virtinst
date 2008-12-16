@@ -136,6 +136,32 @@ def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
     finally:
         fetcher.cleanupLocation()
 
+def _is_url(url):
+    """
+    Check if passed string is a (psuedo) valid http, ftp, or nfs url.
+    """
+    return (url.startswith("http://") or url.startswith("ftp://") or \
+            url.startswith("nfs:")) and not os.path.exists(url)
+
+def _sanitize_url(url):
+    """
+    Do nothing for http or ftp, but make sure nfs is in the expected format
+    """
+    if url.startswith("nfs://"):
+        # Convert RFC compliant NFS      nfs://server/path/to/distro
+        # to what mount/anaconda expect  nfs:server:/path/to/distro
+        # and carry the latter form around internally
+        url = "nfs:" + url[6:]
+
+        # If we need to add the : after the server
+        index = url.find("/", 4)
+        if index == -1:
+            raise ValueError(_("Invalid NFS format: No path specified."))
+        if url[index - 1] != ":":
+            url = url[:index] + ":" + url[index:]
+
+    return url
+
 class DistroInstaller(Guest.Installer):
     def __init__(self, type = "xen", location = None, boot = None,
                  extraargs = None, os_type = None, conn = None):
@@ -148,53 +174,77 @@ class DistroInstaller(Guest.Installer):
             "extraargs" : "",
         }
 
+        # True == location is a filesystem path
+        # False == location is a url
+        self._location_is_path = True
+
     def get_location(self):
         return self._location
     def set_location(self, val):
-        # 'location' is kind of overloaded: it can be a local file or device
-        # path (for a boot.iso), a local directory (for a tree), a
-        # tuple of the form (poolname, volname), or an http, ftp, or
-        # nfs for an iso or a tree
+        """
+        Valid values for location:
+        1) it can be a local file (ex. boot.iso), directory (ex. distro tree)
+           or physical device (ex. cdrom media)
+        2) tuple of the form (poolname, volname) pointing to a file or device
+           which will set location as that path
+        3) http, ftp, or nfs path for an install tree
+        """
+        is_tuple = False
+        validated = True
+        self._location_is_path = True
+
+        # Basic validation
+        if type(val) is not str and (type(val) is not tuple and len(val) != 2):
+            raise ValueError(_("Invalid 'location' type %s." % type(val)))
+
         if type(val) is tuple and len(val) == 2:
             logging.debug("DistroInstaller location is a (poolname, volname)"
                           " tuple")
+            if not self.conn:
+                raise ValueError(_("'conn' must be specified if 'location' is"
+                                   " a storage tuple."))
+            is_tuple = True
+
+        elif _is_url(val):
+            val = _sanitize_url(val)
+            self._location_is_path = False
+            logging.debug("DistroInstaller location is a network source.")
+
         elif os.path.exists(os.path.abspath(val)) \
              and (not self.conn or not _util.is_uri_remote(self.conn.getURI())):
             val = os.path.abspath(val)
             logging.debug("DistroInstaller location is a local "
                           "file/path: %s" % val)
-        elif val.startswith("nfs://"):
-            # Convert RFC compliant NFS      nfs://server/path/to/distro
-            # to what mount/anaconda expect  nfs:server:/path/to/distro
-            # and carry the latter form around internally
-            val = "nfs:" + val[6:]
 
-            # If we need to add the : after the server
-            index = val.find("/", 4)
-            if index == -1:
-                raise ValueError(_("Invalid NFS format: No path specified."))
-            if val[index - 1] != ":":
-                val = val[:index] + ":" + val[index:] 
-
-        elif (val.startswith("http://") or val.startswith("ftp://") or
-              val.startswith("nfs:")):
-            logging.debug("DistroInstaller location is a network source.")
-        elif self.conn and _util.is_storage_capable(self.conn) and \
-             _util.is_uri_remote(self.conn.getURI()):
-            # If conn is specified, pass the path to a VirtualDisk object
-            # and see what comes back
-            try:
-                VirtualDisk(path=val, device=VirtualDisk.DEVICE_CDROM,
-                            conn=self.conn)
-            except Exception, e:
-                raise ValueError(_("Checking installer location failed: %s" %\
-                                 str(e)))
         else:
+            # Didn't determine anything about the location
+            validated = False
+
+
+        if is_tuple or (validated == False and self.conn and
+                        _util.is_storage_capable(self.conn)):
+            # If user passed a storage tuple, OR
+            # We couldn't determine the location type and a storage capable
+            #   connection was passed:
+            # Pass the parameters off to VirtualDisk to validate, and pull
+            # out the path
+            stuple = (is_tuple and val) or None
+            path = (not validated and val) or None
+
+            try:
+                d = VirtualDisk(path=path, device=VirtualDisk.DEVICE_CDROM,
+                                conn=self.conn, volName=stuple)
+                val = d.path
+            except Exception, e:
+                logging.debug(str(e))
+                raise ValueError(_("Checking installer location failed. "
+                                   "Could not find path '%s':" % val))
+        elif not validated:
             raise ValueError(_("Install media location must be an NFS, HTTP "
                                "or FTP network install source, or an existing "
-                               "local file/device"))
+                               "file/device"))
 
-        if (val.startswith("nfs:") and not
+        if (not self._location_is_path and val.startswith("nfs:") and not
             User.current().has_priv(User.PRIV_NFS_MOUNT, self.conn.getURI())):
             raise ValueError(_('Privilege is required for NFS installations'))
 
@@ -202,14 +252,7 @@ class DistroInstaller(Guest.Installer):
     location = property(get_location, set_location)
 
     def _prepare_cdrom(self, guest, distro, meter):
-        cdrom = None
-        vol_tuple = None
-        if type(self.location) is tuple:
-            vol_tuple = self.location
-        elif self.location.startswith("/"):
-            # Huzzah, a local file/device
-            cdrom = self.location
-        else:
+        if not self._location_is_path:
             # Xen needs a boot.iso if its a http://, ftp://, or nfs: url
             arch = os.uname()[4]
             if hasattr(guest, "arch"):
@@ -221,9 +264,8 @@ class DistroInstaller(Guest.Installer):
                                     arch = arch)
             self._tmpfiles.append(cdrom)
 
-        self._install_disk = VirtualDisk(path=cdrom,
+        self._install_disk = VirtualDisk(path=self.location,
                                          conn=guest.conn,
-                                         volName=vol_tuple,
                                          device=VirtualDisk.DEVICE_CDROM,
                                          readOnly=True,
                                          transient=True)
@@ -259,8 +301,10 @@ class DistroInstaller(Guest.Installer):
 
         # If they're installing off a local file/device, we map it
         # through to a virtual harddisk
-        if self.location is not None and self.location.startswith("/") and not os.path.isdir(self.location):
-            self._install_disk = VirtualDisk(self.location,
+        if self.location is not None and self._location_is_path \
+           and not os.path.isdir(self.location):
+            self._install_disk = VirtualDisk(conn=guest.conn,
+                                             path=self.location,
                                              readOnly=True,
                                              transient=True)
 
@@ -283,7 +327,7 @@ class DistroInstaller(Guest.Installer):
             self._prepare_kernel_and_initrd(guest, distro, meter)
 
     def _get_osblob(self, install, hvm, arch = None, loader = None,
-                     conn = None):
+                    conn = None):
         if install:
             bootdev = "cdrom"
         else:
