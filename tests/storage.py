@@ -18,72 +18,82 @@ import unittest
 from virtinst.Storage import StoragePool, StorageVolume
 import libvirt
 
-class TestStorage(unittest.TestCase):
+def _findFreePoolName(conn, namebase):
 
-    # self.assertEqual
+    i = 0
+    while True:
+        poolname = namebase + "-%d" % i
+        try:
+            StorageVolume.lookup_pool_by_name(conn=conn, pool_name=poolname)
+            i += 1
+        except:
+            return poolname
+
+def createPool(conn, ptype, poolname=None, format=None, tpath=None,
+               spath=None, start=True):
+    poolclass = StoragePool.get_pool_class(ptype)
+
+    if poolname is None:
+        poolname = _findFreePoolName(conn, str(ptype) + "-pool")
+
+    pool_inst = poolclass(conn=conn, name=poolname)
+
+    if hasattr(pool_inst, "host"):
+        pool_inst.host = "some.random.hostname"
+    if hasattr(pool_inst, "source_path"):
+        pool_inst.source_path = spath or "/some/source/path"
+    if hasattr(pool_inst, "target_path"):
+        pool_inst.target_path = tpath or "/some/target/path"
+    if format and hasattr(pool_inst, "format"):
+        pool_inst.format = format
+
+    return pool_inst.install(build=True, meter=None, create=start)
+
+def createVol(poolobj, volname=None):
+    volclass = StorageVolume.get_volume_for_pool(pool_object=poolobj)
+
+    if volname == None:
+        volname = poolobj.name() + "-vol"
+
+    alloc = 5 * 1024 * 1024 * 1024
+    cap = 10 * 1024 * 1024 * 1024
+    vol_inst = volclass(name=volname, capacity=cap, allocation=alloc,
+                        pool=poolobj)
+
+    return vol_inst.install(meter=False)
+
+class TestStorage(unittest.TestCase):
 
     def setUp(self):
         self.conn = libvirt.open("test:///default")
 
-    def _createPool(self, ptype, poolname=None, format=None):
-        poolclass = StoragePool.get_pool_class(ptype)
-
-        if poolname is None:
-            poolname = str(ptype) + "-pool"
-
-        pool_inst = poolclass(conn=self.conn, name=poolname)
-
-        if hasattr(pool_inst, "host"):
-            pool_inst.host = "some.random.hostname"
-        if hasattr(pool_inst, "source_path"):
-            pool_inst.source_path = "/some/source/path"
-        if hasattr(pool_inst, "target_path"):
-            pool_inst.target_path = "/some/target/path"
-        if format and hasattr(pool_inst, "format"):
-            pool_inst.format = format
-
-        return pool_inst.install(build=True, meter=None, create=True)
-
-    def _createVol(self, poolobj, volname=None):
-        volclass = StorageVolume.get_volume_for_pool(pool_object=poolobj)
-
-        if volname == None:
-            volname = poolobj.name() + "-vol"
-
-        alloc = 5 * 1024 * 1024 * 1024
-        cap = 10 * 1024 * 1024 * 1024
-        vol_inst = volclass(name=volname, capacity=cap, allocation=alloc,
-                            pool=poolobj)
-
-        return vol_inst.install(meter=False)
-
     def testDirPool(self):
-        poolobj = self._createPool(StoragePool.TYPE_DIR)
-        self._createVol(poolobj)
+        poolobj = createPool(self.conn, StoragePool.TYPE_DIR)
+        createVol(poolobj)
 
     def testFSPool(self):
-        poolobj = self._createPool(StoragePool.TYPE_FS)
-        self._createVol(poolobj)
+        poolobj = createPool(self.conn, StoragePool.TYPE_FS)
+        createVol(poolobj)
 
     def testNetFSPool(self):
-        poolobj = self._createPool(StoragePool.TYPE_NETFS)
-        self._createVol(poolobj)
+        poolobj = createPool(self.conn, StoragePool.TYPE_NETFS)
+        createVol(poolobj)
 
     def testLVPool(self):
-        poolobj = self._createPool(StoragePool.TYPE_LOGICAL)
-        self._createVol(poolobj)
+        poolobj = createPool(self.conn, StoragePool.TYPE_LOGICAL)
+        createVol(poolobj)
 
     def testDiskPool(self):
-        poolobj = self._createPool(StoragePool.TYPE_DISK, format="dos")
+        poolobj = createPool(self.conn, StoragePool.TYPE_DISK, format="dos")
         # Not implemented yet
-        #volobj = self._createVol(poolobj)
-        self.assertRaises(RuntimeError, self._createVol, poolobj)
+        #volobj = createVol(poolobj)
+        self.assertRaises(RuntimeError, createVol, poolobj)
 
     def testISCSIPool(self):
-        poolobj = self._createPool(StoragePool.TYPE_ISCSI)
+        poolobj = createPool(self.conn, StoragePool.TYPE_ISCSI)
         # Not supported
-        #volobj = self._createVol(poolobj)
-        self.assertRaises(RuntimeError, self._createVol, poolobj)
+        #volobj = createVol(poolobj)
+        self.assertRaises(RuntimeError, createVol, poolobj)
 
 if __name__ == "__main__":
     unittest.main()
