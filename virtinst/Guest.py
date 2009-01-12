@@ -474,6 +474,9 @@ class Installer(object):
            or guest.disks[0].device != VirtualDisk.DEVICE_DISK:
             return True
 
+        if _util.is_vdisk(guest.disks[0].path):
+            return True
+
         # Check for the 0xaa55 signature at the end of the MBR
         try:
             fd = os.open(guest.disks[0].path, os.O_RDONLY)

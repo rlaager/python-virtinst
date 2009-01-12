@@ -21,6 +21,7 @@
 import os
 import libxml2
 import logging
+import subprocess
 import urlgrabber.progress as progress
 import _util
 import libvirt
@@ -492,6 +493,15 @@ def start_duplicate(design):
 
     logging.debug("start_duplicate out")
 
+def _vdisk_clone(path, clone):
+    path = os.path.expanduser(path)
+    clone = os.path.expanduser(clone)
+    try:
+        rc = subprocess.call([ '/usr/sbin/vdiskadm', 'clone', path, clone ])
+        return rc == 0
+    except OSError:
+        return False
+
 #
 # Now this Cloning method is reading and writing devices.
 # For future, there are many cloning methods (e.g. fork snapshot cmd).
@@ -521,6 +531,14 @@ def _do_duplicate(design):
             if src_dev == "/dev/null" or src_dev == dst_dev:
                 meter.end(size)
                 continue
+
+            if _util.is_vdisk(src_dev) or (os.path.exists(dst_dev) and _util.is_vdisk(dst_dev)):
+                if not _util.is_vdisk(src_dev) or os.path.exists(dst_dev):
+                    raise RuntimeError, _("copying to an existing vdisk is not supported")
+                if not _vdisk_clone(src_dev, dst_dev):
+                    raise RuntimeError, _("failed to clone disk")
+                continue
+
             #
             # create sparse file
             # if a destination file exists and sparse flg is True,

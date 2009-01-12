@@ -20,6 +20,7 @@
 # MA 02110-1301 USA.
 
 import os, stat, statvfs
+import subprocess
 import libxml2
 import logging
 import libvirt
@@ -28,6 +29,20 @@ import _util
 import Storage
 from VirtualDevice import VirtualDevice
 from virtinst import _virtinst as _
+
+def _vdisk_create(path, size, kind, sparse = True):
+    force_fixed = "raw"
+    path = os.path.expanduser(path)
+    if kind in force_fixed or not sparse:
+        _type = kind + ":fixed"
+    else:
+        _type = kind + ":sparse"
+    try:
+        rc = subprocess.call([ '/usr/sbin/vdiskadm', 'create', '-t', _type,
+            '-s', str(size), path ])
+        return rc == 0
+    except OSError:
+        return False
 
 class VirtualDisk(VirtualDevice):
     """
@@ -68,7 +83,9 @@ class VirtualDisk(VirtualDevice):
     DRIVER_TAP_RAW = "aio"
     DRIVER_TAP_QCOW = "qcow"
     DRIVER_TAP_VMDK = "vmdk"
-    driver_types = [DRIVER_TAP_RAW, DRIVER_TAP_QCOW, DRIVER_TAP_VMDK]
+    DRIVER_TAP_VDISK = "vdisk"
+    driver_types = [DRIVER_TAP_RAW, DRIVER_TAP_QCOW,
+        DRIVER_TAP_VMDK, DRIVER_TAP_VDISK]
 
     DEVICE_DISK = "disk"
     DEVICE_CDROM = "cdrom"
@@ -288,6 +305,9 @@ class VirtualDisk(VirtualDevice):
                 dtype = self.TYPE_BLOCK
             else:
                 dtype = self.TYPE_FILE
+            if _util.is_vdisk(self.path):
+                self._driverName = self.DRIVER_TAP
+                self._driverType = self.DRIVER_TAP_VDISK
 
         logging.debug("Detected storage as type '%s'" % dtype)
         if self.type is not None and dtype != self.type:
@@ -462,7 +482,8 @@ class VirtualDisk(VirtualDevice):
         if not create_media:
             # Make sure we have access to the local path
             if not managed_storage:
-                if os.path.isdir(self.path):
+                if os.path.isdir(self.path) and not _util.is_vdisk(self.path):
+                    # vdisk _is_ a directory.
                     raise ValueError(_("The path must be a file or a device,"
                                        " not a directory"))
                 # XXX: Any selinux validation checks should go here
@@ -516,13 +537,24 @@ class VirtualDisk(VirtualDevice):
             self._set_vol_object(self.vol_install.install(meter=progresscb),
                                  validate=False)
             return
-        elif self.type == VirtualDisk.TYPE_FILE and self.path is not None \
-             and not os.path.exists(self.path):
+        elif (self.type == VirtualDisk.TYPE_FILE and self.path is not None
+             and not os.path.exists(self.path)):
             size_bytes = long(self.size * 1024L * 1024L * 1024L)
 
             if progresscb:
                 progresscb.start(filename=self.path,size=long(size_bytes), \
                                  text=_("Creating storage file..."))
+
+            if _util.is_vdisk(self.path):
+                progresscb.update(1024)
+                if (not _vdisk_create(self.path, size_bytes, "vmdk",
+                    self.sparse)):
+                    raise RuntimeError, _("Error creating vdisk %s" % self.path)
+                self._driverName = self.DRIVER_TAP
+                self._driverType = self.DRIVER_TAP_VDISK
+                progresscb.end(self.size)
+                return
+
             fd = None
             try:
                 try:
