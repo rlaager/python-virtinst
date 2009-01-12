@@ -42,6 +42,8 @@ from OSDistro import SuseDistro
 from OSDistro import DebianDistro
 from OSDistro import UbuntuDistro
 from OSDistro import MandrivaDistro
+from OSDistro import SolarisDistro
+from OSDistro import OpenSolarisDistro
 from OSDistro import GenericDistro
 
 def _fetcherForURI(uri, scratchdir=None):
@@ -88,6 +90,11 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
         stores.append(UbuntuDistro(baseuri, typ, scratchdir, arch))
     if distro == "mandriva" or distro is None:
         stores.append(MandrivaDistro(baseuri, typ, scratchdir, arch))
+    # XXX: this is really "nevada"
+    if distro == "solaris" or distro is None:
+        stores.append(SolarisDistro(baseuri, type, scratchdir))
+    if distro == "solaris" or distro is None:
+        stores.append(OpenSolarisDistro(baseuri, type, scratchdir))
 
     stores.append(GenericDistro(baseuri, typ, scratchdir, arch))
 
@@ -101,7 +108,7 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
 
 
 # Method to fetch a kernel & initrd pair for a particular distro / HV type
-def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None,
+def acquireKernel(guest, baseuri, progresscb, scratchdir="/var/tmp", type=None,
                   distro=None, arch=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
 
@@ -114,7 +121,8 @@ def acquireKernel(baseuri, progresscb, scratchdir="/var/tmp", type=None,
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=type,
                                 progresscb=progresscb, distro=distro,
                                 scratchdir=scratchdir, arch=arch)
-        return store.acquireKernel(fetcher, progresscb)
+
+        return store.acquireKernel(guest, fetcher, progresscb), store.os_type
     finally:
         fetcher.cleanupLocation()
 
@@ -283,27 +291,29 @@ class DistroInstaller(Guest.Installer):
             arch = os.uname()[4]
             if hasattr(guest, "arch"):
                 arch = guest.arch
-            (kernelfn, initrdfn, args) = acquireKernel(self.location,
-                                                       meter,
-                                                       scratchdir = self.scratchdir,
-                                                       type = self.os_type,
-                                                       distro = distro,
-                                                       arch=arch)
+
+            (kernelfn, initrdfn, args), os_type = acquireKernel(guest,
+                self.location, meter, scratchdir=self.scratchdir,
+                type=self.os_type, distro=distro, arch=arch)
+
+            guest.os_type = os_type
             self.install["kernel"] = kernelfn
             self.install["initrd"] = initrdfn
-            if not self.extraargs is None:
-                self.install["extraargs"] = self.extraargs + " " + args
-            else:
-                self.install["extraargs"] = args
+            self.install["extraargs"] = args
 
             self._tmpfiles.append(kernelfn)
             self._tmpfiles.append(initrdfn)
 
         # If they're installing off a local file/device, we map it
-        # through to a virtual harddisk
-        if self.location is not None and self._location_is_path \
-           and not os.path.isdir(self.location):
+        # through to a virtual CD or disk
+        if (self.location is not None and self._location_is_path
+           and not os.path.isdir(self.location)):
+            device = Guest.VirtualDisk.DEVICE_DISK
+            if guest._lookup_osdict_key('pv_cdrom_install'):
+                device = Guest.VirtualDisk.DEVICE_CDROM
+
             self._install_disk = VirtualDisk(conn=guest.conn,
+                                             device=device,
                                              path=self.location,
                                              readOnly=True,
                                              transient=True)

@@ -31,6 +31,7 @@ DEFAULTS = { \
     "continue": False,
     "distro": None,
     "label": None,
+    "pv_cdrom_install": False,
     "devices" : {
      #  "devname" : { "attribute" : [( ["applicable", "hv-type", list"],
      #                               "recommended value for hv-types" ),]},
@@ -146,6 +147,7 @@ OS_TYPES = {\
 "solaris": {
     "label": "Solaris",
     "clock": "localtime",
+    "pv_cdrom_install": True,
     "variants": {
         "solaris9": { "label": "Sun Solaris 9", },
         "solaris10": { "label": "Sun Solaris 10",

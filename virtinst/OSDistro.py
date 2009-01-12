@@ -25,8 +25,10 @@ import gzip
 import re
 import tempfile
 import platform
+import socket
 import ConfigParser
 
+from virtinst import _util
 from virtinst import _virtinst as _
 
 def distroFromTreeinfo(fetcher, progresscb, uri, vmtype=None,
@@ -83,7 +85,7 @@ class Distro:
         """Determine if uri points to a tree of the store's distro"""
         raise NotImplementedError
 
-    def acquireKernel(self, fetcher, progresscb):
+    def acquireKernel(self, guest, fetcher, progresscb):
         kernelpath = None
         initrdpath = None
         if self._hasTreeinfo(fetcher, progresscb):
@@ -106,7 +108,7 @@ class Distro:
                                  "%(distro)s tree.") % \
                                  { "distro": self.name, "type" : self.type })
 
-        return self._kernelFetchHelper(fetcher, progresscb, kernelpath,
+        return self._kernelFetchHelper(fetcher, guest, progresscb, kernelpath,
                                        initrdpath)
 
     def acquireBootDisk(self, fetcher, progresscb):
@@ -172,18 +174,21 @@ class Distro:
 
         return False
 
-    def _kernelFetchHelper(self, fetcher, progresscb, kernelpath, initrdpath):
+    def _kernelFetchHelper(self, fetcher, guest, progresscb, kernelpath, initrdpath):
         # Simple helper for fetching kernel + initrd and performing
         # cleanup if neccessary
         kernel = fetcher.acquireFile(kernelpath, progresscb)
+        args = ''
+
+        if not fetcher.location.startswith("/"):
+            args += "method=" + fetcher.location
+
+        if guest.extraargs:
+            args += guest.extraargs
+
         try:
             initrd = fetcher.acquireFile(initrdpath, progresscb)
-            if fetcher.location.startswith("/"):
-                # Local host path, so can't pass a location to guest
-                #for install method
-                return (kernel, initrd, "")
-            else:
-                return (kernel, initrd, "method=" + fetcher.location)
+            return kernel, initrd, args
         except:
             os.unlink(kernel)
 
@@ -193,6 +198,7 @@ class GenericDistro(Distro):
        as a last resort if we can't recognize any actual distro"""
 
     name = "Generic"
+    os_type = "linux"
     uses_treeinfo = True
 
     _xen_paths = [ ("images/xen/vmlinuz",
@@ -249,12 +255,12 @@ class GenericDistro(Distro):
             return True
         return False
 
-    def acquireKernel(self, fetcher, progresscb):
+    def acquireKernel(self, guest, fetcher, progresscb):
         if self._valid_kernel_path == None:
             raise ValueError(_("Could not find a kernel path for virt type "
                                "'%s'" % self.type))
 
-        return self._kernelFetchHelper(fetcher, progresscb,
+        return self._kernelFetchHelper(fetcher, guest, progresscb,
                                        self._valid_kernel_path[0],
                                        self._valid_kernel_path[1])
 
@@ -270,6 +276,7 @@ class GenericDistro(Distro):
 class RedHatDistro(Distro):
 
     name = "Red Hat"
+    os_type = "linux"
     uses_treeinfo = True
     _boot_iso_paths   = [ "images/boot.iso" ]
     _hvm_kernel_paths = [ ("images/pxeboot/vmlinuz",
@@ -285,6 +292,7 @@ class RedHatDistro(Distro):
 class FedoraDistro(RedHatDistro):
 
     name = "Fedora"
+    os_type = "linux"
 
     def isValidStore(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
@@ -300,6 +308,7 @@ class FedoraDistro(RedHatDistro):
 class RHELDistro(RedHatDistro):
 
     name = "Red Hat Enterprise Linux"
+    os_type = "linux"
 
     def isValidStore(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
@@ -322,6 +331,7 @@ class RHELDistro(RedHatDistro):
 class CentOSDistro(RedHatDistro):
 
     name = "CentOS"
+    os_type = "linux"
 
     def isValidStore(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
@@ -338,6 +348,7 @@ class CentOSDistro(RedHatDistro):
 class SLDistro(RedHatDistro):
 
     name = "Scientific Linux"
+    os_type = "linux"
     _boot_iso_paths = RedHatDistro._boot_iso_paths + [ "images/SL/boot.iso" ]
     _hvm_kernel_paths = RedHatDistro._hvm_kernel_paths + \
                         [ ("images/SL/pxeboot/vmlinuz",
@@ -361,6 +372,7 @@ class SLDistro(RedHatDistro):
 class SuseDistro(Distro):
 
     name = "SUSE"
+    os_type = "linux"
     _boot_iso_paths   = [ "boot/boot.iso" ]
     _hvm_kernel_paths = []
     _xen_kernel_paths = []
@@ -385,11 +397,11 @@ class SuseDistro(Distro):
             return True
         return False
 
-    def acquireKernel(self, fetcher, progresscb):
+    def acquireKernel(self, guest, fetcher, progresscb):
         # If installing a fullvirt guest
         if self.type is None or self.type == "hvm" or \
            fetcher.hasFile("boot/%s/vmlinuz-xen" % self.arch):
-            return Distro.acquireKernel(self, fetcher, progresscb)
+            return Distro.acquireKernel(self, guest, fetcher, progresscb)
 
         # For Opensuse <= 10.2, we need to perform some heinous stuff
         logging.debug("Trying Opensuse 10 PV rpm hacking")
@@ -590,6 +602,7 @@ class DebianDistro(Distro):
     # daily builds: http://people.debian.org/~joeyh/d-i/
 
     name = "Debian"
+    os_type = "linux"
 
     def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
         Distro.__init__(self, uri, vmtype, scratchdir, arch)
@@ -642,6 +655,7 @@ class DebianDistro(Distro):
 class UbuntuDistro(DebianDistro):
 
     name = "Ubuntu"
+    os_type = "linux"
 
     def _set_media_paths(self):
         DebianDistro._set_media_paths(self)
@@ -672,6 +686,7 @@ class MandrivaDistro(Distro):
     # Ex. ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2007.1/x86_64/
 
     name = "Mandriva"
+    os_type = "linux"
     _boot_iso_paths = [ "install/images/boot.iso" ]
     # Kernels for HVM: valid for releases 2007.1, 2008.*, 2009.0
     _hvm_kernel_paths = [ ("isolinux/alt0/vmlinuz", "isolinux/alt0/all.rdz")]
@@ -692,3 +707,192 @@ class MandrivaDistro(Distro):
 
         return False
 
+# Solaris and OpenSolaris distros
+class SunDistro(Distro):
+
+    name = "Solaris"
+    os_type = "solaris"
+
+    def isValidStore(self, fetcher, progresscb):
+        """Determine if uri points to a tree of the store's distro"""
+        raise NotImplementedError
+
+    def acquireBootDisk(self, fetcher, progresscb):
+        return fetcher.acquireFile("images/solarisdvd.iso", progresscb)
+
+    def process_extra_args(self, argstr):
+        """Collect additional arguments."""
+        if not argstr:
+            return (None, None, None, None)
+
+        kopts = ''
+        kargs = ''
+        smfargs = ''
+        Bargs = ''
+
+        args = argstr.split()
+        i = 0
+        while i < len(args):
+            exarg = args[i]
+            if exarg == '-B':
+                i += 1
+                if i == len(args):
+                    continue
+
+                if not Bargs:
+                    Bargs = args[i]
+                else:
+                    Bargs = ','.join([Bargs, args[i]])
+        
+            elif exarg == '-m':
+                i += 1
+                if i == len(args):
+                    continue
+                smfargs = args[i]
+            elif exarg.startswith('-'):
+                if kopts is None:
+                    kopts = exarg[1:]
+                else:
+                    kopts = kopts + exarg[1:]
+            else:
+                if kargs is None:
+                    kargs = exarg
+                else:
+                    kargs = kargs + ' ' + exarg
+            i += 1
+
+        return kopts, kargs, smfargs, Bargs
+
+class SolarisDistro(SunDistro):
+    kernelpath = 'boot/platform/i86xpv/kernel/unix'
+    initrdpath = 'boot/x86.miniroot'
+
+    def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile(self.kernelpath):
+            logging.debug('Detected Solaris')
+            return True
+        return False
+
+    def install_args(self, guest):
+        """Construct kernel cmdline args for the installer, consisting of:
+           the pathname of the kernel (32/64) to load, kernel options
+           and args, and '-B' boot properties."""
+
+        # XXX: ignoring smfargs for the time being
+        (kopts, kargs, smfargs, kbargs) = \
+            self.process_extra_args(guest.extraargs)
+
+        args = [ '' ]
+        if kopts:
+            args += [ '-%s' % kopts ]
+        if kbargs:
+            args += [ '-B', kbargs ]
+
+        netmask = ''
+        # Yuck. Non-default netmasks require this option to be passed.
+        # It's distinctly not-trivial to work out the netmask to be used
+        # automatically.
+        for karg in kargs.split():
+            if karg.startswith('subnet-mask'):
+                netmask = karg.split('=')[1]
+            else:
+                args += [ kargs ]
+
+        iargs = ''
+        if not guest.graphics['enabled']:
+            iargs += 'nowin '
+
+        if guest.location.startswith('nfs:'):
+            try:
+                guestIP = socket.gethostbyaddr(guest.name)[2][0]
+            except:
+                iargs += ' dhcp'
+            else:
+                iserver = guest.location.split(':')[1]
+                ipath = guest.location.split(':')[2]
+                iserverIP = socket.gethostbyaddr(iserver)[2][0]
+                iargs += ' -B install_media=' + iserverIP + ':' + ipath
+                iargs += ',host-ip=' + guestIP
+                if netmask:
+                    iargs += ',subnet-mask=%s' % netmask
+                droute = _util.default_route(guest.nics[0].bridge)
+                if droute:
+                    iargs += ',router-ip=' + droute
+                if guest.nics[0].macaddr:
+                    en = guest.nics[0].macaddr.split(':')
+                    for i in range(len(en)):
+                        # remove leading '0' from mac address element
+                        if len(en[i]) > 1 and en[i][0] == '0':
+                            en[i] = en[i][1]
+                    boot_mac = ':'.join(en)
+                    iargs += ',boot-mac=' + boot_mac
+        else:
+            iargs += '-B install_media=cdrom'
+
+        args += [ '-', iargs ]
+        return ' '.join(args)
+
+    def acquireKernel(self, guest, fetcher, progresscb):
+
+        try:
+            kernel = fetcher.acquireFile(self.kernelpath, progresscb)
+        except:
+            raise RuntimeError("Solaris PV kernel not found at %s" %
+                self.kernelpath)
+
+        # strip boot from the kernel path
+        kpath = self.kernelpath.split('/')[1:]
+        args = "/" + "/".join(kpath) + self.install_args(guest)
+
+        try:
+            initrd = fetcher.acquireFile(self.initrdpath, progresscb)
+            return (kernel, initrd, args)
+        except:
+            os.unlink(kernel)
+            raise RuntimeError(_("Solaris miniroot not found at %s") %
+                self.initrdpath)
+
+class OpenSolarisDistro(SunDistro):
+    kernelpath = "platform/i86xpv/kernel/unix"
+    initrdpath = "boot/x86.microroot"
+
+    def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile(self.kernelpath):
+            logging.debug("Detected OpenSolaris")
+            return True
+        return False
+
+    def install_args(self, guest):
+        """Construct kernel cmdline args for the installer, consisting of:
+           the pathname of the kernel (32/64) to load, kernel options
+           and args, and '-B' boot properties."""
+
+        # XXX: ignoring smfargs and kargs for the time being
+        (kopts, kargs, smfargs, kbargs) = \
+            self.process_extra_args(guest.extraargs)
+
+        args = ''
+        if kopts:
+            args += '-' + kopts
+        if kbargs:
+            args += ' -B ' + kbargs
+
+        return args
+
+    def acquireKernel(self, guest, fetcher, progresscb):
+
+        try:
+            kernel = fetcher.acquireFile(self.kernelpath, progresscb)
+        except:
+            raise RuntimeError(_("OpenSolaris PV kernel not found at %s") %
+                self.kernelpath)
+
+        args = "/" + self.kernelpath + self.install_args(guest)
+
+        try:
+            initrd = fetcher.acquireFile(self.initrdpath, progresscb)
+            return (kernel, initrd, args)
+        except:
+            os.unlink(kernel)
+            raise RuntimeError(_("OpenSolaris microroot not found at %s") %
+                self.initrdpath)
