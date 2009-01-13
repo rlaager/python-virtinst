@@ -484,8 +484,8 @@ class VirtualDisk(VirtualDevice):
             if not managed_storage:
                 if os.path.isdir(self.path) and not _util.is_vdisk(self.path):
                     # vdisk _is_ a directory.
-                    raise ValueError(_("The path must be a file or a device,"
-                                       " not a directory"))
+                    raise ValueError(_("The path '%s' must be a file or a "
+                                       "device, not a directory") % self.path)
                 # XXX: Any selinux validation checks should go here
 
             self.__set_dev_type()
