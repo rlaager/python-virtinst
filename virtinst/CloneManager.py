@@ -340,35 +340,6 @@ class CloneDesign(object):
         return nic.is_conflict_net(self._hyper_conn)
 
     #
-    # get count macaddr
-    #
-    def _count_mac(self, vms, mac):
-        count = 0
-        for vm in vms:
-            doc = None
-            try:
-                doc = libxml2.parseDoc(vm.XMLDesc(0))
-            except:
-                continue
-            ctx = doc.xpathNewContext()
-            mac_index = (str(doc).upper()).find(mac.upper())
-            if mac_index == -1:
-                continue
-            mac_comp = str(doc)[mac_index:mac_index+17]
-            try:
-                try:
-                    count += ctx.xpathEval("count(/domain/devices/interface/mac[@address='%s'])"
-                                           % mac_comp)
-                except:
-                    continue
-            finally:
-                if ctx is not None:
-                    ctx.xpathFreeContext()
-                if doc is not None:
-                    doc.freeDoc()
-        return count
-
-    #
     # get the original devices information 
     #
     def _get_original_devices_info(self, xml):
