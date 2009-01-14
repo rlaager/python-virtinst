@@ -1065,24 +1065,13 @@ class Guest(object):
         if self.uuid is None:
             while 1:
                 self.uuid = _util.uuidToString(_util.randomUUID())
-                try:
-                    if self.conn.lookupByUUIDString(self.uuid) is not None:
-                        continue
-                    else:
-                        # libvirt probably shouldn't throw an error on a 
-                        # non-matching UUID, so do the right thing on a 
-                        # None return value with no error
-                        break
-                except libvirt.libvirtError:
-                    break
+                if _util.vm_uuid_collision(self.conn, self.uuid):
+                    continue
+                break
         else:
-            try:
-                if self.conn.lookupByUUIDString(self.uuid) is not None:
-                    raise RuntimeError, _("The UUID you entered is already in use by another guest!")
-                else:
-                    pass
-            except libvirt.libvirtError:
-                pass
+            if _util.vm_uuid_collision(self.conn, self.uuid):
+                raise RuntimeError, _("The UUID you entered is already in "
+                                      "use by another guest!")
         if self.vcpus is None:
             self.vcpus = 1
         if self.name is None or self.memory is None:

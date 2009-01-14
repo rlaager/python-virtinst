@@ -28,6 +28,8 @@ import os
 import re
 import commands
 
+import libvirt
+
 from virtinst import util
 
 def is_vdisk(path):
@@ -84,6 +86,20 @@ def sanitize_arch(arch):
     elif tmparch == "amd64":
         return "x86_64"
     return arch
+
+def vm_uuid_collision(conn, uuid):
+    """
+    Check if passed UUID string is in use by another guest of the connection
+    Returns true/false
+    """
+    check = False
+    if uuid is not None:
+        try:
+            if conn.lookupByUUIDString(uuid) is not None:
+                check = True
+        except libvirt.libvirtError:
+            pass
+    return check
 
 #
 # These functions accidentally ended up in the API under virtinst.util

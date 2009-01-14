@@ -234,8 +234,7 @@ class CloneDesign(object):
             pass
 
         # Check specified UUID isn't taken
-        # XXX: Check this at set time?
-        if self._check_uuid(self._clone_uuid) == True:
+        if _util.vm_uuid_collision(self._hyper_conn, self._clone_uuid):
             raise RuntimeError, _("The UUID you entered is already in use by "
                                   "another guest!")
 
@@ -297,10 +296,9 @@ class CloneDesign(object):
         else:
             while 1:
                 uuid = _util.uuidToString(_util.randomUUID())
-                if self._check_uuid(uuid) == True:
+                if _util.vm_uuid_collision(self._hyper_conn, uuid):
                     continue
-                else:
-                    break
+                break
             node[0].setContent(uuid)
 
         # changing mac
@@ -344,19 +342,6 @@ class CloneDesign(object):
 
 
     # Private helper functions
-
-    # Check if UUID is in use
-    def _check_uuid(self, uuid):
-        check = False
-        if uuid is not None:
-            try:
-                if self._hyper_conn.lookupByUUIDString(uuid) is not None:
-                    check = True
-                else:
-                    pass
-            except libvirt.libvirtError:
-                pass
-        return check
 
     # Check if new file path is valid
     def _check_file(self, conn, disk, size):
