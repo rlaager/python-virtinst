@@ -792,11 +792,12 @@ class SolarisDistro(SunDistro):
         # Yuck. Non-default netmasks require this option to be passed.
         # It's distinctly not-trivial to work out the netmask to be used
         # automatically.
-        for karg in kargs.split():
-            if karg.startswith('subnet-mask'):
-                netmask = karg.split('=')[1]
-            else:
-                args += [ kargs ]
+        if kargs:
+            for karg in kargs.split():
+                if karg.startswith('subnet-mask'):
+                    netmask = karg.split('=')[1]
+                else:
+                    args += [ kargs ]
 
         iargs = ''
         if not guest.graphics['enabled']:
