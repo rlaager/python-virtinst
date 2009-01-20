@@ -17,6 +17,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
+"""
+Module for cloning an existing virtual machine
+
+General workflow for cloning:
+
+    - Instantiate CloneDesign. Requires at least a libvirt connection and
+      a name of a domain to clone.
+
+    - Run 'setup' from the CloneDesign instance to prep for cloning
+
+    - Run 'CloneManager.start_duplicate', passing the CloneDesign instance
+"""
 
 import os
 import libxml2
@@ -34,11 +46,11 @@ from virtinst import _virtinst as _
 #
 class CloneDesign(object):
 
-    def __init__(self,connection):
+    def __init__(self, connection):
         # hypervisor connection
         self._hyper_conn = connection
 
-        # original guest name or uuid 
+        # original guest name or uuid
         self._original_guest        = None
         self._original_dom          = None
         self._original_devices      = []
@@ -46,7 +58,7 @@ class CloneDesign(object):
         self._original_devices_type = []
         self._original_xml          = None
 
-        # clone guest 
+        # clone guest
         self._clone_name         = None
         self._clone_devices      = []
         self._clone_devices_size = []
@@ -63,6 +75,9 @@ class CloneDesign(object):
 
         # Throwaway guest to use for easy validation
         self._valid_guest        = Guest.Guest(connection=connection)
+
+
+    # Getter/Setter methods
 
     def get_original_guest(self):
         return self._original_guest
@@ -102,12 +117,16 @@ class CloneDesign(object):
     clone_uuid = property(get_clone_uuid, set_clone_uuid)
 
     def set_clone_devices(self, devices):
+        # Devices here is a string path. Every call to set_clone_devices
+        # Adds the path (if valid) to the internal _clone_devices list
         if len(devices) == 0:
             raise ValueError, _("New file to use for disk image is required")
-        cdev      = []
-        cdev_size = []
-        cdev.append(devices)
-        cdev_size, dummy = self._get_clone_devices_info(cdev)
+
+        # Check path's size (if present)
+        # XXX: Only works locally
+        cdev_size, dummy = self._local_paths_info([devices])
+
+        # Make sure path is valid and we can use it
         devices = self._check_file(self._hyper_conn, devices, cdev_size[0])
         self._clone_devices.append(devices)
     def get_clone_devices(self):
@@ -171,52 +190,57 @@ class CloneDesign(object):
         return self._force_target
     force_target = property(set_force_target)
 
-    #
-    # setup original guest
-    #
+
+    # Functional methods
+
     def setup_original(self):
-        logging.debug("setup_original in")
+        """
+        Validate and setup all parameters needed for the original (cloned) VM
+        """
+        logging.debug("Validating original guest parameters")
+
         try:
             self._original_dom = self._hyper_conn.lookupByName(self._original_guest)
         except libvirt.libvirtError:
             raise RuntimeError, _("Domain %s is not found") % self._original_guest
 
-        #
-        # store the xml as same as original xml still setup_clone_xml
-        #
+        # For now, clone_xml is just a copy of the original
         self._original_xml = self._original_dom.XMLDesc(0)
         self._clone_xml    = self._original_dom.XMLDesc(0)
+
+        # Pull clonable storage info from the original xml
         self._original_devices,     \
         self._original_devices_size,\
         self._original_devices_type = self._get_original_devices_info(self._original_xml)
 
-        #
-        # check status. Firt, shut off domain is available.
-        #
+        logging.debug("Original paths: %s" % (self._original_devices))
+        logging.debug("Original sizes: %s" % (self._original_devices_size))
+        logging.debug("Original types: %s" % (self._original_devices_type))
+
+        # Check original domain is SHUTOFF
+        # XXX: Shouldn't pause also be fine, and guests with no storage/
+        # XXX: readonly + sharable storage can be cloned while running
         status = self._original_dom.info()[0]
         logging.debug("original guest status: %s" % (status))
         if status != libvirt.VIR_DOMAIN_SHUTOFF:
             raise RuntimeError, _("Domain status must be SHUTOFF")
 
-        #
-        # check existing
-        #
+        # Make sure new VM name isn't taken.
+        # XXX: Check this at set time?
         try:
             if self._hyper_conn.lookupByName(self._clone_name) is not None:
                 raise RuntimeError, _("Domain %s already exists") % self._clone_name
         except libvirt.libvirtError:
             pass
 
-        #
-        # check used uuid
-        # random uuid check is done in start_duplicate function
-        #
+        # Check specified UUID isn't taken
+        # XXX: Check this at set time?
         if self._check_uuid(self._clone_uuid) == True:
-            raise RuntimeError, _("The UUID you entered is already in use by another guest!")
+            raise RuntimeError, _("The UUID you entered is already in use by "
+                                  "another guest!")
 
-        #
-        # check used mac
-        #
+        # Check mac address is not in use
+        # XXX: Check this at set time?
         for i in self._clone_mac:
             ret, msg = self._check_mac(i)
             if msg is not None:
@@ -225,17 +249,26 @@ class CloneDesign(object):
                 else:
                     logging.warning(msg)
 
-        logging.debug("setup_original out")
 
-    #
-    # setup clone XML
-    #
     def setup_clone(self):
-        logging.debug("setup_clone in")
+        """
+        Validate and set up all parameters needed for the new (clone) VM
+        """
+        logging.debug("Validating clone parameters.")
 
+        # XXX: Make sure a clone name has been specified? or generate one?
+
+        # XXX: Only works locally
         self._clone_devices_size,\
-        self._clone_devices_type = self._get_clone_devices_info(self._clone_devices)
+        self._clone_devices_type = self._local_paths_info(self._clone_devices)
 
+        logging.debug("Clone paths: %s" % (self._clone_devices))
+        logging.debug("Clone sizes: %s" % (self._clone_devices_size))
+        logging.debug("Clone types: %s" % (self._clone_devices_type))
+
+        # We simply edit the original VM xml in place
+        # XXX: Does this need a huge try except so we don't leak xml memory
+        # XXX: on failure?
         doc = libxml2.parseDoc(self._clone_xml)
         ctx = doc.xpathNewContext()
         typ = ctx.xpathEval("/domain")[0].prop("type")
@@ -244,7 +277,7 @@ class CloneDesign(object):
         node = ctx.xpathEval("/domain/name")
         node[0].setContent(self._clone_name)
 
-        # changing devices
+        # Changing storage paths
         clone_devices = iter(self._clone_devices)
         count = ctx.xpathEval("count(/domain/devices/disk)")
         for i in range(1, int(count+1)):
@@ -286,31 +319,33 @@ class CloneDesign(object):
                         break
                 node[0].setContent(mac)
 
-        # change disk type
-        self._change_disk_type(self._original_devices_type, self._clone_devices_type, ctx)
+        # Change xml disk type values if original and clone disk types
+        # (block/file) don't match
+        self._change_disk_type(self._original_devices_type,
+                               self._clone_devices_type, ctx)
 
-        # set clone xml
+        # Save altered clone xml
         self._clone_xml = str(doc)
 
         ctx.xpathFreeContext()
         doc.freeDoc()
-        logging.debug("setup_clone out")
 
-    #
-    # setup
-    #
+
     def setup(self):
+        """
+        Helper function that wraps setup_original and setup_clone, with
+        additional debug logging.
+        """
         self.setup_original()
-        logging.debug("original guest is\n%s" % (self._original_xml))
+        logging.debug("Original guest xml is\n%s" % (self._original_xml))
 
         self.setup_clone()
-        logging.debug("cloning guest is\n%s" % (self._clone_xml))
-  
-    #
-    # check used uuid func
-    # False : OK
-    # True  : NG existing
-    #
+        logging.debug("Clone guest xml is\n%s" % (self._clone_xml))
+
+
+    # Private helper functions
+
+    # Check if UUID is in use
     def _check_uuid(self, uuid):
         check = False
         if uuid is not None:
@@ -323,25 +358,21 @@ class CloneDesign(object):
                 pass
         return check
 
-    #
-    # check used file func
-    # ret : Use File Path
-    #
+    # Check if new file path is valid
     def _check_file(self, conn, disk, size):
         d = VirtualDisk(disk, size, conn=conn)
         return d.path
 
-    #
-    # check used mac func
-    #
+    # Check if new mac address is valid
     def _check_mac(self, mac):
         nic = Guest.VirtualNetworkInterface(macaddr=mac,
                                             conn=self.original_conn)
         return nic.is_conflict_net(self._hyper_conn)
 
-    #
-    # get the original devices information 
-    #
+    # Parse disk paths that need to be cloned from the original guest's xml
+    # Return a tuple of lists:
+    # ([list of paths to clone], [size of those paths],
+    #  [file/block type of those paths])
     def _get_original_devices_info(self, xml):
 
         lst  = []
@@ -353,6 +384,7 @@ class CloneDesign(object):
         try:
             count = ctx.xpathEval("count(/domain/devices/disk)")
             for i in range(1, int(count+1)):
+                # Check if the disk needs cloning
                 node = self._get_available_cloning_device(ctx, i, self._force_target)
                 if node == None:
                     continue
@@ -362,26 +394,25 @@ class CloneDesign(object):
                 ctx.xpathFreeContext()
             if doc is not None:
                 doc.freeDoc()
-        logging.debug("original device list: %s" % (lst))
 
+        # Lookup size and storage type (file/block)
         for i in lst:
             (t, sz) = _util.stat_disk(i)
             typ.append(t)
             size.append(sz)
-        logging.debug("original device size: %s" % (size))
-        logging.debug("original device type: %s" % (typ))
 
         return (lst, size, typ)
 
-    #
-    # get available original device for clone
-    #
+    # Pull disk #i from the original guest xml, return it's xml
+    # if it should be cloned (skips readonly, empty, or sharable disks
+    # unless its target is in the 'force' list)
     def _get_available_cloning_device(self, ctx, i, force):
 
         node = None
         force_flg = False
-        
+
         node = ctx.xpathEval("/domain/devices/disk[%d]/source" % i)
+        # If there is no media path, ignore
         if len(node) == 0:
             return None
 
@@ -392,42 +423,39 @@ class CloneDesign(object):
             if target == f_target:
                 force_flg = True
 
+        # Skip readonly disks unless forced
         ro = ctx.xpathEval("/domain/devices/disk[%d]/readonly" % i)
         if len(ro) != 0 and force_flg == False:
             return None
+        # Skip sharable disks unless forced
         share = ctx.xpathEval("/domain/devices/disk[%d]/shareable" % i) 
         if len(share) != 0 and force_flg == False:
             return None
 
-        return node 
+        return node
 
-    #
-    # get the clone devices information
-    #
-    def _get_clone_devices_info(self, cln_dev_lst):
+    # Stat each path in the passed list, return a tuple of
+    # ([size of each path (0 if non-existent)],
+    #  [file/block type of each path (true for 'file', false for 'block')]
+    def _local_paths_info(self, paths_lst):
 
         size = []
         typ  = []
 
-        for i in cln_dev_lst:
+        for i in paths_lst:
             (t, sz) = _util.stat_disk(i)
             typ.append(t)
             size.append(sz)
 
-        logging.debug("clone device list: %s" % (cln_dev_lst))
-        logging.debug("clone device size: %s" % (size))
-        logging.debug("clone device type: %s" % (typ))
-
         return (size, typ)
 
-    #
-    # change disk type in XML
-    #
+    # Check if original disk type (file/block) is different from
+    # requested clones disk type, and alter xml if needed
     def _change_disk_type(self, org_type, cln_type, ctx):
+
         for i in range(len(org_type)):
             disk_type = ctx.xpathEval("/domain/devices/disk[%d]/@type" % (i+1))
             driv_name = ctx.xpathEval("/domain/devices/disk[%d]/driver/@name" % (i+1))
-
             src = ctx.xpathEval("/domain/devices/disk[%d]/source" % (i+1))
             src_chid_txt = src[0].get_properties().getContent()
 
