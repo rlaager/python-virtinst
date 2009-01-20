@@ -34,7 +34,6 @@ import os
 import libxml2
 import logging
 import subprocess
-import urlgrabber.progress as progress
 import _util
 import libvirt
 import Guest
@@ -475,14 +474,14 @@ class CloneDesign(object):
 # start duplicate
 # this function clones the virtual machine according to the ClonDesign object
 #
-def start_duplicate(design):
+def start_duplicate(design, meter=None):
 
     logging.debug("start_duplicate in")
 
     # do dupulicate
     # at this point, handling the cloning way.
     if design.preserve == True:
-        _do_duplicate(design)
+        _do_duplicate(design, meter)
 
     # define clone xml
     design.original_conn.defineXML(design.clone_xml)
@@ -502,7 +501,7 @@ def _vdisk_clone(path, clone):
 # Now this Cloning method is reading and writing devices.
 # For future, there are many cloning methods (e.g. fork snapshot cmd).
 #
-def _do_duplicate(design):
+def _do_duplicate(design, meter):
 
     src_fd = None
     dst_fd = None
@@ -513,26 +512,26 @@ def _do_duplicate(design):
     sparse_copy_mode = False
 
     try:
-        for src_dev in design.original_devices: 
+        for src_dev in design.original_devices:
             dst_dev = dst_dev_iter.next()
             dst_siz = dst_siz_iter.next()
 
-            size = dst_siz
-            meter = progress.TextMeter()
-            print _("Cloning from %(src)s to %(dst)s") % {'src' : src_dev, \
-                                                       'dst' : dst_dev}
-            meter.start(size=size, text=_("Cloning domain..."))
+            meter.start(size=dst_siz,
+                        text=_("Cloning from %(src)s to %(dst)s...") % \
+                        {'src' : src_dev, 'dst' : dst_dev})
 
-            # skip
             if src_dev == "/dev/null" or src_dev == dst_dev:
-                meter.end(size)
+                meter.end(dst_siz)
                 continue
 
-            if _util.is_vdisk(src_dev) or (os.path.exists(dst_dev) and _util.is_vdisk(dst_dev)):
+            # vdisk specific handlings
+            if _util.is_vdisk(src_dev) or (os.path.exists(dst_dev) and
+                                           _util.is_vdisk(dst_dev)):
                 if not _util.is_vdisk(src_dev) or os.path.exists(dst_dev):
                     raise RuntimeError, _("copying to an existing vdisk is not supported")
                 if not _vdisk_clone(src_dev, dst_dev):
                     raise RuntimeError, _("failed to clone disk")
+                meter.end(dst_siz)
                 continue
 
             #
@@ -559,7 +558,7 @@ def _do_duplicate(design):
                 l = os.read(src_fd, design.clone_bs)
                 s = len(l)
                 if s == 0:
-                    meter.end(size)
+                    meter.end(dst_siz)
                     break
                 # check sequence of zeros
                 if sparse_copy_mode == True and zeros == l:
@@ -570,7 +569,7 @@ def _do_duplicate(design):
                         meter.end(i)
                         break
                 i += s
-                if i < size:
+                if i < dst_siz:
                     meter.update(i)
 
             os.close(src_fd)

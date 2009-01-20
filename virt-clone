@@ -24,6 +24,7 @@ import os, sys
 import logging
 import virtinst
 import virtinst.CloneManager as clmgr
+import urlgrabber.progress as progress
 
 from optparse import OptionGroup
 import gettext
@@ -213,7 +214,8 @@ def main():
         design.setup()
 
         # start cloning
-        clmgr.start_duplicate(design)
+        meter = progress.TextMeter()
+        clmgr.start_duplicate(design, meter)
 
         logging.debug("end clone")
     except RuntimeError, e:
