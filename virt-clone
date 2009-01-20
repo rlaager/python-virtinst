@@ -71,7 +71,7 @@ def get_clone_uuid(new_uuid, design):
     if new_uuid is not None:
         design.set_clone_uuid(new_uuid)
 
-def get_clone_diskfile(new_diskfiles, design, conn):
+def get_clone_diskfile(new_diskfiles, design, conn, preserve=False):
     if new_diskfiles is None:
         new_diskfiles = [None]
 
@@ -88,7 +88,8 @@ def get_clone_diskfile(new_diskfiles, design, conn):
                 disk = None
                 continue
 
-            if os.path.exists(d.path):
+            # Prompt if disk file already exists and preserve mode is not used
+            if not preserve  and  os.path.exists(d.path):
                 warnmsg = _("This will overwrite the existing path "
                             "'%s'!\n") % d.path
                 if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use this disk (yes or no)?")):
@@ -201,7 +202,7 @@ def main():
     design = clmgr.CloneDesign(connection=conn)
 
     try:
-        get_clone_diskfile(options.new_diskfile, design, conn)
+        get_clone_diskfile(options.new_diskfile, design, conn, not options.preserve)
         get_clone_macaddr(options.new_mac, design)
         get_original_guest(options.original_guest, design)
         get_clone_name(options.new_name, design)
