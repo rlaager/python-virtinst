@@ -448,25 +448,24 @@ class CloneDesign(object):
         for dev_idx in idxs:
             disk_type = ctx.xpathEval("/domain/devices/disk[%d]/@type" %
                                       dev_idx)
-            driv_name = ctx.xpathEval("/domain/devices/disk[%d]/driver/@name" %
-                                      dev_idx)
+            driv_name = ctx.xpathEval("/domain/devices/disk[%d]/driver/@name" % dev_idx)
             src = ctx.xpathEval("/domain/devices/disk[%d]/source" % dev_idx)
             src_chid_txt = src[0].get_properties().getContent()
 
             # different type
             if org_type[type_idx] != cln_type[type_idx]:
-                # changing from file to disk
                 if org_type[type_idx] == True:
-                    disk_type[0].setContent("block")
-                    driv_name[0].setContent("phy")
-                    src[0].get_properties().unlinkNode()
-                    src[0].newProp("dev", src_chid_txt)
-                # changing from disk to file
+                    # changing from file to disk
+                    typ, driv, newprop = ("block", "phy", "dev")
                 else:
-                    disk_type[0].setContent("file")
-                    driv_name[0].setContent("file")
-                    src[0].get_properties().unlinkNode()
-                    src[0].newProp("file", src_chid_txt)
+                    # changing from disk to file
+                    typ, driv, newprop = ("file", "file", "file")
+
+                disk_type[0].setContent(typ)
+                if driv_name:
+                    driv_name[0].setContent(driv)
+                src[0].get_properties().unlinkNode()
+                src[0].newProp(newprop, src_chid_txt)
 
             type_idx += 1
 
