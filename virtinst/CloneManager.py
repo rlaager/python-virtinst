@@ -58,6 +58,9 @@ class CloneDesign(object):
         self._original_devices_type = []
         self._original_xml          = None
 
+        # Deliberately private: user doesn't need to know this
+        self._original_devices_idx = []
+
         # clone guest
         self._clone_name         = None
         self._clone_devices      = []
@@ -211,11 +214,13 @@ class CloneDesign(object):
         # Pull clonable storage info from the original xml
         self._original_devices,     \
         self._original_devices_size,\
-        self._original_devices_type = self._get_original_devices_info(self._original_xml)
+        self._original_devices_type,\
+        self._original_devices_idx = self._get_original_devices_info(self._original_xml)
 
         logging.debug("Original paths: %s" % (self._original_devices))
         logging.debug("Original sizes: %s" % (self._original_devices_size))
         logging.debug("Original types: %s" % (self._original_devices_type))
+        logging.debug("Original idxs: %s" % (self._original_devices_idx))
 
         # Check original domain is SHUTOFF
         # XXX: Shouldn't pause also be fine, and guests with no storage/
@@ -278,16 +283,14 @@ class CloneDesign(object):
 
         # Changing storage paths
         clone_devices = iter(self._clone_devices)
-        count = ctx.xpathEval("count(/domain/devices/disk)")
-        for i in range(1, int(count+1)):
-            node = self._get_available_cloning_device(ctx, i, self._force_target)
-            if node == None:
-                continue
+        for i in self._original_devices_idx:
+            node = ctx.xpathEval("/domain/devices/disk[%d]/source" % i)
             node = node[0].get_properties()
             try:
                 node.setContent(clone_devices.next())
             except Exception:
-                raise ValueError, _("Missing new file to use disk image for %s") % node.getContent()
+                raise ValueError, _("Missing new file to use disk image "
+                                    "for %s") % node.getContent()
 
         # changing uuid
         node = ctx.xpathEval("/domain/uuid")
@@ -320,7 +323,9 @@ class CloneDesign(object):
         # Change xml disk type values if original and clone disk types
         # (block/file) don't match
         self._change_disk_type(self._original_devices_type,
-                               self._clone_devices_type, ctx)
+                               self._clone_devices_type,
+                               self._original_devices_idx,
+                               ctx)
 
         # Save altered clone xml
         self._clone_xml = str(doc)
@@ -357,12 +362,13 @@ class CloneDesign(object):
     # Parse disk paths that need to be cloned from the original guest's xml
     # Return a tuple of lists:
     # ([list of paths to clone], [size of those paths],
-    #  [file/block type of those paths])
+    #  [file/block type of those paths], [indices of disks to be cloned])
     def _get_original_devices_info(self, xml):
 
         lst  = []
         size = []
         typ  = []
+        idx_lst = []
 
         doc = libxml2.parseDoc(xml)
         ctx = doc.xpathNewContext()
@@ -373,6 +379,7 @@ class CloneDesign(object):
                 node = self._get_available_cloning_device(ctx, i, self._force_target)
                 if node == None:
                     continue
+                idx_lst.append(i)
                 lst.append(node[0].get_properties().getContent())
         finally:
             if ctx is not None:
@@ -386,7 +393,7 @@ class CloneDesign(object):
             typ.append(t)
             size.append(sz)
 
-        return (lst, size, typ)
+        return (lst, size, typ, idx_lst)
 
     # Pull disk #i from the original guest xml, return it's xml
     # if it should be cloned (skips readonly, empty, or sharable disks
@@ -436,18 +443,21 @@ class CloneDesign(object):
 
     # Check if original disk type (file/block) is different from
     # requested clones disk type, and alter xml if needed
-    def _change_disk_type(self, org_type, cln_type, ctx):
+    def _change_disk_type(self, org_type, cln_type, idxs, ctx):
 
-        for i in range(len(org_type)):
-            disk_type = ctx.xpathEval("/domain/devices/disk[%d]/@type" % (i+1))
-            driv_name = ctx.xpathEval("/domain/devices/disk[%d]/driver/@name" % (i+1))
-            src = ctx.xpathEval("/domain/devices/disk[%d]/source" % (i+1))
+        type_idx = 0
+        for dev_idx in idxs:
+            disk_type = ctx.xpathEval("/domain/devices/disk[%d]/@type" %
+                                      dev_idx)
+            driv_name = ctx.xpathEval("/domain/devices/disk[%d]/driver/@name" %
+                                      dev_idx)
+            src = ctx.xpathEval("/domain/devices/disk[%d]/source" % dev_idx)
             src_chid_txt = src[0].get_properties().getContent()
 
             # different type
-            if org_type[i] != cln_type[i]:
+            if org_type[type_idx] != cln_type[type_idx]:
                 # changing from file to disk
-                if org_type[i] == True:
+                if org_type[type_idx] == True:
                     disk_type[0].setContent("block")
                     driv_name[0].setContent("phy")
                     src[0].get_properties().unlinkNode()
@@ -458,6 +468,8 @@ class CloneDesign(object):
                     driv_name[0].setContent("file")
                     src[0].get_properties().unlinkNode()
                     src[0].newProp("file", src_chid_txt)
+
+            type_idx += 1
 
 #
 # start duplicate
