@@ -68,7 +68,7 @@ Xen virtual machines it is required that the first 3 pairs in the MAC address
 be the sequence '00:16:3e', while for QEMU or KVM virtual machines it must
 be '54:52:00'.
 
-=item  --connect=CONNECT     Connect to hypervisor with URI
+=item --connect=CONNECT     Connect to hypervisor with URI
 
 Connect to a non-default hypervisor. The default connection is chosen based
 on the following rules:
@@ -92,7 +92,11 @@ If running on a bare metal kernel as non-root
 It is only necessary to provide the C<--connect> argument if this default
 prioritization is incorrect, eg if wanting to use QEMU while on a Xen kernel.
 
-=item  -d, --debug
+=item --preserve-data
+
+Preserve a new file to use as the disk image for the new guest.
+
+=item -d, --debug
 
 Print debugging information to the terminal when running the install process.
 The debugging information is also stored in C<$HOME/.virtinst/virt-clone.log>
