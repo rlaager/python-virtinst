@@ -132,10 +132,20 @@ class FullVirtGuest(Guest):
         return self._lookup_osdict_key("continue")
 
     def continue_install(self, consolecb, meter, wait=True):
-        install_xml = self.get_config_xml(disk_boot = True)
-        logging.debug("Starting guest from '%s'" % ( install_xml ))
+        cont_xml = self.get_config_xml(disk_boot = True)
+        logging.debug("Continuing guest with:\n%s" % cont_xml)
         meter.start(size=None, text="Starting domain...")
-        self.domain = self.conn.createLinux(install_xml, 0)
+
+        # As of libvirt 0.5.1 we can't 'create' over an defined VM.
+        # So, redefine the existing domain (which should be shutoff at
+        # this point), and start it.
+        finalxml = self.domain.XMLDesc(0)
+
+        self.domain = self.conn.defineXML(cont_xml)
+        self.domain.create()
+        self.conn.defineXML(finalxml)
+
+        #self.domain = self.conn.createLinux(install_xml, 0)
         if self.domain is None:
             raise RuntimeError, _("Unable to start domain for guest, aborting installation!")
         meter.end(0)
