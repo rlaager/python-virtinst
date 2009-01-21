@@ -309,8 +309,9 @@ class VirtualDisk(VirtualDevice):
                 self._driverName = self.DRIVER_TAP
                 self._driverType = self.DRIVER_TAP_VDISK
 
-        logging.debug("Detected storage as type '%s'" % dtype)
-        if self.type is not None and dtype != self.type:
+        if self.type is None:
+            logging.debug("Detected storage as type '%s'" % dtype)
+        elif dtype != self.type:
             raise ValueError(_("Passed type '%s' does not match detected "
                                "storage type '%s'" % (self.type, dtype)))
         self.set_type(dtype, validate=False)
