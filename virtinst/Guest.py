@@ -973,7 +973,7 @@ class Guest(object):
         self._create_devices(meter)
         install_xml = self.get_config_xml()
         if install_xml:
-            logging.debug("Creating guest from '%s'" % ( install_xml ))
+            logging.debug("Creating guest from:\n%s" % install_xml)
             meter.start(size=None, text=_("Creating domain..."))
             self.domain = self.conn.createLinux(install_xml, 0)
             if self.domain is None:
@@ -981,19 +981,8 @@ class Guest(object):
             meter.end(0)
 
             logging.debug("Created guest, looking to see if it is running")
-            # sleep in .25 second increments until either a) we find
-            # our domain or b) it's been 5 seconds.  this is so that
-            # we can try to gracefully handle domain creation failures
-            num = 0
-            d = None
-            while num < (5 / .25): # 5 seconds, .25 second sleeps
-                try:
-                    d = self.conn.lookupByName(self.name)
-                    break
-                except libvirt.libvirtError, e:
-                    logging.debug("No guest running yet " + str(e))
-                num += 1
-                time.sleep(0.25)
+
+            d = _wait_for_domain(self.conn, self.name)
 
             if d is None:
                 raise RuntimeError, _("It appears that your installation has crashed.  You should be able to find more information in the logs")
@@ -1003,7 +992,7 @@ class Guest(object):
                 child = consolecb(self.domain)
 
         boot_xml = self.get_config_xml(install = False)
-        logging.debug("Saving XML boot config '%s'" % ( boot_xml ))
+        logging.debug("Saving XML boot config:\n%s" % boot_xml)
         self.conn.defineXML(boot_xml)
 
         if child and wait: # if we connected the console, wait for it to finish
@@ -1025,20 +1014,8 @@ class Guest(object):
 
     def connect_console(self, consolecb, wait=True):
         logging.debug("Restarted guest, looking to see if it is running")
-        # sleep in .25 second increments until either a) we get running
-        # domain ID or b) it's been 5 seconds.  this is so that
-        # we can try to gracefully handle domain restarting failures
-        num = 0
-        while num < (5 / .25): # 5 seconds, .25 second sleeps
-            try:
-                self.domain = self.conn.lookupByName(self.name)
-                if self.domain and self.domain.ID() != -1:
-                    break
-            except libvirt.libvirtError, e:
-                logging.debug("No guest existing " + str(e))
-                self.domain = None
-            num += 1
-            time.sleep(0.25)
+
+        self.domain = _wait_for_domain(self.conn, self.name)
 
         if self.domain is None:
             raise RuntimeError, _("Domain has not existed.  You should be able to find more information in the logs")
@@ -1113,6 +1090,22 @@ class Guest(object):
         raise RuntimeError(_("Invalid dictionary entry for device '%s %s'" % \
                              (device_key, param)))
 
+def _wait_for_domain(conn, name):
+    # sleep in .25 second increments until either a) we get running
+    # domain ID or b) it's been 5 seconds.  this is so that
+    # we can try to gracefully handle domain restarting failures
+    dom = None
+    for ignore in range(1, (5 / .25)): # 5 seconds, .25 second sleeps
+        try:
+            dom = conn.lookupByName(name)
+            if dom and dom.ID() != -1:
+                break
+        except libvirt.libvirtError, e:
+            logging.debug("No guest running yet: " + str(e))
+            dom = None
+        time.sleep(0.25)
+
+    return dom
 
 # Back compat class to avoid ABI break
 XenGuest = Guest
