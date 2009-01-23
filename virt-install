@@ -674,7 +674,7 @@ def main():
                             time.sleep(2)
                         else:
                             print _("Installation has exceeded specified time"
-                                    "limit. Aborting.")
+                                    "limit. Exiting application.")
                             sys.exit(1)
                 else:
                     print _("Domain installation still in progress. "
