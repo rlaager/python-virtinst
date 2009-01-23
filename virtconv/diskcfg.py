@@ -235,7 +235,8 @@ class disk(object):
 
         if not (out_format == DISK_FORMAT_NONE or
             out_format == DISK_FORMAT_VDISK or
-            out_format == DISK_FORMAT_RAW):
+            out_format == DISK_FORMAT_RAW or
+            out_format == DISK_FORMAT_VMDK):
             raise NotImplementedError("Cannot convert to disk format %s" %
                 output_format)
 
