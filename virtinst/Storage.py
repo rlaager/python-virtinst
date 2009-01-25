@@ -100,12 +100,6 @@ class StorageObject(object):
         # 'pool' or 'volume'
         return self._object_type
     object_type = property(get_object_type)
-    def get_type(self):
-        raise RuntimeError, "Must be implemented in child class."
-    type = property(get_type, doc=\
-    """
-    type of the underlying object. could be "dir" for a pool, etc.
-    """)
 
     def get_conn(self):
         return self._conn
@@ -186,7 +180,7 @@ class StorageObject(object):
         @returns: xml description
         @rtype: C{str}
         """
-        if self.type is None:
+        if not hasattr(self, "type"):
             root_xml = "<%s>\n" % self.object_type
         else:
             root_xml = "<%s type='%s'>\n" % (self.object_type, self.type)
@@ -283,7 +277,8 @@ class StoragePool(StorageObject):
     # Properties used by all pools
     def get_type(self):
         return self._type
-    type = property(get_type)
+    type = property(get_type,
+                    doc=_("Storage device type the pool will represent."))
 
     def get_target_path(self):
         return self._target_path
@@ -771,10 +766,6 @@ class StorageVolume(StorageObject):
         return pool_object
     lookup_pool_by_name = staticmethod(lookup_pool_by_name)
 
-
-    def get_type(self):
-        return None
-    type = property(get_type)
 
     # Properties used by all volumes
     def get_capacity(self):
