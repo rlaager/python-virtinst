@@ -120,6 +120,32 @@ class custom_rpm(Command):
         self.run_command('sdist')
         os.system('rpmbuild -ta dist/virtinst-%s.tar.gz' % VERSION)
 
+class refresh_translations(Command):
+
+    user_options = []
+
+    description = "Regenerate POT file and merge with current translations."
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+
+        # Generate POT file
+        files = [ "virtinst/*.py", "virtconv/*.py", "virtconv/parsers/*.py",
+                  "virt-*" ]
+        pot_cmd = "xgettext --language=Python -o po/virtinst.pot"
+        for f in files:
+            pot_cmd += " %s " % f
+        os.system(pot_cmd)
+
+        # Merge new template with existing translations.
+        for po in glob(pjoin(os.getcwd(), 'po', '*.po')):
+            os.system("msgmerge -U %s po/virtinst.pot" % po)
+
 class sdist(_sdist):
     """ custom sdist command, to prep virtinst.spec file for inclusion """
 
@@ -134,19 +160,18 @@ class build(_build):
 
     def run(self):
         global builddir
-        dirlist = os.listdir("po")
 
         if not os.path.exists("build/po"):
             os.makedirs("build/po")
 
-        for filename in dirlist:
-            if filename.endswith(".po"):
-                lang = filename[0:len(filename)-3]
-                if not os.path.exists("build/po/%s" % lang):
-                    os.makedirs("build/po/%s" % lang)
-                newname = "build/po/%s/virtinst.mo" % lang
-                print "Building %s from %s" % (newname, filename)
-                os.system("msgfmt po/%s -o %s" % (filename, newname))
+        for filename in glob(pjoin(os.getcwd(), 'po', '*.po')):
+            lang = filename[0:len(filename)-3]
+            if not os.path.exists("build/po/%s" % lang):
+                os.makedirs("build/po/%s" % lang)
+            newname = "build/po/%s/virtinst.mo" % lang
+
+            print "Building %s from %s" % (newname, filename)
+            os.system("msgfmt po/%s -o %s" % (filename, newname))
 
         _build.run(self)
         builddir = self.build_lib
@@ -209,5 +234,6 @@ setup(name='virtinst',
                     'sdist': sdist, 'build': build,
                     'install_data' : install_data,
                     'install_lib' : install_lib,
-                    'install' : install}
+                    'install' : install,
+                    'refresh_translations' : refresh_translations}
       )
