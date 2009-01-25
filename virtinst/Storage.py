@@ -130,9 +130,7 @@ class StorageObject(object):
         # Check that name doesn't collide with other storage objects
         self._check_name_collision(val)
         self._name = val
-    name = property(get_name, set_name, doc="""
-    Name of the storage object
-    """)
+    name = property(get_name, set_name, doc=_("Name for the storage object."))
 
     # Get/Set methods for use by some objects. Will register where applicable
     def get_perms(self):
@@ -183,7 +181,8 @@ class StorageObject(object):
         if not hasattr(self, "type"):
             root_xml = "<%s>\n" % self.object_type
         else:
-            root_xml = "<%s type='%s'>\n" % (self.object_type, self.type)
+            _type = getattr(self, "type")
+            root_xml = "<%s type='%s'>\n" % (self.object_type, _type)
 
         xml = "%s" % (root_xml) + \
               """  <name>%s</name>\n""" % (self.name) + \
@@ -285,7 +284,6 @@ class StoragePool(StorageObject):
     def set_target_path(self, val):
         self._validate_path(val)
         self._target_path = val
-    target_path = property(get_target_path, set_target_path)
 
     # Get/Set methods for use by some pools. Will be registered when applicable
     def get_source_path(self):
@@ -399,6 +397,9 @@ class DirectoryPool(StoragePool):
 
     # Register applicable property methods from parent class
     perms = property(StorageObject.get_perms, StorageObject.set_perms)
+    target_path = property(StoragePool.get_target_path,
+                           StoragePool.set_target_path,
+                           doc=_("Directory to use for the storage pool."))
 
     def __init__(self, conn, name, target_path=None, uuid=None, perms=None):
         StoragePool.__init__(self, name=name, type=StoragePool.TYPE_DIR,
@@ -433,7 +434,11 @@ class FilesystemPool(StoragePool):
     # Register applicable property methods from parent class
     perms = property(StorageObject.get_perms, StorageObject.set_perms)
     source_path = property(StoragePool.get_source_path,
-                           StoragePool.set_source_path)
+                           StoragePool.set_source_path,
+                           doc=_("The existing device to mount for the pool."))
+    target_path = property(StoragePool.get_target_path,
+                           StoragePool.set_target_path,
+                           doc=_("Location to mount the source device."))
 
     def __init__(self, conn, name, source_path=None, target_path=None,
                  format="auto", uuid=None, perms=None):
@@ -453,7 +458,8 @@ class FilesystemPool(StoragePool):
         if not val in self.formats:
             raise ValueError(_("Unknown Filesystem format: %s" % val))
         self._format = val
-    format = property(get_format, set_format)
+    format = property(get_format, set_format,
+                      doc=_("Filesystem type of the source device."))
 
     def _get_default_target_path(self):
         path = (DEFAULT_DIR_TARGET_BASE + self.name)
@@ -484,8 +490,13 @@ class NetworkFilesystemPool(StoragePool):
 
     # Register applicable property methods from parent class
     source_path = property(StoragePool.get_source_path,
-                           StoragePool.set_source_path)
-    host = property(StoragePool.get_host, StoragePool.set_host)
+                           StoragePool.set_source_path,
+                           doc=_("Path on the host that is being shared."))
+    host = property(StoragePool.get_host, StoragePool.set_host,
+                    doc=_("Name of the host sharing the storage."))
+    target_path = property(StoragePool.get_target_path,
+                           StoragePool.set_target_path,
+                           doc=_("Location to mount the source device."))
 
     def __init__(self, conn, name, source_path=None, host=None,
                  target_path=None, format="auto", uuid=None):
@@ -505,7 +516,8 @@ class NetworkFilesystemPool(StoragePool):
         if not val in self.formats:
             raise ValueError(_("Unknown Network Filesystem format: %s" % val))
         self._format = val
-    format = property(get_format, set_format)
+    format = property(get_format, set_format,
+                      doc=_("Type of network filesystem."))
 
     def _get_default_target_path(self):
         path = (DEFAULT_DIR_TARGET_BASE + self.name)
@@ -535,6 +547,9 @@ class LogicalPool(StoragePool):
 
     # Register applicable property methods from parent class
     perms = property(StorageObject.get_perms, StorageObject.set_perms)
+    target_path = property(StoragePool.get_target_path,
+                           StoragePool.set_target_path,
+                           doc=_("Location of the existing LVM volume group."))
 
     def __init__(self, conn, name, target_path=None, uuid=None, perms=None):
         StoragePool.__init__(self, name=name, type=StoragePool.TYPE_LOGICAL,
@@ -560,7 +575,12 @@ class DiskPool(StoragePool):
 
     # Register applicable property methods from parent class
     source_path = property(StoragePool.get_source_path,
-                           StoragePool.set_source_path)
+                           StoragePool.set_source_path,
+                           doc=_("Path to the existing disk device."))
+    target_path = property(StoragePool.get_target_path,
+                           StoragePool.set_target_path,
+                           doc=_("Root location for identifying new storage"
+                                 " volumes."))
 
     formats = [ "auto", "bsd", "dos", "dvh", "gpt", "mac", "pc98", "sun" ]
 
@@ -582,7 +602,8 @@ class DiskPool(StoragePool):
         if not val in self.formats:
             raise ValueError(_("Unknown Disk format: %s" % val))
         self._format = val
-    format = property(get_format, set_format)
+    format = property(get_format, set_format,
+                      doc=_("Format of the source device's partition table."))
 
     def _get_default_target_path(self):
         return DEFAULT_DEV_TARGET
@@ -615,7 +636,12 @@ class iSCSIPool(StoragePool):
     Create an iSCSI based storage pool
     """
 
-    host = property(StoragePool.get_host, StoragePool.set_host)
+    host = property(StoragePool.get_host, StoragePool.set_host,
+                    doc=_("Name of the host sharing the storage."))
+    target_path = property(StoragePool.get_target_path,
+                           StoragePool.set_target_path,
+                           doc=_("Root location for identifying new storage"
+                                 " volumes."))
 
     def get_volume_class():
         raise NotImplementedError(_("iSCSI volume creation is not "
@@ -638,7 +664,8 @@ class iSCSIPool(StoragePool):
         return self._source_path
     def set_source_path(self, val):
         self._source_path = val
-    source_path = property(get_source_path, set_source_path)
+    source_path = property(get_source_path, set_source_path,
+                           doc=_("Path on the host that is being shared."))
 
     def _get_default_target_path(self):
         return DEFAULT_ISCSI_TARGET
