@@ -31,6 +31,7 @@ import commands
 import libvirt
 
 from virtinst import util
+from virtinst import _virtinst as _
 
 def is_vdisk(path):
     if not os.path.exists("/usr/sbin/vdiskadm"):
@@ -100,6 +101,25 @@ def vm_uuid_collision(conn, uuid):
         except libvirt.libvirtError:
             pass
     return check
+
+def validate_uuid(val):
+    if type(val) is not str:
+        raise ValueError, _("UUID must be a string.")
+
+    form = re.match("[a-fA-F0-9]{8}[-]([a-fA-F0-9]{4}[-]){3}[a-fA-F0-9]{12}$",
+                    val)
+    if form is None:
+        form = re.match("[a-fA-F0-9]{32}$", val)
+        if form is None:
+            raise ValueError, \
+                  _("UUID must be a 32-digit hexadecimal number. It may take "
+                    "the form XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit "
+                    "hyphens altogether.")
+
+        else:   # UUID had no dashes, so add them in
+            val = (val[0:8] + "-" + val[8:12] + "-" + val[12:16] +
+                   "-" + val[16:20] + "-" + val[20:32])
+    return val
 
 #
 # These functions accidentally ended up in the API under virtinst.util
