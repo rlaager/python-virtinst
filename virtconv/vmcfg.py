@@ -19,6 +19,7 @@
 #
 
 import platform
+from virtconv import _gettext as _
 from virtconv import diskcfg
 from virtinst import CapabilitiesParser
 
@@ -67,19 +68,19 @@ class vm(object):
         """
 
         if not self.name:
-            raise ValueError("VM name is not set")
+            raise ValueError(_("VM name is not set"))
         if not self.description:
             self.description = ""
         if not self.nr_vcpus:
             self.nr_vcpus = 1
         if self.type == VM_TYPE_UNKNOWN:
-            raise ValueError("VM type is not set")
+            raise ValueError(_("VM type is not set"))
         if not self.arch:
-            raise ValueError("VM arch is not set")
+            raise ValueError(_("VM arch is not set"))
 
         for (bus, inst), disk in sorted(self.disks.iteritems()):
             if disk.type == diskcfg.DISK_TYPE_DISK and not disk.path:
-                raise ValueError("Disk %s:%s storage does not exist"
+                raise ValueError(_("Disk %s:%s storage does not exist")
                     % (bus, inst))
 
 def host(conn=None):

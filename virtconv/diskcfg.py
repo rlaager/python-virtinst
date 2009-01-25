@@ -25,6 +25,8 @@ import sys
 import os
 import re
 
+from virtconv import _gettext as _
+
 DISK_FORMAT_NONE = 0
 DISK_FORMAT_RAW = 1
 DISK_FORMAT_VMDK = 2
@@ -237,7 +239,7 @@ class disk(object):
             out_format == DISK_FORMAT_VDISK or
             out_format == DISK_FORMAT_RAW or
             out_format == DISK_FORMAT_VMDK):
-            raise NotImplementedError("Cannot convert to disk format %s" %
+            raise NotImplementedError(_("Cannot convert to disk format %s") %
                 output_format)
 
         indir = os.path.normpath(os.path.abspath(indir))
@@ -250,8 +252,8 @@ class disk(object):
             return
 
         if os.path.isabs(self.path):
-            raise NotImplementedError("Cannot convert disk with absolute"
-                "path %s" % self.path)
+            raise NotImplementedError(_("Cannot convert disk with absolute"
+                " path %s") % self.path)
 
         if input_in_outdir:
             indir = outdir

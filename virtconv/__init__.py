@@ -21,6 +21,15 @@
 import pkgutil
 import imp
 import os
+import gettext
+
+gettext_dir = "::LOCALEDIR::"
+gettext_app = "virtinst"
+
+gettext.bindtextdomain(gettext_app, gettext_dir)
+
+def _gettext(msg):
+    return gettext.dgettext(gettext_app, msg)
 
 parsers_path = [os.path.join(__path__[0], "parsers/")]
 

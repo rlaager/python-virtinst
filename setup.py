@@ -165,9 +165,12 @@ class install_lib(_install_lib):
     """ custom install_lib command to place locale location into library"""
 
     def run(self):
-        cmd = (("""sed -e "s,::LOCALEDIR::,%s," < virtinst/__init__.py > """ %\
-                locale) + "%s/virtinst/__init__.py" % builddir)
-        os.system(cmd)
+        for initfile in [ "virtinst/__init__.py", "virtconv/__init__.py" ]:
+            cmd =  "cat %s | " % initfile
+            cmd += """sed -e "s,::LOCALEDIR::,%s," > """ % locale
+            cmd += "%s/%s" % (builddir, initfile)
+            os.system(cmd)
+
         _install_lib.run(self)
 
 

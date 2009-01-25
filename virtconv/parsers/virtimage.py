@@ -18,6 +18,7 @@
 # MA 02110-1301 USA.
 #
 
+from virtconv import _gettext as _
 import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
@@ -207,14 +208,15 @@ class virtimage_parser(formats.parser):
         vm = vmcfg.vm()
         try:
             config  = ImageParser.parse_file(input_file)
-        except Exception, e:        
-            raise ValueError("Couldn't import file '%s': %s" % (input_file, e))
+        except Exception, e:
+            raise ValueError(_("Couldn't import file '%s': %s") %
+                             (input_file, e))
 
         domain = config.domain
         boot = domain.boots[0]
 
         if not config.name:
-            raise ValueError("No Name defined in '%s'" % input_file)
+            raise ValueError(_("No Name defined in '%s'") % input_file)
         vm.name = config.name
         vm.memory = int(config.domain.memory / 1024)
         if config.descr:
@@ -233,14 +235,14 @@ class virtimage_parser(formats.parser):
                 format = diskcfg.DISK_FORMAT_VMDK
 
             if format is None:
-                raise ValueError("Unable to determine disk format")
+                raise ValueError(_("Unable to determine disk format"))
             devid = (bus, nr_disk)
             vm.disks[devid] = diskcfg.disk(bus = bus,
                 type = diskcfg.DISK_TYPE_DISK)
             vm.disks[devid].format = format
             vm.disks[devid].path = disk.file
             nr_disk = nr_disk + 1
-           
+
         nics = domain.interface
         nic_idx = 0
         while nic_idx in range(0, nics):
@@ -260,7 +262,7 @@ class virtimage_parser(formats.parser):
         """
 
         if not vm.memory:
-            raise ValueError("VM must have a memory setting")
+            raise ValueError(_("VM must have a memory setting"))
 
         # xend wants the name to match r'^[A-Za-z0-9_\-\.\:\/\+]+$', and
         # the schema agrees.

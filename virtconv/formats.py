@@ -20,6 +20,8 @@
 
 import os
 
+from virtconv import _gettext as _
+
 _parsers = [ ]
 
 class parser(object):
@@ -136,4 +138,4 @@ def find_input(path, format = None):
                 if p.identify_file(os.path.join(path, cfgfile)):
                     return (os.path.join(path, cfgfile), p.name)
  
-    raise StandardError("unknown format")
+    raise StandardError(_("Unknown format"))

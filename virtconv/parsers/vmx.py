@@ -18,6 +18,7 @@
 # MA 02110-1301 USA.
 #
 
+from virtconv import _gettext as _
 import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
@@ -212,7 +213,7 @@ class vmx_parser(formats.parser):
                 if key.startswith("ethernet"):
                     parse_netdev_entry(vm, key, value)
             except:
-                raise Exception("Syntax error at line %d: %s" %
+                raise Exception(_("Syntax error at line %d: %s") %
                     (line_nr + 1, line.strip()))
 
         for devid, disk in vm.disks.iteritems():
@@ -226,7 +227,8 @@ class vmx_parser(formats.parser):
                 vm.disks[devid].path = None
 
         if not config.get("displayname"):
-            raise ValueError("No displayName defined in \"%s\"" % input_file)
+            raise ValueError(_("No displayName defined in \"%s\"") %
+                             input_file)
         vm.name = config.get("displayname")
 
         vm.memory = config.get("memsize")
