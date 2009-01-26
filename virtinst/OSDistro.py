@@ -174,7 +174,8 @@ class Distro:
 
         return False
 
-    def _kernelFetchHelper(self, fetcher, guest, progresscb, kernelpath, initrdpath):
+    def _kernelFetchHelper(self, fetcher, guest, progresscb, kernelpath,
+                           initrdpath):
         # Simple helper for fetching kernel + initrd and performing
         # cleanup if neccessary
         kernel = fetcher.acquireFile(kernelpath, progresscb)
@@ -184,7 +185,7 @@ class Distro:
             args += "method=" + fetcher.location
 
         if guest.extraargs:
-            args += guest.extraargs
+            args += " " + guest.extraargs
 
         try:
             initrd = fetcher.acquireFile(initrdpath, progresscb)
