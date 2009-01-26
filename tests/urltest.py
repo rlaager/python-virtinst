@@ -28,6 +28,8 @@ import logging
 import re
 import urlgrabber.progress
 import tests
+import libvirt
+import virtinst
 
 # Filters for including/excluding certain distros.
 MATCH_FILTER=".*"
@@ -196,6 +198,9 @@ urls = {
 
 }
 
+testconn = libvirt.open("test:///default")
+testguest = virtinst.Guest(connection=testconn, installer=virtinst.DistroInstaller())
+
 class TestURLFetch(unittest.TestCase):
 
     def _fetchComparison(self, distname, url, arch):
@@ -263,7 +268,7 @@ class TestURLFetch(unittest.TestCase):
 
         # Fetch regular kernel
         try:
-            kern = hvmstore.acquireKernel(fetcher, meter)
+            kern = hvmstore.acquireKernel(testguest, fetcher, meter)
             logging.debug("acquireKernel (hvm): %s" % str(kern))
 
             if kern[0] is not True or kern[1] is not True:
@@ -276,7 +281,7 @@ class TestURLFetch(unittest.TestCase):
         # Fetch xen kernel
         try:
             if xenstore and check_xen:
-                kern = xenstore.acquireKernel(fetcher, meter)
+                kern = xenstore.acquireKernel(testguest, fetcher, meter)
                 logging.debug("acquireKernel (xen): %s" % str(kern))
 
                 if kern[0] is not True or kern[1] is not True:
