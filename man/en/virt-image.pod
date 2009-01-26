@@ -127,6 +127,8 @@ hypervisor is selected.
 Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
 
+=back
+
 =head1 EXAMPLES
 
 Create and start a guest called C<example> with a VNC console from
