@@ -3,7 +3,7 @@ include python-virtinst.spec
 include setup.py
 recursive-include virtinst *.py
 recursive-include virtconv *.py
-recursive-include tests *.py *.xml *.vmx *.virt-image
+recursive-include tests *.py *.xml *.vmx *.virt-image *.sh
 include virt-install virt-clone virt-image virt-convert
 include autobuild.sh
 include doc/*
