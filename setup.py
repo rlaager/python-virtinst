@@ -144,7 +144,8 @@ class refresh_translations(Command):
 
         # Merge new template with existing translations.
         for po in glob(pjoin(os.getcwd(), 'po', '*.po')):
-            os.system("msgmerge -U %s po/virtinst.pot" % po)
+            os.system("msgmerge -U po/%s po/virtinst.pot" %
+                      os.path.basename(po))
 
 class sdist(_sdist):
     """ custom sdist command, to prep virtinst.spec file for inclusion """
@@ -165,7 +166,8 @@ class build(_build):
             os.makedirs("build/po")
 
         for filename in glob(pjoin(os.getcwd(), 'po', '*.po')):
-            lang = filename[0:len(filename)-3]
+            filename = os.path.basename(filename)
+            lang = os.path.basename(filename)[0:len(filename)-3]
             if not os.path.exists("build/po/%s" % lang):
                 os.makedirs("build/po/%s" % lang)
             newname = "build/po/%s/virtinst.mo" % lang
