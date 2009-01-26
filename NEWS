@@ -1,6 +1,20 @@
    Virt Install News
    =================
 
+Release 0.400.1 (January 26, 2009)
+----------------------------------
+
+This release includes:
+
+  - Add virt-image -> vmx support to virt-convert, replacing virt-pack
+      (Joey Boggs)
+  - Add disk checksum support to virt-image (Joey Boggs)
+  - Enhanced URL install support: Debian Xen paravirt, Ubuntu kernel and
+      boot.iso, Mandriva kernel, and Solaris Xen Paravirt (Guido Gunther,
+      John Levon, Cole Robinson)
+  - Expanded test suite
+  - Numerous bug fixes, cleanups, and minor improvements
+
 Release 0.400.0 (September 10, 2008)
 ------------------------------------
 

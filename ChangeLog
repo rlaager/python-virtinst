@@ -1,9 +1,1156 @@
+2009-01-26  Cole Robinson  <crobinso@redhat.com>
+
+	* po/fr.po, po/it.po, po/ja.po, po/pl.po, po/pt_BR.po, po/sr.po,
+	po/sr@latin.po, po/virtinst.pot, po/zh-CN.po:
+	Refresh translations.
+	[cf57772e23a1] [tip]
+
+	* man/en/virt-clone.1, man/en/virt-install.1, man/en/virt-install.pod:
+	Add URL examples to virt-install man page, regenerate docs.
+	[f85c0749edab]
+
+	* setup.py:
+	Fix setup.py syntax errors.
+	[47a7e2fa4f3e]
+
+2009-01-25  Cole Robinson  <crobinso@redhat.com>
+
+	* INSTALL, setup.py:
+	Add setup.py 'refresh_translations' command.
+	[249ee8c45802]
+
+	* setup.py, tests/pylint-virtinst.sh, virt-convert,
+	virtconv/__init__.py, virtconv/diskcfg.py, virtconv/formats.py,
+	virtconv/parsers/virtimage.py, virtconv/parsers/vmx.py,
+	virtconv/vmcfg.py:
+	Export virt-convert strings for translation
+	[4c5b6b035b74]
+
+	* virtinst/Storage.py:
+	Add some documentation for storage pool parameters.
+	[32682dbf301d]
+
+2009-01-24  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py, virtinst/Storage.py, virtinst/_util.py:
+	Factor out common UUID validation code.
+	[b5f2a791eb78]
+
+	* virtinst/Storage.py:
+	Remove unused get_type method from StorageVolume.
+	[3dc8100169c1]
+
+2009-01-23  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-install:
+	Clarify virt-install --wait error message.
+	[0977f391639e]
+
+	* virtconv/diskcfg.py:
+	Fix virt-convert vmdk regression (Joey Boggs)
+	[fcad10e944ef]
+
+2009-01-21  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/FullVirtGuest.py:
+	Fix windows (2 stage) installs with latest libvirt.
+	[7e364fafe1f3]
+
+	* virtinst/VirtualDisk.py:
+	Remove unnecessary logging in VirtualDisk.
+	[7bf2560c7bc8]
+
+	* virtinst/Guest.py:
+	Factor out common 'wait for guest to startup' code in Guest.py
+	[f622bbefb9f7]
+
+2009-01-20  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py:
+	Accomodate no 'driver' field if cloning between disks with different
+	storage types (file vs. block).
+	[5a3373625918]
+
+2009-01-20  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-clone.pod:
+	Document virt-clone --preserve-data (Tomas Hoger)
+	[8be3addbb61d]
+
+	* AUTHORS, virt-clone:
+	Skip virt-clone file existence check if --preserve-data (Tomas
+	Hoger)
+	[58c5b6db10b3]
+
+2009-01-20  "Cole Robinson  <crobinso@redhat.com>
+
+	* virt-clone, virtinst/CloneManager.py:
+	Allow a progress meter to be passed to CloneManager.start_duplicate
+	[4503053c13a6]
+
+2009-01-20  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py:
+	Fix CloneManager to accomodate a VM with disks that don't need to be
+	cloned (rhbz 480253)
+	[4ebcc61fb247]
+
+2009-01-14  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py, virtinst/Guest.py, virtinst/_util.py:
+	Move out common uuid collision code to _util.
+	[b6432c09af4d]
+
+2009-01-20  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py:
+	Documentation and small cleanup improvements to CloneManager.
+	[29c44abb111a]
+
+2009-01-13  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	Improve a VirtualDisk error message.
+	[2da7dd55c106]
+
+	* virtinst/CloneManager.py:
+	Remove unused code from CloneManager.
+	[5e79168a4b20]
+
+2009-01-14  john  <john.levon@sun.com>
+
+	* virtinst/OSDistro.py:
+	Fix virt-install of PV Solaris without extra args
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[c13bca1c21fb]
+
+2009-01-12  john  <john.levon@sun.com>
+
+	* virtinst/DistroManager.py, virtinst/OSDistro.py, virtinst/osdict.py:
+	Add support for Solaris PV
+
+	Solaris PV comes in two flavours: Nevada and OpenSolaris. In order
+	to correctly build network installs for Nevada, we need to pass down
+	guest options into OSDistro.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[b990f35e6718]
+
+2009-01-12  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py, virtinst/Guest.py,
+	virtinst/VirtualDisk.py, virtinst/_util.py:
+	Add vdisk support (John Levon)
+
+	Add support for the vdisk format used in Solaris.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[ec343569fd7c]
+
+2008-12-16  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/image-xml/image2guest/image-xenpv32.xml,
+	virtinst/ImageManager.py:
+	Have ImageInstaller use the osblob xml building helper.
+	[1fb5bed141ab]
+
+	* tests/image-xml/image-bad-arch.xml, tests/image.py:
+	Make sure ImageParser is sanitizing the passed architecture.
+	[d15d4f921570]
+
+	* virtinst/ImageParser.py, virtinst/_util.py:
+	Add an internal util command to sanitize a user passed arch.
+	[1ec1d8fe2b17]
+
+	* virtinst/ImageManager.py:
+	Improve an error message in ImageInstaller
+	[bc5c65110946]
+
+	* tests/image-xml/image.xml, tests/image-xml/image2guest/image-
+	xenfv32.xml, tests/image-xml/image2guest/image-xenpv32.xml, tests
+	/image-xml/image2nics.xml, tests/image.py:
+	Add image.xml->guest.xml testing.
+	[988e1077caf7]
+
+	* virtinst/DistroManager.py:
+	Remove useless init from PXEInstaller
+	[4f013932088d]
+
+	* tests/xmlconfig.py:
+	Try to define + create generated xml from xmlconfig tests.
+	[b5725d578e2e]
+
+	* tests/xmlconfig.py:
+	Break out xmlconfig guest building helpers for use in other test
+	modules.
+	[0a834c389770]
+
+	* virtinst/FullVirtGuest.py:
+	Don't pass empty conn to is_pae_capable if we can help it.
+	[489aa96d66d7]
+
+	* tests/validation.py:
+	Expand validation test suite to test installer/device storage API
+	support
+	[b4ea640e8142]
+
+	* virtinst/VirtualDisk.py:
+	More VirtualDisk validation cleanup and fixes.
+	[dd8d8040e8e1]
+
+	* virtinst/DistroManager.py:
+	Cleanup DistroInstaller location validation.
+	[fdbc34c95134]
+
+	* tests/storage.py:
+	Break out pool/vol building helpers for use by other test modules.
+	[8cd655c078bd]
+
+	* virtinst/util.py:
+	Favor active pools in util.lookup_pool_by_path
+	[8263855a5243]
+
+	* tests/coverage.py:
+	Update coverage.py from upstream
+	[fab71d24f9b2]
+
+2008-12-11  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	Try to make VirtualDisk validation less confusing.
+	[414a5e7d0b88]
+
+2008-12-10  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-clone, virt-convert, virt-image, virt-install:
+	Use OptionGroups for all virt-* --help listings
+	[4ad949819be0]
+
+2008-12-11  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-convert:
+	Use VirtOptionParser in virt-convert
+	[18e37bffb529]
+
+	* tests/validation.py:
+	Move tests/validation code movement.
+	[a9c8769b1e9e]
+
+2008-12-11  john  <john.levon@sun.com>
+
+	* virtinst/FullVirtGuest.py, virtinst/util.py:
+	Port utility functions to Solaris
+
+	Port the utility functions to Solaris.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[dc1656f60e7d]
+
+	* virtinst/CloneManager.py, virtinst/_util.py:
+	Add utility function for stat() of disks
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[22434c6ff37f]
+
+2008-12-10  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/util.py:
+	Fix a couple util imports
+	[a1b50ecb6ece]
+
+2008-12-10  john  <john.levon@sun.com>
+
+	* virt-clone, virtinst/CloneManager.py, virtinst/DistroManager.py,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ImageManager.py, virtinst/Storage.py, virtinst/User.py,
+	virtinst/VirtualDevice.py, virtinst/VirtualDisk.py,
+	virtinst/__init__.py, virtinst/_util.py, virtinst/cli.py,
+	virtinst/util.py:
+	Fossilize public virtinst.util API
+
+	Make virtinst.util API frozen, and move the utility functions into a
+	private namespace away from the prying eyes of API clients.
+
+	As a consequence, create a User class for checking privileges.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[dd39b8a72e72]
+
+	* virt-convert, virtconv/diskcfg.py, virtconv/parsers/virtimage.py,
+	virtconv/parsers/vmx.py:
+	Various disk-related virt-convert fixes.
+
+	Fix a number of issues with disk handling.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[10a5001f9200]
+
+2008-12-09  john  <john.levon@sun.com>
+
+	* virtinst/Guest.py:
+	Fix legacy get_graphics()
+
+	The key needs to be 'enabled' not 'enabled '.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[159018031462]
+
+2008-12-09  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/validation.py:
+	Fix up whitespace in validation test suite.
+	[84076ab49117]
+
+2008-12-07  "Cole Robinson  <crobinso@redhat.com>
+
+	* python-virtinst.spec.in:
+	Spec file tweak.
+	[4836ab4cfffc]
+
+	* virtinst/Guest.py, virtinst/osdict.py:
+	Add back compat for solaris osdict entries.
+	[419fb59763dc]
+
+2008-12-06  "Cole Robinson  <crobinso@redhat.com>
+
+	* AUTHORS, virtinst/osdict.py:
+	Add a generic virtio variant to the os dictionary (Michael Marineau)
+	[c35b27ad997e]
+
+2008-12-06  john  <john.levon@sun.com>
+
+	* virtinst/cli.py:
+	Fix regression with --mac option
+
+	Older versions of virt-install allowed a MAC address to be specified
+	and a default network would be created. For ease of use, if the
+	user specifies exactly one MAC address, create a default network for
+	it.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[2707387564df]
+
+	* virtinst/osdict.py:
+	Solaris HVM support
+
+	Make 'solaris' a first-class OS type, and select USB tablet support
+	for the appropriate variants.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[f6d8999365a9]
+
+	* virtinst/VirtualDisk.py:
+	Fix tap failure
+
+	VirtualDisk driver name/type need setters.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[e9148dda8c9c]
+
+	* virt-clone, virtinst/DistroManager.py, virtinst/Guest.py,
+	virtinst/cli.py, virtinst/util.py:
+	Least privilege support
+
+	On Solaris, which users can run virt-install depends on their
+	effective privilege set, not their effective UID.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[4ff5f60b8f52]
+
+	* virtinst/CloneManager.py, virtinst/util.py:
+	Provide a common block device size utility for Solaris & Linux.
+
+	Signed-off-by: John Danielson <john.danielson@sun.com>
+	[13390c95ae0a]
+
+	* virtinst/CloneManager.py, virtinst/VirtualDisk.py:
+	Fix sparse file size off-by-one error
+
+	The Solaris loopback driver (lofi) requires files be a multiple of
+	512-bytes in size. Sparse files created via lseek(f, size, 0) are 1
+	byte larger than what is being requested.
+
+	Signed-off-by: John Danielson <john.danielson@sun.com>
+	[ed58873b537c]
+
+2008-12-06  "Cole Robinson  <crobinso@redhat.com>
+
+	* AUTHORS, virtinst/util.py:
+	Remove extra '/' from pool path in lookup_pool_by_path (Andreas
+	Schneider)
+	[b66d39a23988]
+
+	* virtinst/Guest.py, virtinst/osdict.py:
+	Return sorted os dictionary lists from static Guest methods. Fix
+	Fedora* sorting to put f10 after f9.
+	[a601ebd5c785]
+
+	* virtinst/osdict.py:
+	Don't use disk virtio when installing F9 guests (bz 470389)
+	[82957a280825]
+
+2008-12-03  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/cli.py:
+	Don't backtrace if there are prompt or force interaction issues.
+	[9eb684039e4e]
+
+2008-12-02  john  <john.levon@sun.com>
+
+	* virtinst/ImageFetcher.py:
+	Fix mount/unmount for Solaris
+
+	mount is not portable: fix for Solaris
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[74febd10a8a9]
+
+	* tests/pylint-virtinst.sh:
+	Fix pylint on Solaris
+
+	Use a good enough awk.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[583d6aff027f]
+
+2008-12-01  Guido Gunther  <agx@sigxcpu.org>
+
+	* virtinst/util.py:
+	parse xorg.conf for keymap
+	[bcd052e6ef9d]
+
+	* tests/pylint-virtinst.sh:
+	Remove bashisms since we use /bin/sh which is not always bash (it's
+	dash on Debian)
+	[318a441c1bed]
+
+2008-11-29  Guido Gunther  <agx@sigxcpu.org>
+
+	* man/en/virt-install.pod:
+	Pool separator is '/' not ':'
+	[0a953a339693]
+
+2008-11-25  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Storage.py:
+	Show error message for unimplemented storage volumes.
+	[16e923676e84]
+
+2008-11-24  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/urltest.py:
+	Add a debug statement to urltest.
+	[b7fb41edd7aa]
+
+	* virtinst/DistroManager.py, virtinst/OSDistro.py:
+	Only fetch .treeinfo once when trying to identify a url's distro.
+	[9a4ba138bd20]
+
+2008-11-20  john  <john.levon@sun.com>
+
+	* doc/image.rng:
+	Make image.rng validate again
+
+	The new checksum element wasn't valid.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[12bbbbbb1529]
+
+2008-11-24  "Cole Robinson  <crobinso@redhat.com>
+
+	* HACKING, MANIFEST.in:
+	Add HACKING file.
+	[7e7211368144]
+
+	* setup.py, tests/pylint-virtinst.sh:
+	Add setup.py 'check' command to run a pylint wrapper.
+	[2b10ffc5a696]
+
+2008-11-23  "Cole Robinson  <crobinso@redhat.com>
+
+	* setup.py, tests/__init__.py, tests/urltest.py:
+	Add url fetching module to test suite.
+	[549de9d73d0e]
+
+	* virtinst/OSDistro.py:
+	Use treeinfo parsing for scientific linux.
+	[5f2cbaded5fc]
+
+	* virtinst/OSDistro.py:
+	Have Distro classes register their kernel paths with a common
+	function, rather than implementing their own acquireKernel
+	[c8769c9f25a6]
+
+	* virtinst/OSDistro.py:
+	Add _uses_treeinfo attribute to OSDistros.
+	[dcc0935bc284]
+
+	* virtinst/OSDistro.py:
+	Have OSDistros register iso paths, rather than reimplement fetching
+	method.
+	[3f88eb6c6b9f]
+
+	* virtinst/OSDistro.py:
+	Add name attribute to OSDistros
+	[aa6b21b424ea]
+
+	* virtinst/Guest.py:
+	Document not using type parameter.
+	[e276a74cb815]
+
+	* virtinst/Storage.py:
+	Remove storage pylint.
+	[bbb26d444383]
+
+	* virtinst/DistroManager.py, virtinst/ImageFetcher.py:
+	Remove progresscb from ImageFetcher prepareLocation method.
+	[8bb772d7df61]
+
+	* virtinst/ImageFetcher.py:
+	ImageFetcher: use hasFile to sanity check passed urls, not
+	urlgrabber.
+	[24a96e544e8e]
+
+2008-11-22  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/ImageFetcher.py:
+	Add ImageFetcher path joining helper method.
+	[9accd110a116]
+
+2008-11-23  "Cole Robinson  <crobinso@redhat.com>
+
+	* setup.py, tests/__init__.py:
+	Add --debug option to test commands, allow debug reporting for
+	tests.
+	[22eae43e01af]
+
+2008-11-22  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/__init__.py, tests/virtconv-test.py, tests/xmlconfig.py:
+	Add helper compare method to tests module.
+	[4d84f37d1a95]
+
+2008-11-20  "Cole Robinson  <crobinso@redhat.com>
+
+	* INSTALL, setup.py:
+	Add setup.py 'rpm' command to build a local rpm.
+	[0827809e13ba]
+
+	* MANIFEST.in, python-virtinst.spec.in:
+	Clean up MANIFEST, fix spec building.
+	[463b82656c4c]
+
+	* MANIFEST.in, setup.py:
+	sed spec.in -> spec when running sdist, so we can package the spec.
+	[3474b7542267]
+
+	* setup.py:
+	Add description for setup.py 'test' command.
+	[b6ac1dc4cd1e]
+
+2008-11-23  "Cole Robinson  <crobinso@redhat.com>
+
+	* setup.py:
+	Clean up i18n install command.
+	[d45b254f78f5]
+
+2008-11-18  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/DistroManager.py, virtinst/Guest.py:
+	Don't pass os_distro to installer if fetching a kernel.
+	[c96a81e57850]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Move all _prepare_install logic to base Guest class.
+	[0ce060f935ec]
+
+	* virtinst/FullVirtGuest.py:
+	Remove redundant function.
+	[cf8a82e65215]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py:
+	Move os_type and os_variant properties to parent Guest class.
+	[ef0f0a4a24b9]
+
+2008-11-17  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py, virtinst/osdict.py:
+	Move os dictionary to its own file. Associate the dict with Guest
+	rather than FullVirtGuest.
+	[b9096505560e]
+
+	* virtinst/DistroManager.py, virtinst/OSDistro.py:
+	Remove GentooDistro class: installing from a gentoo tree isn't all
+	that useful (or doable AFAICT)
+	[20c94ac6e522]
+
+	* virtinst/OSDistro.py:
+	Add support for fetching mandriva kernels.
+	[0bcc371055eb]
+
+	* virtinst/OSDistro.py:
+	OSDistro: centralize common initrd/kernel fetching code.
+	[1f536f7c3914]
+
+2008-11-23  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/OSDistro.py:
+	Add support for fetching ubuntu kernels and boot disks.
+	[5929933af553]
+
+2008-11-16  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/OSDistro.py:
+	OSDistro: Factor out common fetch-file-and-match-regex code.
+	[0e06d7da23e3]
+
+	* virtinst/OSDistro.py:
+	Make debian ValidStore a bit less general.
+	[0d24ec94a081]
+
+	* virtinst/OSDistro.py:
+	Throw nicer error is suse tree doesn't have a boot.iso
+	[2fad7389b55f]
+
+2008-11-17  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtconv/parsers/virtimage.py:
+	Don't use ascii_letters, 'string' is deprecated.
+	[7c441371a3fd]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Specify certain Guest methods as explictly abstract.
+	[67587c451914]
+
+2008-11-16  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig-xml/install-fullyvirt-livecd.xml,
+	virtinst/DistroManager.py, virtinst/Guest.py,
+	virtinst/LiveCDInstaller.py:
+	Centralize installer xml building in the base Installer class.
+	[c7dac0e5dd71]
+
+	* virtinst/Guest.py:
+	Document some installer methods.
+	[1169f4a60701]
+
+2008-11-15  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/DistroManager.py, virtinst/FullVirtGuest.py,
+	virtinst/Guest.py:
+	Move post_install_check to Installer base class.
+	[5fa53341877e]
+
+2008-11-16  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig-xml/install-fullyvirt-livecd.xml, tests/xmlconfig-
+	xml/install-fullyvirt-pxe.xml, tests/xmlconfig.py:
+	Add xmlconfig tests for livecd and pxe installer.
+	[08a315819b6c]
+
+2008-11-15  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtconv/parsers/virtimage.py:
+	Fix virtconv virtimage parser syntax error.
+	[fbcf7a20c34e]
+
+2008-11-18  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/virtconv-test.py, tests/xmlconfig.py, virt-clone, virt-
+	convert, virt-image, virt-install, virtconv/formats.py,
+	virtconv/parsers/virtimage.py, virtinst/CapabilitiesParser.py,
+	virtinst/CloneManager.py, virtinst/DistroManager.py,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ImageFetcher.py, virtinst/ImageManager.py,
+	virtinst/ImageParser.py, virtinst/OSDistro.py,
+	virtinst/ParaVirtGuest.py, virtinst/Storage.py,
+	virtinst/VirtualDisk.py, virtinst/cli.py:
+	Fix lots of unused argument and unused variable warnings, among
+	others.
+	[f866aeb55d22]
+
+2008-11-04  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/image.py, tests/storage.py, tests/validation.py, tests
+	/virtconv-test.py, virt-install, virtconv/diskcfg.py,
+	virtconv/parsers/virtimage.py, virtinst/CapabilitiesParser.py,
+	virtinst/CloneManager.py, virtinst/DistroManager.py,
+	virtinst/Guest.py, virtinst/ImageFetcher.py,
+	virtinst/ImageParser.py, virtinst/OSDistro.py,
+	virtinst/VirtualDisk.py, virtinst/cli.py, virtinst/util.py:
+	Remove instances of variables overriding builtin options.
+	[156d42395f80]
+
+	* tests/validation.py, virt-image, virt-install,
+	virtinst/CloneManager.py, virtinst/Guest.py,
+	virtinst/ImageParser.py, virtinst/util.py:
+	Fix indentation errors.
+	[699aa9d293c3]
+
+	* tests/storage.py, virt-clone, virt-convert, virt-image, virt-
+	install, virtconv/parsers/virtimage.py, virtinst/CloneManager.py,
+	virtinst/DistroManager.py, virtinst/Guest.py,
+	virtinst/ImageFetcher.py, virtinst/OSDistro.py, virtinst/Storage.py,
+	virtinst/cli.py, virtinst/util.py:
+	Remove unused variables.
+	[3c2084a8ab50]
+
+	* setup.py, tests/storage.py, tests/virtconv-test.py, virt-clone,
+	virt-convert, virt-image, virt-install,
+	virtconv/parsers/virtimage.py, virtconv/parsers/vmx.py,
+	virtinst/CloneManager.py, virtinst/DistroManager.py,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ImageFetcher.py, virtinst/ImageParser.py,
+	virtinst/LiveCDInstaller.py, virtinst/ParaVirtGuest.py,
+	virtinst/Storage.py, virtinst/VirtualDevice.py,
+	virtinst/VirtualDisk.py, virtinst/cli.py:
+	Remove unused imports.
+	[9b12631afe6d]
+
+2008-11-10  "Cole Robinson  <crobinso@redhat.com>
+
+	* AUTHORS, virtinst/FullVirtGuest.py:
+	Don't skip pxe if virtio nic specified (works for F10 at least).
+	(Alan Pevec)
+	[3a9b23c6cd62]
+
+	* virt-clone, virt-image, virt-install:
+	Don't explicitly import virtinst's gettext function: screws with
+	unicode.
+	[38298b55baad]
+
+2008-11-06  "Cole Robinson  <crobinso@redhat.com>
+
+	* setup.py:
+	Don't try to install virt-pack.
+	[a7c5d3f7fd64]
+
+	* virt-pack, virtinst/UnWare.py:
+	Remove virt-pack (replaced by virt-convert). (Joey Boggs)
+	[8d816eb9cf1d]
+
+2008-11-04  Bryan Kearney  <bkearney@redhat.com>
+
+	* virtinst/ImageParser.py:
+	Allow Image Parser to be called without a file name.
+
+	This is used to support using the object model directly
+	[8b19fc149cae]
+
+2008-11-04  "Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod:
+	virt-install --disk bus podfile typo.
+	[352ef78f5a1f]
+
+	* virtinst/ImageFetcher.py:
+	Don't add extraneous '/' to ftp path.
+	[fe7ecaedecc3]
+
+2008-11-03  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/util.py:
+	Accomodate differently formatted sysconfig/keyboard files.
+	[bd2ec3b7b815]
+
+	* virtinst/keytable.py:
+	Fix some keytable ordering to be a bit more clear.
+	[c3378e5214af]
+
+2008-10-30  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/OSDistro.py:
+	Add support for Debian Xen paravirt installs. (Guido Gunther)
+
+	Lenny supports this. Also add transparent support for
+	'http://people.debian.org/~joeyh/d-i/' which is the official
+	location for debian-installer daily builds but has slightly
+	different layout (images/daily instead of current/images).
+	[285a112054ff]
+
+2008-10-30  Guido Gunther  <agx@sigxcpu.org>
+
+	* virt-install:
+	710611367b50 broke the device suboption of --disk. This fixes it.
+	[54ab0d67a045]
+
+	* virt-install:
+	Fix --disk error message
+
+	Opt is a tuple. Withouth this we get
+
+	ERROR not all arguments converted during string formatting
+
+	instead of a reasonable error message.
+	[fef7dd673020]
+
+2008-10-30  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/boot-paravirt-disk-block.xml, tests/boot-paravirt-
+	disk-drv-file.xml, tests/boot-paravirt-disk-drv-phy.xml, tests/boot-
+	paravirt-disk-drv-tap-qcow.xml, tests/boot-paravirt-disk-drv-
+	tap.xml, tests/boot-paravirt-disk-file.xml, tests/boot-paravirt-
+	many-disks.xml, tests/capabilities-kvm.xml, tests/capabilities-
+	qemu.xml, tests/capabilities-test.xml, tests/capabilities-xen.xml,
+	tests/image.xml, tests/image2nics.xml, tests/install-fullyvirt-disk-
+	block.xml, tests/install-fullyvirt-disk-file.xml, tests/install-
+	paravirt-disk-block.xml, tests/install-paravirt-disk-drv-file.xml,
+	tests/install-paravirt-disk-drv-phy.xml, tests/install-paravirt-
+	disk-drv-tap-qcow.xml, tests/install-paravirt-disk-drv-tap.xml,
+	tests/install-paravirt-disk-file.xml, tests/install-paravirt-many-
+	disks.xml, tests/misc-xml-escaping.xml, virtinst/ImageParser.py:
+	Merge heads.
+	[ebfe3931efdb]
+
+	* MANIFEST.in:
+	Update MANIFEST
+	[da1238a5cdd7]
+
+	* tests/virtconv-files/virtimage2vmx/image.virt-image, tests/virtconv-
+	files/virtimage2vmx/image.vmx, tests/virtconv-
+	files/vmx2virtimage/test.virt-image, tests/virtconv-
+	files/vmx2virtimage/test.vmx, tests/virtconv-test.py:
+	Add a basic virtconv test suite.
+	[8542b30bcdd6]
+
+	* tests/xmlconfig.py:
+	Show actual 'diff' output when comparing xml files in test suite.
+	[83364f9e6fe8]
+
+	* virtconv/parsers/vmx.py:
+	virtconv: Log info if we skip a vmx scsi disk. Don't calculate new
+	ide bus nr if it was provided.
+	[db518e3aedc9]
+
+	* virtconv/parsers/virtimage.py, virtconv/parsers/vmx.py:
+	virtconv: fix some memory conversion factors between formats
+	[d196dddf6c7c]
+
+	* virtinst/ImageParser.py:
+	Store memory value as an int rather than a string in ImageParser
+	[a818aed7191e]
+
+2008-10-29  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtconv/parsers/virtimage.py:
+	Don't add needless description spacing with virtconv virt-image
+	export
+	[be368fd7608b]
+
+	* virtconv/parsers/vmx.py:
+	Check whole file instead of just first line to verify vmx files.
+	[e3301b63ebd0]
+
+	* virtconv/parsers/vmx.py:
+	Remove timestamp from generated vmx file to accomodate test suite.
+	[62bea71e25b8]
+
+	* virtconv/formats.py, virtconv/parsers/virtimage.py,
+	virtconv/parsers/vmx.py:
+	Add 'export' command to parser class, returns generated config as a
+	string.
+	[5fb462a6731d]
+
+2008-10-28  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/__init__.py, tests/storage.py:
+	Add basic test suite to exercise storage xml building and
+	installing.
+	[d1e187874099]
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/boot-paravirt-disk-block.xml, tests/boot-paravirt-
+	disk-drv-file.xml, tests/boot-paravirt-disk-drv-phy.xml, tests/boot-
+	paravirt-disk-drv-tap-qcow.xml, tests/boot-paravirt-disk-drv-
+	tap.xml, tests/boot-paravirt-disk-file.xml, tests/boot-paravirt-
+	many-disks.xml, tests/capabilities-kvm.xml, tests/capabilities-
+	qemu.xml, tests/capabilities-test.xml, tests/capabilities-xen.xml,
+	tests/capabilities-xml/capabilities-kvm.xml, tests/capabilities-xml
+	/capabilities-qemu.xml, tests/capabilities-xml/capabilities-
+	test.xml, tests/capabilities-xml/capabilities-xen.xml,
+	tests/capabilities.py, tests/image-xml/image.xml, tests/image-
+	xml/image2nics.xml, tests/image.py, tests/image.xml,
+	tests/image2nics.xml, tests/install-fullyvirt-disk-block.xml, tests
+	/install-fullyvirt-disk-file.xml, tests/install-paravirt-disk-
+	block.xml, tests/install-paravirt-disk-drv-file.xml, tests/install-
+	paravirt-disk-drv-phy.xml, tests/install-paravirt-disk-drv-tap-
+	qcow.xml, tests/install-paravirt-disk-drv-tap.xml, tests/install-
+	paravirt-disk-file.xml, tests/install-paravirt-many-disks.xml, tests
+	/misc-xml-escaping.xml, tests/xmlconfig-xml/boot-fullyvirt-disk-
+	block.xml, tests/xmlconfig-xml/boot-fullyvirt-disk-file.xml, tests
+	/xmlconfig-xml/boot-paravirt-disk-block.xml, tests/xmlconfig-xml
+	/boot-paravirt-disk-drv-file.xml, tests/xmlconfig-xml/boot-paravirt-
+	disk-drv-phy.xml, tests/xmlconfig-xml/boot-paravirt-disk-drv-tap-
+	qcow.xml, tests/xmlconfig-xml/boot-paravirt-disk-drv-tap.xml, tests
+	/xmlconfig-xml/boot-paravirt-disk-file.xml, tests/xmlconfig-xml
+	/boot-paravirt-many-disks.xml, tests/xmlconfig-xml/install-
+	fullyvirt-disk-block.xml, tests/xmlconfig-xml/install-fullyvirt-
+	disk-file.xml, tests/xmlconfig-xml/install-paravirt-disk-block.xml,
+	tests/xmlconfig-xml/install-paravirt-disk-drv-file.xml, tests
+	/xmlconfig-xml/install-paravirt-disk-drv-phy.xml, tests/xmlconfig-
+	xml/install-paravirt-disk-drv-tap-qcow.xml, tests/xmlconfig-xml
+	/install-paravirt-disk-drv-tap.xml, tests/xmlconfig-xml/install-
+	paravirt-disk-file.xml, tests/xmlconfig-xml/install-paravirt-many-
+	disks.xml, tests/xmlconfig-xml/misc-xml-escaping.xml,
+	tests/xmlconfig.py:
+	Move test xml files to subdirectories.
+	[a5b743a6ac98]
+
+	* virt-image:
+	Pass meter to disk csum calculating from virt-image
+	[3c632dddb27d]
+
+	* virtinst/ImageParser.py:
+	Alter disk csum calculating to require a progress meter to be
+	passed.
+	[b9f914eb509e]
+
+2008-10-27  "Cole Robinson  <crobinso@redhat.com>
+
+	* po/zh-CN.po:
+	Updated zh-CN translation.
+	[d1cfd3e75b1c]
+
+2008-10-22  "Cole Robinson  <crobinso@redhat.com>
+
+	* po/pt_BR.po, po/zh-CN.po:
+	Updated translations from Fedora.
+	[2ed83f57826d]
+
+	* virtinst/Storage.py:
+	Add iSCSI volume class stub and raise error if it is instantiated.
+	[e5fe9af202bd]
+
+	* virtinst/Storage.py:
+	Actually return pool object after DiskPool install.
+	[70b32f9b4d74]
+
+	* virtinst/Storage.py:
+	Disk type is 'dos' not 'msdos'
+	[729ce5453a58]
+
+2008-10-21  "Cole Robinson  <crobinso@redhat.com>
+
+	* AUTHORS, virtinst/FullVirtGuest.py:
+	Add seperate dict entry for winxp 64 since it has separate
+	requirements (Tom Hug hes)
+	[2c657c53ef1a]
+
+2008-10-20  "Cole Robinson  <crobinso@redhat.com>
+
+	* virt-image:
+	Check virt-image checksums from cli tool (Joey Boggs)
+	[976334e29192]
+
+2008-10-17  "Guido Gunther  <agx@sigxcpu.org>
+
+	* man/en/virt-install.pod, virt-install:
+	Allow to pass the bustype via --disk
+	[710611367b50]
+
+2008-10-16  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/ImageParser.py:
+	Add checksum support to ImageParser (Joey Boggs)
+	[9f45a36d8242]
+
+	* virtinst/VirtualDisk.py:
+	Fix missing variable error.
+	[d920fb2662c1]
+
+2008-10-14  "Cole Robinson  <crobinso@redhat.com>
+
+	* doc/image.rng, virtinst/ImageParser.py:
+	Teach ImageParser how to parse disk checksum values (Joey Boggs)
+	[9f6f1a011174]
+
+	* virtinst/VirtualDisk.py:
+	Refresh storage pool if trying to lookup a volume.
+	[f117c8243aa5]
+
+2008-10-09  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtconv/diskcfg.py:
+	virt-convert: Add checksum option to disk class (Joey Boggs)
+	[3e2e7db24cb5]
+
+2008-10-06  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/cli.py:
+	Fix --bridge option to not report collision with --network (Mark
+	McLoughlin)
+	[2aba69a1a16c]
+
+2008-10-03  "Cole Robinson  <crobinso@redhat.com>
+
+	* virt-convert, virtconv/diskcfg.py, virtconv/parsers/virtimage.py,
+	virtconv/parsers/vmx.py:
+	Add virt-image import and vmx export capabilities for virtconv (Joey
+	Boggs)
+	[ca48e58d85ec]
+
+2008-09-30  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Don't try to compare MAC addresses if nic doesn't have one
+	specified.
+	[abc2cae7cff5]
+
+2008-09-25  "Guido Gunther  <agx@sigxcpu.org>
+
+	* virtinst/FullVirtGuest.py:
+	lenny can do virtio
+	[4597f79e11f0]
+
+2008-09-29  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/validation.py, virtinst/CloneManager.py, virtinst/cli.py:
+	Pass connection to VirtualNetworkInterface.
+	[994d4cd7d888]
+
+	* virtinst/Guest.py:
+	Check that passed virtual network exists, and is active.
+	[5136f58c5567]
+
+	* virtinst/Guest.py:
+	Have VirtualNetworkInterface extend VirtualDevice
+	[6d098c710b4b]
+
+2008-09-22  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Only use libvirt created scratchdirs if they exist
+	[58a909b4f71c]
+
+2008-09-22  Guido Guenther  <agx@sigxcpu.org>
+
+	* virtinst/Guest.py:
+	set a proper scratchdir for non root users
+	[8f48969778e6]
+
+	* virtinst/ImageFetcher.py:
+	create scratchdir if it doesn't exist
+	[c6a767b4d632]
+
+2008-09-22  "Cole Robinson  <crobinso@redhat.com>
+
+	* virt-convert:
+	Use cli.fail helper in virt-convert
+	[042be788a704]
+
+	* virtconv/parsers/vmx.py:
+	Don't error if disk has no path in vmx file.
+	[339753e30c1d]
+
+	* virtinst/util.py:
+	More thorough checking for default qemu connection.
+	[458daeb1a7bc]
+
+2008-09-18  "Cole Robinson  <crobinso@redhat.com>
+
+	* python-virtinst.spec.in, setup.py:
+	Don't barf on package syntax errors when building. We really
+	shouldn't have BuildRequires on every package we import, save that
+	for install time.
+	[f87154697807]
+
+	* MANIFEST.in:
+	Add INSTALL to manifest.
+	[bf23e7bd2b6d]
+
+2008-09-17  "Cole Robinson  <crobinso@redhat.com>
+
+	* virt-install:
+	Fix --wait option to handle some funky libvirt stuff on rhel5.
+	[39147017bd13]
+
+	* virt-install:
+	Slim down --wait help message (Mark McLoughlin)
+	[0c1e9d4e9981]
+
+2008-09-16  "Cole Robinson  <crobinso@redhat.com>
+
+	* po/pl.po:
+	Updated polish translation.
+	[dc76d336082e]
+
+	* AUTHORS, virtinst/FullVirtGuest.py:
+	Setup virtio for f9. (Francois Kooman)
+	[6a4c3f52df1e]
+
+2008-09-15  john  <john.levon@sun.com>
+
+	* virt-convert:
+	virt-convert: remove -t option
+
+	This never did anything, and is undocumented.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[e362f5306b26]
+
+2008-09-16  john  <john.levon@sun.com>
+
+	* virtconv/parsers/vmx.py:
+	virt-convert: make VMX parser case insensitive
+
+	VMWare tools apparently don't care, so neither should we. Some VMX
+	generators don't use the proper case with keys such as 'fileName'.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[692e4d0ce7d6]
+
+2008-09-16  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/cli.py:
+	Log traceback (if available) from cli fail helper.
+	[b39a144682b8]
+
+2008-09-12  "Cole Robinson  <crobinso@redhat.com>
+
+	* tests/boot-fullyvirt-disk-block.xml, tests/boot-fullyvirt-disk-
+	file.xml, tests/install-fullyvirt-disk-block.xml, tests/install-
+	fullyvirt-disk-file.xml, tests/misc-xml-escaping.xml,
+	tests/xmlconfig.py, virtinst/FullVirtGuest.py:
+	Explicitly set FullVirtGuest arch to equal host arch if none is
+	passed.
+	[63a843fec103]
+
+	* virtconv/parsers/virtimage.py:
+	virt-convert: Fix crash caused by accessing now private os
+	dictionary. (Joey Boggs)
+	[1021d9c89a74]
+
+	* python-virtinst.spec.in:
+	Fix spec to be closer to current fedora version.
+	[926769542d04]
+
 2008-09-10  "Cole Robinson  <crobinso@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_400_0 for changeset 2f37c58e7347
+	[a7b8fb0b1f9d]
+
+	* po/fr.po, po/it.po, po/ja.po, po/pl.po, po/pt_BR.po, po/sr.po,
+	po/sr@latin.po:
+	Fix messed up translation updates.
+	[2f37c58e7347] [virtinst-0_400_0]
+
+	* .hgtags:
+	Added tag virtinst-0_400_0 for changeset 698796184096
+	[4661d020750d]
+
+	* ChangeLog, NEWS, python-virtinst.spec.in, setup.py:
+	Prep for release.
+	[698796184096]
 
 	* po/fr.po, po/it.po, po/ja.po, po/pl.po, po/pt_BR.po, po/sr.po,
 	po/sr@latin.po, po/virtinst.pot:
 	Update translations.
-	[c3191151aab5] [tip]
+	[c3191151aab5]
 
 	* virt-image, virt-install, virtinst/cli.py, virtinst/util.py:
 	Make sure to default to virtual networking if installing remotely.

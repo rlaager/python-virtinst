@@ -19,7 +19,7 @@ datafiles = [('share/man/man1', ['man/en/virt-install.1',
 locale = None
 builddir = None
 
-VERSION="0.400.0"
+VERSION="0.400.1"
 
 class TestBaseCommand(Command):
 
