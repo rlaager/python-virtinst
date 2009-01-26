@@ -539,6 +539,28 @@ An FTP server location containing an installable distribution image
 
 =back
 
+Some distro specific url samples:
+
+=over 4
+
+=item Fedora/Red Hat Based
+
+http://download.fedoraproject.org/pub/fedora/linux/releases/10/Fedora/i386/os/
+
+=item Debian/Ubuntu
+
+http://ftp.us.debian.org/debian/dists/etch/main/installer-amd64/
+
+=item Suse
+
+http://download.opensuse.org/distribution/11.0/repo/oss/
+
+=item Mandriva
+
+ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2009.0/i586/
+
+=back
+
 =item  -x EXTRA, --extra-args=EXTRA
 
 Additional kernel command line arguments to pass to the installer when
