@@ -1083,7 +1083,7 @@ def _wait_for_domain(conn, name):
     # domain ID or b) it's been 5 seconds.  this is so that
     # we can try to gracefully handle domain restarting failures
     dom = None
-    for ignore in range(1, (5 / .25)): # 5 seconds, .25 second sleeps
+    for ignore in range(1, int(5 / .25)): # 5 seconds, .25 second sleeps
         try:
             dom = conn.lookupByName(name)
             if dom and dom.ID() != -1:
