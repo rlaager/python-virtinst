@@ -283,6 +283,22 @@ class VirtualGraphics(object):
         self._passwd = val
     passwd = property(get_passwd, set_passwd)
 
+    def valid_keymaps(self):
+        """
+        Return a list of valid keymap values.
+        """
+        import keytable
+
+        orig_list = keytable.keytable.values()
+        sort_list = []
+
+        orig_list.sort()
+        for k in orig_list:
+            if k not in sort_list:
+                sort_list.append(k)
+
+        return sort_list
+
     def get_xml_config(self):
         if self._type == self.TYPE_SDL:
             return "    <graphics type='sdl'/>"
