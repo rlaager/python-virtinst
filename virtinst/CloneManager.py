@@ -513,82 +513,89 @@ def _vdisk_clone(path, clone):
 #
 def _do_duplicate(design, meter):
 
-    src_fd = None
-    dst_fd = None
     dst_dev_iter = iter(design.clone_devices)
     dst_siz_iter = iter(design.original_devices_size)
 
-    zeros            = '\0' * 4096
     sparse_copy_mode = False
 
+    for src_dev in design.original_devices:
+        dst_dev = dst_dev_iter.next()
+        dst_siz = dst_siz_iter.next()
+
+        meter.start(size=dst_siz,
+                    text=_("Cloning from %(src)s to %(dst)s...") %
+                    {'src' : src_dev, 'dst' : dst_dev})
+
+        if src_dev == "/dev/null" or src_dev == dst_dev:
+            meter.end(dst_siz)
+            continue
+
+        # vdisk specific handlings
+        if _util.is_vdisk(src_dev) or (os.path.exists(dst_dev) and
+                                       _util.is_vdisk(dst_dev)):
+            if not _util.is_vdisk(src_dev) or os.path.exists(dst_dev):
+                raise RuntimeError, _("copying to an existing vdisk is not"
+                                      " supported")
+            if not _vdisk_clone(src_dev, dst_dev):
+                raise RuntimeError, _("failed to clone disk")
+            meter.end(dst_siz)
+            continue
+
+        #
+        # create sparse file
+        # if a destination file exists and sparse flg is True,
+        # this priority takes a existing file.
+        #
+        if os.path.exists(dst_dev) == False and design.clone_sparse == True:
+            design.clone_bs = 4096
+            sparse_copy_mode = True
+            fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
+            os.ftruncate(fd, dst_siz)
+            os.close(fd)
+        else:
+            design.clone_bs = 1024*1024*10
+            sparse_copy_mode = False
+
+        _local_clone(src_dev, dst_dev, dst_siz, sparse_copy_mode,
+                     design.clone_bs, meter)
+
+
+def _local_clone(src_dev, dst_dev, dst_siz, sparse, clone_block_size,
+                 meter=None):
+
+    logging.debug("Cloning %s to %s, sparse=%s, block_size=%s" %
+                  (src_dev, dst_dev, sparse, clone_block_size))
+
+    zeros = '\0' * 4096
+
     try:
-        for src_dev in design.original_devices:
-            dst_dev = dst_dev_iter.next()
-            dst_siz = dst_siz_iter.next()
+        src_fd = os.open(src_dev, os.O_RDONLY)
+        dst_fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
 
-            meter.start(size=dst_siz,
-                        text=_("Cloning from %(src)s to %(dst)s...") % \
-                        {'src' : src_dev, 'dst' : dst_dev})
-
-            if src_dev == "/dev/null" or src_dev == dst_dev:
-                meter.end(dst_siz)
-                continue
-
-            # vdisk specific handlings
-            if _util.is_vdisk(src_dev) or (os.path.exists(dst_dev) and
-                                           _util.is_vdisk(dst_dev)):
-                if not _util.is_vdisk(src_dev) or os.path.exists(dst_dev):
-                    raise RuntimeError, _("copying to an existing vdisk is not supported")
-                if not _vdisk_clone(src_dev, dst_dev):
-                    raise RuntimeError, _("failed to clone disk")
-                meter.end(dst_siz)
-                continue
-
-            #
-            # create sparse file
-            # if a destination file exists and sparse flg is True,
-            # this priority takes a existing file.
-            #
-            if os.path.exists(dst_dev) == False and design.clone_sparse == True:
-                design.clone_bs = 4096
-                sparse_copy_mode = True
-                fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
-                os.ftruncate(fd, dst_siz)
-                os.close(fd)
-            else:
-                design.clone_bs = 1024*1024*10
-                sparse_copy_mode = False
-            logging.debug("dst_dev:%s sparse_copy_mode:%s bs:%d" % (dst_dev,sparse_copy_mode,design.clone_bs))
-
-            src_fd = os.open(src_dev, os.O_RDONLY)
-            dst_fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
-
-            i=0
-            while 1:
-                l = os.read(src_fd, design.clone_bs)
-                s = len(l)
-                if s == 0:
+        i=0
+        while 1:
+            l = os.read(src_fd, clone_block_size)
+            s = len(l)
+            if s == 0:
+                if meter:
                     meter.end(dst_siz)
-                    break
-                # check sequence of zeros
-                if sparse_copy_mode == True and zeros == l:
-                    os.lseek(dst_fd, s, 1)
-                else:
-                    b = os.write(dst_fd, l)
-                    if s != b:
+                break
+            # check sequence of zeros
+            if sparse and zeros == l:
+                os.lseek(dst_fd, s, 1)
+            else:
+                b = os.write(dst_fd, l)
+                if s != b:
+                    if meter:
                         meter.end(i)
-                        break
-                i += s
-                if i < dst_siz:
+                    break
+            i += s
+            if i < dst_siz:
+                if meter:
                     meter.update(i)
 
-            os.close(src_fd)
-            src_fd = None
-            os.close(dst_fd)
-            dst_fd = None
     finally:
         if src_fd is not None:
             os.close(src_fd)
         if dst_fd is not None:
             os.close(dst_fd)
-
