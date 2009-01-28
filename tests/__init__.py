@@ -14,13 +14,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import capabilities
-import validation
-import xmlconfig
-import image
-import storage
-import urltest
-
 import libvirt
 import difflib
 import logging
@@ -64,3 +57,13 @@ def diff_compare(actual_out, filename):
                                         tofile="Generated Output"))
     if diff:
         raise AssertionError("Conversion outputs did not match.\n%s" % diff)
+
+# Have imports down here so they get the benefit of logging setup etc.
+import capabilities
+import validation
+import xmlconfig
+import image
+import storage
+import urltest
+import clonetest
+
