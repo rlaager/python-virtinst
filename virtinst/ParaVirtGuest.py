@@ -26,7 +26,7 @@ from virtinst import _virtinst as _
 class ParaVirtGuest(Guest):
     def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
         if not installer:
-            installer = DistroInstaller(type = type, os_type = "linux")
+            installer = DistroInstaller(type = type, os_type = "xen")
         Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "xvd"
 

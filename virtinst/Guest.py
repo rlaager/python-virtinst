@@ -326,7 +326,6 @@ class Installer(object):
         self._extraargs = None
         self._boot = None
         self._cdrom = False
-        self._os_type = os_type
         self._conn = conn
         self._install_disk = None   # VirtualDisk that contains install media
 
@@ -334,6 +333,8 @@ class Installer(object):
             type = "xen"
         self.type = type
 
+        if not os_type is None:
+            self.os_type = os_type
         if not location is None:
             self.location = location
         if not boot is None:
@@ -360,6 +361,12 @@ class Installer(object):
     def get_os_type(self):
         return self._os_type
     def set_os_type(self, val):
+        # Older libvirt back compat: if user specifies 'linux', convert
+        # internally to newer equivalent value 'xen'
+        if val == "linux":
+            val = "xen"
+
+        # XXX: Need to validate this: have some whitelist based on caps?
         self._os_type = val
     os_type = property(get_os_type, set_os_type)
 
@@ -428,7 +435,8 @@ class Installer(object):
         osblob = "<os>\n"
 
         os_type = self.os_type
-        # Hack for older libvirt Xen driver
+        # Hack for older libvirt: use old value 'linux' for best back compat,
+        # new libvirt will adjust the value accordingly.
         if os_type == "xen" and self.type == "xen":
             os_type = "linux"
 
