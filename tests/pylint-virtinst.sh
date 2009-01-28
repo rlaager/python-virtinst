@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FILES="setup.py tests/ virt-install virt-image virt-clone virt-convert virtinst/ virtconv"
+FILES="setup.py tests/ virt-install virt-image virt-clone virt-convert virtinst/ virtconv virtconv/parsers/*.py"
 
 # Exceptions: deliberately ignore these regex
 
