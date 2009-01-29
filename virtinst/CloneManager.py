@@ -82,6 +82,13 @@ class CloneDesign(object):
         # Throwaway guest to use for easy validation
         self._valid_guest        = Guest.Guest(connection=connection)
 
+        # Generate a random UUID at the start
+        while 1:
+            uuid = _util.uuidToString(_util.randomUUID())
+            if _util.vm_uuid_collision(self._hyper_conn, uuid):
+                continue
+            self.clone_uuid = uuid
+            break
 
     # Getter/Setter methods
 
@@ -115,6 +122,10 @@ class CloneDesign(object):
             self._valid_guest.set_uuid(uuid)
         except ValueError, e:
             raise ValueError, _("Invalid uuid for new guest: %s") % (str(e),)
+
+        if _util.vm_uuid_collision(self._hyper_conn, uuid):
+            raise ValueError(_("UUID '%s' is in use by another guest.") %
+                             uuid)
         self._clone_uuid = uuid
     def get_clone_uuid(self):
         return self._clone_uuid
@@ -206,9 +217,6 @@ class CloneDesign(object):
             self._original_dom = self._lookup_vm(self.original_guest)
             self.original_xml = self._original_dom.XMLDesc(0)
 
-        # For now, clone_xml is just a copy of the original
-        self._clone_xml    = self.original_xml
-
         # Pull clonable storage info from the original xml
         self._original_devices,     \
         self._original_devices_size,\
@@ -265,6 +273,8 @@ class CloneDesign(object):
         """
         logging.debug("Validating clone parameters.")
 
+        self._clone_xml = self.original_xml
+
         # XXX: Make sure a clone name has been specified? or generate one?
 
         # XXX: Only works locally
@@ -276,8 +286,6 @@ class CloneDesign(object):
         logging.debug("Clone types: %s" % (self._clone_devices_type))
 
         # We simply edit the original VM xml in place
-        # XXX: Does this need a huge try except so we don't leak xml memory
-        # XXX: on failure?
         doc = libxml2.parseDoc(self._clone_xml)
         ctx = doc.xpathNewContext()
         typ = ctx.xpathEval("/domain")[0].prop("type")
@@ -294,20 +302,12 @@ class CloneDesign(object):
             try:
                 node.setContent(clone_devices.next())
             except Exception:
-                raise ValueError, _("Missing new file to use disk image "
-                                    "for %s") % node.getContent()
+                raise ValueError, _("Missing path to use as disk clone "
+                                    "destination for '%s'") % node.getContent()
 
-        # changing uuid
+        # We always have a UUID since one is generated at init time
         node = ctx.xpathEval("/domain/uuid")
-        if self._clone_uuid is not None:
-            node[0].setContent(self._clone_uuid)
-        else:
-            while 1:
-                uuid = _util.uuidToString(_util.randomUUID())
-                if _util.vm_uuid_collision(self._hyper_conn, uuid):
-                    continue
-                break
-            node[0].setContent(uuid)
+        node[0].setContent(self._clone_uuid)
 
         # changing mac
         count = ctx.xpathEval("count(/domain/devices/interface/mac)")
