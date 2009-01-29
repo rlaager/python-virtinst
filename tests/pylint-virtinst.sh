@@ -47,6 +47,9 @@ PROT_MEM_BUGS="protected member (_get_osblob|_prepare_install|_create_devices|_i
 # Scattered examples of legitimately unused arguments
 UNUSED_ARGS="SuseDistro.isValidStore.*Unused argument 'progresscb'|LiveCDInstaller.prepare.*Unused argument|ImageInstaller.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"
 
+# We use some hacks in the test driver to simulate remote libvirt URIs
+TEST_HACKS="TestClone.*protected member _util"
+
 DMSG=""
 addmsg() {
     DMSG="${DMSG},$1"
@@ -101,6 +104,7 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$ACCESS__CONN" \
         -ve "$URLTEST_ACCESS" \
         -ve "$UNUSED_ARGS" \
+        -ve "$TEST_HACKS" \
         -ve "$PROT_MEM_BUGS" | \
   $AWK '\
 # Strip out any "*** Module name" lines if we dont list any errors for them
