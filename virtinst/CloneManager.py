@@ -49,6 +49,8 @@ class CloneDesign(object):
 
     def __init__(self, connection):
         # hypervisor connection
+        if not isinstance(connection, libvirt.virConnect):
+            raise ValueError(_("Connection must be a 'virConnect' instance."))
         self._hyper_conn = connection
 
         # original guest name or uuid
@@ -218,6 +220,12 @@ class CloneDesign(object):
         logging.debug("Original types: %s" % (self._original_devices_type))
         logging.debug("Original idxs: %s" % (self._original_devices_idx))
 
+        # If there are any devices that need to be cloned and we are on
+        # a remote connection, fail
+        if (self._original_devices and
+            _util.is_uri_remote(self.original_conn.getURI())):
+            raise RuntimeError(_("Cannot clone remote VM storage."))
+
         if self._original_dom:
             # Check original domain is SHUTOFF
             # XXX: Shouldn't pause also be fine, and guests with no storage/
@@ -347,7 +355,7 @@ class CloneDesign(object):
 
     # Check if new file path is valid
     def _check_file(self, conn, disk, size):
-        d = VirtualDisk(disk, size, conn=conn)
+        d = VirtualDisk(disk, size or .0001, conn=conn)
         return d.path
 
     # Check if new mac address is valid

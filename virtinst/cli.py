@@ -122,7 +122,7 @@ def getConnection(connect):
     if connect is None:
         fail(_("Could not find usable default libvirt connection."))
 
-    logging.debug("Using libvirt URI connect '%s'" % connect)
+    logging.debug("Using libvirt URI '%s'" % connect)
     return libvirt.open(connect)
 
 #

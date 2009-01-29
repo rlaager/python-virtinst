@@ -82,7 +82,7 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False):
 
             # Build disk object for validation
             try:
-                d = virtinst.VirtualDisk(path=disk, size=0)
+                d = virtinst.VirtualDisk(path=disk, size=.0001, conn=conn)
             except ValueError, e:
                 print _("ERROR: "), e
                 disk = None
@@ -192,8 +192,6 @@ def main():
 
     cli.setupLogging("virt-clone", options.debug)
     cli.set_force(options.force)
-
-    logging.debug("start clone with HV " + options.connect)
 
     if not User.current().has_priv(User.PRIV_CLONE, options.connect):
         fail(_("Must be privileged to clone Xen guests"))
