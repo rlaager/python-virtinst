@@ -46,12 +46,17 @@ def libvirt_callback(ignore, err):
     logging.warn("libvirt errmsg: %s" % err[2])
 libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
 
+def read_file(filename):
+    """Helper function to read a files contents and return them"""
+    f = open(filename, "r")
+    out = f.read()
+    f.close()
+
+    return out
 
 def diff_compare(actual_out, filename):
     """Compare passed string output to contents of filename"""
-    f = open(filename, "r")
-    expect_out = f.read()
-    f.close()
+    expect_out = read_file(filename)
 
     diff = "".join(difflib.unified_diff(expect_out.splitlines(1),
                                         actual_out.splitlines(1),
