@@ -86,18 +86,8 @@ class CloneDesign(object):
     def get_original_guest(self):
         return self._original_guest
     def set_original_guest(self, original_guest):
-        if type(original_guest) is not type("str") or len(original_guest)==0:
-            raise ValueError, _("Name or UUID of guest to clone is required")
-
-        try:
-            self._valid_guest.set_uuid(original_guest)
-        except ValueError:
-            try:
-                self._valid_guest.set_name(original_guest)
-            except ValueError:
-                raise ValueError, \
-                    _("A valid name or UUID of guest to clone is required")
-        self._original_guest = original_guest
+        if self._lookup_vm(original_guest):
+            self._original_guest = original_guest
     original_guest = property(get_original_guest, set_original_guest)
 
     def set_original_xml(self, val):
@@ -210,12 +200,9 @@ class CloneDesign(object):
         if self.original_guest == None and self.original_xml == None:
             raise RuntimeError(_("Original guest name or xml is required."))
 
-        try:
-            if self.original_guest != None:
-                self._original_dom = self._hyper_conn.lookupByName(self._original_guest)
-                self.original_xml = self._original_dom.XMLDesc(0)
-        except libvirt.libvirtError:
-            raise RuntimeError, _("Domain %s is not found") % self._original_guest
+        if self.original_guest != None:
+            self._original_dom = self._lookup_vm(self.original_guest)
+            self.original_xml = self._original_dom.XMLDesc(0)
 
         # For now, clone_xml is just a copy of the original
         self._clone_xml    = self.original_xml
@@ -479,6 +466,13 @@ class CloneDesign(object):
                 src[0].newProp(newprop, src_chid_txt)
 
             type_idx += 1
+
+    # Simple wrapper for checking a vm exists and returning the domain
+    def _lookup_vm(self, name):
+        try:
+            return self._hyper_conn.lookupByName(name)
+        except libvirt.libvirtError:
+            raise ValueError(_("Domain '%s' was not found.") % str(name))
 
 #
 # start duplicate

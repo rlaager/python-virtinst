@@ -178,9 +178,8 @@ args = { \
 
 'clonedesign' : {
     'original_guest' :{
-        'invalid' : ['', 0, 'invalid_name&',
-                     '123456781234567812345678123456789'],
-        'valid'   : ['some.valid-name_1', '12345678123456781234567812345678']},
+        'invalid' : ['idontexist'],
+        'valid'   : ['test']},
     'clone_name': { 'invalid' : [0],
                     'valid'   : ['some.valid-name_9']},
     'clone_uuid': { 'invalid' : [0],

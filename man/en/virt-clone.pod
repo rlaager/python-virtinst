@@ -35,8 +35,8 @@ Show the help message and exit
 
 =item -o ORIGINAL_GUEST, --original=ORIGINAL_GUEST
 
-Name or uuid for the original guest to be cloned. This guest must be shut
-off since it is not possible to safely clone active guests at this time.
+Name of the original guest to be cloned. This guest must be shut off since
+it is not possible to safely clone active guests at this time.
 
 =item -n NAME, --name=NAME
 

@@ -50,7 +50,7 @@ def get_clone_name(new_name, design):
 
 def get_original_guest(guest, design):
     while 1:
-        guest = cli.prompt_for_input(_("What is the name or uuid of the original virtual machine?"), guest)
+        guest = cli.prompt_for_input(_("What is the name of the original virtual machine?"), guest)
         try:
             design.original_guest = guest
             break
@@ -133,7 +133,7 @@ def parse_args():
     geng = OptionGroup(parser, _("General Options"))
     geng.add_option("-o", "--original", type="string", dest="original_guest",
                     action="callback", callback=cli.check_before_store,
-                    help=_("Name or uuid for the original guest; "
+                    help=_("Name of the original guest; "
                            "The status must be shut off"))
     geng.add_option("-n", "--name", type="string", dest="new_name",
                     action="callback", callback=cli.check_before_store,
