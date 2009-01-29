@@ -396,8 +396,18 @@ class VirtualDisk(VirtualDevice):
                                capacity=cap, allocation=alloc, pool=pool)
                 self._set_vol_install(vol, validate=False)
             elif self._is_remote():
-                raise ValueError(_("'%s' is not managed on remote "
-                                   "host: %s" % (self.path, verr)))
+
+                if not verr:
+                    # Since there is no error, no pool was ever found
+                    err = (_("Cannot use storage '%(path)s': '%(rootdir)s' is "
+                             "not managed on the remote host.") %
+                             { 'path' : self.path,
+                               'rootdir' : os.path.dirname(self.path)})
+                else:
+                    err = (_("Cannot use storage %(path)s: %(err)s") %
+                           { 'path' : self.path, 'err' : verr })
+
+                raise ValueError(err)
         else:
             self._set_vol_object(vol, validate=False)
 
