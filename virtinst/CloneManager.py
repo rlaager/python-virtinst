@@ -23,7 +23,9 @@ Module for cloning an existing virtual machine
 General workflow for cloning:
 
     - Instantiate CloneDesign. Requires at least a libvirt connection and
-      a name of a domain to clone.
+      either the name of an existing domain to clone (original_guest), or
+      a string of libvirt xml representing the guest to clone
+      (original_guest_xml)
 
     - Run 'setup' from the CloneDesign instance to prep for cloning
 
@@ -98,6 +100,14 @@ class CloneDesign(object):
         self._original_guest = original_guest
     original_guest = property(get_original_guest, set_original_guest)
 
+    def set_original_xml(self, val):
+        if type(val) is not str:
+            raise ValueError(_("Original xml must be a string."))
+        self._original_xml = val
+    def get_original_xml(self):
+        return self._original_xml
+    original_xml = property(get_original_xml, set_original_xml)
+
     def get_clone_name(self):
         return self._clone_name
     def set_clone_name(self, name):
@@ -164,10 +174,6 @@ class CloneDesign(object):
         return self._original_dom
     original_dom = property(get_original_dom)
 
-    def get_original_xml(self):
-        return self._original_xml
-    original_xml = property(get_original_xml)
-
     def get_clone_xml(self):
         return self._clone_xml
     def set_clone_xml(self, clone_xml):
@@ -201,14 +207,18 @@ class CloneDesign(object):
         """
         logging.debug("Validating original guest parameters")
 
+        if self.original_guest == None and self.original_xml == None:
+            raise RuntimeError(_("Original guest name or xml is required."))
+
         try:
-            self._original_dom = self._hyper_conn.lookupByName(self._original_guest)
+            if self.original_guest != None:
+                self._original_dom = self._hyper_conn.lookupByName(self._original_guest)
+                self.original_xml = self._original_dom.XMLDesc(0)
         except libvirt.libvirtError:
             raise RuntimeError, _("Domain %s is not found") % self._original_guest
 
         # For now, clone_xml is just a copy of the original
-        self._original_xml = self._original_dom.XMLDesc(0)
-        self._clone_xml    = self._original_dom.XMLDesc(0)
+        self._clone_xml    = self.original_xml
 
         # Pull clonable storage info from the original xml
         self._original_devices,     \
@@ -221,13 +231,14 @@ class CloneDesign(object):
         logging.debug("Original types: %s" % (self._original_devices_type))
         logging.debug("Original idxs: %s" % (self._original_devices_idx))
 
-        # Check original domain is SHUTOFF
-        # XXX: Shouldn't pause also be fine, and guests with no storage/
-        # XXX: readonly + sharable storage can be cloned while running
-        status = self._original_dom.info()[0]
-        logging.debug("original guest status: %s" % (status))
-        if status != libvirt.VIR_DOMAIN_SHUTOFF:
-            raise RuntimeError, _("Domain status must be SHUTOFF")
+        if self._original_dom:
+            # Check original domain is SHUTOFF
+            # XXX: Shouldn't pause also be fine, and guests with no storage/
+            # XXX: readonly + sharable storage can be cloned while running
+            status = self._original_dom.info()[0]
+            logging.debug("original guest status: %s" % (status))
+            if status != libvirt.VIR_DOMAIN_SHUTOFF:
+                raise RuntimeError, _("Domain status must be SHUTOFF")
 
         # Make sure new VM name isn't taken.
         # XXX: Check this at set time?
