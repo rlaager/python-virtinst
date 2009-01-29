@@ -412,19 +412,20 @@ class VirtualDisk(VirtualDevice):
         if self.vol_object:
             newpath = self.vol_object.path()
         elif self.vol_install:
-            newpath = _util.get_xml_path(self.vol_install.pool.XMLDesc(0),
-                                         "/pool/target/path") + \
-                      self.vol_install.name
+            newpath = (_util.get_xml_path(self.vol_install.pool.XMLDesc(0),
+                                         "/pool/target/path") + "/" +
+                       self.vol_install.name)
 
         if newpath and newpath != self.path:
-            logging.debug("Overwriting 'path' from passed volume object.")
+            logging.debug("Overwriting 'path' with value from StorageVolume"
+                          " object.")
             self._set_path(newpath, validate=False)
 
         if self.vol_install:
             newsize = self.vol_install.capacity/1024.0/1024.0/1024.0
             if self.size != newsize:
                 logging.debug("Overwriting 'size' with value from "
-                              "StorageVolume")
+                              "StorageVolume object")
                 self._set_size(newsize, validate=False)
 
         # Remove this piece when storage volume creation is async
