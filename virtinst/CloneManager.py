@@ -482,21 +482,29 @@ class CloneDesign(object):
         except libvirt.libvirtError:
             raise ValueError(_("Domain '%s' was not found.") % str(name))
 
-#
-# start duplicate
-# this function clones the virtual machine according to the ClonDesign object
-#
+
 def start_duplicate(design, meter=None):
+    """
+    Actually perform the duplication: cloning disks if needed and defining
+    the new clone xml.
+    """
 
     logging.debug("Starting duplicate.")
 
-    # do dupulicate
-    # at this point, handling the cloning way.
-    if design.preserve == True:
-        _do_duplicate(design, meter)
+    dom = None
+    try:
+        # Define domain first so we can catch any xml errors before duplicating
+        # storage
+        dom = design.original_conn.defineXML(design.clone_xml)
 
-    # define clone xml
-    design.original_conn.defineXML(design.clone_xml)
+        if design.preserve == True:
+            _do_duplicate(design, meter)
+
+    except Exception, e:
+        logging.debug("Duplicate failed: %s" % str(e))
+        if dom:
+            dom.undefine()
+        raise
 
     logging.debug("Duplicating finished.")
 
