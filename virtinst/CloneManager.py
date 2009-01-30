@@ -516,10 +516,8 @@ def _vdisk_clone(path, clone):
     except OSError:
         return False
 
-#
-# Now this Cloning method is reading and writing devices.
-# For future, there are many cloning methods (e.g. fork snapshot cmd).
-#
+# Iterate over the list of disks, and clone them using the appropriate
+# clone method
 def _do_duplicate(design, meter):
 
     IS_UNKNOWN = 0
@@ -580,23 +578,7 @@ def _do_duplicate(design, meter):
                     {'src' : src_dev, 'dst' : dst_dev})
 
         if clone_type == IS_LOCAL:
-            sparse_copy_mode = False
-
-            # if a destination file exists and sparse flg is True,
-            # this priority takes a existing file.
-            if (os.path.exists(dst_dev) == False and
-                design.clone_sparse == True):
-                clone_bs = 4096
-                sparse_copy_mode = True
-                fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
-                os.ftruncate(fd, dst_siz)
-                os.close(fd)
-            else:
-                clone_bs = 1024*1024*10
-                sparse_copy_mode = False
-
-            _local_clone(src_dev, dst_dev, dst_siz, sparse_copy_mode,
-                         clone_bs, meter)
+            _local_clone(src_dev, dst_dev, dst_siz, design, meter)
 
         elif clone_type == IS_VDISK:
             if not _vdisk_clone(src_dev, dst_dev):
@@ -604,9 +586,21 @@ def _do_duplicate(design, meter):
             meter.end(dst_siz)
 
 
+def _local_clone(src_dev, dst_dev, dst_siz, design, meter=None):
 
-def _local_clone(src_dev, dst_dev, dst_siz, sparse, clone_block_size,
-                 meter=None):
+    # if a destination file exists and sparse flg is True,
+    # this priority takes a existing file.
+    if (os.path.exists(dst_dev) == False and design.clone_sparse == True):
+        clone_block_size = 4096
+        sparse = True
+        try:
+            fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
+            os.ftruncate(fd, dst_siz)
+        finally:
+            os.close(fd)
+    else:
+        clone_block_size = 1024*1024*10
+        sparse = False
 
     logging.debug("Local Cloning %s to %s, sparse=%s, block_size=%s" %
                   (src_dev, dst_dev, sparse, clone_block_size))
