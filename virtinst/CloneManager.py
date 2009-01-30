@@ -56,9 +56,7 @@ class CloneDesign(object):
         # original guest name or uuid
         self._original_guest        = None
         self._original_dom          = None
-        self._original_devices      = []
-        self._original_devices_size = []
-        self._original_devices_type = []
+        self._original_virtual_disks = []
         self._original_xml          = None
 
         # Deliberately private: user doesn't need to know this
@@ -67,8 +65,7 @@ class CloneDesign(object):
         # clone guest
         self._clone_name         = None
         self._clone_devices      = []
-        self._clone_devices_size = []
-        self._clone_devices_type = []
+        self._clone_virtual_disks = []
         self._clone_bs           = 1024*1024*10
         self._clone_mac          = []
         self._clone_uuid         = None
@@ -140,22 +137,26 @@ class CloneDesign(object):
         return self._clone_uuid
     clone_uuid = property(get_clone_uuid, set_clone_uuid)
 
-    def set_clone_devices(self, devices):
+    def set_clone_devices(self, devpath):
         # Devices here is a string path. Every call to set_clone_devices
         # Adds the path (if valid) to the internal _clone_devices list
-        if len(devices) == 0:
-            raise ValueError, _("New file to use for disk image is required")
 
-        # Check path's size (if present)
-        # XXX: Only works locally
-        cdev_size, dummy = self._local_paths_info([devices])
+        # Check path is valid
+        try:
+            disk = VirtualDisk(devpath, size=.0000001, conn=self._hyper_conn)
+        except Exception, e:
+            raise ValueError(_("Could not use path '%s' for cloning: %s") %
+                             str(e))
 
-        # Make sure path is valid and we can use it
-        devices = self._check_file(self._hyper_conn, devices, cdev_size[0])
-        self._clone_devices.append(devices)
+        self._clone_virtual_disks.append(disk)
+        self._clone_devices.append(devpath)
     def get_clone_devices(self):
         return self._clone_devices
     clone_devices = property(get_clone_devices, set_clone_devices)
+
+    def get_clone_virtual_disks(self):
+        return self._clone_virtual_disks
+    clone_virtual_disks = property(get_clone_virtual_disks)
 
     def set_clone_mac(self, mac):
         Guest.VirtualNetworkInterface(mac, conn=self.original_conn)
@@ -171,12 +172,22 @@ class CloneDesign(object):
     clone_bs = property(get_clone_bs, set_clone_bs)
 
     def get_original_devices_size(self):
-        return self._original_devices_size
+        ret = []
+        for disk in self.original_virtual_disks:
+            ret.append(disk.size)
+        return ret
     original_devices_size = property(get_original_devices_size)
 
     def get_original_devices(self):
-        return self._original_devices
+        ret = []
+        for disk in self.original_virtual_disks:
+            ret.append(disk.path)
+        return ret
     original_devices = property(get_original_devices)
+
+    def get_original_virtual_disks(self):
+        return self._original_virtual_disks
+    original_virtual_disks = property(get_original_virtual_disks)
 
     def get_hyper_conn(self):
         return self._hyper_conn
@@ -227,19 +238,16 @@ class CloneDesign(object):
             self.original_xml = self._original_dom.XMLDesc(0)
 
         # Pull clonable storage info from the original xml
-        self._original_devices,     \
-        self._original_devices_size,\
-        self._original_devices_type,\
+        self._original_virtual_disks, \
         self._original_devices_idx = self._get_original_devices_info(self._original_xml)
 
-        logging.debug("Original paths: %s" % (self._original_devices))
-        logging.debug("Original sizes: %s" % (self._original_devices_size))
-        logging.debug("Original types: %s" % (self._original_devices_type))
+        logging.debug("Original paths: %s" % (self.original_devices))
+        logging.debug("Original sizes: %s" % (self.original_devices_size))
         logging.debug("Original idxs: %s" % (self._original_devices_idx))
 
         # If there are any devices that need to be cloned and we are on
         # a remote connection, fail
-        if (self._original_devices and
+        if (self.original_devices and
             _util.is_uri_remote(self.original_conn.getURI())):
             raise RuntimeError(_("Cannot clone remote VM storage."))
 
@@ -273,13 +281,7 @@ class CloneDesign(object):
 
         # XXX: Make sure a clone name has been specified? or generate one?
 
-        # XXX: Only works locally
-        self._clone_devices_size,\
-        self._clone_devices_type = self._local_paths_info(self._clone_devices)
-
         logging.debug("Clone paths: %s" % (self._clone_devices))
-        logging.debug("Clone sizes: %s" % (self._clone_devices_size))
-        logging.debug("Clone types: %s" % (self._clone_devices_type))
 
         # We simply edit the original VM xml in place
         doc = libxml2.parseDoc(self._clone_xml)
@@ -323,10 +325,15 @@ class CloneDesign(object):
 
         # Change xml disk type values if original and clone disk types
         # (block/file) don't match
-        self._change_disk_type(self._original_devices_type,
-                               self._clone_devices_type,
-                               self._original_devices_idx,
-                               ctx)
+        for i in range(0, len(self._original_devices_idx)):
+            orig_type = (self._original_virtual_disks[i].type ==
+                         VirtualDisk.TYPE_FILE)
+            clone_type = (self._clone_virtual_disks[i].type ==
+                          VirtualDisk.TYPE_FILE)
+
+            self._change_disk_type(orig_type, clone_type,
+                                   self._original_devices_idx[i],
+                                   ctx)
 
         # Save altered clone xml
         self._clone_xml = str(doc)
@@ -349,11 +356,6 @@ class CloneDesign(object):
 
     # Private helper functions
 
-    # Check if new file path is valid
-    def _check_file(self, conn, disk, size):
-        d = VirtualDisk(disk, size or .0001, conn=conn)
-        return d.path
-
     # Check if new mac address is valid
     def _check_mac(self, mac):
         nic = Guest.VirtualNetworkInterface(macaddr=mac,
@@ -366,9 +368,8 @@ class CloneDesign(object):
     #  [file/block type of those paths], [indices of disks to be cloned])
     def _get_original_devices_info(self, xml):
 
-        lst  = []
-        size = []
-        typ  = []
+        disks   = []
+        lst     = []
         idx_lst = []
 
         doc = libxml2.parseDoc(xml)
@@ -389,13 +390,15 @@ class CloneDesign(object):
             if doc is not None:
                 doc.freeDoc()
 
-        # Lookup size and storage type (file/block)
-        for i in lst:
-            (t, sz) = _util.stat_disk(i)
-            typ.append(t)
-            size.append(sz)
+        # Set up virtual disk to encapsulate all relevant path info
+        for path in lst:
+            try:
+                disks.append(VirtualDisk(path, conn=self._hyper_conn))
+            except Exception, e:
+                raise ValueError(_("Could not determine original disk "
+                                   "information: %s" % str(e)))
 
-        return (lst, size, typ, idx_lst)
+        return (disks, idx_lst)
 
     # Pull disk #i from the original guest xml, return it's xml
     # if it should be cloned (skips readonly, empty, or sharable disks
@@ -428,49 +431,31 @@ class CloneDesign(object):
 
         return node
 
-    # Stat each path in the passed list, return a tuple of
-    # ([size of each path (0 if non-existent)],
-    #  [file/block type of each path (true for 'file', false for 'block')]
-    def _local_paths_info(self, paths_lst):
-
-        size = []
-        typ  = []
-
-        for i in paths_lst:
-            (t, sz) = _util.stat_disk(i)
-            typ.append(t)
-            size.append(sz)
-
-        return (size, typ)
-
     # Check if original disk type (file/block) is different from
     # requested clones disk type, and alter xml if needed
-    def _change_disk_type(self, org_type, cln_type, idxs, ctx):
+    def _change_disk_type(self, org_type, cln_type, dev_idx, ctx):
 
-        type_idx = 0
-        for dev_idx in idxs:
-            disk_type = ctx.xpathEval("/domain/devices/disk[%d]/@type" %
-                                      dev_idx)
-            driv_name = ctx.xpathEval("/domain/devices/disk[%d]/driver/@name" % dev_idx)
-            src = ctx.xpathEval("/domain/devices/disk[%d]/source" % dev_idx)
-            src_chid_txt = src[0].get_properties().getContent()
+        disk_type = ctx.xpathEval("/domain/devices/disk[%d]/@type" % dev_idx)
+        driv_name = ctx.xpathEval("/domain/devices/disk[%d]/driver/@name" %
+                                  dev_idx)
+        src = ctx.xpathEval("/domain/devices/disk[%d]/source" % dev_idx)
+        src_chid_txt = src[0].get_properties().getContent()
 
-            # different type
-            if org_type[type_idx] != cln_type[type_idx]:
-                if org_type[type_idx] == True:
-                    # changing from file to disk
-                    typ, driv, newprop = ("block", "phy", "dev")
-                else:
-                    # changing from disk to file
-                    typ, driv, newprop = ("file", "file", "file")
+        # different type
+        if org_type != cln_type:
+            if org_type == True:
+                # changing from file to disk
+                typ, driv, newprop = ("block", "phy", "dev")
+            else:
+                # changing from disk to file
+                typ, driv, newprop = ("file", "file", "file")
 
-                disk_type[0].setContent(typ)
-                if driv_name:
-                    driv_name[0].setContent(driv)
-                src[0].get_properties().unlinkNode()
-                src[0].newProp(newprop, src_chid_txt)
+            disk_type[0].setContent(typ)
+            if driv_name:
+                driv_name[0].setContent(driv)
+            src[0].get_properties().unlinkNode()
+            src[0].newProp(newprop, src_chid_txt)
 
-            type_idx += 1
 
     # Simple wrapper for checking a vm exists and returning the domain
     def _lookup_vm(self, name):
@@ -524,24 +509,24 @@ def _do_duplicate(design, meter):
     IS_LOCAL = 1
     IS_VDISK = 2
 
-    dst_dev_iter = iter(design.clone_devices)
+    dst_dev_iter = iter(design.clone_virtual_disks)
 
     clone_type_dict = {}
 
     # First loop over the devices, validate we can clone them, and
     # determine what clone operation to use
-    for src_dev in design.original_devices:
+    for src_dev in design.original_virtual_disks:
         dst_dev = dst_dev_iter.next()
+        src_path = src_dev.path
+        dst_path = dst_dev.path
 
         clone_type = IS_UNKNOWN
 
-        # Check read access to orig
-        # Check write access to new
+        if (_util.is_vdisk(src_path) or
+            (os.path.exists(dst_path) and _util.is_vdisk(dst_path))):
 
-        # vdisk specific handlings
-        if _util.is_vdisk(src_dev) or (os.path.exists(dst_dev) and
-                                       _util.is_vdisk(dst_dev)):
-            if not _util.is_vdisk(src_dev) or os.path.exists(dst_dev):
+            if (not _util.is_vdisk(src_path) or
+                os.path.exists(dst_path)):
                 raise RuntimeError, _("copying to an existing vdisk is not"
                                       " supported")
             clone_type = IS_VDISK
@@ -551,37 +536,39 @@ def _do_duplicate(design, meter):
 
         if clone_type == IS_UNKNOWN:
             raise RuntimeError(_("Could not determine storage type for '%s'")
-                               % src_dev)
-        clone_type_dict[src_dev] = clone_type
+                               % src_path)
+        clone_type_dict[src_path] = clone_type
 
 
-    dst_dev_iter = iter(design.clone_devices)
+    dst_dev_iter = iter(design.clone_virtual_disks)
     dst_siz_iter = iter(design.original_devices_size)
 
     # Now actually do the cloning
-    for src_dev in design.original_devices:
+    for src_dev in design.original_virtual_disks:
+        src_path = src_dev.path
         dst_dev = dst_dev_iter.next()
+        dst_path = dst_dev.path
         dst_siz = dst_siz_iter.next()
 
-        clone_type = clone_type_dict[src_dev]
+        clone_type = clone_type_dict[src_path]
 
-        if src_dev == "/dev/null":
+        if src_path == "/dev/null":
             # Not really sure why this check was here, but keeping for compat
             logging.debug("Source dev was /dev/null. Skipping")
             continue
-        elif src_dev == dst_dev:
+        elif src_path == dst_path:
             logging.debug("Source and destination are the same. Skipping.")
             continue
 
         meter.start(size=dst_siz,
                     text=_("Cloning from %(src)s to %(dst)s...") %
-                    {'src' : src_dev, 'dst' : dst_dev})
+                    {'src' : src_path, 'dst' : dst_path})
 
         if clone_type == IS_LOCAL:
-            _local_clone(src_dev, dst_dev, dst_siz, design, meter)
+            _local_clone(src_path, dst_path, dst_siz, design, meter)
 
         elif clone_type == IS_VDISK:
-            if not _vdisk_clone(src_dev, dst_dev):
+            if not _vdisk_clone(src_path, dst_path):
                 raise RuntimeError, _("failed to clone disk")
             meter.end(dst_siz)
 
