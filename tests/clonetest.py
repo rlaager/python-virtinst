@@ -26,6 +26,13 @@ CloneDesign = CloneManager.CloneDesign
 ORIG_NAME  = "clone-orig"
 CLONE_NAME = "clone-new"
 
+# Create some files to use as test images
+FILE1 = "/tmp/virtinst-test1.img"
+FILE2 = "/tmp/virtinst-test2.img"
+
+for f in [ FILE1, FILE2 ]:
+    os.system("touch %s" % f)
+
 clonexml_dir = os.path.join(os.getcwd(), "tests/clone-xml")
 clone_files = []
 

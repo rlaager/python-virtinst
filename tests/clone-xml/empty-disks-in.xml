@@ -18,7 +18,7 @@
   <devices>
     <emulator>/usr/bin/qemu-kvm</emulator>
     <disk type='file' device='disk'>
-      <source file='test1.img'/>
+      <source file='/tmp/virtinst-test1.img'/>
       <target dev='hda' bus='ide'/>
     </disk>
     <disk type='file' device='floppy'>
@@ -29,7 +29,7 @@
       <readonly/>
     </disk>
     <disk type='file' device='disk'>
-      <source file='test2.img'/>
+      <source file='/tmp/virtinst-test2.img'/>
       <target dev='sdb' bus='scsi'/>
     </disk>
     <interface type='network'>

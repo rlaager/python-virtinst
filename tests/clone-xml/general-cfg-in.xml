@@ -18,7 +18,7 @@
   <devices>
     <emulator>/usr/bin/qemu-kvm</emulator>
     <disk type='file' device='disk'>
-      <source file='test1.img'/>
+      <source file='/tmp/virtinst-test1.img'/>
       <target dev='hda' bus='ide'/>
     </disk>
     <disk type='block' device='disk'>
