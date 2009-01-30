@@ -57,10 +57,13 @@ def stat_disk(path):
 
     # os.path.getsize('/dev/..') can be zero on some platforms
     if stat.S_ISBLK(mode):
-        fd = os.open(path, os.O_RDONLY)
-        # os.SEEK_END is not present on all systems
-        size = os.lseek(fd, 0, 2)
-        os.close(fd)
+        try:
+            fd = os.open(path, os.O_RDONLY)
+            # os.SEEK_END is not present on all systems
+            size = os.lseek(fd, 0, 2)
+            os.close(fd)
+        except:
+            size = 0
         return False, size
     elif stat.S_ISREG(mode):
         return True, os.path.getsize(path)

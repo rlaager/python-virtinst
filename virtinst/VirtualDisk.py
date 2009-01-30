@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import os, stat, statvfs
+import os, statvfs
 import subprocess
 import libxml2
 import logging
@@ -279,6 +279,32 @@ class VirtualDisk(VirtualDevice):
                 setattr(self, varname, orig)
                 raise
 
+    def __set_size(self, creating_storage):
+        """
+        Fill in 'size' attribute for existing storage.
+        """
+
+        if creating_storage:
+            return
+
+        if self.__storage_specified() and self.vol_object:
+            newsize = _util.get_xml_path(self.vol_object.XMLDesc(0),
+                                         "/volume/capacity")
+            try:
+                newsize = float(newsize) / 1024.0 / 1024.0 / 1024.0
+            except:
+                newsize = 0
+        elif self.path is None:
+            newsize = 0
+        else:
+            ignore, newsize = _util.stat_disk(self.path)
+            newsize = newsize / 1024.0 / 1024.0 / 1024.0
+
+        if newsize != self.size:
+            logging.debug("Setting size for existing storage to '%s'" %
+                          newsize)
+            self._set_size(newsize, validate=False)
+
     def __set_dev_type(self):
         """
         Detect disk 'type' () from passed storage parameters
@@ -301,10 +327,10 @@ class VirtualDisk(VirtualDevice):
                 # All others should be using TYPE_BLOCK (hopefully)
                 dtype = self.TYPE_BLOCK
         elif self.path:
-            if stat.S_ISBLK(os.stat(self.path)[stat.ST_MODE]):
-                dtype = self.TYPE_BLOCK
-            else:
+            if _util.stat_disk(self.path)[0]:
                 dtype = self.TYPE_FILE
+            else:
+                dtype = self.TYPE_BLOCK
             if _util.is_vdisk(self.path):
                 self._driverName = self.DRIVER_TAP
                 self._driverType = self.DRIVER_TAP_VDISK
@@ -485,6 +511,8 @@ class VirtualDisk(VirtualDevice):
         # Do we need to create the storage?
         create_media = not ((managed_storage and self.vol_object) or \
                             (self.path and os.path.exists(self.path)))
+
+        self.__set_size(create_media)
 
         if self._is_remote() and not managed_storage:
             raise ValueError, _("Must specify libvirt managed storage if on "

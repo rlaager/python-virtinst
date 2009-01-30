@@ -246,7 +246,7 @@ class DistroInstaller(Guest.Installer):
             except Exception, e:
                 logging.debug(str(e))
                 raise ValueError(_("Checking installer location failed. "
-                                   "Could not find path '%s':" % val))
+                                   "Could not find media '%s':" % str(val)))
         elif not validated:
             raise ValueError(_("Install media location must be an NFS, HTTP "
                                "or FTP network install source, or an existing "
