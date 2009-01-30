@@ -22,7 +22,7 @@
       <target dev='hda' bus='ide'/>
     </disk>
     <disk type='block' device='disk'>
-      <source dev='test2.img'/>
+      <source dev='/dev/loop0'/>
       <target dev='hdb' bus='ide'/>
     </disk>
     <interface type='network'>

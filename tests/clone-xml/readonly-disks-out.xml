@@ -18,8 +18,8 @@
   <on_crash>destroy</on_crash>
   <devices>
     <emulator>/usr/bin/qemu-kvm</emulator>
-    <disk type="file" device="disk">
-      <source file="/tmp/clone1.img"/>
+    <disk type="block" device="disk">
+      <source dev="/dev/loop0"/>
       <target dev="hda" bus="ide"/>
     </disk>
     <disk type="file" device="disk">

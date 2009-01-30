@@ -16,6 +16,7 @@
 
 import unittest
 import os, os.path
+import logging
 import tests
 import libvirt
 
@@ -68,7 +69,7 @@ class TestClone(unittest.TestCase):
             for disk in disks:
                 cloneobj.clone_devices = disk
         else:
-            cloneobj.clone_devices = "/tmp/clone1.img"
+            cloneobj.clone_devices = "/dev/loop0"
             cloneobj.clone_devices = "/tmp/clone2.img"
             cloneobj.clone_devices = "/tmp/clone3.img"
             cloneobj.clone_devices = "/tmp/clone4.img"
@@ -149,9 +150,9 @@ class TestClone(unittest.TestCase):
                     # We shouldn't succeed, so test fails
                     raise AssertionError("Remote clone with storage passed "
                                          "when it shouldn't.")
-                except (ValueError, RuntimeError):
+                except (ValueError, RuntimeError), e:
                     # Exception expected
-                    pass
+                    logging.debug("Received expected exception: %s" % str(e))
         finally:
             CloneManager._util.is_uri_remote = oldfunc
 
