@@ -480,7 +480,7 @@ class CloneDesign(object):
 #
 def start_duplicate(design, meter=None):
 
-    logging.debug("start_duplicate in")
+    logging.debug("Starting duplicate.")
 
     # do dupulicate
     # at this point, handling the cloning way.
@@ -490,9 +490,11 @@ def start_duplicate(design, meter=None):
     # define clone xml
     design.original_conn.defineXML(design.clone_xml)
 
-    logging.debug("start_duplicate out")
+    logging.debug("Duplicating finished.")
 
 def _vdisk_clone(path, clone):
+    logging.debug("Using vdisk clone.")
+
     path = os.path.expanduser(path)
     clone = os.path.expanduser(clone)
     try:
@@ -507,22 +509,23 @@ def _vdisk_clone(path, clone):
 #
 def _do_duplicate(design, meter):
 
+    IS_UNKNOWN = 0
+    IS_LOCAL = 1
+    IS_VDISK = 2
+
     dst_dev_iter = iter(design.clone_devices)
-    dst_siz_iter = iter(design.original_devices_size)
 
-    sparse_copy_mode = False
+    clone_type_dict = {}
 
+    # First loop over the devices, validate we can clone them, and
+    # determine what clone operation to use
     for src_dev in design.original_devices:
         dst_dev = dst_dev_iter.next()
-        dst_siz = dst_siz_iter.next()
 
-        meter.start(size=dst_siz,
-                    text=_("Cloning from %(src)s to %(dst)s...") %
-                    {'src' : src_dev, 'dst' : dst_dev})
+        clone_type = IS_UNKNOWN
 
-        if src_dev == "/dev/null" or src_dev == dst_dev:
-            meter.end(dst_siz)
-            continue
+        # Check read access to orig
+        # Check write access to new
 
         # vdisk specific handlings
         if _util.is_vdisk(src_dev) or (os.path.exists(dst_dev) and
@@ -530,34 +533,69 @@ def _do_duplicate(design, meter):
             if not _util.is_vdisk(src_dev) or os.path.exists(dst_dev):
                 raise RuntimeError, _("copying to an existing vdisk is not"
                                       " supported")
+            clone_type = IS_VDISK
+
+        else:
+            clone_type = IS_LOCAL
+
+        if clone_type == IS_UNKNOWN:
+            raise RuntimeError(_("Could not determine storage type for '%s'")
+                               % src_dev)
+        clone_type_dict[src_dev] = clone_type
+
+
+    dst_dev_iter = iter(design.clone_devices)
+    dst_siz_iter = iter(design.original_devices_size)
+
+    # Now actually do the cloning
+    for src_dev in design.original_devices:
+        dst_dev = dst_dev_iter.next()
+        dst_siz = dst_siz_iter.next()
+
+        clone_type = clone_type_dict[src_dev]
+
+        if src_dev == "/dev/null":
+            # Not really sure why this check was here, but keeping for compat
+            logging.debug("Source dev was /dev/null. Skipping")
+            continue
+        elif src_dev == dst_dev:
+            logging.debug("Source and destination are the same. Skipping.")
+            continue
+
+        meter.start(size=dst_siz,
+                    text=_("Cloning from %(src)s to %(dst)s...") %
+                    {'src' : src_dev, 'dst' : dst_dev})
+
+        if clone_type == IS_LOCAL:
+            sparse_copy_mode = False
+
+            # if a destination file exists and sparse flg is True,
+            # this priority takes a existing file.
+            if (os.path.exists(dst_dev) == False and
+                design.clone_sparse == True):
+                clone_bs = 4096
+                sparse_copy_mode = True
+                fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
+                os.ftruncate(fd, dst_siz)
+                os.close(fd)
+            else:
+                clone_bs = 1024*1024*10
+                sparse_copy_mode = False
+
+            _local_clone(src_dev, dst_dev, dst_siz, sparse_copy_mode,
+                         clone_bs, meter)
+
+        elif clone_type == IS_VDISK:
             if not _vdisk_clone(src_dev, dst_dev):
                 raise RuntimeError, _("failed to clone disk")
             meter.end(dst_siz)
-            continue
 
-        #
-        # create sparse file
-        # if a destination file exists and sparse flg is True,
-        # this priority takes a existing file.
-        #
-        if os.path.exists(dst_dev) == False and design.clone_sparse == True:
-            design.clone_bs = 4096
-            sparse_copy_mode = True
-            fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
-            os.ftruncate(fd, dst_siz)
-            os.close(fd)
-        else:
-            design.clone_bs = 1024*1024*10
-            sparse_copy_mode = False
-
-        _local_clone(src_dev, dst_dev, dst_siz, sparse_copy_mode,
-                     design.clone_bs, meter)
 
 
 def _local_clone(src_dev, dst_dev, dst_siz, sparse, clone_block_size,
                  meter=None):
 
-    logging.debug("Cloning %s to %s, sparse=%s, block_size=%s" %
+    logging.debug("Local Cloning %s to %s, sparse=%s, block_size=%s" %
                   (src_dev, dst_dev, sparse, clone_block_size))
 
     zeros = '\0' * 4096
