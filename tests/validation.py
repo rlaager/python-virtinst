@@ -180,7 +180,8 @@ args = { \
     'original_guest' :{
         'invalid' : ['idontexist'],
         'valid'   : ['test']},
-    'clone_name': { 'invalid' : [0],
+    'clone_name': { 'invalid' : [0, 'test' # Already in use
+                                ],
                     'valid'   : ['some.valid-name_9']},
     'clone_uuid': { 'invalid' : [0],
                     'valid'   : ['12345678123456781234567812345678']},

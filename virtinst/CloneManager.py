@@ -114,6 +114,15 @@ class CloneDesign(object):
             self._valid_guest.set_name(name)
         except ValueError, e:
             raise ValueError, _("Invalid name for new guest: %s") % (str(e),)
+
+        # Make sure new VM name isn't taken.
+        try:
+            if self._hyper_conn.lookupByName(name) is not None:
+                raise ValueError(_("Domain name '%s' already in use.") %
+                                 name)
+        except libvirt.libvirtError:
+            pass
+
         self._clone_name = name
     clone_name = property(get_clone_name, set_clone_name)
 
@@ -234,27 +243,14 @@ class CloneDesign(object):
             _util.is_uri_remote(self.original_conn.getURI())):
             raise RuntimeError(_("Cannot clone remote VM storage."))
 
-        if self._original_dom:
-            # Check original domain is SHUTOFF
-            # XXX: Shouldn't pause also be fine, and guests with no storage/
-            # XXX: readonly + sharable storage can be cloned while running
+        # If domain has devices to clone, it must be 'off' or 'paused'
+        if self._original_dom and len(self.original_devices) != 0:
             status = self._original_dom.info()[0]
-            logging.debug("original guest status: %s" % (status))
-            if status != libvirt.VIR_DOMAIN_SHUTOFF:
-                raise RuntimeError, _("Domain status must be SHUTOFF")
 
-        # Make sure new VM name isn't taken.
-        # XXX: Check this at set time?
-        try:
-            if self._hyper_conn.lookupByName(self._clone_name) is not None:
-                raise RuntimeError, _("Domain %s already exists") % self._clone_name
-        except libvirt.libvirtError:
-            pass
-
-        # Check specified UUID isn't taken
-        if _util.vm_uuid_collision(self._hyper_conn, self._clone_uuid):
-            raise RuntimeError, _("The UUID you entered is already in use by "
-                                  "another guest!")
+            if status not in [libvirt.VIR_DOMAIN_SHUTOFF,
+                              libvirt.VIR_DOMAIN_PAUSED]:
+                raise RuntimeError, _("Domain with devices to clone must be "
+                                      "paused or shutoff.")
 
         # Check mac address is not in use
         # XXX: Check this at set time?
@@ -381,7 +377,8 @@ class CloneDesign(object):
             count = ctx.xpathEval("count(/domain/devices/disk)")
             for i in range(1, int(count+1)):
                 # Check if the disk needs cloning
-                node = self._get_available_cloning_device(ctx, i, self._force_target)
+                node = self._get_available_cloning_device(ctx, i,
+                                                          self._force_target)
                 if node == None:
                     continue
                 idx_lst.append(i)
