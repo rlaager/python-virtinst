@@ -179,6 +179,10 @@ by faster install times inside the guest. Thus use of this optional is recommend
 to ensure consistently high performance and to avoid I/O errors in the guest 
 should the host filesystem fill up. 
 
+=item --nonetworks
+
+Request a virtual machine without any network interfaces.
+
 =item -m MAC, --mac=MAC
 
 Fixed MAC address for the guest; If this parameter is omitted, or the value
