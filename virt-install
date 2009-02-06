@@ -133,7 +133,8 @@ def parse_disk_option(guest, path, size):
         else:
             fail(_("Unknown --disk option '%s'.") % (opt,))
 
-    # We return (path, (poolname, volname), volinst, device, bus, readonly, shared)
+    # We return (path, (poolname, volname), volinst, device, bus, readonly,
+    #            shared)
     if path_type == "path=":
         abspath = os.path.abspath(path)
         if os.path.dirname(abspath) == DEFAULT_POOL_PATH:
@@ -173,21 +174,21 @@ def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
     try:
         # Get disk parameters
         if is_file_path:
-            (path, voltuple, volinst, device, bus, readOnly, ignore, size,
+            (path, voltuple, volinst, device, bus, readOnly, shared, size,
              sparse) = \
              (disk, None, None, virtinst.VirtualDisk.DEVICE_DISK, None, False,
               False, size, sparse)
         else:
             (path, voltuple, volinst,
-             device, bus, readOnly, ignore,
+             device, bus, readOnly, shared,
              size, sparse) = parse_disk_option(guest, disk, size)
             if not sparse and volinst:
                 volinst.allocation = volinst.capacity
 
         d = virtinst.VirtualDisk(path=path, size=size, sparse=sparse,
                                  volInstall=volinst, volName=voltuple,
-                                 readOnly=readOnly, device=device, bus=bus,
-                                 conn=guest.conn)
+                                 readOnly=readOnly, shareable=shared,
+                                 device=device, bus=bus, conn=guest.conn)
         # Default file backed PV guests to tap driver
         if d.type == virtinst.VirtualDisk.TYPE_FILE \
            and not(hvm) and virtinst.util.is_blktap_capable():
