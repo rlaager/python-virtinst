@@ -389,7 +389,7 @@ def parse_args():
     insg.add_option("", "--pxe", action="store_true", dest="pxe",
                     help=_("Boot from the network using the PXE protocol"))
     insg.add_option("", "--livecd", action="store_true", dest="livecd",
-                    help=_("Treat the CDROM media is a LiveCD"))
+                    help=_("Treat the CD-ROM media as a Live CD"))
     insg.add_option("-x", "--extra-args", type="string", dest="extra",
                     default="",
                     help=_("Additional arguments to pass to the kernel "
