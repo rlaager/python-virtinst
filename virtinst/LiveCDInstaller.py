@@ -34,6 +34,26 @@ class LiveCDInstaller(Guest.Installer):
         Guest.Installer.__init__(self, type=type, location=location,
                                  os_type=os_type, conn=conn)
 
+    def _get_location(self):
+        return self._location
+    def _set_location(self, val):
+        path = None
+        vol_tuple = None
+        if type(val) is tuple:
+            vol_tuple = val
+        else:
+            path = val
+
+        if path or vol_tuple:
+            self._install_disk = VirtualDisk(path=path, conn=self.conn,
+                                             volName=vol_tuple,
+                                             device = VirtualDisk.DEVICE_CDROM,
+                                             readOnly = True)
+
+        self._location = val
+        self.cdrom = True
+    location = property(_get_location, _set_location)
+
     def prepare(self, guest, meter, distro = None):
         self.cleanup()
 
@@ -48,21 +68,9 @@ class LiveCDInstaller(Guest.Installer):
         if not found:
             raise LiveCDInstallerException(_("Connection does not support HVM virtualisation, cannot boot live CD"))
 
-        path = None
-        vol_tuple = None
-        if type(self.location) is tuple:
-            vol_tuple = self.location
-        elif self.location:
-            path = self.location
-        elif not self.cdrom:
-            raise LiveCDInstallerException(_("CDROM media must be specified "
-                                             "for the live CD installer."))
-
-        if path or vol_tuple:
-            disk = VirtualDisk(path=path, conn=guest.conn, volName=vol_tuple,
-                               device = VirtualDisk.DEVICE_CDROM,
-                               readOnly = True)
-            guest._install_disks.insert(0, disk)
+        if not self._install_disk:
+            raise ValueError(_("CDROM media must be specified for the live "
+                               "CD installer."))
 
     def _get_osblob(self, install, hvm, arch=None, loader=None, conn=None):
         if install:

@@ -172,6 +172,16 @@ args = { \
                      ("pool-exist", "vol-exist"),
                     ]}},
 
+'livecdinstaller' : { \
+    'init_conns' : [ testconn, None ],
+    'location'  : { \
+        'invalid' : ['path-noexist',
+                     ("pool-noexist", "vol-exist"),
+                     ("pool-exist", "vol-noexist"),
+                    ],
+        'valid'   : ['/dev/null', ("pool-exist", "vol-exist"),
+                    ]}},
+
 'network'   : { \
     'init_conns' : [ testconn, None ],
     '__init__'  : { \
@@ -332,6 +342,23 @@ class TestValidation(unittest.TestCase):
             self._testArgs(dinstall, virtinst.DistroInstaller, 'installer',
                            exception_check)
             self._testArgs(dinstall, virtinst.DistroInstaller, label,
+                           exception_check)
+
+    def testLiveCDInstaller(self):
+        def exception_check(obj, paramname, paramvalue):
+            if paramname == 'location':
+                # Don't pass a tuple location if installer has no conn
+                if not obj.conn and type(paramvalue) == tuple:
+                    return True
+
+            return False
+
+        label = 'livecdinstaller'
+        for conn in self._getInitConns(label):
+            dinstall = virtinst.LiveCDInstaller(conn=conn)
+            self._testArgs(dinstall, virtinst.LiveCDInstaller, 'installer',
+                           exception_check)
+            self._testArgs(dinstall, virtinst.LiveCDInstaller, label,
                            exception_check)
 
     def testCloneManager(self):
