@@ -613,18 +613,26 @@ def main():
         else:
             return txt_console(dom, options.connect)
 
-    wait = False
-    wait_time = 0
+    # There are two main cases we care about:
+    #
+    # Scripts: these should specify --wait always, maintaining the
+    # semantics of virt-install exit implying the domain has finished
+    # installing.
+    #
+    # Interactive: If this is a continue_inst domain, we default to
+    # waiting.  Otherwise, we can exit before the domain has finished
+    # installing. Passing --wait will give the above semantics.
+    # 
+    wait = continue_inst
+    wait_time = -1
+
     if options.wait:
         wait = True
         wait_time = options.wait * 60
 
-    if wait is True and wait_time == 0:
-        # wait == 0 implies noautoconsole
-        options.autoconsole = False
-
     if options.autoconsole is False:
         conscb = None
+        wait = False
     else:
         conscb = show_console
 
@@ -671,7 +679,7 @@ def main():
                             ((wait_time > 0)
                              and (_(" %d minutes") % (int(wait_time) / 60))
                              or "") + \
-                            " for domain to shutdown.")
+                            " for domain to complete installation.")
                     while True:
                         if domain_is_shutdown(dom):
                             print _("Domain has shutdown. Continuing.")
