@@ -99,7 +99,7 @@ class VirtualDisk(VirtualDevice):
     def __init__(self, path=None, size=None, transient=False, type=None,
                  device=DEVICE_DISK, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
-                 volInstall=None, volName=None, bus=None):
+                 volInstall=None, volName=None, bus=None, shareable=False):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -130,6 +130,8 @@ class VirtualDisk(VirtualDevice):
         @type volName: C{tuple} of (C{str}, C{str})
         @param bus: Emulated bus type (ide, scsi, virtio, ...)
         @type bus: C{str}
+        @param shareable: If disk can be shared among VMs
+        @type shareable: C{bool}
         """
 
         VirtualDevice.__init__(self, conn=conn)
@@ -143,6 +145,7 @@ class VirtualDisk(VirtualDevice):
         self._vol_object = None
         self._vol_install = None
         self._bus = None
+        self._shareable = None
 
         # XXX: No property methods for these
         self.transient = transient
@@ -159,6 +162,7 @@ class VirtualDisk(VirtualDevice):
         self._set_vol_object(volObject, validate=False)
         self._set_vol_install(volInstall, validate=False)
         self._set_bus(bus, validate=False)
+        self._set_shareable(shareable, validate=False)
 
         if volName:
             self.__lookup_vol_name(volName)
@@ -261,6 +265,13 @@ class VirtualDisk(VirtualDevice):
             self._check_str(val, "bus")
         self.__validate_wrapper("_bus", val, validate)
     bus = property(_get_bus, _set_bus)
+
+    def _get_shareable(self):
+        return self._shareable
+    def _set_shareable(self, val, validate=True):
+        self._check_bool(val, "shareable")
+        self.__validate_wrapper("_shareable", val, validate)
+    shareable = property(_get_shareable, _set_shareable)
 
     # Validation assistance methods
 
@@ -662,6 +673,8 @@ class VirtualDisk(VirtualDevice):
 
         if self.device == self.DEVICE_CDROM:
             ro = True
+        if self.shareable:
+            ret += "      <shareable/>\n"
         if ro:
             ret += "      <readonly/>\n"
         ret += "    </disk>"

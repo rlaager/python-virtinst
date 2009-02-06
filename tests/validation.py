@@ -144,6 +144,9 @@ args = { \
                      { 'conn' : testconn, 'volInstall': volinst},
                     ]
                 },
+    'shareable' : {\
+        'invalid': [ None, 1234 ],
+        'valid': [ True, False ] },
 },
 
 'installer' : { \
