@@ -717,6 +717,9 @@ def main():
             print _("Guest installation complete... restarting guest.")
             dom.create()
             guest.connect_console(conscb)
+    except KeyboardInterrupt, e:
+        guest.terminate_console()
+        print _("Guest install interrupted.")
     except RuntimeError, e:
         fail(e)
     except SystemExit, e:

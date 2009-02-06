@@ -36,8 +36,8 @@ import VirtualDevice
 import osdict
 from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
-
 import logging
+import signal
 
 XEN_SCRATCH="/var/lib/xen"
 LIBVIRT_SCRATCH="/var/lib/libvirt/boot"
@@ -550,6 +550,7 @@ class Guest(object):
         self._vcpus = None
         self._cpuset = None
         self._graphics_dev = None
+        self._consolechild = None
 
         self._os_type = None
         self._os_variant = None
@@ -940,6 +941,7 @@ class Guest(object):
                       wait=True):
         """Do the startup of the guest installation."""
         self.validate_parms()
+        self._consolechild = None
 
         if meter is None:
             # BaseMeter does nothing, but saves a lot of null checking
@@ -1002,6 +1004,7 @@ class Guest(object):
             if consolecb:
                 logging.debug("Launching console callback")
                 child = consolecb(self.domain)
+                self._consolechild = child
 
         boot_xml = self.get_config_xml(install = False)
         logging.debug("Saving XML boot config:\n%s" % boot_xml)
@@ -1038,6 +1041,7 @@ class Guest(object):
         if consolecb:
             logging.debug("Launching console callback")
             child = consolecb(self.domain)
+            self._consolechild = child
 
         if child and wait: # if we connected the console, wait for it to finish
             try:
@@ -1101,6 +1105,10 @@ class Guest(object):
                     return param_value
         raise RuntimeError(_("Invalid dictionary entry for device '%s %s'" % \
                              (device_key, param)))
+
+    def terminate_console(self):
+        if self._consolechild:
+            os.kill(self._consolechild, signal.SIGKILL)
 
 def _wait_for_domain(conn, name):
     # sleep in .25 second increments until either a) we get running
