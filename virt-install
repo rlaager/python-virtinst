@@ -350,11 +350,11 @@ def parse_args():
     fulg = OptionGroup(parser, _("Full Virtualization specific options."))
     fulg.add_option("", "--sound", action="store_true", dest="sound",
                     default=False, help=_("Use sound device emulation"))
-    fulg.add_option("", "--os-type", type="string", dest="os_type",
+    fulg.add_option("", "--os-type", type="string", dest="distro_type",
                     action="callback", callback=cli.check_before_store,
                     help=_("The OS type for fully virtualized guests, e.g. "
                            "'linux', 'unix', 'windows'"))
-    fulg.add_option("", "--os-variant", type="string", dest="os_variant",
+    fulg.add_option("", "--os-variant", type="string", dest="distro_variant",
                       action="callback", callback=cli.check_before_store,
                       help=_("The OS variant for fully virtualized guests, "
                              "e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k'"))
@@ -518,51 +518,52 @@ def main():
         fail(_("Can't do both --hvm and --paravirt"))
 
     if options.fullvirt:
-        os_type = "hvm"
+        req_virt_type = "hvm"
     elif options.paravirt:
-        os_type = "xen"
+        req_virt_type = "xen"
     else:
         # This should force capabilities to give us the most sensible default
-        os_type = None
+        req_virt_type = None
 
-    logging.debug("Requesting virt method '%s'" % (os_type and os_type or \
-                                                  _("default")))
+    logging.debug("Requesting virt method '%s'" % (req_virt_type and
+                                                   req_virt_type or
+                                                   _("default")))
 
-    guest = capabilities.guestForOSType(type=os_type, arch=options.arch)
-    if guest is None:
-        msg = _("Unsupported virtualization type '%s' " % (os_type and os_type
-                                                           or _("default")))
+    capsguest = capabilities.guestForOSType(type=req_virt_type,
+                                            arch=options.arch)
+    if capsguest is None:
+        msg = _("Unsupported virtualization type '%s' " % (req_virt_type and
+                                                           req_virt_type or
+                                                           _("default")))
         if options.arch:
             msg += _("for arch '%s'" % options.arch)
         fail(msg)
 
-    os_type = guest.os_type
-    logging.debug("Received virt method '%s'" % os_type)
-    if os_type == "hvm":
-        hvm = True
-    else:
-        hvm = False
 
-    domain = guest.bestDomainType(options.accelerate)
-    htype = domain.hypervisor_type
-    logging.debug("Hypervisor type is '%s'" % htype)
+    virt_type = capsguest.os_type
+    logging.debug("Received virt method '%s'" % virt_type)
+    if virt_type == "hvm":
+        ishvm = True
+    else:
+        ishvm = False
+
+    hv_type = capsguest.bestDomainType(options.accelerate).hypervisor_type
+    logging.debug("Hypervisor type is '%s'" % hv_type)
 
     if options.livecd:
-        installer = virtinst.LiveCDInstaller(type = htype, os_type = os_type,
-                                             conn = conn)
+        instclass = virtinst.LiveCDInstaller
     elif options.pxe:
         if options.nonetworks:
             fail(_("Can't use --pxe with --nonetworks"))
 
-        installer = virtinst.PXEInstaller(type = htype, os_type = os_type,
-                                          conn = conn)
+        instclass = virtinst.PXEInstaller
     else:
-        installer = virtinst.DistroInstaller(type = htype, os_type = os_type,
-                                             conn = conn)
+        instclass = virtinst.DistroInstaller
+    installer = instclass(type=hv_type, os_type=virt_type, conn=conn)
 
-    if hvm:
+    if ishvm:
         guest = virtinst.FullVirtGuest(connection=conn, installer=installer,
-                                       arch=guest.arch)
+                                       arch=capsguest.arch)
     else:
         guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
 
@@ -572,12 +573,12 @@ def main():
     cli.get_uuid(options.uuid, guest)
     cli.get_vcpus(options.vcpus, options.check_cpu, guest, conn)
     cli.get_cpuset(options.cpuset, guest.memory, guest, conn)
-    if hvm:
+    if ishvm:
         cli.get_sound(options.sound, guest)
 
     # set up disks
     get_disks(options.file_path, options.diskopts, options.disksize,
-              options.sparse, options.nodisks, guest, hvm, conn)
+              options.sparse, options.nodisks, guest, ishvm, conn)
 
     # set up network information
     get_networks(options.mac, options.bridge, options.network,
@@ -591,18 +592,18 @@ def main():
 
     # and now for the full-virt vs paravirt specific questions
     get_install_media(options.location, options.cdrom, options.pxe,
-                      options.livecd, guest, hvm)
-    if not hvm: # paravirt
+                      options.livecd, guest, ishvm)
+    if not ishvm: # paravirt
         continue_inst = False
     else:
         if options.noacpi:
             guest.features["acpi"] = False
         if options.noapic:
             guest.features["apic"] = False
-        if options.os_type:
-            guest.set_os_type(options.os_type)
-        if options.os_variant:
-            guest.set_os_variant(options.os_variant)
+        if options.distro_type:
+            guest.set_os_type(options.distro_type)
+        if options.distro_variant:
+            guest.set_os_variant(options.distro_variant)
         continue_inst = guest.get_continue_inst()
 
     def show_console(dom):
