@@ -14,7 +14,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import virtinst.DistroManager as DistroManager
+import virtinst.OSDistro as OSDistro
 from virtinst.OSDistro import FedoraDistro
 from virtinst.OSDistro import SuseDistro
 from virtinst.OSDistro import DebianDistro
@@ -214,7 +214,7 @@ class TestURLFetch(unittest.TestCase):
         meter=None
         if tests.debug:
             meter = urlgrabber.progress.TextMeter()
-        fetcher = DistroManager._fetcherForURI(url, "/tmp")
+        fetcher = OSDistro._fetcherForURI(url, "/tmp")
 
         try:
             fetcher.prepareLocation()
@@ -223,15 +223,15 @@ class TestURLFetch(unittest.TestCase):
                           (distname, arch, fetcher.location, str(e)))
             return
 
-        hvmstore = DistroManager._storeForDistro(fetcher=fetcher, baseuri=url,
-                                                 progresscb=meter, typ="hvm",
-                                                 arch=arch)
+        hvmstore = OSDistro._storeForDistro(fetcher=fetcher, baseuri=url,
+                                            progresscb=meter, typ="hvm",
+                                            arch=arch)
         if check_xen:
-            xenstore = DistroManager._storeForDistro(fetcher=fetcher,
-                                                     baseuri=url,
-                                                     progresscb=meter,
-                                                     typ="xen",
-                                                     arch=arch)
+            xenstore = OSDistro._storeForDistro(fetcher=fetcher,
+                                                baseuri=url,
+                                                progresscb=meter,
+                                                typ="xen",
+                                                arch=arch)
         else:
             xenstore = None
 

@@ -21,7 +21,7 @@
 import os
 import logging
 
-import Guest
+import Installer
 import ImageParser
 import CapabilitiesParser as Cap
 import _util
@@ -32,10 +32,10 @@ class ImageInstallerException(Exception):
     def __init__(self, msg):
         Exception.__init__(self, msg)
 
-class ImageInstaller(Guest.Installer):
+class ImageInstaller(Installer.Installer):
     """Installer for image-based guests"""
     def __init__(self, image, capabilities, boot_index = None):
-        Guest.Installer.__init__(self)
+        Installer.Installer.__init__(self)
         self._capabilities = capabilities
         self._image = image
         if boot_index is None:

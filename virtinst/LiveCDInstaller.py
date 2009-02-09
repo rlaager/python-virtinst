@@ -19,20 +19,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import Guest
-from VirtualDisk import VirtualDisk
 import CapabilitiesParser
+import Installer
+from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
 class LiveCDInstallerException(Exception):
     def __init__(self, msg):
         Exception.__init__(self, msg)
 
-class LiveCDInstaller(Guest.Installer):
+class LiveCDInstaller(Installer.Installer):
     def __init__(self, type = "xen", location = None, os_type = None,
                  conn = None):
-        Guest.Installer.__init__(self, type=type, location=location,
-                                 os_type=os_type, conn=conn)
+        Installer.Installer.__init__(self, type=type, location=location,
+                                     os_type=os_type, conn=conn)
 
     def _get_location(self):
         return self._location

@@ -39,6 +39,7 @@ import subprocess
 import _util
 import libvirt
 import Guest
+from VirtualNetworkInterface import VirtualNetworkInterface
 from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 
@@ -159,7 +160,7 @@ class CloneDesign(object):
     clone_virtual_disks = property(get_clone_virtual_disks)
 
     def set_clone_mac(self, mac):
-        Guest.VirtualNetworkInterface(mac, conn=self.original_conn)
+        VirtualNetworkInterface(mac, conn=self.original_conn)
         self._clone_mac.append(mac)
     def get_clone_mac(self):
         return self._clone_mac
@@ -358,8 +359,7 @@ class CloneDesign(object):
 
     # Check if new mac address is valid
     def _check_mac(self, mac):
-        nic = Guest.VirtualNetworkInterface(macaddr=mac,
-                                            conn=self.original_conn)
+        nic = VirtualNetworkInterface(macaddr=mac, conn=self.original_conn)
         return nic.is_conflict_net(self._hyper_conn)
 
     # Parse disk paths that need to be cloned from the original guest's xml

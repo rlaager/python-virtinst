@@ -1,8 +1,5 @@
 #
-# Convenience module for fetching/creating kernel/initrd files
-# or bootable CD images.
-#
-# Copyright 2006-2007  Red Hat, Inc.
+# Copyright 2006-2009  Red Hat, Inc.
 # Daniel P. Berrange <berrange@redhat.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -22,127 +19,14 @@
 
 import logging
 import os
+
 import _util
-import Guest
+import Installer
 from VirtualDisk import VirtualDisk
 from User import User
+import OSDistro
+
 from virtinst import _virtinst as _
-
-import virtinst
-from ImageFetcher import MountedImageFetcher
-from ImageFetcher import FTPImageFetcher
-from ImageFetcher import HTTPImageFetcher
-from ImageFetcher import DirectImageFetcher
-
-from OSDistro import FedoraDistro
-from OSDistro import RHELDistro
-from OSDistro import CentOSDistro
-from OSDistro import SLDistro
-from OSDistro import SuseDistro
-from OSDistro import DebianDistro
-from OSDistro import UbuntuDistro
-from OSDistro import MandrivaDistro
-from OSDistro import SolarisDistro
-from OSDistro import OpenSolarisDistro
-from OSDistro import GenericDistro
-
-def _fetcherForURI(uri, scratchdir=None):
-    if uri.startswith("http://"): 
-        return HTTPImageFetcher(uri, scratchdir)
-    elif uri.startswith("ftp://"):
-        return FTPImageFetcher(uri, scratchdir)
-    elif uri.startswith("nfs://"):
-        return MountedImageFetcher(uri, scratchdir)
-    else:
-        if os.path.isdir(uri):
-            return DirectImageFetcher(uri, scratchdir)
-        else:
-            return MountedImageFetcher(uri, scratchdir)
-
-def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
-                    scratchdir=None):
-    stores = []
-    skip_treeinfo = False
-    logging.debug("Attempting to detect distro:")
-
-    dist = virtinst.OSDistro.distroFromTreeinfo(fetcher, progresscb, baseuri,
-                                                typ, scratchdir, arch)
-    if dist:
-        return dist
-    skip_treeinfo = True
-
-    # FIXME: This 'distro ==' doesn't cut it. 'distro' is from our os
-    # dictionary, so would look like 'fedora9' or 'rhel5', so this needs
-    # to be a bit more intelligent
-    if distro == "fedora" or distro is None:
-        stores.append(FedoraDistro(baseuri, typ, scratchdir, arch))
-    if distro == "rhel" or distro is None:
-        stores.append(RHELDistro(baseuri, typ, scratchdir, arch))
-    if distro == "centos" or distro is None:
-        stores.append(CentOSDistro(baseuri, typ, scratchdir, arch))
-    if distro == "sl" or distro is None:
-        stores.append(SLDistro(baseuri, typ, scratchdir, arch))
-    if distro == "suse" or distro is None:
-        stores.append(SuseDistro(baseuri, typ, scratchdir, arch))
-    if distro == "debian" or distro is None:
-        stores.append(DebianDistro(baseuri, typ, scratchdir, arch))
-    if distro == "ubuntu" or distro is None:
-        stores.append(UbuntuDistro(baseuri, typ, scratchdir, arch))
-    if distro == "mandriva" or distro is None:
-        stores.append(MandrivaDistro(baseuri, typ, scratchdir, arch))
-    # XXX: this is really "nevada"
-    if distro == "solaris" or distro is None:
-        stores.append(SolarisDistro(baseuri, type, scratchdir))
-    if distro == "solaris" or distro is None:
-        stores.append(OpenSolarisDistro(baseuri, type, scratchdir))
-
-    stores.append(GenericDistro(baseuri, typ, scratchdir, arch))
-
-    for store in stores:
-        if skip_treeinfo:
-            store.uses_treeinfo = False
-        if store.isValidStore(fetcher, progresscb):
-            return store
-
-    raise ValueError, _("Could not find an installable distribution at '%s'" % baseuri) 
-
-
-# Method to fetch a kernel & initrd pair for a particular distro / HV type
-def acquireKernel(guest, baseuri, progresscb, scratchdir="/var/tmp", type=None,
-                  distro=None, arch=None):
-    fetcher = _fetcherForURI(baseuri, scratchdir)
-
-    try:
-        fetcher.prepareLocation()
-    except ValueError, e:
-        raise ValueError, _("Invalid install location: ") + str(e)
-
-    try:
-        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=type,
-                                progresscb=progresscb, distro=distro,
-                                scratchdir=scratchdir, arch=arch)
-
-        return store.acquireKernel(guest, fetcher, progresscb), store.os_type
-    finally:
-        fetcher.cleanupLocation()
-
-# Method to fetch a bootable ISO image for a particular distro / HV type
-def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
-                    distro=None, arch=None):
-    fetcher = _fetcherForURI(baseuri, scratchdir)
-
-    try:
-        fetcher.prepareLocation()
-    except ValueError, e:
-        raise ValueError, _("Invalid install location: ") + str(e)
-
-    try:
-        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=type,
-                                progresscb=progresscb, distro=distro,
-                                scratchdir=scratchdir, arch=arch)
-        return store.acquireBootDisk(fetcher, progresscb)
-    finally:
-        fetcher.cleanupLocation()
 
 def _is_url(url):
     """
@@ -170,10 +54,10 @@ def _sanitize_url(url):
 
     return url
 
-class DistroInstaller(Guest.Installer):
+class DistroInstaller(Installer.Installer):
     def __init__(self, type = "xen", location = None, boot = None,
                  extraargs = None, os_type = None, conn = None):
-        Guest.Installer.__init__(self, type, location, boot, extraargs,
+        Installer.Installer.__init__(self, type, location, boot, extraargs,
                                  os_type, conn=conn)
 
         self.install = {
@@ -265,11 +149,11 @@ class DistroInstaller(Guest.Installer):
             arch = os.uname()[4]
             if hasattr(guest, "arch"):
                 arch = guest.arch
-            cdrom = acquireBootDisk(self.location,
-                                    meter,
-                                    scratchdir = self.scratchdir,
-                                    distro = distro,
-                                    arch = arch)
+            cdrom = OSDistro.acquireBootDisk(self.location,
+                                             meter,
+                                             scratchdir = self.scratchdir,
+                                             distro = distro,
+                                             arch = arch)
             self._tmpfiles.append(cdrom)
 
         self._install_disk = VirtualDisk(path=self.location,
@@ -292,7 +176,7 @@ class DistroInstaller(Guest.Installer):
             if hasattr(guest, "arch"):
                 arch = guest.arch
 
-            (kernelfn, initrdfn, args), os_type = acquireKernel(guest,
+            (kernelfn, initrdfn, args), os_type = OSDistro.acquireKernel(guest,
                 self.location, meter, scratchdir=self.scratchdir,
                 type=self.os_type, distro=distro, arch=arch)
 
@@ -308,9 +192,9 @@ class DistroInstaller(Guest.Installer):
         # through to a virtual CD or disk
         if (self.location is not None and self._location_is_path
            and not os.path.isdir(self.location)):
-            device = Guest.VirtualDisk.DEVICE_DISK
+            device = VirtualDisk.DEVICE_DISK
             if guest._lookup_osdict_key('pv_cdrom_install'):
-                device = Guest.VirtualDisk.DEVICE_CDROM
+                device = VirtualDisk.DEVICE_CDROM
 
             self._install_disk = VirtualDisk(conn=guest.conn,
                                              device=device,
@@ -346,20 +230,4 @@ class DistroInstaller(Guest.Installer):
         return self._get_osblob_helper(isinstall=install, ishvm=hvm,
                                        arch=arch, loader=loader, conn=conn,
                                        kernel=self.install, bootdev=bootdev)
-
-
-class PXEInstaller(Guest.Installer):
-
-    def prepare(self, guest, meter, distro = None):
-        pass
-
-    def _get_osblob(self, install, hvm, arch = None, loader = None, conn = None):
-        if install:
-            bootdev="network"
-        else:
-            bootdev = "hd"
-
-        return self._get_osblob_helper(isinstall=install, ishvm=hvm,
-                                       arch=arch, loader=loader, conn=conn,
-                                       kernel=None, bootdev=bootdev)
 

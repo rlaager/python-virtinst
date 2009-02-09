@@ -28,8 +28,113 @@ import platform
 import socket
 import ConfigParser
 
+import virtinst
 from virtinst import _util
 from virtinst import _virtinst as _
+
+from ImageFetcher import MountedImageFetcher
+from ImageFetcher import FTPImageFetcher
+from ImageFetcher import HTTPImageFetcher
+from ImageFetcher import DirectImageFetcher
+
+def _fetcherForURI(uri, scratchdir=None):
+    if uri.startswith("http://"): 
+        return HTTPImageFetcher(uri, scratchdir)
+    elif uri.startswith("ftp://"):
+        return FTPImageFetcher(uri, scratchdir)
+    elif uri.startswith("nfs://"):
+        return MountedImageFetcher(uri, scratchdir)
+    else:
+        if os.path.isdir(uri):
+            return DirectImageFetcher(uri, scratchdir)
+        else:
+            return MountedImageFetcher(uri, scratchdir)
+
+def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
+                    scratchdir=None):
+    stores = []
+    skip_treeinfo = False
+    logging.debug("Attempting to detect distro:")
+
+    dist = virtinst.OSDistro.distroFromTreeinfo(fetcher, progresscb, baseuri,
+                                                typ, scratchdir, arch)
+    if dist:
+        return dist
+    skip_treeinfo = True
+
+    # FIXME: This 'distro ==' doesn't cut it. 'distro' is from our os
+    # dictionary, so would look like 'fedora9' or 'rhel5', so this needs
+    # to be a bit more intelligent
+    if distro == "fedora" or distro is None:
+        stores.append(FedoraDistro(baseuri, typ, scratchdir, arch))
+    if distro == "rhel" or distro is None:
+        stores.append(RHELDistro(baseuri, typ, scratchdir, arch))
+    if distro == "centos" or distro is None:
+        stores.append(CentOSDistro(baseuri, typ, scratchdir, arch))
+    if distro == "sl" or distro is None:
+        stores.append(SLDistro(baseuri, typ, scratchdir, arch))
+    if distro == "suse" or distro is None:
+        stores.append(SuseDistro(baseuri, typ, scratchdir, arch))
+    if distro == "debian" or distro is None:
+        stores.append(DebianDistro(baseuri, typ, scratchdir, arch))
+    if distro == "ubuntu" or distro is None:
+        stores.append(UbuntuDistro(baseuri, typ, scratchdir, arch))
+    if distro == "mandriva" or distro is None:
+        stores.append(MandrivaDistro(baseuri, typ, scratchdir, arch))
+    # XXX: this is really "nevada"
+    if distro == "solaris" or distro is None:
+        stores.append(SolarisDistro(baseuri, type, scratchdir))
+    if distro == "solaris" or distro is None:
+        stores.append(OpenSolarisDistro(baseuri, type, scratchdir))
+
+    stores.append(GenericDistro(baseuri, typ, scratchdir, arch))
+
+    for store in stores:
+        if skip_treeinfo:
+            store.uses_treeinfo = False
+        if store.isValidStore(fetcher, progresscb):
+            return store
+
+    raise ValueError, _("Could not find an installable distribution at '%s'" %
+                        baseuri) 
+
+
+# Helper method to lookup install media distro and fetch an install kernel
+def acquireKernel(guest, baseuri, progresscb, scratchdir="/var/tmp", type=None,
+                  distro=None, arch=None):
+    fetcher = _fetcherForURI(baseuri, scratchdir)
+
+    try:
+        fetcher.prepareLocation()
+    except ValueError, e:
+        raise ValueError, _("Invalid install location: ") + str(e)
+
+    try:
+        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=type,
+                                progresscb=progresscb, distro=distro,
+                                scratchdir=scratchdir, arch=arch)
+
+        return store.acquireKernel(guest, fetcher, progresscb), store.os_type
+    finally:
+        fetcher.cleanupLocation()
+
+# Helper method to lookup install media distro and fetch a boot iso
+def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
+                    distro=None, arch=None):
+    fetcher = _fetcherForURI(baseuri, scratchdir)
+
+    try:
+        fetcher.prepareLocation()
+    except ValueError, e:
+        raise ValueError, _("Invalid install location: ") + str(e)
+
+    try:
+        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=type,
+                                progresscb=progresscb, distro=distro,
+                                scratchdir=scratchdir, arch=arch)
+        return store.acquireBootDisk(fetcher, progresscb)
+    finally:
+        fetcher.cleanupLocation()
 
 def distroFromTreeinfo(fetcher, progresscb, uri, vmtype=None,
                        scratchdir=None, arch=None):

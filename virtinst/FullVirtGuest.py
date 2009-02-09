@@ -21,7 +21,7 @@
 
 import os
 import _util
-import DistroManager
+import DistroInstaller
 import logging
 import time
 import platform
@@ -36,7 +36,8 @@ class FullVirtGuest(Guest):
     def __init__(self, type=None, arch=None, connection=None,
                  hypervisorURI=None, emulator=None, installer=None):
         if not installer:
-            installer = DistroManager.DistroInstaller(type = type, os_type = "hvm")
+            installer = DistroInstaller.DistroInstaller(type = type,
+                                                        os_type = "hvm")
         Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "hd"
         self.features = { "acpi": None, "pae":

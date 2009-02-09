@@ -20,7 +20,7 @@
 # MA 02110-1301 USA.
 
 from Guest import Guest
-from DistroManager import DistroInstaller
+from DistroInstaller import DistroInstaller
 from virtinst import _virtinst as _
 
 class ParaVirtGuest(Guest):
