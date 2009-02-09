@@ -627,14 +627,17 @@ def main():
     # 
     wait = continue_inst
     wait_time = -1
+    autoconsole = options.autoconsole
 
     if options.wait:
         wait = True
         wait_time = options.wait * 60
+        if wait_time == 0:
+            # --wait 0 implies --noautoconsole
+            autoconsole = False
 
-    if options.autoconsole is False:
+    if autoconsole is False:
         conscb = None
-        wait = False
     else:
         conscb = show_console
 
