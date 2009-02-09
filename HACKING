@@ -5,6 +5,12 @@ virtinst is tied closely with libvirt, so it's recommended to try and run
 the latest libvirt code if using virtinst from an upstream checkout. See
 http://libvirt.org/downloads.html
 
+
+Please be aware that virtinst is an API. The public classes are marked as
+such in virtinst/__init__.py: please be mindful of this when writing patches.
+Anything else in the codebase can be editted at will.
+
+
 The following commands will be useful for anyone writing patches:
 
     python setup.py test      : Run local unit test suite
@@ -18,9 +24,8 @@ exposes one of these, bring it up on the mailing list
 (et-mgmt-tools@redhat.com).
 
 'test_urls' only needs to be run if the patch is against the url fetching
-code (virtinst/OSDistro.py, some pieces of virtinst/DistroManager). This
-stuff is notoriously fragile, so running 'test_urls' is a must. If you
-are debugging a certain url failure, you can use the --match option to
-specify specific distros to test.
+code (virtinst/OSDistro.py). This stuff is notoriously fragile, so running
+'test_urls' is a must. If you are debugging a certain url failure, you can
+use the --match option to specify specific distros to test.
 
 'test' and 'test_urls' have a --debug option if you are hitting problems.

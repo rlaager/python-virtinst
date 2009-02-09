@@ -39,3 +39,11 @@ from LiveCDInstaller import LiveCDInstaller
 from ImageManager import ImageInstaller
 from CloneManager import CloneDesign
 from User import User
+
+# This represents the PUBLIC API. Any changes to these classes (or 'util.py')
+# must be mindful of this fact.
+__all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
+           "XenNetworkInterface", "VirtualGraphics", "VirtualAudio",
+           "VirtualDisk", "XenDisk", "FullVirtGuest", "ParaVirtGuest",
+           "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
+           "ImageInstaller", "CloneDesign", "User", "util"]
