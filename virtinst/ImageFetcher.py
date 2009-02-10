@@ -52,7 +52,8 @@ class ImageFetcher:
     def saveTemp(self, fileobj, prefix):
         if not os.path.exists(self.scratchdir):
             os.makedirs(self.scratchdir, 0750)
-        (fd, fn) = tempfile.mkstemp(prefix="virtinst-" + prefix, dir=self.scratchdir)
+        (fd, fn) = tempfile.mkstemp(prefix="virtinst-" + prefix,
+                                    dir=self.scratchdir)
         block_size = 16384
         try:
             while 1:
@@ -70,8 +71,30 @@ class ImageFetcher:
     def cleanupLocation(self):
         pass
 
-    def acquireFile(self, src, progresscb):
-        raise NotImplementedError("Must be implemented in subclass")
+    def acquireFile(self, filename, progresscb):
+        # URLGrabber works for all network and local cases
+
+        f = None
+        try:
+            path = self._make_path(filename)
+            base = os.path.basename(filename)
+            logging.debug("Fetching URI: %s" % path)
+
+            try:
+                f = grabber.urlopen(path,
+                                    progress_obj = progresscb,
+                                    text = _("Retrieving file %s...") % base)
+            except Exception, e:
+                raise ValueError, _("Couldn't acquire file %s: %s") % \
+                                    (path, str(e))
+
+            tmpname = self.saveTemp(f, prefix=base + ".")
+            logging.debug("Saved file to " + tmpname)
+            return tmpname
+        finally:
+            if f:
+                f.close()
+
 
     def hasFile(self, src):
         raise NotImplementedError("Must be implemented in subclass")
@@ -86,26 +109,6 @@ class URIImageFetcher(ImageFetcher):
         if not self.hasFile(""):
             raise ValueError(_("Opening URL %s failed.") % \
                               (self.location))
-
-    def acquireFile(self, filename, progresscb):
-        f = None
-        try:
-            path = self._make_path(filename)
-            base = os.path.basename(filename)
-            logging.debug("Fetching URI " + path)
-            try:
-                f = grabber.urlopen(path,
-                                    progress_obj = progresscb,
-                                    text = _("Retrieving file %s...") % base)
-            except IOError, e:
-                raise ValueError, _("Couldn't acquire file %s: %s") % \
-                                    (path, str(e))
-            tmpname = self.saveTemp(f, prefix=base + ".")
-            logging.debug("Saved file to " + tmpname)
-            return tmpname
-        finally:
-            if f:
-                f.close()
 
 class HTTPImageFetcher(URIImageFetcher):
 
@@ -145,31 +148,6 @@ class LocalImageFetcher(ImageFetcher):
         ImageFetcher.__init__(self, location, scratchdir)
         self.srcdir = srcdir
 
-    def acquireFile(self, filename, progresscb):
-        f = None
-        try:
-            src = self._make_path(filename)
-            base = os.path.basename(filename)
-
-            logging.debug("Acquiring file from %s" % src)
-            try:
-                if stat.S_ISDIR(os.stat(src)[stat.ST_MODE]):
-                    logging.debug("Found a directory")
-                    return None
-                else:
-                    f = open(src, "r")
-            except IOError, e:
-                raise ValueError, _("Invalid file location given: ") + str(e)
-            except OSError, (errno, msg):
-                raise ValueError, \
-                      _("Invalid file location given: %s: %s") % (errno, msg)
-            tmpname = self.saveTemp(f, prefix=base + ".")
-            logging.debug("Saved file to %s" % tmpname)
-            return tmpname
-        finally:
-            if f:
-                f.close()
-
     def hasFile(self, filename):
         src = self._make_path(filename)
         if os.path.exists(src):
@@ -184,7 +162,8 @@ class MountedImageFetcher(LocalImageFetcher):
 
     def prepareLocation(self):
         cmd = None
-        self.srcdir = tempfile.mkdtemp(prefix="virtinstmnt.", dir=self.scratchdir)
+        self.srcdir = tempfile.mkdtemp(prefix="virtinstmnt.",
+                                       dir=self.scratchdir)
         mountcmd = "/bin/mount"
         if os.uname()[0] == "SunOS":
             mountcmd = "/usr/sbin/mount"
@@ -205,8 +184,8 @@ class MountedImageFetcher(LocalImageFetcher):
         ret = subprocess.call(cmd)
         if ret != 0:
             self.cleanupLocation()
-            logging.debug("Mounting location %s failed" % (self.location,))
-            raise ValueError(_("Mounting location %s failed") % (self.location))
+            raise ValueError(_("Mounting location '%s' failed") %
+                             (self.location))
         return True
 
     def cleanupLocation(self):
