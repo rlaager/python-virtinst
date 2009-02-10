@@ -45,7 +45,7 @@ ACCESS__CONN="Access to a protected member _conn"
 PROT_MEM_BUGS="protected member (_get_osblob|_prepare_install|_create_devices|_install_disks)"
 
 # Scattered examples of legitimately unused arguments
-UNUSED_ARGS="SuseDistro.isValidStore.*Unused argument 'progresscb'|LiveCDInstaller.prepare.*Unused argument|ImageInstaller.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"
+UNUSED_ARGS="(SuseDistro|SolarisDistro).isValidStore.*Unused argument 'progresscb'|LiveCDInstaller.prepare.*Unused argument|ImageInstaller.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"
 
 # We use some hacks in the test driver to simulate remote libvirt URIs
 TEST_HACKS="TestClone.*protected member _util"

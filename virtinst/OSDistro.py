@@ -886,7 +886,7 @@ class SolarisDistro(SunDistro):
            and args, and '-B' boot properties."""
 
         # XXX: ignoring smfargs for the time being
-        (kopts, kargs, smfargs, kbargs) = \
+        (kopts, kargs, ignore_smfargs, kbargs) = \
             self.process_extra_args(guest.extraargs)
 
         args = [ '' ]
@@ -976,7 +976,7 @@ class OpenSolarisDistro(SunDistro):
            and args, and '-B' boot properties."""
 
         # XXX: ignoring smfargs and kargs for the time being
-        (kopts, kargs, smfargs, kbargs) = \
+        (kopts, ignore_kargs, ignore_smfargs, kbargs) = \
             self.process_extra_args(guest.extraargs)
 
         args = ''
