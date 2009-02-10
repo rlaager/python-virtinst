@@ -35,6 +35,10 @@ class User(object):
     def __init__(self, euid):
         self._euid = euid
 
+    def get_euid(self):
+        return self._euid
+    euid = property(get_euid)
+
     def has_priv(self, priv, conn=None):
         """Return if the given user is privileged enough to perform the
            given operation. This isn't entirely accurate currently,
@@ -56,7 +60,7 @@ class User(object):
             return self._euid == 0
 
         # Not easy to work out!
-        if self._euid != User.current()._euid:
+        if self._euid != User.current().euid:
             return self._euid == 0
 
         import ucred
