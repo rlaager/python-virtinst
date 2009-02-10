@@ -24,6 +24,7 @@ from virtinst.OSDistro import UbuntuDistro
 from virtinst.OSDistro import MandrivaDistro
 
 import unittest
+import time
 import logging
 import re
 import urlgrabber.progress
@@ -223,15 +224,10 @@ class TestURLFetch(unittest.TestCase):
                           (distname, arch, fetcher.location, str(e)))
             return
 
-        hvmstore = OSDistro._storeForDistro(fetcher=fetcher, baseuri=url,
-                                            progresscb=meter, typ="hvm",
-                                            arch=arch)
+        hvmstore = self._getStore(fetcher, url, meter, "hvm", arch)
+
         if check_xen:
-            xenstore = OSDistro._storeForDistro(fetcher=fetcher,
-                                                baseuri=url,
-                                                progresscb=meter,
-                                                typ="xen",
-                                                arch=arch)
+            xenstore = self._getStore(fetcher, url, meter, "xen", arch)
         else:
             xenstore = None
 
@@ -297,6 +293,19 @@ class TestURLFetch(unittest.TestCase):
                                                                   str(e)))
                 self.fail()
 
+    def _getStore(self, fetcher, url, meter, _type, arch):
+        for ignore in range(0, 10):
+            try:
+                return OSDistro._storeForDistro(fetcher=fetcher, baseuri=url,
+                                                progresscb=meter, typ=_type,
+                                                arch=arch)
+            except Exception, e:
+                if str(e).count("502"):
+                    logging.debug("Caught proxy error: %s" % str(e))
+                    time.sleep(.5)
+                    continue
+                raise
+        raise
 
     def testURLFetch(self):
         keys = urls.keys()
