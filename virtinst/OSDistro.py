@@ -38,7 +38,7 @@ from ImageFetcher import HTTPImageFetcher
 from ImageFetcher import DirectImageFetcher
 
 def _fetcherForURI(uri, scratchdir=None):
-    if uri.startswith("http://"): 
+    if uri.startswith("http://"):
         return HTTPImageFetcher(uri, scratchdir)
     elif uri.startswith("ftp://"):
         return FTPImageFetcher(uri, scratchdir)
@@ -99,9 +99,8 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
                         baseuri) 
 
 
-# Helper method to lookup install media distro and fetch an install kernel
-def acquireKernel(guest, baseuri, progresscb, scratchdir="/var/tmp", type=None,
-                  distro=None, arch=None):
+def _acquireMedia(iskernel, guest, baseuri, progresscb, scratchdir="/var/tmp",
+                  _type=None, distro=None, arch=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
 
     try:
@@ -110,31 +109,30 @@ def acquireKernel(guest, baseuri, progresscb, scratchdir="/var/tmp", type=None,
         raise ValueError, _("Invalid install location: ") + str(e)
 
     try:
-        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=type,
+        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=_type,
                                 progresscb=progresscb, distro=distro,
                                 scratchdir=scratchdir, arch=arch)
 
-        return store.acquireKernel(guest, fetcher, progresscb), store.os_type
+        if iskernel:
+            return (store.acquireKernel(guest, fetcher, progresscb),
+                    store.os_type)
+        else:
+            return store.acquireBootDisk(fetcher, progresscb)
     finally:
         fetcher.cleanupLocation()
+
+# Helper method to lookup install media distro and fetch an install kernel
+def acquireKernel(guest, baseuri, progresscb, scratchdir="/var/tmp", type=None,
+                  distro=None, arch=None):
+    return _acquireMedia(True, guest, baseuri, progresscb, scratchdir, type,
+                         distro, arch)
 
 # Helper method to lookup install media distro and fetch a boot iso
 def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
                     distro=None, arch=None):
-    fetcher = _fetcherForURI(baseuri, scratchdir)
+    return _acquireMedia(False, None, baseuri, progresscb, scratchdir, type,
+                         distro, arch)
 
-    try:
-        fetcher.prepareLocation()
-    except ValueError, e:
-        raise ValueError, _("Invalid install location: ") + str(e)
-
-    try:
-        store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=type,
-                                progresscb=progresscb, distro=distro,
-                                scratchdir=scratchdir, arch=arch)
-        return store.acquireBootDisk(fetcher, progresscb)
-    finally:
-        fetcher.cleanupLocation()
 
 def distroFromTreeinfo(fetcher, progresscb, uri, vmtype=None,
                        scratchdir=None, arch=None):
