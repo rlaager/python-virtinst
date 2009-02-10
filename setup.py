@@ -72,21 +72,32 @@ class TestURLFetch(TestBaseCommand):
 
     user_options = TestBaseCommand.user_options + \
                    [("match=", None, "Regular expression of dist names to "
-                                     "match [default: '.*']")]
+                                     "match [default: '.*']"),
+                    ("path=", None, "Paths to local iso or directory or check"
+                                    " for installable distro. Comma separated")]
 
     def initialize_options(self):
         TestBaseCommand.initialize_options(self)
         self.match = None
+        self.path = ""
 
     def finalize_options(self):
         TestBaseCommand.finalize_options(self)
         if self.match is None:
             self.match = ".*"
 
+        origpath = str(self.path)
+        if origpath is None:
+            self.path = []
+        else:
+            self.path = origpath.split(",")
+
     def run(self):
         import tests
         self._testfiles = [ "tests.urltest" ]
         tests.urltest.MATCH_FILTER = self.match
+        for p in self.path:
+            tests.urltest.LOCAL_MEDIA.append(p)
         TestBaseCommand.run(self)
 
 class CheckPylint(Command):

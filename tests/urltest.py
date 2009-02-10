@@ -28,12 +28,17 @@ import time
 import logging
 import re
 import urlgrabber.progress
+import platform
 import tests
 import libvirt
 import virtinst
 
 # Filters for including/excluding certain distros.
 MATCH_FILTER=".*"
+
+# Variable used to store a local iso or dir path to check for a distro
+# Specified via 'python setup.py test_urls --path"
+LOCAL_MEDIA = []
 
 # GeoIP/managed URLs
 FEDORA_BASEURL = "http://download.fedoraproject.org/pub/fedora/linux/releases/%s/Fedora/%s/os/"
@@ -204,30 +209,58 @@ testguest = virtinst.Guest(connection=testconn, installer=virtinst.DistroInstall
 
 class TestURLFetch(unittest.TestCase):
 
-    def _fetchComparison(self, distname, url, arch):
+
+    def setUp(self):
+        self.meter = None
+        if tests.debug:
+            self.meter = urlgrabber.progress.TextMeter()
+
+    def _fetchLocalMedia(self, mediapath):
+        arch = platform.machine()
+
+        fetcher = OSDistro._fetcherForURI(mediapath, "/tmp")
+
+        try:
+            fetcher.prepareLocation()
+
+            # Make sure we detect _a_ distro
+            hvmstore = self._getStore(fetcher, mediapath, "hvm", arch)
+            logging.debug("Local distro detected as: %s" % hvmstore)
+        finally:
+            fetcher.cleanupLocation()
+
+
+    def _fetchFromURLDict(self, distname, url, arch):
         logging.debug("\nDistro='%s' arch='%s' url=%s" % \
                       (distname, arch, url))
 
-        check_xen = True
-        if re.match(r"%s" % NOXEN_FILTER, distname):
-            check_xen = False
-
-        meter=None
-        if tests.debug:
-            meter = urlgrabber.progress.TextMeter()
         fetcher = OSDistro._fetcherForURI(url, "/tmp")
 
         try:
             fetcher.prepareLocation()
         except Exception, e:
+            # Don't raise an error here: the site might be down atm
             logging.error("%s-%s: Couldn't access url %s: %s. Skipping." % \
                           (distname, arch, fetcher.location, str(e)))
+            fetcher.cleanupLocation()
             return
 
-        hvmstore = self._getStore(fetcher, url, meter, "hvm", arch)
+        try:
+            self._grabURLMedia(fetcher, distname, url, arch)
+        finally:
+            fetcher.cleanupLocation()
+
+
+    def _grabURLMedia(self, fetcher, distname, url, arch):
+
+        check_xen = True
+        if re.match(r"%s" % NOXEN_FILTER, distname):
+            check_xen = False
+
+        hvmstore = self._getStore(fetcher, url, "hvm", arch)
 
         if check_xen:
-            xenstore = self._getStore(fetcher, url, meter, "xen", arch)
+            xenstore = self._getStore(fetcher, url, "xen", arch)
         else:
             xenstore = None
 
@@ -252,7 +285,7 @@ class TestURLFetch(unittest.TestCase):
                 logging.debug("Known lack of boot.iso in %s tree. Skipping." \
                               % distname)
             else:
-                boot = hvmstore.acquireBootDisk(fetcher, meter)
+                boot = hvmstore.acquireBootDisk(fetcher, self.meter)
                 logging.debug("acquireBootDisk: %s" % str(boot))
 
                 if boot != True:
@@ -264,7 +297,7 @@ class TestURLFetch(unittest.TestCase):
 
         # Fetch regular kernel
         try:
-            kern = hvmstore.acquireKernel(testguest, fetcher, meter)
+            kern = hvmstore.acquireKernel(testguest, fetcher, self.meter)
             logging.debug("acquireKernel (hvm): %s" % str(kern))
 
             if kern[0] is not True or kern[1] is not True:
@@ -277,7 +310,7 @@ class TestURLFetch(unittest.TestCase):
         # Fetch xen kernel
         try:
             if xenstore and check_xen:
-                kern = xenstore.acquireKernel(testguest, fetcher, meter)
+                kern = xenstore.acquireKernel(testguest, fetcher, self.meter)
                 logging.debug("acquireKernel (xen): %s" % str(kern))
 
                 if kern[0] is not True or kern[1] is not True:
@@ -293,12 +326,12 @@ class TestURLFetch(unittest.TestCase):
                                                                   str(e)))
                 self.fail()
 
-    def _getStore(self, fetcher, url, meter, _type, arch):
+    def _getStore(self, fetcher, url, _type, arch):
         for ignore in range(0, 10):
             try:
                 return OSDistro._storeForDistro(fetcher=fetcher, baseuri=url,
-                                                progresscb=meter, typ=_type,
-                                                arch=arch)
+                                                progresscb=self.meter,
+                                                typ=_type, arch=arch)
             except Exception, e:
                 if str(e).count("502"):
                     logging.debug("Caught proxy error: %s" % str(e))
@@ -308,6 +341,11 @@ class TestURLFetch(unittest.TestCase):
         raise
 
     def testURLFetch(self):
+
+        if LOCAL_MEDIA:
+            logging.debug("Skipping URL tests since local path is specified.")
+            return
+
         keys = urls.keys()
         keys.sort()
         assertions = 0
@@ -317,9 +355,27 @@ class TestURLFetch(unittest.TestCase):
                 continue
             for arch, url in urls[label].items():
                 try:
-                    self._fetchComparison(label, url, arch)
+                    print "Testing %s-%s" % (label, arch)
+                    self._fetchFromURLDict(label, url, arch)
                 except AssertionError:
+                    print "%s-%s FAILED." % (label, arch)
                     assertions += 1
 
         if assertions != 0:
             raise AssertionError("Found %d errors in URL suite." % assertions)
+
+    def testLocalMedia(self):
+        assertions = 0
+        if LOCAL_MEDIA:
+            for p in LOCAL_MEDIA:
+                print "Checking local path: %s" % p
+                try:
+                    self._fetchLocalMedia(p)
+                except Exception, e:
+                    logging.exception("Local path '%s' failed: %s" % (p, e))
+                    print "Local path FAILED."
+                    assertions += 1
+
+        if assertions != 0:
+            raise AssertionError("Found %d errors in local fetch tests." %
+                                 assertions)

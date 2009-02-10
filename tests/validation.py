@@ -40,7 +40,7 @@ import os
 
 # We install several storage pools on the connection to ensure
 # we aren't bumping up against errors in that department.
-logging.debug("Starting 'validation' storage setup.")
+logging.debug("\n\nStarting 'validation' storage setup.")
 testconn = libvirt.open("test:///default")
 
 offdskpaths = [ "/dev", ]
@@ -63,7 +63,7 @@ p = createPool(testconn, virtinst.Storage.StoragePool.TYPE_DIR,
                tpath="/pool-exist", start=True, poolname="pool-exist")
 dirvol = createVol(p, "vol-exist")
 volinst = virtinst.Storage.StorageVolume(pool=p, name="somevol", capacity=1)
-logging.debug("Ending 'validation' storage setup.")
+logging.debug("Ending 'validation' storage setup.\n\n")
 
 args = { \
 
