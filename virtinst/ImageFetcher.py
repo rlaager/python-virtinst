@@ -38,6 +38,17 @@ class ImageFetcher:
         self.location = location
         self.scratchdir = scratchdir
 
+    def _make_path(self, filename):
+        if hasattr(self, "srcdir"):
+            path = getattr(self, "srcdir")
+        else:
+            path = self.location
+
+        if not path.endswith("/"):
+            path += "/"
+        path += filename
+        return path
+
     def saveTemp(self, fileobj, prefix):
         if not os.path.exists(self.scratchdir):
             os.makedirs(self.scratchdir, 0750)
@@ -67,13 +78,6 @@ class ImageFetcher:
 
 # Base class for downloading from FTP / HTTP
 class URIImageFetcher(ImageFetcher):
-
-    def _make_path(self, filename):
-        path = self.location
-        if not path.endswith("/"):
-            path += "/"
-        path += filename
-        return path
 
     def hasFile(self, filename):
         raise NotImplementedError
@@ -144,10 +148,11 @@ class LocalImageFetcher(ImageFetcher):
     def acquireFile(self, filename, progresscb):
         f = None
         try:
-            logging.debug("Acquiring file from " + self.srcdir + "/" + filename)
+            src = self._make_path(filename)
             base = os.path.basename(filename)
+
+            logging.debug("Acquiring file from %s" % src)
             try:
-                src = self.srcdir + "/" + filename
                 if stat.S_ISDIR(os.stat(src)[stat.ST_MODE]):
                     logging.debug("Found a directory")
                     return None
@@ -159,18 +164,18 @@ class LocalImageFetcher(ImageFetcher):
                 raise ValueError, \
                       _("Invalid file location given: %s: %s") % (errno, msg)
             tmpname = self.saveTemp(f, prefix=base + ".")
-            logging.debug("Saved file to " + tmpname)
+            logging.debug("Saved file to %s" % tmpname)
             return tmpname
         finally:
             if f:
                 f.close()
 
     def hasFile(self, filename):
-        if os.path.exists(os.path.abspath(self.srcdir + "/" + filename)):
+        src = self._make_path(filename)
+        if os.path.exists(src):
             return True
         else:
-            logging.debug("local hasFile: Couldn't find %s" % \
-                          (self.srcdir + "/" + filename))
+            logging.debug("local hasFile: Couldn't find %s" % src)
             return False
 
 # This is a fetcher capable of extracting files from a NFS server
