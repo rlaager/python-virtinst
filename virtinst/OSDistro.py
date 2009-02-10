@@ -804,6 +804,9 @@ class MandrivaDistro(Distro):
         # Mandriva websites / media appear to have a VERSION
         # file in top level which we can use as our 'magic'
         # check for validity
+        if not fetcher.hasFile("VERSION"):
+            return False
+
         if self._fetchAndMatchRegex(fetcher, progresscb, "VERSION",
                                     ".*Mandriva.*"):
             logging.debug("Detected a Mandriva distro")
