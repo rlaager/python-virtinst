@@ -137,7 +137,8 @@ class DistroInstaller(Installer.Installer):
                                "file/device"))
 
         if (not self._location_is_path and val.startswith("nfs:") and not
-            User.current().has_priv(User.PRIV_NFS_MOUNT, self.conn.getURI())):
+            User.current().has_priv(User.PRIV_NFS_MOUNT,
+                                    (self.conn and self.conn.getURI()))):
             raise ValueError(_('Privilege is required for NFS installations'))
 
         self._location = val
