@@ -88,7 +88,7 @@ def export_os_params(vm):
     # ImageParser?) should handle this info
     ostype = fv._OS_TYPES.get(vm.os_type)
     if ostype:
-        osvariant = ostype.variants.get(vm.os_variant)
+        osvariant = ostype.get('variants').get(vm.os_variant)
 
     def get_os_val(key, default):
         val = None
