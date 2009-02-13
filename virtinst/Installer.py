@@ -38,6 +38,8 @@ class Installer(object):
         self._extraargs = None
         self._boot = None
         self._cdrom = False
+        # XXX: We should set this default based on capabilities?
+        self._os_type = "xen"
         self._conn = conn
         self._install_disk = None   # VirtualDisk that contains install media
 
