@@ -20,15 +20,18 @@
 import re
 
 import _util
+import VirtualDevice
 from virtinst import _virtinst as _
 
-class VirtualGraphics(object):
+class VirtualGraphics(VirtualDevice.VirtualDevice):
 
     TYPE_SDL = "sdl"
     TYPE_VNC = "vnc"
 
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
-                 keymap=None):
+                 keymap=None, conn=None):
+
+        VirtualDevice.VirtualDevice.__init__(self, conn=conn)
 
         if type != self.TYPE_VNC and type != self.TYPE_SDL:
             raise ValueError(_("Unknown graphics type"))

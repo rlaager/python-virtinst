@@ -17,13 +17,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import VirtualDevice
 from virtinst import _virtinst as _
 
-class VirtualAudio(object):
+class VirtualAudio(VirtualDevice.VirtualDevice):
 
     MODELS = [ "es1370", "sb16", "pcspk" ]
 
-    def __init__(self, model):
+    def __init__(self, model, conn=None):
+        VirtualDevice.VirtualDevice.__init__(self, conn)
+
         self.model = model
 
     def get_model(self):
