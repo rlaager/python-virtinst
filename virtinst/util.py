@@ -361,7 +361,9 @@ def default_keymap():
 
     # Set keymap to same as hosts
     import keytable
-    keymap = "en-us"
+    default = "en-us"
+    keymap = None
+
     kt = None
     try:
         f = open(KEYBOARD_DIR, "r")
@@ -385,10 +387,37 @@ def default_keymap():
                 kt = s.split(delim)[1].strip()
         f.close()
 
-    if kt and keytable.keytable.has_key(kt.lower()):
+    if kt == None:
+        logging.debug("Did not parse any usable keymapping.")
+        return default
+
+    kt = kt.lower()
+
+    # Try a simple lookup in the keytable
+    if keytable.keytable.has_key(kt.lower()):
         keymap = keytable.keytable[kt]
     else:
-        logging.debug("Didn't find keymap '%s' in keytable!" % kt)
+        # Try a more intelligent lookup: strip out all '-' and '_', sort
+        # the keytable keys putting the longest first, then compare
+        # by string prefix
+        def len_cmp(a, b):
+            return len(b) - len(a)
+
+        clean_kt = kt.replace("-", "").replace("_", "")
+        sorted_keys = sorted(keytable.keytable.keys(), len_cmp)
+
+        for key in sorted_keys:
+            origkey = key
+            key = key.replace("-", "").replace("_","")
+
+            if clean_kt.startswith(key):
+                keymap = keytable.keytable[origkey]
+                break
+
+    if not keymap:
+        logging.debug("Didn't match keymap '%s' in keytable!" % kt)
+        return default
+
     return keymap
 
 def pygrub_path(conn=None):

@@ -19,7 +19,7 @@ keytable = {
     "hu":"hu",
     "is":"is",
     "it":"it",
-    "ja":"ja", "jp106":"ja",
+    "ja":"ja", "jp106":"ja", "jp": "ja",
     "lt":"lt",
     "lv":"lv",
     "mk":"mk",
