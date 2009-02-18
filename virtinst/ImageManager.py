@@ -142,17 +142,10 @@ class ImageInstaller(Installer.Installer):
         else:
             isinstall = False
 
-        # XXX: The installer/guest dichotomy here is kind of messed up,
-        # XXX: since the installer has the 'image' object which contains
-        # XXX: a lot of info that the guest does as well. Take the installers
-        # XXX: data over the guests.
-        arch   = self.boot_caps.arch or guest.arch
-
-        # self.boot_caps.loader is _not_ analagous to guest loader tag
-        #loader = loader
+        # FYI: self.boot_caps.loader is _not_ analagous to guest loader tag
 
         return self._get_osblob_helper(guest, isinstall=isinstall,
-                                       kernel=kernel, arch=arch,
+                                       kernel=kernel,
                                        bootdev=self.boot_caps.bootdev)
 
 

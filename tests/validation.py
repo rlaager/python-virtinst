@@ -100,7 +100,12 @@ args = {
         'valid'   : ['sometype'] },
     'cdrom'     : {
         'invalid' : ['', 0, '/somepath'],
-        'valid'   : ['/dev/loop0'] }
+        'valid'   : ['/dev/loop0']
+    },
+    'arch'      : {
+        'invalid' : [],
+        'valid'   : ["i386", 'i686', 'x86_64'],
+    },
 },
 
 'fvguest'  : {
@@ -163,6 +168,10 @@ args = {
     'extraargs' : {
         'invalid' : [],
         'valid'   : ['someargs']},
+    'arch' : {
+        'invalid' : [],
+        'valid'   : ['i686', 'i386', 'x86_64'],
+    }
 },
 
 'distroinstaller' : {

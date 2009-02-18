@@ -35,7 +35,8 @@ class FullVirtGuest(Guest):
                  hypervisorURI=None, emulator=None, installer=None):
         if not installer:
             installer = DistroInstaller.DistroInstaller(type = type,
-                                                        os_type = "hvm")
+                                                        os_type = "hvm",
+                                                        conn=connection)
         Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "hd"
         self.features = { "acpi": None, "pae":

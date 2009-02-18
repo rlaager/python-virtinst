@@ -26,6 +26,7 @@ import logging
 
 import _util
 import virtinst
+from virtinst import CapabilitiesParser
 from virtinst import _virtinst as _
 from VirtualDisk import VirtualDisk
 
@@ -67,7 +68,19 @@ class Installer(object):
         # XXX: We should set this default based on capabilities?
         self._os_type = "xen"
         self._conn = conn
-        self._install_disk = None   # VirtualDisk that contains install media
+
+        # VirtualDisk that contains install media
+        self._install_disk = None
+
+        if self.conn:
+            self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
+
+            # FIXME: Better solution? Skip validating this since we may not be
+            # able to install a VM of the host arch
+            self._arch = self._caps.host.arch
+        else:
+            self._caps = None
+            self._arch = None
 
         if type is None:
             type = "xen"
@@ -109,6 +122,14 @@ class Installer(object):
         # XXX: Need to validate this: have some whitelist based on caps?
         self._os_type = val
     os_type = property(get_os_type, set_os_type)
+
+    def get_arch(self):
+        return self._arch
+    def set_arch(self, val):
+        # XXX: Sanitize to a consisten value (i368 -> i686)
+        # XXX: Validate against caps
+        self._arch = val
+    arch = property(get_arch, set_arch)
 
     def get_scratchdir(self):
         if platform.system() == 'SunOS':
@@ -166,14 +187,11 @@ class Installer(object):
 
     # Private methods
 
-    def _get_osblob_helper(self, guest, isinstall, arch=None,
-                           kernel=None, bootdev=None):
+    def _get_osblob_helper(self, guest, isinstall, kernel=None, bootdev=None):
 
         # TODO: kernel should go away: we should be able to pull this
         #       directly from the installer. This may mean deprecating
         #       extraargs or something
-        # TODO: arch should go away, this should be a property of the
-        #       installer, not the guest.
 
         def get_param(obj, paramname):
             if hasattr(obj, paramname):
@@ -185,8 +203,7 @@ class Installer(object):
             ishvm = True
 
         conn = guest.conn
-        if not arch:
-            arch = get_param(guest, "arch")
+        arch = self.arch
         loader = get_param(guest, "loader")
 
         osblob = ""

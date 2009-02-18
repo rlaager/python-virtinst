@@ -100,10 +100,6 @@ class Guest(object):
 
         self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
 
-        # FIXME: Better solution? Skip validating this since we may not be
-        # able to install a VM of the host arch
-        self._arch = self._caps.host.arch
-
     def get_installer(self):
         return self._installer
     def set_installer(self, val):
@@ -241,11 +237,9 @@ class Guest(object):
     os_variant = property(get_os_variant, set_os_variant)
 
     def get_arch(self):
-        return self._arch
+        return self.installer.arch
     def set_arch(self, val):
-        # XXX: Sanitize to a consisten value (i368 -> i686)
-        # XXX: Validate against caps
-        self._arch = val
+        self.installer.arch = val
     arch = property(get_arch, set_arch)
 
     # DEPRECATED PROPERTIES
