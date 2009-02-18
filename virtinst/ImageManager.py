@@ -19,7 +19,6 @@
 # MA 02110-1301 USA.
 
 import os
-import logging
 
 import Installer
 import ImageParser
@@ -113,35 +112,28 @@ class ImageInstaller(Installer.Installer):
 
             guest._install_disks.append(d)
 
-    def _get_osblob(self, install, hvm, arch=None, loader=None, conn=None):
+    def _get_osblob(self, guest, isinstall):
 
         kernel = { "kernel" : self.boot_caps.kernel,
                    "initrd" : self.boot_caps.initrd,
                    "extrargs" : self.boot_caps.cmdline }
 
         if self.boot_caps.kernel:
-            install = True
+            isinstall = True
         else:
-            install = False
+            isinstall = False
 
         # XXX: The installer/guest dichotomy here is kind of messed up,
         # XXX: since the installer has the 'image' object which contains
         # XXX: a lot of info that the guest does as well. Take the installers
         # XXX: data over the guests.
-        arch   = self.boot_caps.arch or arch
+        arch   = self.boot_caps.arch or guest.arch
 
         # self.boot_caps.loader is _not_ analagous to guest loader tag
-        loader = loader
-        ishvm  = self.boot_caps.type == "hvm"
+        #loader = loader
 
-        if ishvm != hvm:
-            logging.debug("Guest and ImageInstaller do not agree on virt "
-                          "type. Using Guests'.")
-            ishvm = hvm
-
-        return self._get_osblob_helper(isinstall=install, ishvm=ishvm,
-                                       arch=arch, loader=loader,
-                                       conn=conn, kernel=kernel,
+        return self._get_osblob_helper(guest, isinstall=isinstall,
+                                       kernel=kernel, arch=arch,
                                        bootdev=self.boot_caps.bootdev)
 
 

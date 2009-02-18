@@ -72,14 +72,13 @@ class LiveCDInstaller(Installer.Installer):
             raise ValueError(_("CDROM media must be specified for the live "
                                "CD installer."))
 
-    def _get_osblob(self, install, hvm, arch=None, loader=None, conn=None):
-        if install:
+    def _get_osblob(self, guest, isinstall):
+        if isinstall:
             # XXX: This seems wrong? If install is True, maybe we should
             # error and say that isn't a valid value for LiveCD?
             return None
 
-        return self._get_osblob_helper(isinstall=install, ishvm=hvm,
-                                       arch=arch, loader=loader, conn=conn,
+        return self._get_osblob_helper(isinstall=isinstall, guest=guest,
                                        kernel=None, bootdev="cdrom")
 
     def post_install_check(self, guest):

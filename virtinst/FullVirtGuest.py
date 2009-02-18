@@ -102,8 +102,7 @@ class FullVirtGuest(Guest):
         return ret + "  </features>"
 
     def _get_osblob(self, install):
-        osblob = self.installer._get_osblob(install, hvm = True,
-            arch = self.arch, loader = self.loader, conn = self.conn)
+        osblob = self.installer._get_osblob(self, install)
         if osblob is None:
             return None
 

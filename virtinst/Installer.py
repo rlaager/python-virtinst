@@ -25,6 +25,7 @@ import platform
 import logging
 
 import _util
+import virtinst
 from virtinst import _virtinst as _
 from VirtualDisk import VirtualDisk
 
@@ -164,8 +165,29 @@ class Installer(object):
 
     # Private methods
 
-    def _get_osblob_helper(self, isinstall, ishvm, arch=None, loader=None,
-                           conn=None, kernel=None, bootdev=None):
+    def _get_osblob_helper(self, guest, isinstall, arch=None,
+                           kernel=None, bootdev=None):
+
+        # TODO: kernel should go away: we should be able to pull this
+        #       directly from the installer. This may mean deprecating
+        #       extraargs or something
+        # TODO: arch should go away, this should be a property of the
+        #       installer, not the guest.
+
+        def get_param(obj, paramname):
+            if hasattr(obj, paramname):
+                return getattr(obj, paramname)
+            return None
+
+        ishvm = False
+        if isinstance(guest, virtinst.FullVirtGuest):
+            ishvm = True
+
+        conn = guest.conn
+        if not arch:
+            arch = get_param(guest, "arch")
+        loader = get_param(guest, "loader")
+
         osblob = ""
         if not isinstall and not ishvm:
             return "<bootloader>%s</bootloader>" % _util.pygrub_path(conn)

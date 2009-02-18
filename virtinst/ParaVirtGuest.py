@@ -24,14 +24,15 @@ from DistroInstaller import DistroInstaller
 from virtinst import _virtinst as _
 
 class ParaVirtGuest(Guest):
-    def __init__(self, type=None, connection=None, hypervisorURI=None, installer=None):
+    def __init__(self, type=None, connection=None, hypervisorURI=None,
+                 installer=None):
         if not installer:
             installer = DistroInstaller(type = type, os_type = "xen")
         Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "xvd"
 
     def _get_osblob(self, install):
-        return self.installer._get_osblob(install, hvm = False, conn = self.conn)
+        return self.installer._get_osblob(self, install)
 
     def _get_input_device(self):
         return ("mouse", "xen")

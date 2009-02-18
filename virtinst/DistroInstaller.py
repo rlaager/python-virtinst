@@ -214,14 +214,12 @@ class DistroInstaller(Installer.Installer):
         else:
             self._prepare_kernel_and_initrd(guest, distro, meter)
 
-    def _get_osblob(self, install, hvm, arch = None, loader = None,
-                    conn = None):
-        if install:
+    def _get_osblob(self, guest, isinstall):
+        if isinstall:
             bootdev = "cdrom"
         else:
             bootdev = "hd"
 
-        return self._get_osblob_helper(isinstall=install, ishvm=hvm,
-                                       arch=arch, loader=loader, conn=conn,
+        return self._get_osblob_helper(isinstall=isinstall, guest=guest,
                                        kernel=self.install, bootdev=bootdev)
 

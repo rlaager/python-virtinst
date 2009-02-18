@@ -24,13 +24,11 @@ class PXEInstaller(Installer.Installer):
     def prepare(self, guest, meter, distro = None):
         pass
 
-    def _get_osblob(self, install, hvm, arch = None, loader = None,
-                    conn = None):
-        if install:
-            bootdev="network"
+    def _get_osblob(self, guest, isinstall):
+        if isinstall:
+            bootdev = "network"
         else:
             bootdev = "hd"
 
-        return self._get_osblob_helper(isinstall=install, ishvm=hvm,
-                                       arch=arch, loader=loader, conn=conn,
+        return self._get_osblob_helper(isinstall=isinstall, guest=guest,
                                        kernel=None, bootdev=bootdev)
