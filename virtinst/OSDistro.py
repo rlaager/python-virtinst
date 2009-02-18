@@ -39,16 +39,17 @@ from ImageFetcher import DirectImageFetcher
 
 def _fetcherForURI(uri, scratchdir=None):
     if uri.startswith("http://"):
-        return HTTPImageFetcher(uri, scratchdir)
+        fclass = HTTPImageFetcher
     elif uri.startswith("ftp://"):
-        return FTPImageFetcher(uri, scratchdir)
+        fclass = FTPImageFetcher
     elif uri.startswith("nfs://"):
-        return MountedImageFetcher(uri, scratchdir)
+        fclass = MountedImageFetcher
     else:
         if os.path.isdir(uri):
-            return DirectImageFetcher(uri, scratchdir)
+            fclass = DirectImageFetcher
         else:
-            return MountedImageFetcher(uri, scratchdir)
+            fclass = MountedImageFetcher
+    return fclass(uri, scratchdir)
 
 def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
                     scratchdir=None):
@@ -66,37 +67,38 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
     # dictionary, so would look like 'fedora9' or 'rhel5', so this needs
     # to be a bit more intelligent
     if distro == "fedora" or distro is None:
-        stores.append(FedoraDistro(baseuri, typ, scratchdir, arch))
+        stores.append(FedoraDistro)
     if distro == "rhel" or distro is None:
-        stores.append(RHELDistro(baseuri, typ, scratchdir, arch))
+        stores.append(RHELDistro)
     if distro == "centos" or distro is None:
-        stores.append(CentOSDistro(baseuri, typ, scratchdir, arch))
+        stores.append(CentOSDistro)
     if distro == "sl" or distro is None:
-        stores.append(SLDistro(baseuri, typ, scratchdir, arch))
+        stores.append(SLDistro)
     if distro == "suse" or distro is None:
-        stores.append(SuseDistro(baseuri, typ, scratchdir, arch))
+        stores.append(SuseDistro)
     if distro == "debian" or distro is None:
-        stores.append(DebianDistro(baseuri, typ, scratchdir, arch))
+        stores.append(DebianDistro)
     if distro == "ubuntu" or distro is None:
-        stores.append(UbuntuDistro(baseuri, typ, scratchdir, arch))
+        stores.append(UbuntuDistro)
     if distro == "mandriva" or distro is None:
-        stores.append(MandrivaDistro(baseuri, typ, scratchdir, arch))
+        stores.append(MandrivaDistro)
     # XXX: this is really "nevada"
     if distro == "solaris" or distro is None:
-        stores.append(SolarisDistro(baseuri, type, scratchdir))
+        stores.append(SolarisDistro)
     if distro == "solaris" or distro is None:
-        stores.append(OpenSolarisDistro(baseuri, type, scratchdir))
+        stores.append(OpenSolarisDistro)
 
-    stores.append(GenericDistro(baseuri, typ, scratchdir, arch))
+    stores.append(GenericDistro)
 
-    for store in stores:
+    for sclass in stores:
+        store = sclass(baseuri, typ, scratchdir, arch)
         if skip_treeinfo:
             store.uses_treeinfo = False
         if store.isValidStore(fetcher, progresscb):
             return store
 
     raise ValueError, _("Could not find an installable distribution at '%s'" %
-                        baseuri) 
+                        baseuri)
 
 
 def _acquireMedia(iskernel, guest, baseuri, progresscb, scratchdir="/var/tmp",
@@ -151,16 +153,17 @@ def distroFromTreeinfo(fetcher, progresscb, uri, vmtype=None,
     fam = treeinfo.get("general", "family")
 
     if re.match(".*Fedora.*", fam):
-        ob = FedoraDistro(uri, vmtype, scratchdir, arch)
+        dclass = FedoraDistro
     elif re.match(".*CentOS.*", fam):
-        ob = CentOSDistro(uri, vmtype, scratchdir, arch)
+        dclass = CentOSDistro
     elif re.match(".*Red Hat Enterprise Linux.*", fam):
-        ob = RHELDistro(uri, vmtype, scratchdir, arch)
+        dclass = RHELDistro
     elif re.match(".*Scientific Linux.*", fam):
-        ob = SLDistro(uri, vmtype, scratchdir, arch)
+        dclass = SLDistro
     else:
-        ob = GenericDistro(uri, vmtype, scratchdir, arch)
+        dclass = GenericDistro
 
+    ob = dclass(uri, vmtype, scratchdir, arch)
     ob.treeinfo = treeinfo
     return ob
 
