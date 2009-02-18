@@ -147,7 +147,7 @@ class CloneDesign(object):
             disk = VirtualDisk(devpath, size=.0000001, conn=self._hyper_conn)
         except Exception, e:
             raise ValueError(_("Could not use path '%s' for cloning: %s") %
-                             str(e))
+                             (devpath, str(e)))
 
         self._clone_virtual_disks.append(disk)
         self._clone_devices.append(devpath)
@@ -392,11 +392,20 @@ class CloneDesign(object):
 
         # Set up virtual disk to encapsulate all relevant path info
         for path in lst:
+            d = None
             try:
-                disks.append(VirtualDisk(path, conn=self._hyper_conn))
+                try:
+                    d = VirtualDisk(path, conn=self._hyper_conn)
+                except:
+                    # Let's specify a size, and see if the error goes away.
+                    # If so, we know the media doesn't exist
+                    d = VirtualDisk(path, conn=self._hyper_conn, size=.0001)
+                    raise ValueError(_("Disk '%s' does not exist.") %
+                                     d.path)
             except Exception, e:
                 raise ValueError(_("Could not determine original disk "
                                    "information: %s" % str(e)))
+            disks.append(d)
 
         return (disks, idx_lst)
 

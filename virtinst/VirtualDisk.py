@@ -554,12 +554,15 @@ class VirtualDisk(VirtualDevice):
             self.set_type(self.TYPE_FILE, validate=False)
 
             # Path doesn't exist: make sure we have write access to dir
-            if not os.access(os.path.dirname(self.path), os.W_OK):
-                raise ValueError, _("No write access to directory '%s'") % \
-                                    os.path.dirname(self.path)
+            if not os.access(os.path.dirname(self.path), os.R_OK):
+                raise ValueError("No read access to directory '%s'" %
+                                 os.path.dirname(self.path))
             if self.size is None:
                 raise ValueError, _("size is required for non-existent disk "
                                     "'%s'" % self.path)
+            if not os.access(os.path.dirname(self.path), os.W_OK):
+                raise ValueError, _("No write access to directory '%s'") % \
+                                    os.path.dirname(self.path)
         else:
             self.__set_dev_type()
 

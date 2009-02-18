@@ -75,17 +75,25 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False):
     if new_diskfiles is None:
         new_diskfiles = [None]
 
-    for i in range(0, len(new_diskfiles)):
-        disk = new_diskfiles[i]
+    newidx = 0
+    for origdev in design.original_devices:
+        failed_loop = False
         while 1:
-            disk = cli.prompt_for_input(_("What would you like to use as the cloned disk (file path)?"), disk)
+            if not failed_loop:
+                if len(new_diskfiles) < newidx:
+                    new_diskfiles.append(None)
+                disk = new_diskfiles[newidx]
+            else:
+                disk = None
+            failed_loop = True
+
+            disk = cli.prompt_for_input(_("What would you like to use as the cloned disk (file path) for '%s'?") % origdev, disk)
 
             # Build disk object for validation
             try:
                 d = virtinst.VirtualDisk(path=disk, size=.0001, conn=conn)
             except ValueError, e:
                 print _("ERROR: "), e
-                disk = None
                 continue
 
             # Prompt if disk file already exists and preserve mode is not used
@@ -93,20 +101,18 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False):
                 warnmsg = _("This will overwrite the existing path "
                             "'%s'!\n") % d.path
                 if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use this disk (yes or no)?")):
-                    disk = None
-                    continue 
+                    continue
 
             # Check disk conflicts
             if d.is_conflict_disk(conn) is True:
                 warnmsg = _("Disk %s is already in use by another guest!\n") % d.path
                 if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the disk (yes or no)? ")):
-                    disk = None
                     continue
-            new_diskfiles[i] = d.path
+
+            design.clone_devices = d.path
+            newidx += 1
             break
 
-    for i in new_diskfiles:
-        design.set_clone_devices(i)
 
 def get_clone_sparse(sparse, design):
     design.set_clone_sparse(sparse)
@@ -200,7 +206,8 @@ def main():
     design = clmgr.CloneDesign(connection=conn)
 
     try:
-        get_clone_diskfile(options.new_diskfile, design, conn, not options.preserve)
+        get_clone_diskfile(options.new_diskfile, design, conn,
+                           not options.preserve)
         get_clone_macaddr(options.new_mac, design)
         get_original_guest(options.original_guest, design)
         get_clone_name(options.new_name, design)
@@ -208,6 +215,13 @@ def main():
         get_clone_sparse(options.sparse, design)
         get_force_target(options.target, design)
         get_preserve(options.preserve, design)
+
+        # This determines the devices that need to be cloned, so that
+        # get_clone_diskfile knows how many new disk paths it needs
+        design.setup_original()
+
+        get_clone_diskfile(options.new_diskfile, design, conn,
+                           not options.preserve)
 
         # setup design object
         design.setup()
