@@ -103,7 +103,7 @@ class FullVirtGuest(Guest):
         return ret + "  </features>"
 
     def _get_osblob(self, install):
-        osblob = self.installer._get_osblob(self, install)
+        osblob = self.installer.get_install_xml(self, install)
         if osblob is None:
             return None
 

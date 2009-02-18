@@ -105,12 +105,14 @@ class Installer(object):
         return self._conn
     conn = property(get_conn)
 
+    # Hypervisor name (qemu, kvm, xen, lxc, etc.)
     def get_type(self):
         return self._type
     def set_type(self, val):
         self._type = val
     type = property(get_type, set_type)
 
+    # Virtualization type ('xen' == xen paravirt, or 'hvm)
     def get_os_type(self):
         return self._os_type
     def set_os_type(self, val):
@@ -185,6 +187,7 @@ class Installer(object):
         self._extraargs = val
     extraargs = property(get_extra_args, set_extra_args)
 
+
     # Private methods
 
     def _get_osblob_helper(self, guest, isinstall, kernel=None, bootdev=None):
@@ -239,6 +242,20 @@ class Installer(object):
 
 
     # Method definitions
+
+    def get_install_xml(self, guest, isinstall):
+        """
+        Generate the portion of the guest xml that determines boot devices
+        and parameters. (typically the <os></os> block)
+
+        @param guest: Guest instance we are installing
+        @type guest: L{Guest}
+        @param isinstall: Whether we want xml for the 'install' phase or the
+                          'post-install' phase.
+        @type isinstall: C{bool}
+        """
+        # Must be implemented in sub class
+        raise NotImplementedError
 
     def cleanup(self):
         """

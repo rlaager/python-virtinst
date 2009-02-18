@@ -40,9 +40,10 @@ URLTEST_ACCESS="TestURLFetch.*Access to a protected member"
 # workaround is required for now
 ACCESS__CONN="Access to a protected member _conn"
 
+# FIXME: These are all bugs
 # There isn't a clean API way to access this functions from the API, but
 # they provide info that is needed. These need need to be fixed.
-PROT_MEM_BUGS="protected member (_get_osblob|_prepare_install|_create_devices|_install_disks)"
+PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_install_disks)"
 
 # Scattered examples of legitimately unused arguments
 UNUSED_ARGS="(SuseDistro|SolarisDistro).isValidStore.*Unused argument 'progresscb'|LiveCDInstaller.prepare.*Unused argument|ImageInstaller.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"

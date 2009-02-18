@@ -24,7 +24,7 @@ class PXEInstaller(Installer.Installer):
     def prepare(self, guest, meter, distro = None):
         pass
 
-    def _get_osblob(self, guest, isinstall):
+    def get_install_xml(self, guest, isinstall):
         if isinstall:
             bootdev = "network"
         else:

@@ -72,10 +72,11 @@ class LiveCDInstaller(Installer.Installer):
             raise ValueError(_("CDROM media must be specified for the live "
                                "CD installer."))
 
-    def _get_osblob(self, guest, isinstall):
+    def get_install_xml(self, guest, isinstall):
         if isinstall:
             # XXX: This seems wrong? If install is True, maybe we should
             # error and say that isn't a valid value for LiveCD?
+            # There is code accomodating this in FullVirtGuest
             return None
 
         return self._get_osblob_helper(isinstall=isinstall, guest=guest,

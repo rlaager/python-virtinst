@@ -131,7 +131,7 @@ class ImageInstaller(Installer.Installer):
 
             guest._install_disks.append(d)
 
-    def _get_osblob(self, guest, isinstall):
+    def get_install_xml(self, guest, isinstall):
 
         kernel = { "kernel" : self.boot_caps.kernel,
                    "initrd" : self.boot_caps.initrd,

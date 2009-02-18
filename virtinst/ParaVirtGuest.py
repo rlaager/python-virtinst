@@ -33,7 +33,7 @@ class ParaVirtGuest(Guest):
         self.disknode = "xvd"
 
     def _get_osblob(self, install):
-        return self.installer._get_osblob(self, install)
+        return self.installer.get_install_xml(self, install)
 
     def _get_input_device(self):
         return ("mouse", "xen")

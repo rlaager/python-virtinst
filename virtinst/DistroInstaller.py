@@ -214,7 +214,7 @@ class DistroInstaller(Installer.Installer):
         else:
             self._prepare_kernel_and_initrd(guest, distro, meter)
 
-    def _get_osblob(self, guest, isinstall):
+    def get_install_xml(self, guest, isinstall):
         if isinstall:
             bootdev = "cdrom"
         else:
