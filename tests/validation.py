@@ -42,6 +42,9 @@ import os
 # we aren't bumping up against errors in that department.
 logging.debug("\n\nStarting 'validation' storage setup.")
 testconn = libvirt.open("test:///default")
+testcaps = virtinst.CapabilitiesParser.parse(testconn.getCapabilities())
+
+virtimage = virtinst.ImageParser.parse_file("tests/image-xml/image.xml")
 
 offdskpaths = [ "/dev", ]
 for path in offdskpaths:
@@ -65,53 +68,53 @@ dirvol = createVol(p, "vol-exist")
 volinst = virtinst.Storage.StorageVolume(pool=p, name="somevol", capacity=1)
 logging.debug("Ending 'validation' storage setup.\n\n")
 
-args = { \
+args = {
 
-'guest' : { \
+'guest' : {
     'name'  : {
         'invalid' : ['123456789', 'im_invalid!', '', 0,
                      'verylongnameverylongnameverylongnamevery'
                      'longnameveryvery'],
         'valid'   : ['Valid_name.01'] },
-    'memory' : { \
+    'memory' : {
         'invalid' : [-1, 0, ''],
         'valid'   : [200, 2000] },
-    'maxmemory' : { \
+    'maxmemory' : {
         'invalid' : [-1, 0, ''],
         'valid'   : [200, 2000], },
-    'uuid'      : { \
+    'uuid'      : {
         'invalid' : [ '', 0, '1234567812345678123456781234567x'],
         'valid'   : ['12345678123456781234567812345678',
                      '12345678-1234-1234-ABCD-ABCDEF123456']},
-    'vcpus'     : { \
+    'vcpus'     : {
         'invalid' : [-1, 0, 1000, ''],
         'valid'   : [ 1, 32 ] },
-    'graphics'  : { \
+    'graphics'  : {
         'invalid' : ['', True, 'unknown', {}, ('', '', '', 0),
                      ('','','', 'longerthan16chars'),
                      ('','','','invalid!!ch@r')],
         'valid'   : [False, 'sdl', 'vnc', (True, 'sdl', '', 'key_map-2'),
                      {'enabled' : True, 'type':'vnc', 'opts':5900} ]},
-    'type'      : { \
+    'type'      : {
         'invalid' : [],
         'valid'   : ['sometype'] },
     'cdrom'     : {
         'invalid' : ['', 0, '/somepath'],
         'valid'   : ['/dev/loop0'] }
-    },
+},
 
-'fvguest'  : { \
-    'os_type'   : { \
+'fvguest'  : {
+    'os_type'   : {
         'invalid' : ['notpresent',0,''],
         'valid'   : ['other', 'windows', 'unix', 'linux']},
-    'os_variant': { \
+    'os_variant': {
         'invalid' : ['', 0, 'invalid'],
         'valid'   : ['rhel5', 'sles10']},
-    },
+},
 
-'disk' : { \
+'disk' : {
     'init_conns' : [ testconn, None ],
-    '__init__' : { \
+    '__init__' : {
         'invalid' : [{ 'path' : 0},
                      { 'path' : '/root' },
                      { 'path' : 'valid', 'size' : None },
@@ -144,50 +147,66 @@ args = { \
                      { 'conn' : testconn, 'volInstall': volinst},
                     ]
                 },
-    'shareable' : {\
+    'shareable' : {
         'invalid': [ None, 1234 ],
         'valid': [ True, False ] },
 },
 
-'installer' : { \
+'installer' : {
     'init_conns' : [ testconn, None ],
-    'boot' : { \
+    'boot' : {
         'invalid' : ['', 0, ('1element'), ['1el', '2el', '3el'],
                      {'1element': '1val'},
                      {'kernel' : 'a', 'wronglabel' : 'b'}],
         'valid'   : [('kern', 'init'), ['kern', 'init'],
                      { 'kernel' : 'a', 'initrd' : 'b'}]},
-    'extraargs' : { \
+    'extraargs' : {
         'invalid' : [],
-        'valid'   : ['someargs']}, },
+        'valid'   : ['someargs']},
+},
 
-'distroinstaller' : { \
+'distroinstaller' : {
     'init_conns' : [ testconn, None ],
-    'location'  : { \
+    'location'  : {
         'invalid' : ['nogood', 'http:/nogood', [], None,
                      ("pool-noexist", "vol-exist"),
                      ("pool-exist", "vol-noexist"),
                     ],
         'valid'   : ['/dev/null', 'http://web', 'ftp://ftp', 'nfs:nfsserv',
                      ("pool-exist", "vol-exist"),
-                    ]}},
+                    ]}
+},
 
-'livecdinstaller' : { \
+'livecdinstaller' : {
     'init_conns' : [ testconn, None ],
-    'location'  : { \
+    'location'  : {
         'invalid' : ['path-noexist',
                      ("pool-noexist", "vol-exist"),
                      ("pool-exist", "vol-noexist"),
                     ],
         'valid'   : ['/dev/null', ("pool-exist", "vol-exist"),
-                    ]}},
+                    ]}
+},
 
-'network'   : { \
+'imageinstaller' : {
+    '__init__' : {
+        'invalid' : \
+            [{'image' : virtimage, 'capabilities': testcaps, 'boot_index': 5},
+             {'image' : virtimage, 'capabilities': "foo"},],
+        'valid'   : \
+            [{'image' : virtimage, 'capabilities': testcaps, 'boot_index': 1},
+            {'image' : virtimage },
+            {'image' : virtimage, 'capabilities': testcaps, 'conn': None},],
+    }
+},
+
+'network'   : {
     'init_conns' : [ testconn, None ],
-    '__init__'  : { \
+    '__init__'  : {
         'invalid' : [ {'macaddr':0}, {'macaddr':''}, {'macaddr':'$%XD'},
                       {'type':'network'} ],
-        'valid'   : []} },
+        'valid'   : []}
+},
 
 'clonedesign' : {
     'original_guest' :{
@@ -200,8 +219,10 @@ args = { \
                     'valid'   : ['12345678123456781234567812345678']},
     'clone_mac' : { 'invalid' : ['badformat'],
                     'valid'   : ['AA:BB:CC:DD:EE:FF']},
-    'clone_bs'  : { 'invalid' : [], 'valid'   : ['valid']}}
-}
+    'clone_bs'  : { 'invalid' : [], 'valid'   : ['valid']}
+},
+
+} # End of validation dict
 
 class TestValidation(unittest.TestCase):
 
@@ -231,10 +252,7 @@ class TestValidation(unittest.TestCase):
 
         except AssertionError:
             raise
-        except ValueError:
-            # This is an expected error
-            pass
-        except TypeError:
+        except (TypeError, ValueError):
             # This is an expected error
             pass
         except Exception, e:
@@ -360,6 +378,13 @@ class TestValidation(unittest.TestCase):
                            exception_check)
             self._testArgs(dinstall, virtinst.LiveCDInstaller, label,
                            exception_check)
+
+    def testImageInstaller(self):
+        label = 'imageinstaller'
+        inst_obj = virtinst.ImageInstaller(image=virtimage,
+                                           capabilities=testcaps)
+        #self._testArgs(inst_obj, virtinst.ImageInstaller, 'installer')
+        self._testArgs(inst_obj, virtinst.ImageInstaller, label)
 
     def testCloneManager(self):
         label = 'clonedesign'

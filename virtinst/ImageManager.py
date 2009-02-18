@@ -33,21 +33,37 @@ class ImageInstallerException(Exception):
 
 class ImageInstaller(Installer.Installer):
     """Installer for image-based guests"""
-    def __init__(self, image, capabilities, boot_index = None):
-        Installer.Installer.__init__(self)
+    def __init__(self, image, capabilities=None, boot_index=None, conn=None):
+        Installer.Installer.__init__(self, conn=conn)
 
         self._arch = None
-        self._capabilities = capabilities
         self._image = image
 
+        # Set capabilities
+        if self.conn:
+            self._capabilities = Cap.parse(self.conn.getCapabilities())
+        elif capabilities:
+            if not isinstance(capabilities, Cap.Capabilities):
+                raise ValueError(_("'capabilities' must be a "
+                                   "Capabilities instance."))
+            self._capabilities = capabilities
+        else:
+            raise ValueError(_("'conn' or 'capabilities' must be specified."))
+
+        # Set boot _boot_caps/_boot_parameters
         if boot_index is None:
             self._boot_caps = match_boots(self._capabilities,
                                      self.image.domain.boots)
             if self._boot_caps is None:
-                raise ImageInstallerException(_("Could not find suitable boot descriptor for this host"))
+                raise ImageInstallerException(_("Could not find suitable boot "
+                                                "descriptor for this host"))
         else:
+            if (boot_index < 0 or
+                (boot_index + 1) > len(image.domain.boots)):
+                raise ValueError(_("boot_index out of range."))
             self._boot_caps = image.domain.boots[boot_index]
 
+        # Set up internal caps.guest object
         self._guest = self._capabilities.guestForOSType(self.boot_caps.type,
                                                         self.boot_caps.arch)
         if self._guest is None:

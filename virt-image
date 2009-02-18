@@ -187,10 +187,6 @@ def main():
         image = virtinst.ImageParser.parse_file(options.image)
     except virtinst.ImageParser.ParserException, msg:
         fail( "%s '%s': %s" % (_("Cannot parse"),  options.image, msg))
-    try:
-        capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
-    except virtinst.CapabilitiesParser.CapabilitiesParserException, msg:
-        fail( "%s : %s" % (_("Cannot parse capabilities"),  msg))
 
     if options.boot is not None:
         nboots = len(image.domain.boots)
@@ -199,7 +195,7 @@ def main():
 
     installer = virtinst.ImageInstaller(boot_index = options.boot,
                                         image = image,
-                                        capabilities = capabilities)
+                                        conn = conn)
 
     if installer.is_hvm():
         guestclass = virtinst.FullVirtGuest
