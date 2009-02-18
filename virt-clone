@@ -80,7 +80,7 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False):
         failed_loop = False
         while 1:
             if not failed_loop:
-                if len(new_diskfiles) < newidx:
+                if len(new_diskfiles) <= newidx:
                     new_diskfiles.append(None)
                 disk = new_diskfiles[newidx]
             else:
