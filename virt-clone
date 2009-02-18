@@ -216,6 +216,7 @@ def main():
         meter = progress.TextMeter()
         clmgr.start_duplicate(design, meter)
 
+        print _("\nClone '%s' created successfully.") % design.clone_name
         logging.debug("end clone")
     except RuntimeError, e:
         fail(e)
