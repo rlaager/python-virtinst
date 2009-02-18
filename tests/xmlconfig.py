@@ -20,6 +20,7 @@ import libvirt
 import urlgrabber.progress as progress
 
 import virtinst
+from virtinst import VirtualDisk
 import tests
 
 def get_basic_paravirt_guest():
@@ -51,6 +52,12 @@ def get_basic_fullyvirt_guest():
     g.vcpus = 5
     return g
 
+def get_filedisk(path="/tmp/test.img"):
+    return VirtualDisk(path, size=.0001)
+
+def get_blkdisk():
+    return VirtualDisk("/dev/loop0")
+
 class TestXMLConfig(unittest.TestCase):
 
     def _compare(self, xenguest, filebase, install):
@@ -69,56 +76,62 @@ class TestXMLConfig(unittest.TestCase):
 
     def testBootParavirtDiskFile(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(get_filedisk())
         self._compare(g, "boot-paravirt-disk-file", False)
 
     def testBootParavirtDiskBlock(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK))
+        g.disks.append(get_blkdisk())
         self._compare(g, "boot-paravirt-disk-block", False)
 
     def testBootParavirtDiskDrvPhy(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_PHY))
+        disk = get_blkdisk()
+        disk.driver_name = VirtualDisk.DRIVER_PHY
+        g.disks.append(disk)
         self._compare(g, "boot-paravirt-disk-drv-phy", False)
 
     def testBootParavirtDiskDrvFile(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_FILE,size=5))
+        disk = get_filedisk()
+        disk.driver_name = VirtualDisk.DRIVER_FILE
+        g.disks.append(disk)
         self._compare(g, "boot-paravirt-disk-drv-file", False)
 
     def testBootParavirtDiskDrvTap(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_TAP,size=5))
+        disk = get_filedisk()
+        disk.driver_name = VirtualDisk.DRIVER_TAP
+        g.disks.append(disk)
         self._compare(g, "boot-paravirt-disk-drv-tap", False)
 
     def testBootParavirtDiskDrvTapQCow(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_TAP, \
-                                       driverType = virtinst.VirtualDisk.DRIVER_TAP_QCOW,size=5))
+        disk = get_filedisk()
+        disk.driver_name = VirtualDisk.DRIVER_TAP
+        disk.driver_type = VirtualDisk.DRIVER_TAP_QCOW
+        g.disks.append(disk)
         self._compare(g, "boot-paravirt-disk-drv-tap-qcow", False)
 
     def testBootParavirtManyDisks(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test1.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
-        g.disks.append(virtinst.VirtualDisk("/tmp/test2.img", type=virtinst.VirtualDisk.TYPE_FILE, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_TAP, \
-                                       driverType = virtinst.VirtualDisk.DRIVER_TAP_QCOW,size=5))
-        g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK))
+        disk = get_filedisk("/tmp/test2.img")
+        disk.driver_name = VirtualDisk.DRIVER_TAP
+        disk.driver_type = VirtualDisk.DRIVER_TAP_QCOW
+
+        g.disks.append(get_filedisk("/tmp/test1.img"))
+        g.disks.append(disk)
+        g.disks.append(get_blkdisk())
         self._compare(g, "boot-paravirt-many-disks", False)
 
     def testBootFullyvirtDiskFile(self):
         g = get_basic_fullyvirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(get_filedisk())
         self._compare(g, "boot-fullyvirt-disk-file", False)
 
     def testBootFullyvirtDiskBlock(self):
         g = get_basic_fullyvirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK))
+        g.disks.append(get_blkdisk())
         self._compare(g, "boot-fullyvirt-disk-block", False)
 
 
@@ -126,71 +139,80 @@ class TestXMLConfig(unittest.TestCase):
 
     def testInstallParavirtDiskFile(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(get_filedisk())
         self._compare(g, "install-paravirt-disk-file", True)
 
     def testInstallParavirtDiskBlock(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK))
+        g.disks.append(get_blkdisk())
         self._compare(g, "install-paravirt-disk-block", True)
 
     def testInstallParavirtDiskDrvPhy(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_PHY))
+        disk = get_blkdisk()
+        disk.driver_name = VirtualDisk.DRIVER_PHY
+        g.disks.append(disk)
         self._compare(g, "install-paravirt-disk-drv-phy", True)
 
     def testInstallParavirtDiskDrvFile(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_FILE,size=5))
+        disk = get_filedisk()
+        disk.driver_name = VirtualDisk.DRIVER_FILE
+        g.disks.append(disk)
         self._compare(g, "install-paravirt-disk-drv-file", True)
 
     def testInstallParavirtDiskDrvTap(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_TAP,size=5))
+        disk = get_filedisk()
+        disk.driver_name = VirtualDisk.DRIVER_TAP
+        g.disks.append(disk)
         self._compare(g, "install-paravirt-disk-drv-tap", True)
 
     def testInstallParavirtDiskDrvTapQCow(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_TAP, \
-                                       driverType = virtinst.VirtualDisk.DRIVER_TAP_QCOW,size=5))
+        disk = get_filedisk()
+        disk.driver_name = VirtualDisk.DRIVER_TAP
+        disk.driver_type = VirtualDisk.DRIVER_TAP_QCOW
+        g.disks.append(disk)
         self._compare(g, "install-paravirt-disk-drv-tap-qcow", True)
 
     def testInstallParavirtManyDisks(self):
         g = get_basic_paravirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test1.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
-        g.disks.append(virtinst.VirtualDisk("/tmp/test2.img", type=virtinst.VirtualDisk.TYPE_FILE, \
-                                       driverName = virtinst.VirtualDisk.DRIVER_TAP, \
-                                       driverType = virtinst.VirtualDisk.DRIVER_TAP_QCOW,size=5))
-        g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK))
+        disk = get_filedisk("/tmp/test2.img")
+        disk.driver_name = VirtualDisk.DRIVER_TAP
+        disk.driver_type = VirtualDisk.DRIVER_TAP_QCOW
+
+        g.disks.append(get_filedisk("/tmp/test1.img"))
+        g.disks.append(disk)
+        g.disks.append(get_blkdisk())
         self._compare(g, "install-paravirt-many-disks", True)
 
     def testInstallFullyvirtDiskFile(self):
         g = get_basic_fullyvirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/test.img", type=virtinst.VirtualDisk.TYPE_FILE,size=5))
+        g.disks.append(get_filedisk())
         self._compare(g, "install-fullyvirt-disk-file", True)
 
     def testInstallFullyvirtDiskBlock(self):
         g = get_basic_fullyvirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/dev/loop0", type=virtinst.VirtualDisk.TYPE_BLOCK))
+        g.disks.append(get_blkdisk())
         self._compare(g, "install-fullyvirt-disk-block", True)
 
     def testInstallFVPXE(self):
         g = get_basic_fullyvirt_guest()
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm", conn=g.conn)
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
         self._compare(g, "install-fullyvirt-pxe", True)
 
     def testInstallFVLiveCD(self):
         g = get_basic_fullyvirt_guest()
-        g.installer = virtinst.LiveCDInstaller(type="xen", os_type="hvm", conn=g.conn, location="/dev/loop0")
+        g.installer = virtinst.LiveCDInstaller(type="xen", os_type="hvm",
+                                               conn=g.conn,
+                                               location="/dev/loop0")
         self._compare(g, "install-fullyvirt-livecd", False)
 
     def testXMLEscaping(self):
         g = get_basic_fullyvirt_guest()
-        g.disks.append(virtinst.VirtualDisk("/tmp/ISO&'&s", type=virtinst.VirtualDisk.TYPE_FILE, size=5))
+        g.disks.append(get_filedisk("/tmp/ISO&'&s"))
         self._compare(g, "misc-xml-escaping", True)
 
 
