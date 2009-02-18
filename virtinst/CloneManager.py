@@ -557,7 +557,7 @@ def _do_duplicate(design, meter):
         src_path = src_dev.path
         dst_dev = dst_dev_iter.next()
         dst_path = dst_dev.path
-        dst_siz = dst_siz_iter.next()
+        dst_siz = int(dst_siz_iter.next() * 1024 * 1024 * 1024)
 
         clone_type = clone_type_dict[src_path]
 
@@ -569,9 +569,9 @@ def _do_duplicate(design, meter):
             logging.debug("Source and destination are the same. Skipping.")
             continue
 
-        meter.start(size=dst_siz,
-                    text=_("Cloning from %(src)s to %(dst)s...") %
-                    {'src' : src_path, 'dst' : dst_path})
+        if meter:
+            meter.start(size=dst_siz,
+                        text=_("Cloning %(srcfile)s") % {'srcfile' : src_path})
 
         if clone_type == IS_LOCAL:
             _local_clone(src_path, dst_path, dst_siz, design, meter)
@@ -579,7 +579,8 @@ def _do_duplicate(design, meter):
         elif clone_type == IS_VDISK:
             if not _vdisk_clone(src_path, dst_path):
                 raise RuntimeError, _("failed to clone disk")
-            meter.end(dst_siz)
+            if meter:
+                meter.end(dst_siz)
 
 
 def _local_clone(src_dev, dst_dev, dst_siz, design, meter=None):
