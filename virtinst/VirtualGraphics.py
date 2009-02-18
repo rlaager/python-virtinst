@@ -18,6 +18,7 @@
 # MA 02110-1301 USA.
 
 import re
+import os
 
 import _util
 import VirtualDevice
@@ -35,6 +36,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
         if type != self.TYPE_VNC and type != self.TYPE_SDL:
             raise ValueError(_("Unknown graphics type"))
+
         self._type   = type
         self.set_port(port)
         self.set_keymap(keymap)
@@ -98,9 +100,19 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
         return sort_list
 
+    def _sdl_config(self):
+        if not os.environ.has_key("DISPLAY"):
+            raise RuntimeError("No DISPLAY environment variable set.")
+
+        disp  = os.environ["DISPLAY"]
+        xauth = os.path.expanduser("~/.Xauthority")
+
+        return """    <graphics type='sdl' display='%s' xauth='%s'/>""" % \
+               (disp, xauth)
+
     def get_xml_config(self):
         if self._type == self.TYPE_SDL:
-            return "    <graphics type='sdl'/>"
+            return self._sdl_config()
         keymapxml = ""
         listenxml = ""
         passwdxml = ""

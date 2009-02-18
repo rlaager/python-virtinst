@@ -34,6 +34,10 @@ else:
     rootLogger.setLevel(logging.ERROR)
     debug = False
 
+# Used to ensure consistent SDL xml output
+os.environ["HOME"] = "/testdir"
+os.environ["DISPLAY"] = ":3.4"
+
 # Register libvirt handler
 def libvirt_callback(ignore, err):
     logging.warn("libvirt errmsg: %s" % err[2])

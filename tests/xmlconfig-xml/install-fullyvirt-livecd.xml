@@ -25,6 +25,6 @@
       <readonly/>
     </disk>
     <input type='mouse' bus='ps2'/>
-    <graphics type='sdl'/>
+    <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
   </devices>
 </domain>

@@ -20,6 +20,6 @@
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <console type='pty'/>
     <input type='mouse' bus='ps2'/>
-    <graphics type='sdl'/>
+    <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
   </devices>
 </domain>
