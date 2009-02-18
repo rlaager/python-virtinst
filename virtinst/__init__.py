@@ -25,6 +25,7 @@ def _virtinst(msg):
     return gettext.dgettext(gettext_app, msg)
 
 import util
+import Storage
 from Guest import Guest, XenGuest
 from VirtualNetworkInterface import VirtualNetworkInterface, \
                                     XenNetworkInterface
@@ -46,4 +47,4 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "XenNetworkInterface", "VirtualGraphics", "VirtualAudio",
            "VirtualDisk", "XenDisk", "FullVirtGuest", "ParaVirtGuest",
            "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
-           "ImageInstaller", "CloneDesign", "User", "util"]
+           "ImageInstaller", "CloneDesign", "Storage", "User", "util"]
