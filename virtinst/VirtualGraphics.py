@@ -38,6 +38,11 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
             raise ValueError(_("Unknown graphics type"))
 
         self._type   = type
+        self._port = None
+        self._listen = None
+        self._passwd = None
+        self._keymap = None
+
         self.set_port(port)
         self.set_keymap(keymap)
         self.set_listen(listen)

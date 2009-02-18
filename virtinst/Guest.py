@@ -110,13 +110,12 @@ class Guest(object):
         self._installer = val
     installer = property(get_installer, set_installer)
 
-
+    # Hypervisor name (qemu, xen, kvm, etc.)
     def get_type(self):
         return self._installer.type
     def set_type(self, val):
         self._installer.type = val
     type = property(get_type, set_type)
-
 
     # Domain name of the guest
     def get_name(self):
@@ -254,6 +253,7 @@ class Guest(object):
     arch = property(get_arch, set_arch)
 
     # DEPRECATED PROPERTIES
+
     # Deprecated: Should set graphics_dev.keymap directly
     def get_keymap(self):
         if self._graphics_dev is None:

@@ -27,6 +27,8 @@ class VirtualAudio(VirtualDevice.VirtualDevice):
     def __init__(self, model, conn=None):
         VirtualDevice.VirtualDevice.__init__(self, conn)
 
+        self._model = None
+
         self.model = model
 
     def get_model(self):

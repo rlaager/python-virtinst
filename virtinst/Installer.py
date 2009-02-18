@@ -59,6 +59,7 @@ class Installer(object):
     """
     def __init__(self, type = "xen", location = None, boot = None,
                  extraargs = None, os_type = None, conn = None):
+        self._type = None
         self._location = None
         self._extraargs = None
         self._boot = None

@@ -47,6 +47,10 @@ PROT_MEM_BUGS="protected member (_get_osblob|_prepare_install|_create_devices|_i
 # Scattered examples of legitimately unused arguments
 UNUSED_ARGS="(SuseDistro|SolarisDistro).isValidStore.*Unused argument 'progresscb'|LiveCDInstaller.prepare.*Unused argument|ImageInstaller.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"
 
+# Outside __init__ checks throw false positives with distutils custom commands
+# tests.storage also invokes false positives using hasattr
+OUTSIDE_INIT="(.*Test.*|.*createPool.*)outside __init__"
+
 # We use some hacks in the test driver to simulate remote libvirt URIs
 TEST_HACKS="TestClone.*protected member _util"
 
@@ -68,17 +72,19 @@ addmsg "C0302"  # C0302: Too many lines in module
 addmsg "W0105"  # W0105: String statement has no effect
 addmsg "W0141"  # W0141: Complaining about 'map' and 'filter'
 addmsg "W0142"  # W0142: Use of * or **
-addmsg "W0201"  # W0201: Defined outside __init__
-addmsg "W0403"  # W0403: Relative imports
-addmsg "W0511"  # W0511: FIXME and XXX: messages (useful in the future)
 addmsg "W0603"  # W0603: Using the global statement
-addmsg "W0702"  # W0702: No exception type specified
 addmsg "W0703"  # W0703: Catch 'Exception'
 addmsg "W0704"  # W0704: Exception doesn't do anything
+addmsg "W0702"  # W0702: No exception type specified
+addmsg "R0201"  # R0201: Method could be a function
+
+# Possibly useful at some point
+#addmsg "W0201"  # W0201: Defined outside __init__
+addmsg "W0403"  # W0403: Relative imports
+addmsg "W0511"  # W0511: FIXME and XXX: messages (useful in the future)
 addmsg "C0322"  # C0322: *Operator not preceded by a space*
 addmsg "C0323"  # C0323: *Operator not followed by a space*
 addmsg "C0324"  # C0324: *Comma not followed by a space*
-addmsg "R0201"  # R0201: Method could be a function
 
 # Disabled Checkers:
 addchecker "Design"         # Things like "Too many func arguments",
@@ -105,7 +111,8 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$URLTEST_ACCESS" \
         -ve "$UNUSED_ARGS" \
         -ve "$TEST_HACKS" \
-        -ve "$PROT_MEM_BUGS" | \
+        -ve "$PROT_MEM_BUGS" \
+        -ve "$OUTSIDE_INIT" | \
   $AWK '\
 # Strip out any "*** Module name" lines if we dont list any errors for them
 BEGIN { found=0; cur_line="" }

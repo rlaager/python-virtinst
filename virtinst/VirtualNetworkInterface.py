@@ -45,6 +45,9 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             if form is None:
                 raise ValueError, \
                     _("MAC address must be of the format AA:BB:CC:DD:EE:FF")
+
+        self._network = None
+
         self.macaddr = macaddr
         self.type = type
         self.bridge = bridge

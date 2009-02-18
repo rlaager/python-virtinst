@@ -35,8 +35,11 @@ class ImageInstaller(Installer.Installer):
     """Installer for image-based guests"""
     def __init__(self, image, capabilities, boot_index = None):
         Installer.Installer.__init__(self)
+
+        self._arch = None
         self._capabilities = capabilities
         self._image = image
+
         if boot_index is None:
             self._boot_caps = match_boots(self._capabilities,
                                      self.image.domain.boots)

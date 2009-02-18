@@ -86,6 +86,7 @@ class StorageObject(object):
             raise ValueError, _("Unknown storage object type: %s") % type
         self._object_type = object_type
         self._conn = None
+        self._name = None
         if conn is not None:
             self.conn = conn
 
@@ -262,6 +263,11 @@ class StoragePool(StorageObject):
         if type not in self.get_pool_types():
             raise ValueError, _("Unknown storage pool type: %s" % type)
         self._type = type
+        self._target_path = None
+        self._host = None
+        self._format = None
+        self._source_path = None
+
         if target_path is None:
             target_path = self._get_default_target_path()
         self.target_path = target_path
@@ -700,12 +706,16 @@ class StorageVolume(StorageObject):
                 raise ValueError(_("'conn' must be specified with 'pool_name'"))
             pool = StorageVolume.lookup_pool_by_name(pool_name=pool_name,
                                                      conn=conn)
+        self._pool = None
+
         self.pool = pool
 
         StorageObject.__init__(self, object_type=StorageObject.TYPE_VOLUME,
                                name=name, conn=self.pool._conn)
         self._allocation = None
         self._capacity = None
+        self._format = None
+
         self.allocation = allocation
         self.capacity = capacity
 
