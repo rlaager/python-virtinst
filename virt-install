@@ -547,8 +547,8 @@ def main():
     else:
         ishvm = False
 
-    hv_type = capsguest.bestDomainType(options.accelerate).hypervisor_type
-    logging.debug("Hypervisor type is '%s'" % hv_type)
+    hv_name = capsguest.bestDomainType(options.accelerate).hypervisor_type
+    logging.debug("Hypervisor name is '%s'" % hv_name)
 
     if options.livecd:
         instclass = virtinst.LiveCDInstaller
@@ -559,13 +559,14 @@ def main():
         instclass = virtinst.PXEInstaller
     else:
         instclass = virtinst.DistroInstaller
-    installer = instclass(type=hv_type, os_type=virt_type, conn=conn)
+    installer = instclass(type=hv_name, os_type=virt_type, conn=conn)
 
     if ishvm:
-        guest = virtinst.FullVirtGuest(connection=conn, installer=installer,
-                                       arch=capsguest.arch)
+        guestclass = virtinst.FullVirtGuest
     else:
-        guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
+        guestclass = virtinst.ParaVirtGuest
+    guest = guestclass(connection=conn, installer=installer)
+    guest.arch = capsguest.arch
 
     # now let's get some of the common questions out of the way
     cli.get_name(options.name, guest)

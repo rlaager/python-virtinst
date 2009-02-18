@@ -202,9 +202,11 @@ def main():
                                         capabilities = capabilities)
 
     if installer.is_hvm():
-        guest = virtinst.FullVirtGuest(connection=conn, installer=installer, arch=installer.arch)
+        guestclass = virtinst.FullVirtGuest
     else:
-        guest = virtinst.ParaVirtGuest(connection=conn, installer=installer)
+        guestclass = virtinst.ParaVirtGuest
+    guest = guestclass(connection=conn, installer=installer)
+    guest.arch = installer.arch
 
     # now let's get some of the common questions out of the way
     get_name(options.name, image.name, guest)

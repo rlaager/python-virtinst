@@ -19,12 +19,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import os
 import _util
 import DistroInstaller
 import logging
 import time
-import platform
 
 from Guest import Guest
 from VirtualDisk import VirtualDisk
@@ -42,11 +40,11 @@ class FullVirtGuest(Guest):
         self.disknode = "hd"
         self.features = { "acpi": None, "pae":
             _util.is_pae_capable(self.conn), "apic": None }
-        if arch is None:
-            arch = platform.machine()
-        self.arch = arch
 
         self.emulator = emulator
+        if arch:
+            self.arch = arch
+
         self.loader = None
         guest = self._caps.guestForOSType(type=self.installer.os_type,
                                           arch=self.arch)
@@ -59,7 +57,7 @@ class FullVirtGuest(Guest):
         # Fall back to default hardcoding
         if self.emulator is None:
             if self.type == "xen":
-                if os.uname()[4] in ("x86_64"):
+                if self._caps.host.arch in ("x86_64"):
                     self.emulator = "/usr/lib64/xen/bin/qemu-dm"
                 else:
                     self.emulator = "/usr/lib/xen/bin/qemu-dm"

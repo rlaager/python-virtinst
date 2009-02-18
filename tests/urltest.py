@@ -331,7 +331,7 @@ class TestURLFetch(unittest.TestCase):
             try:
                 return OSDistro._storeForDistro(fetcher=fetcher, baseuri=url,
                                                 progresscb=self.meter,
-                                                typ=_type, arch=arch)
+                                                arch=arch, typ=_type)
             except Exception, e:
                 if str(e).count("502"):
                     logging.debug("Caught proxy error: %s" % str(e))

@@ -147,14 +147,10 @@ class DistroInstaller(Installer.Installer):
     def _prepare_cdrom(self, guest, distro, meter):
         if not self._location_is_path:
             # Xen needs a boot.iso if its a http://, ftp://, or nfs: url
-            arch = os.uname()[4]
-            if hasattr(guest, "arch"):
-                arch = guest.arch
             cdrom = OSDistro.acquireBootDisk(self.location,
-                                             meter,
+                                             meter, guest.arch,
                                              scratchdir = self.scratchdir,
-                                             distro = distro,
-                                             arch = arch)
+                                             distro = distro)
             self._tmpfiles.append(cdrom)
 
         self._install_disk = VirtualDisk(path=self.location,
@@ -173,13 +169,10 @@ class DistroInstaller(Installer.Installer):
         else:
             # Need to fetch the kernel & initrd from a remote site, or
             # out of a loopback mounted disk image/device
-            arch = os.uname()[4]
-            if hasattr(guest, "arch"):
-                arch = guest.arch
 
             (kernelfn, initrdfn, args), os_type = OSDistro.acquireKernel(guest,
-                self.location, meter, scratchdir=self.scratchdir,
-                type=self.os_type, distro=distro, arch=arch)
+                self.location, meter, guest.arch, scratchdir=self.scratchdir,
+                type=self.os_type, distro=distro)
 
             guest.os_type = os_type
             self.install["kernel"] = kernelfn

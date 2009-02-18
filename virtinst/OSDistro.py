@@ -24,7 +24,6 @@ import os
 import gzip
 import re
 import tempfile
-import platform
 import socket
 import ConfigParser
 
@@ -58,7 +57,7 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
     logging.debug("Attempting to detect distro:")
 
     dist = virtinst.OSDistro.distroFromTreeinfo(fetcher, progresscb, baseuri,
-                                                typ, scratchdir, arch)
+                                                arch, typ, scratchdir)
     if dist:
         return dist
     skip_treeinfo = True
@@ -91,7 +90,7 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
     stores.append(GenericDistro)
 
     for sclass in stores:
-        store = sclass(baseuri, typ, scratchdir, arch)
+        store = sclass(baseuri, arch, typ, scratchdir)
         if skip_treeinfo:
             store.uses_treeinfo = False
         if store.isValidStore(fetcher, progresscb):
@@ -101,8 +100,8 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
                         baseuri)
 
 
-def _acquireMedia(iskernel, guest, baseuri, progresscb, scratchdir="/var/tmp",
-                  _type=None, distro=None, arch=None):
+def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
+                  scratchdir="/var/tmp", _type=None, distro=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
 
     try:
@@ -126,18 +125,18 @@ def _acquireMedia(iskernel, guest, baseuri, progresscb, scratchdir="/var/tmp",
 # Helper method to lookup install media distro and fetch an install kernel
 def acquireKernel(guest, baseuri, progresscb, scratchdir="/var/tmp", type=None,
                   distro=None, arch=None):
-    return _acquireMedia(True, guest, baseuri, progresscb, scratchdir, type,
-                         distro, arch)
+    return _acquireMedia(True, guest, baseuri, progresscb, arch,
+                         scratchdir, type, distro)
 
 # Helper method to lookup install media distro and fetch a boot iso
 def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
                     distro=None, arch=None):
-    return _acquireMedia(False, None, baseuri, progresscb, scratchdir, type,
-                         distro, arch)
+    return _acquireMedia(False, None, baseuri, progresscb, arch,
+                         scratchdir, type, distro)
 
 
-def distroFromTreeinfo(fetcher, progresscb, uri, vmtype=None,
-                       scratchdir=None, arch=None):
+def distroFromTreeinfo(fetcher, progresscb, uri, arch, vmtype=None,
+                       scratchdir=None):
     # Parse treeinfo 'family' field, and return the associated Distro class
     # None if no treeinfo, GenericDistro if unknown family type.
     if not fetcher.hasFile(".treeinfo"):
@@ -163,7 +162,7 @@ def distroFromTreeinfo(fetcher, progresscb, uri, vmtype=None,
     else:
         dclass = GenericDistro
 
-    ob = dclass(uri, vmtype, scratchdir, arch)
+    ob = dclass(uri, arch, vmtype, scratchdir)
     ob.treeinfo = treeinfo
     return ob
 
@@ -178,12 +177,10 @@ class Distro:
     _xen_kernel_paths = []
     uses_treeinfo = False
 
-    def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
+    def __init__(self, uri, arch, vmtype=None, scratchdir=None):
         self.uri = uri
         self.type = vmtype
         self.scratchdir = scratchdir
-        if arch == None:
-            arch = platform.machine()
         self.arch = arch
         self.treeinfo = None
 
@@ -484,8 +481,8 @@ class SuseDistro(Distro):
     _hvm_kernel_paths = []
     _xen_kernel_paths = []
 
-    def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
-        Distro.__init__(self, uri, vmtype, scratchdir, arch)
+    def __init__(self, arch, uri, vmtype=None, scratchdir=None):
+        Distro.__init__(self, arch, uri, vmtype, scratchdir)
         if re.match(r'i[4-9]86', arch):
             self.arch = 'i386'
 
@@ -711,8 +708,8 @@ class DebianDistro(Distro):
     name = "Debian"
     os_type = "linux"
 
-    def __init__(self, uri, vmtype=None, scratchdir=None, arch=None):
-        Distro.__init__(self, uri, vmtype, scratchdir, arch)
+    def __init__(self, uri, arch, vmtype=None, scratchdir=None):
+        Distro.__init__(self, arch, uri, vmtype, scratchdir)
         if uri.count("installer-i386"):
             self._treeArch = "i386"
         elif uri.count("installer-amd64"):

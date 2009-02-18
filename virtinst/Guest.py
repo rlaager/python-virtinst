@@ -83,7 +83,12 @@ class Guest(object):
         self._install_disks = []
         self._install_nics = []
 
+        # The libvirt virDomain object we 'Create'
         self.domain = None
+
+        # Default disk target prefix ('hd' or 'xvd'). Set in subclass
+        self.disknode = None
+
         self.conn = connection
         if self.conn == None:
             logging.debug("No conn passed to Guest, opening URI '%s'" % \
@@ -92,9 +97,12 @@ class Guest(object):
         if self.conn == None:
             raise RuntimeError, _("Unable to connect to hypervisor, aborting "
                                   "installation!")
+
         self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
 
-        self.disknode = None # this needs to be set in the subclass
+        # FIXME: Better solution? Skip validating this since we may not be
+        # able to install a VM of the host arch
+        self._arch = self._caps.host.arch
 
     def get_installer(self):
         return self._installer
@@ -237,6 +245,13 @@ class Guest(object):
             raise ValueError, _("Unknown OS variant '%s'" % val)
     os_variant = property(get_os_variant, set_os_variant)
 
+    def get_arch(self):
+        return self._arch
+    def set_arch(self, val):
+        # XXX: Sanitize to a consisten value (i368 -> i686)
+        # XXX: Validate against caps
+        self._arch = val
+    arch = property(get_arch, set_arch)
 
     # DEPRECATED PROPERTIES
     # Deprecated: Should set graphics_dev.keymap directly
