@@ -121,13 +121,7 @@ class Guest(object):
     def get_name(self):
         return self._name
     def set_name(self, val):
-        if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
-            raise ValueError, _("System name must be a string greater than 0 and no more than 50 characters")
-        if re.match("^[0-9]+$", val):
-            raise ValueError, _("System name must not be only numeric characters")
-        if re.match("^[A-Za-z0-9_.:/+-]+$", val) == None:
-            raise ValueError, _("System name can only contain: alphanumeric "
-                                "'_', '.', ':', '+', or '-' characters")
+        _util.validate_name(_("Guest"), val)
         self._name = val
     name = property(get_name, set_name)
 
@@ -137,7 +131,8 @@ class Guest(object):
         return self._memory
     def set_memory(self, val):
         if (type(val) is not type(1) or val <= 0):
-            raise ValueError, _("Memory value must be an integer greater than 0")
+            raise ValueError, _("Memory value must be an integer greater "
+                                "than 0")
         self._memory = val
         if self._maxmemory is None or self._maxmemory < val:
             self._maxmemory = val
@@ -148,7 +143,8 @@ class Guest(object):
         return self._maxmemory
     def set_maxmemory(self, val):
         if (type(val) is not type(1) or val <= 0):
-            raise ValueError, _("Max Memory value must be an integer greater than 0")
+            raise ValueError, _("Max Memory value must be an integer greater "
+                                "than 0")
         self._maxmemory = val
     maxmemory = property(get_maxmemory, set_maxmemory)
 

@@ -124,6 +124,18 @@ def validate_uuid(val):
                    "-" + val[16:20] + "-" + val[20:32])
     return val
 
+def validate_name(name_type, val):
+    if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
+        raise ValueError, _("%s name must be a string between 0 and 50 "
+                            "characters") % name_type
+    if re.match("^[0-9]+$", val):
+        raise ValueError, _("%s name can not be only numeric characters") % \
+                          name_type
+    if re.match("^[a-zA-Z0-9._-]+$", val) == None:
+        raise ValueError, _("%s name can only contain alphanumeric, '_', '.', "
+                            "or '-' characters") % name_type
+
+
 #
 # These functions accidentally ended up in the API under virtinst.util
 #

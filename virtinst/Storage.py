@@ -48,7 +48,6 @@ General workflow for the different storage objects:
 
 import libvirt
 
-import re
 import logging
 from xml.sax.saxutils import escape
 
@@ -118,15 +117,7 @@ class StorageObject(object):
     def get_name(self):
         return self._name
     def set_name(self, val):
-        if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
-            raise ValueError, _("Storage object name must be a string " +
-                                "between 0 and 50 characters")
-        if re.match("^[0-9]+$", val):
-            raise ValueError, _("Storage object name can not be only " +
-                                "numeric characters")
-        if re.match("^[a-zA-Z0-9._-]+$", val) == None:
-            raise ValueError, _("Storage object name can only contain " +
-                                "alphanumeric, '_', '.', or '-' characters")
+        _util.validate_name(_("Storage object"), val)
 
         # Check that name doesn't collide with other storage objects
         self._check_name_collision(val)
