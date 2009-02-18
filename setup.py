@@ -87,7 +87,7 @@ class TestURLFetch(TestBaseCommand):
             self.match = ".*"
 
         origpath = str(self.path)
-        if origpath is None:
+        if not origpath:
             self.path = []
         else:
             self.path = origpath.split(",")
@@ -96,8 +96,9 @@ class TestURLFetch(TestBaseCommand):
         import tests
         self._testfiles = [ "tests.urltest" ]
         tests.urltest.MATCH_FILTER = self.match
-        for p in self.path:
-            tests.urltest.LOCAL_MEDIA.append(p)
+        if self.path:
+            for p in self.path:
+                tests.urltest.LOCAL_MEDIA.append(p)
         TestBaseCommand.run(self)
 
 class CheckPylint(Command):
