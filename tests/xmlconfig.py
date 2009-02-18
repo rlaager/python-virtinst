@@ -201,7 +201,27 @@ class TestXMLConfig(unittest.TestCase):
         g = get_basic_fullyvirt_guest()
         g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
                                             conn=g.conn)
+        g.disks.append(get_filedisk())
         self._compare(g, "install-fullyvirt-pxe", True)
+
+    def testBootFVPXE(self):
+        g = get_basic_fullyvirt_guest()
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
+        g.disks.append(get_filedisk())
+        self._compare(g, "boot-fullyvirt-pxe", False)
+
+    def testInstallFVPXENoDisks(self):
+        g = get_basic_fullyvirt_guest()
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
+        self._compare(g, "install-fullyvirt-pxe-nodisks", True)
+
+    def testBootFVPXENoDisks(self):
+        g = get_basic_fullyvirt_guest()
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
+        self._compare(g, "boot-fullyvirt-pxe-nodisks", False)
 
     def testInstallFVLiveCD(self):
         g = get_basic_fullyvirt_guest()
