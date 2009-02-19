@@ -34,6 +34,9 @@ class LiveCDInstaller(Installer.Installer):
         Installer.Installer.__init__(self, type=type, location=location,
                                      os_type=os_type, conn=conn)
 
+
+    # LiveCD specific methods/overwrites
+
     def _get_location(self):
         return self._location
     def _set_location(self, val):
@@ -54,9 +57,14 @@ class LiveCDInstaller(Installer.Installer):
         self.cdrom = True
     location = property(_get_location, _set_location)
 
+
+    # General Installer methods
+
     def prepare(self, guest, meter, distro = None):
         self.cleanup()
 
+        # FIXME: This caps check really shouldn't be here. We should
+        # centralize all checks like this in 'Installer'
         capabilities = CapabilitiesParser.parse(guest.conn.getCapabilities())
 
         found = False
@@ -66,7 +74,9 @@ class LiveCDInstaller(Installer.Installer):
                 break
 
         if not found:
-            raise LiveCDInstallerException(_("Connection does not support HVM virtualisation, cannot boot live CD"))
+            raise LiveCDInstallerException(_("Connection does not support "
+                                             "HVM virtualisation, cannot "
+                                             "boot live CD"))
 
         if not self._install_disk:
             raise ValueError(_("CDROM media must be specified for the live "

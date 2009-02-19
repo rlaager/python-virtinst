@@ -21,6 +21,8 @@ import Installer
 
 class PXEInstaller(Installer.Installer):
 
+    # General Installer methods
+
     def prepare(self, guest, meter, distro = None):
         pass
 

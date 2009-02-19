@@ -70,6 +70,9 @@ class DistroInstaller(Installer.Installer):
         # False == location is a url
         self._location_is_path = True
 
+
+    # DistroInstaller specific methods/overwrites
+
     def get_location(self):
         return self._location
     def set_location(self, val):
@@ -144,6 +147,9 @@ class DistroInstaller(Installer.Installer):
         self._location = val
     location = property(get_location, set_location)
 
+
+    # Private helper methods
+
     def _prepare_cdrom(self, guest, distro, meter):
         if not self._location_is_path:
             # Xen needs a boot.iso if its a http://, ftp://, or nfs: url
@@ -195,6 +201,8 @@ class DistroInstaller(Installer.Installer):
                                              path=self.location,
                                              readOnly=True,
                                              transient=True)
+
+    # General Installer methods
 
     def prepare(self, guest, meter, distro = None):
         self.cleanup()

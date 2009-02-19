@@ -76,16 +76,13 @@ class ImageInstaller(Installer.Installer):
         self.type = self._domain.hypervisor_type
         self.arch = self._guest.arch
 
+
+    # Custom ImageInstaller methods
+
     def is_hvm(self):
         if self._boot_caps.type == "hvm":
             return True
         return False
-
-    def get_arch(self):
-        return self._arch
-    def set_arch(self, arch):
-        self._arch = arch
-    arch = property(get_arch, set_arch)
 
     def get_image(self):
         return self._image
@@ -94,6 +91,9 @@ class ImageInstaller(Installer.Installer):
     def get_boot_caps(self):
         return self._boot_caps
     boot_caps = property(get_boot_caps)
+
+
+    # General Installer methods
 
     def prepare(self, guest, meter, distro = None):
         self._make_disks(guest)
@@ -105,31 +105,6 @@ class ImageInstaller(Installer.Installer):
                     guest.features[f] = True
                 elif self.boot_caps.features[f] & Cap.FEATURE_OFF:
                     guest.features[f] = False
-
-    def _make_disks(self, guest):
-        for m in self.boot_caps.drives:
-            p = self._abspath(m.disk.file)
-            s = None
-            if m.disk.size is not None:
-                s = float(m.disk.size)/1024
-            # FIXME: This is awkward; the image should be able to express
-            # whether the disk is expected to be there or not independently
-            # of its classification, especially for user disks
-            # FIXME: We ignore the target for the mapping in m.target
-            if m.disk.use == ImageParser.Disk.USE_SYSTEM and not os.path.exists(p):
-                raise ImageInstallerException(_("System disk %s does not exist")
-                                              % p)
-            device = VirtualDisk.DEVICE_DISK
-            if m.disk.format == ImageParser.Disk.FORMAT_ISO:
-                device = VirtualDisk.DEVICE_CDROM
-            d = VirtualDisk(p, s,
-                            device = device,
-                            type = VirtualDisk.TYPE_FILE)
-            if self.boot_caps.type == "xen" and _util.is_blktap_capable():
-                d.driver_name = VirtualDisk.DRIVER_TAP
-            d.target = m.target
-
-            guest._install_disks.append(d)
 
     def get_install_xml(self, guest, isinstall):
 
@@ -148,9 +123,38 @@ class ImageInstaller(Installer.Installer):
                                        kernel=kernel,
                                        bootdev=self.boot_caps.bootdev)
 
-
     def post_install_check(self, guest):
         return True
+
+
+    # Private methods
+
+    def _make_disks(self, guest):
+        for m in self.boot_caps.drives:
+            p = self._abspath(m.disk.file)
+            s = None
+            if m.disk.size is not None:
+                s = float(m.disk.size)/1024
+
+            # FIXME: This is awkward; the image should be able to express
+            # whether the disk is expected to be there or not independently
+            # of its classification, especially for user disks
+            # FIXME: We ignore the target for the mapping in m.target
+            if (m.disk.use == ImageParser.Disk.USE_SYSTEM and
+                not os.path.exists(p)):
+                raise ImageInstallerException(_("System disk %s does not exist")
+                                              % p)
+            device = VirtualDisk.DEVICE_DISK
+            if m.disk.format == ImageParser.Disk.FORMAT_ISO:
+                device = VirtualDisk.DEVICE_CDROM
+            d = VirtualDisk(p, s,
+                            device = device,
+                            type = VirtualDisk.TYPE_FILE)
+            if self.boot_caps.type == "xen" and _util.is_blktap_capable():
+                d.driver_name = VirtualDisk.DRIVER_TAP
+            d.target = m.target
+
+            guest._install_disks.append(d)
 
     def _abspath(self, p):
         return self.image.abspath(p)

@@ -56,6 +56,7 @@ class Guest(object):
         return Guest._OS_TYPES[type]["variants"][variant]["label"]
     get_os_variant_label = staticmethod(get_os_variant_label)
 
+
     def __init__(self, type=None, connection=None, hypervisorURI=None,
                  installer=None):
         # We specifically ignore the 'type' parameter here, since
@@ -100,18 +101,14 @@ class Guest(object):
 
         self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
 
+
     def get_installer(self):
         return self._installer
     def set_installer(self, val):
+        # FIXME: Make sure this is valid: it's pretty fundamental to
+        # working operation. Should we even allow it to be changed?
         self._installer = val
     installer = property(get_installer, set_installer)
-
-    # Hypervisor name (qemu, xen, kvm, etc.)
-    def get_type(self):
-        return self._installer.type
-    def set_type(self, val):
-        self._installer.type = val
-    type = property(get_type, set_type)
 
     # Domain name of the guest
     def get_name(self):
@@ -120,7 +117,6 @@ class Guest(object):
         _util.validate_name(_("Guest"), val)
         self._name = val
     name = property(get_name, set_name)
-
 
     # Memory allocated to the guest.  Should be given in MB
     def get_memory(self):
@@ -144,7 +140,6 @@ class Guest(object):
         self._maxmemory = val
     maxmemory = property(get_maxmemory, set_maxmemory)
 
-
     # UUID for the guest
     def get_uuid(self):
         return self._uuid
@@ -152,7 +147,6 @@ class Guest(object):
         val = _util.validate_uuid(val)
         self._uuid = val
     uuid = property(get_uuid, set_uuid)
-
 
     # number of vcpus for the guest
     def get_vcpus(self):
@@ -162,8 +156,8 @@ class Guest(object):
         if type(val) is not int or val < 1:
             raise ValueError, _("Number of vcpus must be a postive integer.")
         if val > maxvcpus:
-            raise ValueError, \
-                  _("Number of vcpus must be no greater than %d for this vm type.") % maxvcpus
+            raise ValueError, _("Number of vcpus must be no greater than %d "
+                                "for this vm type.") % maxvcpus
         self._vcpus = val
     vcpus = property(get_vcpus, set_vcpus)
 
@@ -174,7 +168,8 @@ class Guest(object):
         if type(val) is not type("string") or len(val) == 0:
             raise ValueError, _("cpuset must be string")
         if re.match("^[0-9,-]*$", val) is None:
-            raise ValueError, _("cpuset can only contain numeric, ',', or '-' characters")
+            raise ValueError, _("cpuset can only contain numeric, ',', or "
+                                "'-' characters")
 
         pcpus = _util.get_phy_cpus(self.conn)
         for c in val.split(','):
@@ -183,10 +178,12 @@ class Guest(object):
                 if int(x) > int(y):
                     raise ValueError, _("cpuset contains invalid format.")
                 if int(x) >= pcpus or int(y) >= pcpus:
-                    raise ValueError, _("cpuset's pCPU numbers must be less than pCPUs.")
+                    raise ValueError, _("cpuset's pCPU numbers must be less "
+                                        "than pCPUs.")
             else:
                 if int(c) >= pcpus:
-                    raise ValueError, _("cpuset's pCPU numbers must be less than pCPUs.")
+                    raise ValueError, _("cpuset's pCPU numbers must be less "
+                                        "than pCPUs.")
         self._cpuset = val
     cpuset = property(get_cpuset, set_cpuset)
 
@@ -196,6 +193,11 @@ class Guest(object):
         self._graphics_dev = val
     graphics_dev = property(get_graphics_dev, set_graphics_dev)
 
+    # GAH! - installer.os_type = "hvm" or "xen" (aka xen paravirt)
+    #        guest.os_type     = "Solaris", "Windows", "Linux"
+    # FIXME: We should really rename this property to something else,
+    #        change it throughout the codebase for readability sake, but
+    #        maintain back compat.
     def get_os_type(self):
         return self._os_type
     def set_os_type(self, val):
@@ -236,11 +238,11 @@ class Guest(object):
             raise ValueError, _("Unknown OS variant '%s'" % val)
     os_variant = property(get_os_variant, set_os_variant)
 
-    def get_arch(self):
-        return self.installer.arch
-    def set_arch(self, val):
-        self.installer.arch = val
-    arch = property(get_arch, set_arch)
+    # Get the current variants 'distro' tag: 'rhel', 'fedora', etc.
+    def get_os_distro(self):
+        return self._lookup_osdict_key("distro")
+    os_distro = property(get_os_distro)
+
 
     # DEPRECATED PROPERTIES
 
@@ -308,6 +310,22 @@ class Guest(object):
         self._graphics_dev = gdev
 
     graphics = property(get_graphics, set_graphics)
+
+
+    # Properties that are mapped through to the Installer
+
+    # Hypervisor name (qemu, xen, kvm, etc.)
+    def get_type(self):
+        return self._installer.type
+    def set_type(self, val):
+        self._installer.type = val
+    type = property(get_type, set_type)
+
+    def get_arch(self):
+        return self.installer.arch
+    def set_arch(self, val):
+        self.installer.arch = val
+    arch = property(get_arch, set_arch)
 
     # Deprecated: Should be called from the installer directly
     def get_location(self):

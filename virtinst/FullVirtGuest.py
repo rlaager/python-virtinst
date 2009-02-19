@@ -81,10 +81,6 @@ class FullVirtGuest(Guest):
             features[f] = val
         return features
 
-    def get_os_distro(self):
-        return self._lookup_osdict_key("distro")
-    os_distro = property(get_os_distro)
-
     def _get_input_device(self):
         typ = self._lookup_device_param("input", "type")
         bus = self._lookup_device_param("input", "bus")
