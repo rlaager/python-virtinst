@@ -87,7 +87,7 @@ class FullVirtGuest(Guest):
         return (typ, bus)
 
     def _get_features_xml(self):
-        ret = "<features>\n"
+        ret = "  <features>\n"
         features = self.os_features()
         if features:
             ret += "    "
@@ -98,21 +98,9 @@ class FullVirtGuest(Guest):
             ret += "\n"
         return ret + "  </features>"
 
-    def _get_osblob(self, install):
-        osblob = self.installer.get_install_xml(self, install)
-        if osblob is None:
-            return None
-
-        clockxml = self._get_clock_xml()
-        if clockxml is not None:
-            return "%s\n  %s\n  %s" % (osblob, self._get_features_xml(), \
-                                       clockxml)
-        else:
-            return "%s\n  %s" % (osblob, self._get_features_xml())
-
     def _get_clock_xml(self):
         val = self._lookup_osdict_key("clock")
-        return """<clock offset="%s"/>""" % val
+        return """  <clock offset="%s"/>""" % val
 
     def _get_device_xml(self, install=True):
         emu_xml = ""

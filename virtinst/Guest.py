@@ -370,12 +370,8 @@ class Guest(object):
     cdrom = property(get_cdrom, set_cdrom)
     # END DEPRECATED PROPERTIES
 
-    def _create_devices(self,progresscb):
-        """Ensure that devices are setup"""
-        for disk in self._install_disks:
-            disk.setup(progresscb)
-        for nic in self._install_nics:
-            nic.setup(self.conn)
+
+    # Private xml building methods
 
     def _get_disk_xml(self, install=True):
         """Return xml for disk devices (Must be implemented in subclass)"""
@@ -383,12 +379,10 @@ class Guest(object):
 
     def _get_network_xml(self):
         """Get the network config in the libvirt XML format"""
-        ret = ""
+        xml = ""
         for n in self._install_nics:
-            if ret:
-                ret += "\n"
-            ret += n.get_xml_config()
-        return ret
+            xml = _util.xml_append(xml, n.get_xml_config())
+        return xml
 
     def _get_graphics_xml(self):
         """Get the graphics config in the libvirt XML format."""
@@ -410,31 +404,64 @@ class Guest(object):
         """Get the sound device configuration in libvirt XML format."""
         xml = ""
         for sound_dev in self.sound_devs:
-            if xml != "":
-                xml += "\n"
-            xml += sound_dev.get_xml_config()
+            xml = _util.xml_append(xml, sound_dev.get_xml_config())
         return xml
 
     def _get_device_xml(self, install=True):
-
         xml = ""
-        diskxml     = self._get_disk_xml(install)
-        netxml      = self._get_network_xml()
-        inputxml    = self._get_input_xml()
-        graphicsxml = self._get_graphics_xml()
-        soundxml    = self._get_sound_xml()
-        for devxml in [diskxml, netxml, inputxml, graphicsxml, soundxml]:
-            if devxml:
-                if xml:
-                    xml += "\n"
-                xml += devxml
+
+        xml = _util.xml_append(xml, self._get_disk_xml(install))
+        xml = _util.xml_append(xml, self._get_network_xml())
+        xml = _util.xml_append(xml, self._get_input_xml())
+        xml = _util.xml_append(xml, self._get_graphics_xml())
+        xml = _util.xml_append(xml, self._get_sound_xml())
         return xml
+
+    def _get_features_xml(self):
+        """
+        Return features (pae, acpi, apic) xml (currently only releavnt for FV)
+        """
+        return ""
+
+    def _get_clock_xml(self):
+        """
+        Return <clock/> xml (currently only relevant for FV guests)
+        """
+        return ""
 
     def _get_osblob(self, install):
         """Return os, features, and clock xml (Implemented in subclass)"""
-        raise NotImplementedError
+        xml = ""
+
+        osxml = self.installer.get_install_xml(self, install)
+        if not osxml:
+            return None
+
+        xml = _util.xml_append(xml,
+                               self.installer.get_install_xml(self, install))
+        xml = _util.xml_append(xml, self._get_features_xml())
+        xml = _util.xml_append(xml, self._get_clock_xml())
+        return xml
+
+
 
     def get_config_xml(self, install = True, disk_boot = False):
+        """
+        Return the full Guest xml configuration.
+
+        @param install: Whether we want the 'OS install' configuration or
+                        the 'post-install' configuration. (Some Installers,
+                        like the LiveCDInstaller may not have an 'install'
+                        config.)
+        @type install: C{bool}
+        @param disk_boot: Whether we should boot off the harddisk, regardless
+                          of our position in the install process (this is
+                          used for 2 stage installs, where the second stage
+                          boots off the disk. You probably don't need to touch
+                          this.)
+        @type disk_boot: C{bool}
+        """
+
         if install:
             action = "destroy"
         else:
@@ -446,6 +473,7 @@ class Guest(object):
 
         osblob = self._get_osblob(osblob_install)
         if not osblob:
+            # This means there is no 'install' phase, so just return
             return None
 
         if self.cpuset is not None:
@@ -504,6 +532,13 @@ class Guest(object):
                                 meter = meter)
         if self._installer.install_disk is not None:
             self._install_disks.append(self._installer.install_disk)
+
+    def _create_devices(self,progresscb):
+        """Ensure that devices are setup"""
+        for disk in self._install_disks:
+            disk.setup(progresscb)
+        for nic in self._install_nics:
+            nic.setup(self.conn)
 
     def _do_install(self, consolecb, meter, removeOld=False, wait=True):
         vm = None

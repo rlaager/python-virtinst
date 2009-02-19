@@ -135,6 +135,13 @@ def validate_name(name_type, val):
         raise ValueError, _("%s name can only contain alphanumeric, '_', '.', "
                             "or '-' characters") % name_type
 
+def xml_append(orig, new):
+    """Little function that helps generate consistent xml"""
+    if not new:
+        return orig
+    if orig:
+        orig += "\n"
+    return orig + new
 
 #
 # These functions accidentally ended up in the API under virtinst.util
