@@ -10,7 +10,7 @@ EXCEPTHOOK='__excepthook__'
 
 # Following functions are in the public api which have argument names that
 # override builtin 'type'.
-BUILTIN_TYPE="(StoragePool.__init__|randomMAC|Capabilities.guestForOSType|acquireKernel|acquireBootDisk|DistroInstaller.__init__|PXEInstaller.__init__|Guest.list_os_variants|Guest.get_os_type_label|Guest.get_os_variant_label|FullVirtGuest.__init__|VirtualNetworkInterface.__init__|VirtualGraphics.__init__|Installer.__init__|Guest.__init__|LiveCDInstaller.__init__|ParaVirtGuest.__init__|VirtOptionParser.print_help|get_max_vcpus|setupLogging.exception_log|VirtualDisk.__init__|disk.__init__|netdev.__init__)"
+BUILTIN_TYPE="(StoragePool.__init__|randomMAC|Capabilities.guestForOSType|acquireKernel|acquireBootDisk|DistroInstaller.__init__|PXEInstaller.__init__|Guest.list_os_variants|Guest.get_os_type_label|Guest.get_os_variant_label|FullVirtGuest.__init__|VirtualNetworkInterface.__init__|VirtualGraphics.__init__|Installer.__init__|Guest.__init__|LiveCDInstaller.__init__|ParaVirtGuest.__init__|VirtOptionParser.print_help|get_max_vcpus|setupLogging.exception_log|VirtualDisk.__init__|disk.__init__|netdev.__init__)|guest_lookup"
 BTYPE_TYPE="${BUILTIN_TYPE}.*Redefining built-in 'type'"
 
 # Following functions are in the public api which have argument names that

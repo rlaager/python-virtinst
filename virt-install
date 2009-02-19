@@ -508,12 +508,15 @@ def txt_console(dom, uri):
 def main():
     options = parse_args()
 
+    # Default setup options
     cli.setupLogging("virt-install", options.debug)
     cli.set_force(options.force)
     cli.set_prompt(options.prompt)
     conn = cli.getConnection(options.connect)
     capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
 
+
+    # Set up all virt/hypervisor parameters
     if options.fullvirt and options.paravirt:
         fail(_("Can't do both --hvm and --paravirt"))
 
@@ -529,27 +532,22 @@ def main():
                                                    req_virt_type or
                                                    _("default")))
 
-    capsguest = capabilities.guestForOSType(type=req_virt_type,
-                                            arch=options.arch)
-    if capsguest is None:
-        msg = _("Unsupported virtualization type '%s' " % (req_virt_type and
-                                                           req_virt_type or
-                                                           _("default")))
-        if options.arch:
-            msg += _("for arch '%s'" % options.arch)
-        fail(msg)
-
+    try:
+        (capsguest,
+         capsdomain) = virtinst.CapabilitiesParser.guest_lookup(conn=conn,
+                        caps=capabilities, os_type=req_virt_type,
+                        arch=options.arch, type=None,
+                        accelerated=options.accelerate)
+    except Exception, e:
+        fail(e)
 
     virt_type = capsguest.os_type
+    hv_name = capsdomain.hypervisor_type
     logging.debug("Received virt method '%s'" % virt_type)
-    if virt_type == "hvm":
-        ishvm = True
-    else:
-        ishvm = False
-
-    hv_name = capsguest.bestDomainType(options.accelerate).hypervisor_type
     logging.debug("Hypervisor name is '%s'" % hv_name)
 
+
+    # Build the Installer instance
     if options.livecd:
         instclass = virtinst.LiveCDInstaller
     elif options.pxe:
@@ -560,15 +558,19 @@ def main():
     else:
         instclass = virtinst.DistroInstaller
     installer = instclass(type=hv_name, os_type=virt_type, conn=conn)
+    installer.arch = capsguest.arch
 
-    if ishvm:
-        guestclass = virtinst.FullVirtGuest
-    else:
-        guestclass = virtinst.ParaVirtGuest
-    guest = guestclass(connection=conn, installer=installer)
-    guest.arch = capsguest.arch
+
+    # Get Guest instance from installer parameters.
+    guest = installer.guest_from_installer()
+
 
     # now let's get some of the common questions out of the way
+    if virt_type == "hvm":
+        ishvm = True
+    else:
+        ishvm = False
+
     cli.get_name(options.name, guest)
     cli.get_memory(options.memory, guest)
     cli.get_uuid(options.uuid, guest)

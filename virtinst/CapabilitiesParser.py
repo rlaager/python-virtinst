@@ -346,6 +346,76 @@ def parse(xml):
 
     return capabilities
 
+def guest_lookup(conn, caps=None, os_type=None, arch=None, type=None,
+                 accelerated=False):
+    """
+    Simple virtualization availability lookup
+
+    Convenience function for looking up 'Guest' and 'Domain' capabilities
+    objects for the desired virt type. If type, arch, or os_type are none,
+    we return the default virt type associated with those values. These are
+    typically:
+
+    - os_type    : hvm, then xen
+    - type : kvm over plain qemu
+    - arch    : host arch over all others
+
+    Otherwise the default will be the first listed in the capabilities xml.
+    This function throws C{ValueError}s if any of the requested values are
+    not found.
+
+    @param conn: virConnect instance
+    @type conn: libvirt.virConnect
+    @param caps: Optional L{Capabilities} instance (saves a lookup)
+    @type conn: L{Capabilities}
+    @param type: Virtualization type ('hvm', 'xen', ...)
+    @type type: C{str}
+    @param arch: Guest architecture ('x86_64', 'i686' ...)
+    @type arch: C{str}
+    @param os_type: Hypervisor name ('qemu', 'kvm', 'xen', ...)
+    @type os_type: C{str}
+    @param accelerated: Whether to look for accelerated domain if none is
+                        specifically requested
+    @type accelerated: C{bool}
+
+    @returns: A (Capabilities Guest, Capabilities Domain) tuple
+    """
+
+    if not caps:
+        caps = parse(conn.getCapabilities())
+
+    guest = caps.guestForOSType(type=os_type, arch=arch)
+    if not guest:
+        archstr = _("for arch '%s'") % arch
+        if not arch:
+            archstr = ""
+
+        osstr = _("virtualization type '%s'") % os_type
+        if not os_type:
+            osstr = _("any virtualization options")
+
+        raise ValueError(_("Host does not support %(virttype)s %(arch)s") %
+                           {'virttype' : osstr, 'arch' : archstr})
+
+    domain = None
+    if type:
+        for d in guest.domains:
+            if d.hypervisor_type == type.lower():
+                domain = d
+                break
+    else:
+        domain = guest.bestDomainType(accelerated=accelerated)
+
+    if domain == None:
+        raise ValueError(_("Host does not support domain type "
+                           "'%(domain)s' for virtualization type "
+                           "'%(virttype)s' arch '%(arch)s'") %
+                           {'domain': type, 'virttype': guest.os_type,
+                            'arch': guest.arch})
+
+    return (guest, domain)
+
+
 def xpathString(node, path, default = None):
     result = node.xpathEval("string(%s)" % path)
     if len(result) == 0:

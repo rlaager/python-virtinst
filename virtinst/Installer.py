@@ -309,3 +309,38 @@ class Installer(object):
         os.close(fd)
         return (len(buf) == 512 and
                 struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,))
+
+    def guest_from_installer(self):
+        """
+        Return a L{Guest} instance wrapping the current installer.
+
+        If all the appropriate values are present in the installer
+        (conn, type, os_type, arch), we have everything we need to determine
+        what L{Guest} class is expected and what default values to pass
+        it. This is a convenience method to save the API user from having
+        to enter all these known details twice.
+        """
+
+        if not self.conn:
+            raise ValueError(_("A connection must be specified."))
+
+        guest, domain = CapabilitiesParser.guest_lookup(conn=self.conn,
+                                                        caps=self._caps,
+                                                        os_type=self.os_type,
+                                                        type=self.type,
+                                                        arch=self.arch)
+
+        if self.os_type == "xen":
+            gobj = virtinst.ParaVirtGuest(installer=self, connection=self.conn)
+            gobj.arch = guest.arch
+        elif self.os_type == "hvm":
+            gobj = virtinst.FullVirtGuest(installer=self,
+                                          connection=self.conn,
+                                          emulator=domain.emulator,
+                                          arch=guest.arch)
+            gobj.loader = domain.loader
+        else:
+            raise ValueError(_("No 'Guest' class for virtualization type '%s'"
+                             % self.type))
+
+        return gobj
