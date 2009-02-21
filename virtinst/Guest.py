@@ -301,7 +301,7 @@ class Guest(object):
         if enabled not in (True, False):
             raise ValueError, _("Graphics enabled must be True or False")
 
-        if enabled == True:
+        if enabled:
             gdev = VirtualGraphics.VirtualGraphics(type=gtype)
             if port:
                 gdev.port = port
