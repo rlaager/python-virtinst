@@ -96,26 +96,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
            return (False, "description of collision")"""
         if self.macaddr is None:
             return (False, None)
-        # get Running Domains
-        ids = conn.listDomainsID()
-        vms = []
-        for i in ids:
-            try:
-                vm = conn.lookupByID(i)
-                vms.append(vm)
-            except libvirt.libvirtError:
-                # guest probably in process of dieing
-                logging.warn("conflict_net: Failed to lookup domain id %d" % i)
-        # get inactive Domains
-        inactive_vm = []
-        names = conn.listDefinedDomains()
-        for name in names:
-            try:
-                vm = conn.lookupByName(name)
-                inactive_vm.append(vm)
-            except:
-                # guest probably in process of dieing
-                logging.warn("conflict_net: Failed to lookup domain %d" % name)
+
+        vms, inactive_vm = _util.fetch_all_guests(conn)
 
         # get the Host's NIC MACaddress
         hostdevs = _util.get_host_network_devices()

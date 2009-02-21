@@ -27,6 +27,7 @@ import stat
 import os
 import re
 import commands
+import logging
 
 import libvirt
 
@@ -136,12 +137,44 @@ def validate_name(name_type, val):
                             "or '-' characters") % name_type
 
 def xml_append(orig, new):
-    """Little function that helps generate consistent xml"""
+    """
+    Little function that helps generate consistent xml
+    """
     if not new:
         return orig
     if orig:
         orig += "\n"
     return orig + new
+
+def fetch_all_guests(conn):
+    """
+    Return 2 lists: ([all_running_vms], [all_nonrunning_vms])
+    """
+    active = []
+    inactive = []
+
+    # Get all active VMs
+    ids = conn.listDomainsID()
+    for i in ids:
+        try:
+            vm = conn.lookupByID(i)
+            active.append(vm)
+        except libvirt.libvirtError:
+            # guest probably in process of dieing
+            logging.warn("Failed to lookup active domain id %d" % i)
+
+    # Get all inactive VMs
+    names = conn.listDefinedDomains()
+    for name in names:
+        try:
+            vm = conn.lookupByName(name)
+            inactive.append(vm)
+        except:
+            # guest probably in process of dieing
+            logging.warn("Failed to lookup inactive domain %d" % name)
+
+    return (active, inactive)
+
 
 #
 # These functions accidentally ended up in the API under virtinst.util

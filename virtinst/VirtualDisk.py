@@ -732,25 +732,8 @@ class VirtualDisk(VirtualDevice):
         @return: True if a collision, False otherwise
         @rtype: C{bool}
         """
-        vms = []
-        # get working domain's name
-        ids = conn.listDomainsID()
-        for i in ids:
-            try:
-                vm = conn.lookupByID(i)
-                vms.append(vm)
-            except libvirt.libvirtError:
-                # guest probably in process of dieing
-                logging.warn("Failed to lookup domain id %d" % i)
-        # get defined domain
-        names = conn.listDefinedDomains()
-        for name in names:
-            try:
-                vm = conn.lookupByName(name)
-                vms.append(vm)
-            except libvirt.libvirtError:
-                # guest probably in process of dieing
-                logging.warn("Failed to lookup domain name %s" % name)
+        active, inactive = _util.fetch_all_guests(conn)
+        vms = active + inactive
 
         if self.vol_object:
             path = self.vol_object.path()
