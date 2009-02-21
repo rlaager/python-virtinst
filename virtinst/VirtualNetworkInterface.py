@@ -19,7 +19,6 @@
 
 import re
 import logging
-import libxml2
 import libvirt
 import __builtin__
 
@@ -150,24 +149,20 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     def countMACaddr(self, vms):
         if not self.macaddr:
             return
+
+        def count_cb(ctx):
+            c = 0
+
+            for mac in ctx.xpathEval("/domain/devices/interface/mac"):
+                macaddr = mac.xpathEval("attribute::address")[0].content
+                if macaddr and _util.compareMAC(self.macaddr, macaddr) == 0:
+                    c += 1
+            return c
+
         count = 0
         for vm in vms:
-            doc = None
-            try:
-                doc = libxml2.parseDoc(vm.XMLDesc(0))
-            except:
-                continue
-            ctx = doc.xpathNewContext()
-            try:
-                for mac in ctx.xpathEval("/domain/devices/interface/mac"):
-                    macaddr = mac.xpathEval("attribute::address")[0].content
-                    if macaddr and _util.compareMAC(self.macaddr, macaddr) == 0:
-                        count += 1
-            finally:
-                if ctx is not None:
-                    ctx.xpathFreeContext()
-                if doc is not None:
-                    doc.freeDoc()
+            xml = vm.XMLDesc(0)
+            count += _util.get_xml_path(xml, func = count_cb)
         return count
 
 # Back compat class to avoid ABI break

@@ -21,7 +21,6 @@
 
 import os, statvfs
 import subprocess
-import libxml2
 import logging
 import libvirt
 
@@ -743,25 +742,18 @@ class VirtualDisk(VirtualDevice):
         if not path:
             return False
 
+        def count_cb(ctx):
+            c = 0
+
+            c += ctx.xpathEval("count(/domain/devices/disk/source[@dev='%s'])" % path)
+            c += ctx.xpathEval("count(/domain/devices/disk/source[@file='%s'])" % path)
+            return c
+
         count = 0
         for vm in vms:
-            doc = None
-            try:
-                doc = libxml2.parseDoc(vm.XMLDesc(0))
-            except:
-                continue
-            ctx = doc.xpathNewContext()
-            try:
-                try:
-                    count += ctx.xpathEval("count(/domain/devices/disk/source[@dev='%s'])" % path)
-                    count += ctx.xpathEval("count(/domain/devices/disk/source[@file='%s'])" % path)
-                except:
-                    continue
-            finally:
-                if ctx is not None:
-                    ctx.xpathFreeContext()
-                if doc is not None:
-                    doc.freeDoc()
+            xml = vm.XMLDesc(0)
+            count += _util.get_xml_path(xml, func = count_cb)
+
         if count > 0:
             return True
         else:

@@ -41,7 +41,6 @@ from virtinst import _virtinst as _
 import CapabilitiesParser
 from User import User
 
-
 KEYBOARD_DIR = "/etc/sysconfig/keyboard"
 XORG_CONF = "/etc/X11/xorg.conf"
 
@@ -540,23 +539,33 @@ def is_storage_capable(conn):
             return False
     return True
 
-def get_xml_path(xml, path):
-    """return the xpath from the passed xml"""
+def get_xml_path(xml, path=None, func=None):
+    """
+    Return the content from the passed xml xpath, or return the result
+    of a passed function (receives xpathContext as its only arg)
+    """
     doc = None
     ctx = None
     result = None
+
     try:
         doc = libxml2.parseDoc(xml)
         ctx = doc.xpathNewContext()
-        ret = ctx.xpathEval(path)
-        val = None
-        if ret != None:
-            if type(ret) == list:
-                if len(ret) == 1:
-                    val = ret[0].content
-            else:
-                val = ret
-        result = val
+
+        if path:
+            ret = ctx.xpathEval(path)
+            if ret != None:
+                if type(ret) == list:
+                    if len(ret) == 1:
+                        result = ret[0].content
+                else:
+                    result = ret
+
+        elif func:
+            result = func(ctx)
+
+        else:
+            raise ValueError(_("'path' or 'func' is required."))
     finally:
         if doc:
             doc.freeDoc()
