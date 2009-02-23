@@ -21,13 +21,9 @@
 
 import _util
 import DistroInstaller
-import logging
-import time
 
 from Guest import Guest
 from VirtualDisk import VirtualDisk
-from virtinst import _virtinst as _
-
 
 class FullVirtGuest(Guest):
 
@@ -110,39 +106,6 @@ class FullVirtGuest(Guest):
         return (emu_xml +
                 """    <console type='pty'/>\n""" +
                 Guest._get_device_xml(self, install))
-
-    def get_continue_inst(self):
-        return self._lookup_osdict_key("continue")
-
-    def continue_install(self, consolecb, meter, wait=True):
-        cont_xml = self.get_config_xml(disk_boot = True)
-        logging.debug("Continuing guest with:\n%s" % cont_xml)
-        meter.start(size=None, text="Starting domain...")
-
-        # As of libvirt 0.5.1 we can't 'create' over an defined VM.
-        # So, redefine the existing domain (which should be shutoff at
-        # this point), and start it.
-        finalxml = self.domain.XMLDesc(0)
-
-        self.domain = self.conn.defineXML(cont_xml)
-        self.domain.create()
-        self.conn.defineXML(finalxml)
-
-        #self.domain = self.conn.createLinux(install_xml, 0)
-        if self.domain is None:
-            raise RuntimeError, _("Unable to start domain for guest, aborting installation!")
-        meter.end(0)
-
-        self.connect_console(consolecb, wait)
-
-        # ensure there's time for the domain to finish destroying if the
-        # install has finished or the guest crashed
-        if consolecb:
-            time.sleep(1)
-
-        # This should always work, because it'll lookup a config file
-        # for inactive guest, or get the still running install..
-        return self.conn.lookupByName(self.name)
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
