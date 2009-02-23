@@ -100,6 +100,13 @@ OS_TYPES = {\
                         "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
                         "net"  : { "model" : [ (["kvm"], "virtio") ] }
                       }},
+        "fedora11": { "label": "Fedora 11", "distro": "fedora",
+                      "devices" : {
+                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
+                        "net"  : { "model" : [ (["kvm"], "virtio") ] },
+                        "input" : { "type" : [ (["all"], "tablet") ],
+                                    "bus"  : [ (["all"], "usb"), ] },
+                     }},
         "sles10": { "label": "Suse Linux Enterprise Server",
                     "distro": "suse" },
         "debianetch": { "label": "Debian Etch", "distro": "debian" },
