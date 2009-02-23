@@ -35,8 +35,14 @@ Show the help message and exit
 
 =item -o ORIGINAL_GUEST, --original=ORIGINAL_GUEST
 
-Name of the original guest to be cloned. This guest must be shut off since
-it is not possible to safely clone active guests at this time.
+Name of the original guest to be cloned. This guest must be shut off or paused
+since it is not possible to safely clone active guests at this time.
+
+=item --original-xml=ORIGINAL_XML
+
+Libvirt guest xml file to use as the original guest. The guest does not need to
+be defined on the libvirt connection. This takes the place of the
+C<--original> parameter.
 
 =item -n NAME, --name=NAME
 
