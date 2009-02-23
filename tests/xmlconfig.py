@@ -70,6 +70,8 @@ class TestXMLConfig(unittest.TestCase):
             # Should probably break this out into a separate function
             dom = xenguest.conn.defineXML(actualXML)
             dom.create()
+            dom.destroy()
+            dom.undefine()
         finally:
             xenguest.installer.cleanup()
 
@@ -229,6 +231,20 @@ class TestXMLConfig(unittest.TestCase):
                                                conn=g.conn,
                                                location="/dev/loop0")
         self._compare(g, "install-fullyvirt-livecd", False)
+
+    def testInstallFVImport(self):
+        g = get_basic_fullyvirt_guest()
+        g.disks.append(get_filedisk())
+        g.installer = virtinst.ImportInstaller(type="xen", os_type="hvm",
+                                               conn=g.conn)
+        self._compare(g, "install-fullyvirt-import", False)
+
+    def testInstallPVImport(self):
+        g = get_basic_paravirt_guest()
+        g.disks.append(get_filedisk())
+        g.installer = virtinst.ImportInstaller(type="xen", os_type="xen",
+                                               conn=g.conn)
+        self._compare(g, "install-paravirt-import", False)
 
     def testXMLEscaping(self):
         g = get_basic_fullyvirt_guest()

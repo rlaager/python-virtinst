@@ -37,6 +37,7 @@ from ParaVirtGuest import ParaVirtGuest
 from DistroInstaller import DistroInstaller
 from PXEInstaller import PXEInstaller
 from LiveCDInstaller import LiveCDInstaller
+from ImportInstaller import ImportInstaller
 from ImageManager import ImageInstaller
 from CloneManager import CloneDesign
 from User import User
@@ -47,4 +48,5 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "XenNetworkInterface", "VirtualGraphics", "VirtualAudio",
            "VirtualDisk", "XenDisk", "FullVirtGuest", "ParaVirtGuest",
            "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
-           "ImageInstaller", "CloneDesign", "Storage", "User", "util"]
+           "ImportInstaller", "ImageInstaller", "CloneDesign", "Storage",
+           "User", "util"]

@@ -21,7 +21,6 @@
 
 from Guest import Guest
 from DistroInstaller import DistroInstaller
-from virtinst import _virtinst as _
 
 class ParaVirtGuest(Guest):
     def __init__(self, type=None, connection=None, hypervisorURI=None,
@@ -34,11 +33,6 @@ class ParaVirtGuest(Guest):
 
     def _get_input_device(self):
         return ("mouse", "xen")
-
-    def validate_parms(self):
-        if not self.location and not self.boot:
-            raise ValueError, _("A location must be specified to install from")
-        Guest.validate_parms(self)
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""
