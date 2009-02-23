@@ -260,10 +260,16 @@ def get_extraargs(extra, guest):
     guest.extraargs = extra
 
 
-def get_install_media(location, cdpath, pxe, livecd, guest, ishvm):
+def get_install_media(location, cdpath, pxe, livecd, import_install,
+                      guest, ishvm):
 
-    if (pxe and location) or (location and cdpath) or (cdpath and pxe):
-        fail(_("Only one of --pxe, --location and --cdrom can be used"))
+    found = False
+    for m in [pxe, location, cdpath, import_install]:
+        if m:
+            if found:
+                fail(_("Only one install method (%s) can be used") %
+                       "--pxe, --location, --cdrom, --import")
+            found = True
 
     if not ishvm:
         if pxe:
@@ -271,22 +277,21 @@ def get_install_media(location, cdpath, pxe, livecd, guest, ishvm):
                    "guests"))
         if cdpath or livecd:
             fail(_("Paravirtualized guests cannot install off cdrom media."))
-        if location is None:
-            fail(_("location must be specified for paravirtualized guests."))
 
     if location and virtinst.util.is_uri_remote(guest.conn.getURI()):
         fail(_("--location can not be specified for remote connections."))
 
     cdinstall = (cdpath or False)
-    if not (pxe or cdpath or location):
+    if not (pxe or cdpath or location or import_install):
         # Look at Guest disks: if there is a cdrom, use for install
         for disk in guest.disks:
             if disk.device == virtinst.VirtualDisk.DEVICE_CDROM:
                 cdinstall = True
         if not cdinstall:
-            fail(_("One of --pxe, --location, or cdrom media must be "
-                    "specified."))
-    if pxe:
+            fail(_("One of %s, or cdrom media must be specified.") %
+                  "--pxe, --location, --import")
+
+    if pxe or import_install:
         return
     try:
         if location or cdpath:
@@ -391,6 +396,8 @@ def parse_args():
                     help=_("Boot from the network using the PXE protocol"))
     insg.add_option("", "--livecd", action="store_true", dest="livecd",
                     help=_("Treat the CD-ROM media as a Live CD"))
+    insg.add_option("", "--import", action="store_true", dest="import_install",
+                    help=_("Build guest around an existing disk image"))
     insg.add_option("-x", "--extra-args", type="string", dest="extra",
                     default="",
                     help=_("Additional arguments to pass to the kernel "
@@ -555,6 +562,8 @@ def main():
             fail(_("Can't use --pxe with --nonetworks"))
 
         instclass = virtinst.PXEInstaller
+    elif options.import_install:
+        instclass = virtinst.ImportInstaller
     else:
         instclass = virtinst.DistroInstaller
     installer = instclass(type=hv_name, os_type=virt_type, conn=conn)
@@ -595,7 +604,7 @@ def main():
 
     # and now for the full-virt vs paravirt specific questions
     get_install_media(options.location, options.cdrom, options.pxe,
-                      options.livecd, guest, ishvm)
+                      options.livecd, options.import_install, guest, ishvm)
     if not ishvm: # paravirt
         continue_inst = False
     else:

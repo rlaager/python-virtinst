@@ -309,6 +309,12 @@ Specify that the installation media is a live CD and thus the guest
 needs to be configured to boot off the CDROM device permanently. It
 may be desirable to also use the C<--nodisks> flag in combination.
 
+=item  --import
+
+Skip the OS installation process, and build a guest around an existing
+disk image. The device used for booting is the first device specified via
+C<--disk> or C<--file>.
+
 =item  -v, --hvm             This guest should be a fully virtualized guest
 
 Request the use of full virtualization, if both para & full virtualization are
@@ -667,8 +673,16 @@ options:
        --nographics \
        --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 
+Create a guest from an existing disk image 'mydisk.img' using defaults for
+the rest of the options.
 
-=head1 AUTHOR
+  # virt-install \
+       --name demo
+       --ram 512
+       --disk path=/home/user/VMs/mydisk.img
+       --import
+
+=head1 AUTHORS
 
 Written by Daniel P. Berrange, Hugh Brock, Jeremy Katz, Cole Robinson and a
 team of many other contributors. See the AUTHORS file in the source
@@ -687,7 +701,7 @@ $HOME/.virtinst/virt-install.log
 
 =head1 COPYRIGHT
 
-Copyright (C) 2006-2007 Red Hat, Inc, and various contributors. 
+Copyright (C) 2006-2009 Red Hat, Inc, and various contributors. 
 This is free software. You may redistribute copies of it under the terms of the GNU General 
 Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent 
 permitted by law.
