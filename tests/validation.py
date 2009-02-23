@@ -74,7 +74,8 @@ args = {
     'name'  : {
         'invalid' : ['123456789', 'im_invalid!', '', 0,
                      'verylongnameverylongnameverylongnamevery'
-                     'longnameveryvery'],
+                     'longnameveryvery', "test" # In use,
+                     ],
         'valid'   : ['Valid_name.01'] },
     'memory' : {
         'invalid' : [-1, 0, ''],

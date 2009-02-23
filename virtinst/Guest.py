@@ -115,7 +115,13 @@ class Guest(object):
         return self._name
     def set_name(self, val):
         _util.validate_name(_("Guest"), val)
-        self._name = val
+        try:
+            self.conn.lookupByName(val)
+        except:
+            # Name not found
+            self._name = val
+            return
+        raise ValueError(_("Guest name '%s' is already in use.") % val)
     name = property(get_name, set_name)
 
     # Memory allocated to the guest.  Should be given in MB
