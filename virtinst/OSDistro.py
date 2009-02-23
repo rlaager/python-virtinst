@@ -123,14 +123,14 @@ def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
         fetcher.cleanupLocation()
 
 # Helper method to lookup install media distro and fetch an install kernel
-def acquireKernel(guest, baseuri, progresscb, scratchdir="/var/tmp", type=None,
-                  distro=None, arch=None):
+def acquireKernel(guest, baseuri, progresscb, arch,
+                  scratchdir="/var/tmp", type=None, distro=None):
     return _acquireMedia(True, guest, baseuri, progresscb, arch,
                          scratchdir, type, distro)
 
 # Helper method to lookup install media distro and fetch a boot iso
-def acquireBootDisk(baseuri, progresscb, scratchdir="/var/tmp", type=None,
-                    distro=None, arch=None):
+def acquireBootDisk(baseuri, progresscb, arch, scratchdir="/var/tmp",
+                    type=None, distro=None):
     return _acquireMedia(False, None, baseuri, progresscb, arch,
                          scratchdir, type, distro)
 
