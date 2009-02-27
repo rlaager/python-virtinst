@@ -720,15 +720,19 @@ class VirtualDisk(VirtualDevice):
                         ((need / (1024*1024)), (avail / (1024*1024)))
         return (ret, msg)
 
-    def is_conflict_disk(self, conn):
+    def is_conflict_disk(self, conn, return_names=False):
         """
         check if specified storage is in use by any other VMs on passed
         connection.
 
         @param conn: connection to check for collisions on
         @type conn: libvirt.virConnect
+        @param return_names: Whether or not to return a list of VM names using
+                             the same storage (default = False)
+        @type return_names: C{bool}
 
-        @return: True if a collision, False otherwise
+        @return: True if a collision, False otherwise (list of names if
+                 return_names passed)
         @rtype: C{bool}
         """
         active, inactive = _util.fetch_all_guests(conn)
@@ -750,14 +754,21 @@ class VirtualDisk(VirtualDevice):
             return c
 
         count = 0
+        names = []
         for vm in vms:
             xml = vm.XMLDesc(0)
-            count += _util.get_xml_path(xml, func = count_cb)
+            tmpcount = _util.get_xml_path(xml, func = count_cb)
+            if tmpcount:
+                count += tmpcount
+                names.append(vm.name())
 
+        ret = False
         if count > 0:
-            return True
-        else:
-            return False
+            ret = True
+        if return_names:
+            ret = names
+
+        return ret
 
     def _get_target_type(self):
         """
