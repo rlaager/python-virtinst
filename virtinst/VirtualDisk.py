@@ -655,21 +655,23 @@ class VirtualDisk(VirtualDevice):
         if path:
             path = _util.xml_escape(path)
 
-        ret = "    <disk type='%(type)s' device='%(device)s'>\n" % { "type": self.type, "device": self.device }
-        if not(self.driver_name is None):
-            if self.driver_type is None:
-                ret += "      <driver name='%(name)s'/>\n" % { "name": self.driver_name }
-            else:
-                ret += "      <driver name='%(name)s' type='%(type)s'/>\n" % { "name": self.driver_name, "type": self.driver_type }
+        ret = "    <disk type='%s' device='%s'>\n" % (self.type, self.device)
+
+        if not self.driver_name is None:
+            dtypexml = ""
+            if not self.driver_type is None:
+                dtypexml = " type='%s'" % self.driver_type
+
+            ret += "      <driver name='%s'%s/>\n" % (self.driver_name,
+                                                      dtypexml)
+
         if path is not None:
-            ret += "      <source %(typeattr)s='%(disk)s'/>\n" % { "typeattr": typeattr, "disk": path }
+            ret += "      <source %s='%s'/>\n" % (typeattr, path)
 
         bus_xml = ""
         if self.bus is not None:
             bus_xml = " bus='%s'" % self.bus
-        ret += "      <target dev='%s'" % disknode + \
-                      "%s" % bus_xml + \
-                      "/>\n"
+        ret += "      <target dev='%s'%s/>\n" % (disknode, bus_xml)
 
         ro = self.read_only
 
