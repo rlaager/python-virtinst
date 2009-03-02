@@ -99,7 +99,6 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
     raise ValueError, _("Could not find an installable distribution at '%s'" %
                         baseuri)
 
-
 def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
                   scratchdir="/var/tmp", _type=None, distro=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
@@ -114,11 +113,14 @@ def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
                                 progresscb=progresscb, distro=distro,
                                 scratchdir=scratchdir, arch=arch)
 
-        if iskernel:
+        if iskernel is True:
             return (store.acquireKernel(guest, fetcher, progresscb),
                     store.os_type)
-        else:
+        elif iskernel is False:
             return store.acquireBootDisk(fetcher, progresscb)
+        else:
+            # Kind of a hack. Just return the store for detectDistro
+            return store
     finally:
         fetcher.cleanupLocation()
 
@@ -133,6 +135,13 @@ def acquireBootDisk(baseuri, progresscb, arch, scratchdir="/var/tmp",
                     type=None, distro=None):
     return _acquireMedia(False, None, baseuri, progresscb, arch,
                          scratchdir, type, distro)
+
+# Attempt to detect the os type + variant for the passed location
+def detectMediaDistro(location, arch):
+    import urlgrabber
+    progress = urlgrabber.progress.BaseMeter()
+    store = _acquireMedia(None, None, location, progress, arch, "/var/tmp")
+    return (store.os_type, store.os_variant)
 
 
 def distroFromTreeinfo(fetcher, progresscb, uri, arch, vmtype=None,
@@ -164,6 +173,10 @@ def distroFromTreeinfo(fetcher, progresscb, uri, arch, vmtype=None,
 
     ob = dclass(uri, arch, vmtype, scratchdir)
     ob.treeinfo = treeinfo
+
+    # Explictly call this, so we populate os_type/variant info
+    ob.isValidStore(fetcher, progresscb)
+
     return ob
 
 
@@ -172,6 +185,11 @@ def distroFromTreeinfo(fetcher, progresscb, uri, arch, vmtype=None,
 class Distro:
 
     name = ""
+
+    # osdict type and variant values
+    os_type = None
+    os_variant = None
+
     _boot_iso_paths = []
     _hvm_kernel_paths = []
     _xen_kernel_paths = []
@@ -223,7 +241,6 @@ class Distro:
                     return fetcher.acquireFile(path, progresscb)
             raise RuntimeError(_("Could not find boot.iso in %s tree." % \
                                self.name))
-
 
     def _hasTreeinfo(self, fetcher, progresscb):
         # all Red Hat based distros should have .treeinfo, perhaps others
@@ -381,6 +398,7 @@ class RedHatDistro(Distro):
 
     name = "Red Hat"
     os_type = "linux"
+
     uses_treeinfo = True
     _boot_iso_paths   = [ "images/boot.iso" ]
     _hvm_kernel_paths = [ ("images/pxeboot/vmlinuz",
@@ -396,51 +414,89 @@ class RedHatDistro(Distro):
 class FedoraDistro(RedHatDistro):
 
     name = "Fedora"
-    os_type = "linux"
 
     def isValidStore(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
             m = re.match(".*Fedora.*", self.treeinfo.get("general", "family"))
-            return (m != None)
+            ret = (m != None)
+
+            if ret:
+                ver = self.treeinfo.get("general", "version")
+                if ver == "development":
+                    self.os_variant = self._latestFedoraVariant()
+                elif ver:
+                    self.os_variant = "fedora" + str(ver)
+
+            return ret
         else:
             if fetcher.hasFile("Fedora"):
                 logging.debug("Detected a Fedora distro")
                 return True
             return False
 
+    def _latestFedoraVariant(self):
+        import osdict
+        ret = None
+        for var in osdict.sort_helper(osdict.OS_TYPES["linux"]["variants"]):
+            if var.startswith("fedora"):
+                # Last fedora* occurence should be the newest
+                ret = var
+        return ret
+
 # Red Hat Enterprise Linux distro check
 class RHELDistro(RedHatDistro):
 
     name = "Red Hat Enterprise Linux"
-    os_type = "linux"
 
     def isValidStore(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
-            m = re.match(".*Red Hat Enterprise Linux.*", self.treeinfo.get("general", "family"))
-            return (m != None)
+            m = re.match(".*Red Hat Enterprise Linux.*",
+                         self.treeinfo.get("general", "family"))
+            ret = (m != None)
+
+            if ret:
+                self._variantFromVersion()
+            return ret
         else:
             # fall back to old code
             if fetcher.hasFile("Server"):
                 logging.debug("Detected a RHEL 5 Server distro")
+                self.os_variant = "rhel5"
                 return True
             if fetcher.hasFile("Client"):
                 logging.debug("Detected a RHEL 5 Client distro")
+                self.os_variant = "rhel5"
                 return True
             if fetcher.hasFile("RedHat"):
                 logging.debug("Detected a RHEL 4 distro")
+                self.os_variant = "rhel4"
                 return True
             return False
 
+    def _variantFromVersion(self):
+        # XXX: Version will look like '5.2', rather than just '5'. We
+        # need to support this in the os dictionary at some point, but for
+        # now, just use the '5' part
+        ver = self.treeinfo.get("general", "version")
+        if not ver:
+            return
+
+        self.os_variant = "rhel" + ver[0]
+
+
 # CentOS distro check
-class CentOSDistro(RedHatDistro):
+class CentOSDistro(RHELDistro):
 
     name = "CentOS"
-    os_type = "linux"
 
     def isValidStore(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
             m = re.match(".*CentOS.*", self.treeinfo.get("general", "family"))
-            return (m != None)
+            ret = (m != None)
+
+            if ret:
+                self._variantFromVersion()
+            return ret
         else:
             # fall back to old code
             if fetcher.hasFile("CentOS"):
@@ -449,12 +505,12 @@ class CentOSDistro(RedHatDistro):
             return False
 
 # Scientific Linux distro check
-class SLDistro(RedHatDistro):
+class SLDistro(RHELDistro):
 
     name = "Scientific Linux"
-    os_type = "linux"
-    _boot_iso_paths = RedHatDistro._boot_iso_paths + [ "images/SL/boot.iso" ]
-    _hvm_kernel_paths = RedHatDistro._hvm_kernel_paths + \
+
+    _boot_iso_paths = RHELDistro._boot_iso_paths + [ "images/SL/boot.iso" ]
+    _hvm_kernel_paths = RHELDistro._hvm_kernel_paths + \
                         [ ("images/SL/pxeboot/vmlinuz",
                            "images/SL/pxeboot/initrd.img") ]
 
@@ -462,7 +518,11 @@ class SLDistro(RedHatDistro):
         if self._hasTreeinfo(fetcher, progresscb):
             m = re.match(".*Scientific Linux.*",
                          self.treeinfo.get("general", "family"))
-            return (m != None)
+            ret = (m != None)
+
+            if ret:
+                self._variantFromVersion()
+            return ret
         else:
             if fetcher.hasFile("SL"):
                 logging.debug("Detected a Scientific Linux distro")
@@ -759,7 +819,6 @@ class DebianDistro(Distro):
 class UbuntuDistro(DebianDistro):
 
     name = "Ubuntu"
-    os_type = "linux"
 
     def _set_media_paths(self):
         DebianDistro._set_media_paths(self)

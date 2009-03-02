@@ -90,23 +90,28 @@ urls = {
     # Fedora Distros
     "fedora7" : {
         'i386'  : FEDORA_BASEURL % ("7", "i386"),
-        'x86_64': FEDORA_BASEURL % ("7", "x86_64")
+        'x86_64': FEDORA_BASEURL % ("7", "x86_64"),
+        'distro': ("linux", "fedora7")
     },
     "fedora8" : {
         'i386'  : FEDORA_BASEURL % ("8", "i386"),
-        'x86_64': FEDORA_BASEURL % ("8", "x86_64")
+        'x86_64': FEDORA_BASEURL % ("8", "x86_64"),
+        'distro': ("linux", "fedora8")
     },
     "fedora9" : {
         'i386'  : FEDORA_BASEURL % ("9", "i386"),
-        'x86_64': FEDORA_BASEURL % ("9", "x86_64")
+        'x86_64': FEDORA_BASEURL % ("9", "x86_64"),
+        'distro': ("linux", "fedora9")
     },
-    #"fedora10" : {
-    #    'i386'  : FEDORA_BASEURL % ("10", "i386")
-    #    'x86_64': FEDORA_BASEURL % ("10", "x86_64")
-    #},
+    "fedora10" : {
+        'i386'  : FEDORA_BASEURL % ("10", "i386"),
+        'x86_64': FEDORA_BASEURL % ("10", "x86_64"),
+        'distro': ("linux", "fedora10")
+    },
     "fedora-rawhide" : {
         'i386'  : FEDORA_RAWHIDE_BASEURL % ("i386"),
-        'x86_64': FEDORA_RAWHIDE_BASEURL % ("x86_64")
+        'x86_64': FEDORA_RAWHIDE_BASEURL % ("x86_64"),
+        'distro': ("linux", "fedora11")
     },
 
     # SUSE Distros
@@ -142,18 +147,22 @@ urls = {
     "centos-5-latest" : {
         'i386' : CURCENTOS_BASEURL % ("5", "i386"),
         'x86_64' : CURCENTOS_BASEURL % ("5", "x86_64"),
+        'distro': ("linux", "rhel5")
     },
     "centos-4-latest" : {
         'i386' : CURCENTOS_BASEURL % ("4", "i386"),
         'x86_64' : CURCENTOS_BASEURL % ("4", "x86_64"),
+        'distro': ("linux", None)
     },
     "centos-5.0" : {
         'i386' : OLDCENTOS_BASEURL % ("5.0", "i386"),
         'x86_64' : OLDCENTOS_BASEURL % ("5.0", "x86_64"),
+        'distro': ("linux", None)
     },
     "centos-4.0" : {
         'i386' : OLDCENTOS_BASEURL % ("4.0", "i386"),
         'x86_64' : OLDCENTOS_BASEURL % ("4.0", "x86_64"),
+        'distro': ("linux", None)
     },
 
     # Scientific Linux
@@ -204,6 +213,7 @@ urls = {
 
 }
 
+
 testconn = libvirt.open("test:///default")
 testguest = virtinst.Guest(connection=testconn, installer=virtinst.DistroInstaller())
 
@@ -230,7 +240,7 @@ class TestURLFetch(unittest.TestCase):
             fetcher.cleanupLocation()
 
 
-    def _fetchFromURLDict(self, distname, url, arch):
+    def _fetchFromURLDict(self, distname, url, arch, distro_info):
         logging.debug("\nDistro='%s' arch='%s' url=%s" % \
                       (distname, arch, url))
 
@@ -246,12 +256,34 @@ class TestURLFetch(unittest.TestCase):
             return
 
         try:
-            self._grabURLMedia(fetcher, distname, url, arch)
+            self._grabURLMedia(fetcher, distname, url, arch, distro_info)
         finally:
             fetcher.cleanupLocation()
 
+    def _checkDistroReporting(self, stores, distro_info):
+        if distro_info is None:
+            return
 
-    def _grabURLMedia(self, fetcher, distname, url, arch):
+        dtype, dvariant = distro_info
+
+        for store in stores:
+            if not store:
+                continue
+
+            t, v = store.os_type, store.os_variant
+
+            if dtype != t or dvariant != v:
+                raise RuntimeError("Store distro/variant did not match "
+                                   "expected values: %s (%s, %s) != (%s, %s)"
+                                   % (store, t, v, dtype, dvariant))
+
+            # Verify the values are valid
+            if t:
+                testguest.os_type = t
+            if v:
+                testguest.os_variant = v
+
+    def _grabURLMedia(self, fetcher, distname, url, arch, distro_info=None):
 
         check_xen = True
         if re.match(r"%s" % NOXEN_FILTER, distname):
@@ -270,6 +302,9 @@ class TestURLFetch(unittest.TestCase):
                 logging.error("(%s): expected store %s, was %s" % \
                               (distname, exp_store, s))
                 self.fail()
+
+        # Make sure the stores are reporting correct distro name/variant
+        self._checkDistroReporting([hvmstore, xenstore], distro_info)
 
         def fakeAcquireFile(filename, ignore=None):
             logging.debug("Fake acquiring %s" % filename)
@@ -350,13 +385,21 @@ class TestURLFetch(unittest.TestCase):
         keys.sort()
         assertions = 0
         for label in keys:
+            distro_info = None
             if MATCH_FILTER and not re.match(r"%s" % MATCH_FILTER, label):
                 logging.debug("Excluding '%s' from exclude filter." % label)
                 continue
+
+            if urls[label].has_key("distro"):
+                distro_info = urls[label]["distro"]
+
             for arch, url in urls[label].items():
+                if arch == "distro":
+                    continue
+
                 try:
                     print "Testing %s-%s" % (label, arch)
-                    self._fetchFromURLDict(label, url, arch)
+                    self._fetchFromURLDict(label, url, arch, distro_info)
                 except AssertionError:
                     print "%s-%s FAILED." % (label, arch)
                     assertions += 1
