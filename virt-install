@@ -655,85 +655,38 @@ def main():
 
     progresscb = progress.TextMeter()
 
+
     # we've got everything -- try to start the install
+    print _("\n\nStarting install...")
+
     try:
-        def domain_is_shutdown(dom):
-            info     = dom.info()
-            state    = info[0]
-            cpu_time = info[4]
-
-            if state == libvirt.VIR_DOMAIN_SHUTOFF:
-                return True
-
-            # If --wait was specified, the dom object we have was looked up
-            # before initially shutting down, which seems to bogus up the
-            # info data (all 0's). So, if it is bogus, assume the domain is
-            # shutdown. We will catch the error later.
-            return state == libvirt.VIR_DOMAIN_NOSTATE and cpu_time == 0
-
-        print _("\n\nStarting install...")
-
         start_time = time.time()
 
-        started = False
-        while True:
-            if not started:
-                dom = guest.start_install(conscb, progresscb, wait=(not wait))
-            elif continue_inst:
-                dom = guest.continue_install(conscb, progresscb,
-                                             wait=(not wait))
-                continue_inst = False
-            else:
-                break
+        # Do first install phase
+        dom = do_install(guest, conscb, progresscb, wait, wait_time,
+                         start_time, guest.start_install)
 
-            if dom is None:
-                print _("Guest installation failed")
-                sys.exit(0)
-            elif dom.info()[0] != libvirt.VIR_DOMAIN_SHUTOFF:
-                # domain seems to be running
-                if wait:
-                    print _("Domain installation still in progress. Waiting"+\
-                            ((wait_time > 0)
-                             and (_(" %d minutes") % (int(wait_time) / 60))
-                             or "") + \
-                            " for domain to complete installation.")
-                    while True:
-                        if domain_is_shutdown(dom):
-                            print _("Domain has shutdown. Continuing.")
-                            try:
-                                # Lookup a new domain object incase current
-                                # one returned bogus data (see comment in
-                                # domain_is_shutdown
-                                dom = guest.conn.lookupByName(guest.name)
-                            except Exception, e:
-                                raise RuntimeError(_("Could not lookup domain after install: %s" % str(e)))
-                            break
-                        if wait_time < 0 or \
-                           ((time.time() - start_time) < wait_time):
-                            time.sleep(2)
-                        else:
-                            print _("Installation has exceeded specified time"
-                                    "limit. Exiting application.")
-                            sys.exit(1)
-                else:
-                    print _("Domain installation still in progress. "
-                            "You can reconnect to \nthe console to complete "
-                            "the installation process.")
-                    sys.exit(0)
+        # This should be valid even before doing continue install
+        if not guest.post_install_check():
+            print _("Domain installation does not appear to have been\n "
+                    "successful.  If it was, you can restart your domain\n "
+                    "by running 'virsh start %s'; otherwise, please\n "
+                    "restart your installation.") % guest.name
+            sys.exit(0)
 
-            if not started:
-                started = True
-                if not guest.post_install_check():
-                    print _("Domain installation does not appear to have been\n successful.  If it was, you can restart your domain\n by running 'virsh start %s'; otherwise, please\n restart your installation.") %(guest.name,)
-                    sys.exit(0)
+        if continue_inst:
+            dom = do_install(guest, conscb, progresscb, wait, wait_time,
+                             start_time, guest.continue_install)
 
         if options.noreboot:
-            print _("Guest installation complete... you can restart your domain\n"
-                    "by running 'virsh start %s'") %(guest.name,)
+            print _("Guest installation complete... you can restart your "
+                    "domain\nby running 'virsh start %s'") % guest.name
         else:
+            # FIXME: Should we say 'installation' complete for livecd, import?
             print _("Guest installation complete... restarting guest.")
             dom.create()
             guest.connect_console(conscb)
+
     except KeyboardInterrupt, e:
         guest.terminate_console()
         print _("Guest install interrupted.")
@@ -743,8 +696,73 @@ def main():
         sys.exit(e.code)
     except Exception, e:
         print str(e)
-        print _("Domain installation may not have been\n successful.  If it was, you can restart your domain\n by running 'virsh start %s'; otherwise, please\n restart your installation.") %(guest.name,)
+        print (_("Domain installation may not have been\n successful.  If it "
+                 "was, you can restart your domain\n by running 'virsh start "
+                 "%s'; otherwise, please\n restart your installation.") %
+                 guest.name)
         raise
+
+def domain_is_shutdown(dom):
+    info     = dom.info()
+    state    = info[0]
+    cpu_time = info[4]
+
+    if state == libvirt.VIR_DOMAIN_SHUTOFF:
+        return True
+
+    # If --wait was specified, the dom object we have was looked up
+    # before initially shutting down, which seems to bogus up the
+    # info data (all 0's). So, if it is bogus, assume the domain is
+    # shutdown. We will catch the error later.
+    return state == libvirt.VIR_DOMAIN_NOSTATE and cpu_time == 0
+
+def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
+               install_func):
+
+    dom = install_func(conscb, progresscb, wait=(not wait))
+
+    if dom is None:
+        print _("Guest installation failed.")
+        sys.exit(0)
+
+    if domain_is_shutdown(dom):
+        return dom
+
+    # Domain seems to be running
+    if wait:
+        timestr = ""
+        if wait_time > 0:
+            timestr = _("%d minutes ") % (int(wait_time) / 60)
+
+        print _("Domain installation still in progress. Waiting %s"
+                 "for domain to complete installation.") % timestr
+
+        # Wait loop
+        while True:
+            if domain_is_shutdown(dom):
+                print _("Domain has shutdown. Continuing.")
+                try:
+                    # Lookup a new domain object incase current
+                    # one returned bogus data (see comment in
+                    # domain_is_shutdown
+                    dom = guest.conn.lookupByName(guest.name)
+                except Exception, e:
+                    raise RuntimeError(_("Could not lookup domain after "
+                                         "install: %s" % str(e)))
+                break
+
+            if wait_time < 0 or ((time.time() - start_time) < wait_time):
+                time.sleep(2)
+            else:
+                print _("Installation has exceeded specified time limit. "
+                        "Exiting application.")
+                sys.exit(1)
+    else:
+        print _("Domain installation still in progress. You can reconnect"
+                " to \nthe console to complete the installation process.")
+        sys.exit(0)
+
+    return dom
 
 if __name__ == "__main__":
     try:
