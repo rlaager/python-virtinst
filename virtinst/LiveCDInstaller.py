@@ -19,7 +19,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import CapabilitiesParser
 import Installer
 from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
@@ -62,21 +61,6 @@ class LiveCDInstaller(Installer.Installer):
 
     def prepare(self, guest, meter, distro = None):
         self.cleanup()
-
-        # FIXME: This caps check really shouldn't be here. We should
-        # centralize all checks like this in 'Installer'
-        capabilities = CapabilitiesParser.parse(guest.conn.getCapabilities())
-
-        found = False
-        for guest_caps in capabilities.guests:
-            if guest_caps.os_type == "hvm":
-                found = True
-                break
-
-        if not found:
-            raise LiveCDInstallerException(_("Connection does not support "
-                                             "HVM virtualisation, cannot "
-                                             "boot live CD"))
 
         if not self._install_disk:
             raise ValueError(_("CDROM media must be specified for the live "
