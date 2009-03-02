@@ -99,7 +99,7 @@ class ImageInstaller(Installer.Installer):
         self._make_disks(guest)
 
         # Ugly: for PV xen, there's no guest.features, and nothing to toggle
-        if self.type != "xen":
+        if self.os_type != "xen":
             for f in ['pae', 'acpi', 'apic']:
                 if self.boot_caps.features[f] & Cap.FEATURE_ON:
                     guest.features[f] = True
