@@ -533,6 +533,12 @@ class Guest(object):
         val = self._lookup_osdict_key("continue")
         if not val:
             val = False
+
+        if val == True:
+            # If we are doing an 'import' or 'liveCD' install, there is
+            # no true install process, so continue install has no meaning
+            if not self.get_config_xml(install=True):
+                val = False
         return val
 
     def continue_install(self, consolecb, meter, wait=True):
