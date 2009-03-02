@@ -145,6 +145,13 @@ size (in GB) to use if creating new storage
 whether to skip fully allocating newly created storage. Value is 'true' or
 'false'. Default is 'true' (do not fully allocate).
 
+=item B<cache>
+
+The cache mode to be used. The host pagecache provides cache memory.
+The cache value can be 'none', 'writethrough', or 'writeback'.
+'writethrough' provides read caching. 'writeback' provides
+read and write caching.
+
 =back
 
 See the examples section for some uses. This option deprecates C<--file>,

@@ -138,6 +138,8 @@ args = {
                                                        "vol-noexist")},
                      { 'conn' : testconn, 'volName' : ( 1234,
                                                        "vol-noexist")},
+                     { 'path' : 'valid', 'size' : 1,
+                       'driverCache' : 'invalid' },
                     ],
 
         'valid' :   [{ 'path' : '/dev/loop0' },
@@ -151,6 +153,8 @@ args = {
                      { 'conn' : testconn, 'path' : "/pool-exist/vol-noexist",
                        'size' : 1 },
                      { 'conn' : testconn, 'volInstall': volinst},
+                     { 'path' : 'nonexist', 'size' : 1,
+                       'driverCache' : 'writethrough' },
                     ]
                 },
     'shareable' : {

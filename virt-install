@@ -80,6 +80,7 @@ def parse_disk_option(guest, path, size):
     shared = False
     sparse = True
     bus = None
+    cache = None
 
     # Strip media type
     if path.startswith("path="):
@@ -130,6 +131,8 @@ def parse_disk_option(guest, path, size):
                 sparse = False
             else:
                 fail(_("Unknown '%s' value '%s'") % (opt_type, opt_val))
+        elif opt_type == "cache":
+            cache = opt_val
         else:
             fail(_("Unknown --disk option '%s'.") % (opt,))
 
@@ -165,7 +168,7 @@ def parse_disk_option(guest, path, size):
 
     if not devtype:
         devtype = virtinst.VirtualDisk.DEVICE_DISK
-    ret = (abspath, voltuple, volinst, devtype, bus, ro, shared, size, sparse)
+    ret = (abspath, voltuple, volinst, devtype, bus, ro, shared, size, sparse, cache)
     logging.debug("parse_disk: returning %s" % str(ret))
     return ret
 
@@ -181,14 +184,15 @@ def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
         else:
             (path, voltuple, volinst,
              device, bus, readOnly, shared,
-             size, sparse) = parse_disk_option(guest, disk, size)
+             size, sparse, cache) = parse_disk_option(guest, disk, size)
             if not sparse and volinst:
                 volinst.allocation = volinst.capacity
 
         d = virtinst.VirtualDisk(path=path, size=size, sparse=sparse,
                                  volInstall=volinst, volName=voltuple,
                                  readOnly=readOnly, shareable=shared,
-                                 device=device, bus=bus, conn=guest.conn)
+                                 device=device, bus=bus, conn=guest.conn,
+                                 driverCache=cache)
         # Default file backed PV guests to tap driver
         if d.type == virtinst.VirtualDisk.TYPE_FILE \
            and not(hvm) and virtinst.util.is_blktap_capable():

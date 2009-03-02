@@ -86,6 +86,12 @@ class VirtualDisk(VirtualDevice):
     driver_types = [DRIVER_TAP_RAW, DRIVER_TAP_QCOW,
         DRIVER_TAP_VMDK, DRIVER_TAP_VDISK]
 
+    CACHE_MODE_NONE = "none"
+    CACHE_MODE_WRITETHROUGH = "writethrough"
+    CACHE_MODE_WRITEBACK = "writeback"
+    cache_types = [CACHE_MODE_NONE, CACHE_MODE_WRITETHROUGH,
+        CACHE_MODE_WRITEBACK]
+
     DEVICE_DISK = "disk"
     DEVICE_CDROM = "cdrom"
     DEVICE_FLOPPY = "floppy"
@@ -98,7 +104,8 @@ class VirtualDisk(VirtualDevice):
     def __init__(self, path=None, size=None, transient=False, type=None,
                  device=DEVICE_DISK, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
-                 volInstall=None, volName=None, bus=None, shareable=False):
+                 volInstall=None, volName=None, bus=None, shareable=False,
+                 driverCache=None):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -131,6 +138,8 @@ class VirtualDisk(VirtualDevice):
         @type bus: C{str}
         @param shareable: If disk can be shared among VMs
         @type shareable: C{bool}
+        @param driverCache: Disk cache mode (none, writethrough, writeback)
+        @type driverCache: member of cache_types
         """
 
         VirtualDevice.__init__(self, conn=conn)
@@ -145,6 +154,7 @@ class VirtualDisk(VirtualDevice):
         self._vol_install = None
         self._bus = None
         self._shareable = None
+        self._driver_cache = None
 
         # XXX: No property methods for these
         self.transient = transient
@@ -162,6 +172,7 @@ class VirtualDisk(VirtualDevice):
         self._set_vol_install(volInstall, validate=False)
         self._set_bus(bus, validate=False)
         self._set_shareable(shareable, validate=False)
+        self._set_driver_cache(driverCache, validate=False)
 
         if volName:
             self.__lookup_vol_name(volName)
@@ -271,6 +282,16 @@ class VirtualDisk(VirtualDevice):
         self._check_bool(val, "shareable")
         self.__validate_wrapper("_shareable", val, validate)
     shareable = property(_get_shareable, _set_shareable)
+
+    def _get_driver_cache(self):
+        return self._driver_cache
+    def _set_driver_cache(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "cache")
+            if val not in self.cache_types:
+                raise ValueError, _("Unknown cache mode '%s'" % val)
+        self.__validate_wrapper("_driver_cache", val, validate)
+    driver_cache = property(_get_driver_cache, _set_driver_cache)
 
     # Validation assistance methods
 
@@ -657,13 +678,21 @@ class VirtualDisk(VirtualDevice):
 
         ret = "    <disk type='%s' device='%s'>\n" % (self.type, self.device)
 
+        dname = self.driver_name
+        if not dname and self.driver_cache:
+            self.driver_name = "qemu"
+
         if not self.driver_name is None:
             dtypexml = ""
             if not self.driver_type is None:
                 dtypexml = " type='%s'" % self.driver_type
 
-            ret += "      <driver name='%s'%s/>\n" % (self.driver_name,
-                                                      dtypexml)
+            dcachexml = ""
+            if not self.driver_cache is None:
+                dcachexml = " cache='%s'" % self.driver_cache
+
+            ret += "      <driver name='%s'%s%s/>\n" % (self.driver_name,
+                                                      dtypexml, dcachexml)
 
         if path is not None:
             ret += "      <source %s='%s'/>\n" % (typeattr, path)
