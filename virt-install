@@ -605,6 +605,10 @@ def main():
                      options.sdl, options.keymap, guest)
 
     get_extraargs(options.extra, guest)
+    if options.distro_type:
+        guest.set_os_type(options.distro_type)
+    if options.distro_variant:
+        guest.set_os_variant(options.distro_variant)
 
     # and now for the full-virt vs paravirt specific questions
     get_install_media(options.location, options.cdrom, options.pxe,
@@ -616,10 +620,6 @@ def main():
             guest.features["acpi"] = False
         if options.noapic:
             guest.features["apic"] = False
-        if options.distro_type:
-            guest.set_os_type(options.distro_type)
-        if options.distro_variant:
-            guest.set_os_variant(options.distro_variant)
         continue_inst = guest.get_continue_inst()
 
     def show_console(dom):
