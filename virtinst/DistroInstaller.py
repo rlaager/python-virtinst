@@ -231,3 +231,29 @@ class DistroInstaller(Installer.Installer):
         return self._get_osblob_helper(isinstall=isinstall, guest=guest,
                                        kernel=self.install, bootdev=bootdev)
 
+    def detect_distro(self):
+        try:
+            dist_info = OSDistro.detectMediaDistro(location=self.location,
+                                                   arch=self.arch)
+        except:
+            logging.exception("Error attempting to detect distro.")
+            return (None, None)
+
+        print dist_info
+        # Verify these are valid values
+        dtype, dvariant = dist_info
+        import osdict
+
+        if dtype and osdict.OS_TYPES.has_key(dtype):
+            if not (dvariant and
+                    osdict.OS_TYPES[dtype]["variants"].has_key(dvariant)):
+                logging.debug("Variant returned from detect_distro is not "
+                              "valid: %s" % dvariant)
+                dvariant = None
+        else:
+            logging.debug("Type returned from detect_distro is not valid: %s"
+                          % dtype)
+            dtype = None
+            dvariant = None
+
+        return (dtype, dvariant)

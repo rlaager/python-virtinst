@@ -310,6 +310,16 @@ class Installer(object):
         return (len(buf) == 512 and
                 struct.unpack("H", buf[0x1fe: 0x200]) == (0xaa55,))
 
+    def detect_distro(self):
+        """
+        Attempt to detect the distro for the Installer's 'location'. If
+        an error is encountered in the detection process (or if detection
+        is not relevant for the Installer type), (None, None) is returned
+
+        @returns: (distro type, distro variant) tuple
+        """
+        return (None, None)
+
     def guest_from_installer(self):
         """
         Return a L{Guest} instance wrapping the current installer.
