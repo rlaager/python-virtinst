@@ -27,6 +27,7 @@ from optparse import OptionValueError, OptionParser
 
 import libvirt
 import _util
+import virtinst
 from virtinst import CapabilitiesParser, VirtualNetworkInterface, \
                      VirtualGraphics, VirtualAudio, User
 from virtinst import _virtinst as _
@@ -359,6 +360,15 @@ def get_sound(sound, guest):
     # distros
     if sound:
         guest.sound_devs.append(VirtualAudio(model="es1370"))
+
+def get_hostdevs(hostdevs, guest):
+    if not hostdevs:
+        return
+
+    for devname in hostdevs:
+        dev = virtinst.VirtualHostDevice.device_from_node(conn=guest.conn,
+                                                          name=devname)
+        guest.hostdevs.append(dev)
 
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):

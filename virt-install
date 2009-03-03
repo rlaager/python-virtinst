@@ -604,6 +604,9 @@ def main():
     cli.get_graphics(options.vnc, options.vncport, options.nographics,
                      options.sdl, options.keymap, guest)
 
+    # Set host device info
+    cli.get_hostdevs(options.hostdevs, guest)
+
     get_extraargs(options.extra, guest)
     if options.distro_type:
         guest.set_os_type(options.distro_type)

@@ -134,6 +134,11 @@ require an C<--os-type> to be specified. Valid values are:
 
 ::VARIANT VALUES::
 
+=item --host-device=HOSTDEV
+
+Attach a physical host device to the guest. HOSTDEV is a node device name
+as used by libvirt (as shown by 'virsh nodedev-list').
+
 =back
 
 =head2 Full Virtualization specific options
