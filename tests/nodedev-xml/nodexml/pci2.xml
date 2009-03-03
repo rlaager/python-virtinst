@@ -1,0 +1,12 @@
+<device>
+  <name>pci_8086_1049</name>
+  <parent>computer</parent>
+  <capability type='pci'>
+    <domain>0</domain>
+    <bus>0</bus>
+    <slot>25</slot>
+    <function>0</function>
+    <product id='0x1049'>82566MM Gigabit Network Connection</product>
+    <vendor id='0x8086'>Intel Corporation</vendor>
+  </capability>
+</device>

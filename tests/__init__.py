@@ -70,4 +70,5 @@ import image
 import storage
 import urltest
 import clonetest
+import nodedev
 

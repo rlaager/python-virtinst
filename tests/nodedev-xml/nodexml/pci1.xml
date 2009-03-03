@@ -1,0 +1,12 @@
+<device>
+  <name>pci_1180_592</name>
+  <parent>pci_8086_2448</parent>
+  <capability type='pci'>
+    <domain>0</domain>
+    <bus>21</bus>
+    <slot>0</slot>
+    <function>4</function>
+    <product id='0x0592'>R5C592 Memory Stick Bus Host Adapter</product>
+    <vendor id='0x1180'>Ricoh Co Ltd</vendor>
+  </capability>
+</device>

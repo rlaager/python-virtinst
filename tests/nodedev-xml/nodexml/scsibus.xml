@@ -1,0 +1,7 @@
+<device>
+  <name>usb_device_781_5151_2004453082054CA1BEEE_if0_scsi_host_0</name>
+  <parent>usb_device_781_5151_2004453082054CA1BEEE_if0</parent>
+  <capability type='scsi_host'>
+    <host>5</host>
+  </capability>
+</device>

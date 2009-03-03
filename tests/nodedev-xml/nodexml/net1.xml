@@ -1,0 +1,9 @@
+<device>
+  <name>net_00_1c_25_10_b1_e4</name>
+  <parent>pci_8086_1049</parent>
+  <capability type='net'>
+    <interface>eth0</interface>
+    <address>00:1c:25:10:b1:e4</address>
+    <capability type='80203'/>
+  </capability>
+</device>

@@ -1,0 +1,10 @@
+<device>
+  <name>usb_device_781_5151_2004453082054CA1BEEE_if0</name>
+  <parent>usb_device_781_5151_2004453082054CA1BEEE</parent>
+  <capability type='usb'>
+    <number>0</number>
+    <class>8</class>
+    <subclass>6</subclass>
+    <protocol>80</protocol>
+  </capability>
+</device>

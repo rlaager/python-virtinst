@@ -1,0 +1,17 @@
+<device>
+  <name>computer</name>
+  <capability type='system'>
+    <hardware>
+      <vendor>LENOVO</vendor>
+      <version>ThinkPad T61</version>
+      <serial>L3B2616</serial>
+      <uuid>97e80381-494f-11cb-8e0e-cbc168f7d753</uuid>
+    </hardware>
+    <firmware>
+      <vendor>LENOVO</vendor>
+      <version>7LET51WW (1.21 )</version>
+      <release_date>08/22/2007</release_date>
+    </firmware>
+  </capability>
+</device>
+

@@ -1,0 +1,11 @@
+<device>
+  <name>usb_device_781_5151_2004453082054CA1BEEE_if0_scsi_host_0_scsi_device_lun0</name>
+  <parent>usb_device_781_5151_2004453082054CA1BEEE_if0_scsi_host_0</parent>
+  <capability type='scsi'>
+    <host>5</host>
+    <bus>0</bus>
+    <target>0</target>
+    <lun>0</lun>
+    <type>disk</type>
+  </capability>
+</device>

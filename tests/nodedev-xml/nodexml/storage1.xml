@@ -1,0 +1,12 @@
+<device>
+  <name>storage_serial_SATA_WDC_WD1600AAJS__WD_WCAP95119685</name>
+  <parent>pci_8086_27c0_scsi_host_scsi_device_lun0</parent>
+  <capability type='storage'>
+    <block>/dev/sda</block>
+    <bus>scsi</bus>
+    <drive_type>disk</drive_type>
+    <model>WDC WD1600AAJS-2</model>
+    <vendor>ATA</vendor>
+    <size>160041885696</size>
+  </capability>
+</device>
