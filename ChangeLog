@@ -1,9 +1,684 @@
+2009-03-03  Cole Robinson  <crobinso@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_400_2 for changeset aac8602d12ea
+	[e3750eb9caff] [tip]
+
+	* NEWS, setup.py:
+	Bump release.
+	[aac8602d12ea] [virtinst-0_400_2]
+
+	* man/en/virt-clone.1, man/en/virt-convert.1, man/en/virt-image.1,
+	man/en/virt-install.1, po/fr.po, po/it.po, po/ja.po, po/pl.po,
+	po/pt_BR.po, po/sr.po, po/sr@latin.po, po/virtinst.pot, po/zh_CN.po:
+	Update man pages + translations.
+	[15537c943b78]
+
+	* virt-install:
+	_Actually_ add virt-install --host-device option.
+	[353b29df730b]
+
+	* man/en/virt-install.pod.in, virt-install, virtinst/cli.py:
+	virt-install: Add --host-device command.
+	[0c9c1c547e22]
+
+	* tests/nodedev-xml/devxml/pcidev.xml, tests/nodedev-
+	xml/devxml/usbdev1.xml, tests/nodedev-xml/devxml/usbdev2.xml,
+	tests/nodedev.py, virtinst/Guest.py, virtinst/NodeDeviceParser.py,
+	virtinst/VirtualHostDevice.py, virtinst/__init__.py:
+	Add VirtualHostDevice classes, for attaching physical host devices
+	to a guest.
+	[f60fa0fbc033]
+
+	* tests/__init__.py, tests/nodedev-xml/nodexml/net1.xml, tests
+	/nodedev-xml/nodexml/net2.xml, tests/nodedev-xml/nodexml/pci1.xml,
+	tests/nodedev-xml/nodexml/pci2.xml, tests/nodedev-
+	xml/nodexml/scsibus.xml, tests/nodedev-xml/nodexml/scsidev.xml,
+	tests/nodedev-xml/nodexml/storage1.xml, tests/nodedev-
+	xml/nodexml/storage2.xml, tests/nodedev-xml/nodexml/system.xml,
+	tests/nodedev-xml/nodexml/usbbus.xml, tests/nodedev-
+	xml/nodexml/usbdev1.xml, tests/nodedev-xml/nodexml/usbdev2.xml,
+	tests/nodedev.py, virtinst/NodeDeviceParser.py:
+	Add NodeDeviceParser module for parsing libvirt host device xml.
+	[762cb24e040d]
+
+	* man/en/virt-clone.1, man/en/virt-clone.pod, man/en/virt-convert.1,
+	man/en/virt-convert.pod, man/en/virt-image.1, man/en/virt-image.pod,
+	man/en/virt-install.1, man/en/virt-install.pod.in, virt-image, virt-
+	install:
+	Clean up man pages to have sub catagories, just update them all
+	around.
+	[5b2b4d8ab290]
+
+	* man/en/virt-convert.pod, man/en/virt-image.pod, virt-image:
+	Add --os-type/variant options to virt-image.
+	[a883b300179f]
+
+	* INSTALL, MANIFEST.in, man/en/virt-convert.pod, man/en/virt-
+	install.pod, man/en/virt-install.pod.in, setup.py:
+	Update virt-install man page at 'dist' time with latest os
+	type/variants.
+	[67c2c9b1d9e7]
+
+	* virtinst/osdict.py:
+	Add newer ubuntu variants to osdict (Soren Hansen)
+	[6c23e1a56c0a]
+
+2009-03-02  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/ImageManager.py:
+	Fix ImageInstaller to correctly not set 'features' for PV guests.
+	[2ee712d00490]
+
+	* virt-install:
+	Use os-type/variant regardless of FV vs. PV.
+	[2e33834fe7e9]
+
+	* AUTHORS:
+	Fix authors spelling.
+	[d4e0b5d98c24]
+
+	* AUTHORS, man/en/virt-install.pod, tests/validation.py, virt-install,
+	virtinst/VirtualDisk.py:
+	Add virt-install --disk 'cache' option (Ben Kochie)
+	[52032ccd3372]
+
+	* virt-install:
+	Clean up virt-install install process.
+	[0d1919dcdeb2]
+
+	* virtinst/Guest.py:
+	Don't continue_install if there is no install phase (import, livecd)
+	[21a2e6f705de]
+
+2009-03-01  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/pylint-virtinst.sh:
+	Add clearer docs to pylint script about actual bugs.
+	[9f02b1bb16e2]
+
+	* virtinst/VirtualDisk.py:
+	Clean up VirtualDisk xml building a bit.
+	[bdf149a13505]
+
+	* virtinst/LiveCDInstaller.py:
+	LiveCDInstaller: Remove no longer relevant validation check.
+	[6aeb0e181c69]
+
+	* virtinst/DistroInstaller.py, virtinst/Installer.py:
+	Add Installer detect_distro method.
+
+	Calls out to OSDistro to auto determine the OS type/variant of the
+	media.
+	[8f81f9015bd2]
+
+	* tests/urltest.py, virtinst/OSDistro.py:
+	Detect os variant from Distro stores (only for RH distros at the
+	moment).
+	[526f04425ef7]
+
+2009-02-26  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	Option to return VM names from is_conflict_disk.
+	[64fb3cf0c673]
+
+2009-02-23  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod, virt-install:
+	Add virt-install --import option, to use the ImportInstaller
+	[cadf160cc77d]
+
+	* tests/pylint-virtinst.sh, tests/xmlconfig-xml/install-fullyvirt-
+	import.xml, tests/xmlconfig-xml/install-paravirt-import.xml,
+	tests/xmlconfig.py, virtinst/ImportInstaller.py,
+	virtinst/ParaVirtGuest.py, virtinst/__init__.py:
+	Add ImportInstaller class.
+
+	Used for creating guest xml around an existing disk image. Just uses
+	the first Guest disk device as the assumed boot device.
+	[b0bc2678e2cb]
+
+	* man/en/virt-clone.pod, virt-clone:
+	Add --original-xml option to virt-clone
+
+	Allows passing a libvirt xml file to use as the original guest,
+	rather than require an existing defined guest on the connection.
+	[da64d8dda68b]
+
+	* virtinst/osdict.py:
+	Add Fedora 11 osdict entry. Default to USB tablet for mouse device.
+	[65294f71833d]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py:
+	Move continue_install functions from FullVirtGuest to Guest.
+	[f5f29867456b]
+
+	* tests/validation.py, virtinst/Guest.py:
+	Check if VM name is already in use at name set time.
+	[eeda94ec8ada]
+
+2009-02-22  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/OSDistro.py:
+	Fix URL installs wrt recent internal API changes.
+	[48cb6fe4e415]
+
+2009-02-21  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py, virtinst/VirtualNetworkInterface.py,
+	virtinst/util.py:
+	Expand util.xml_get_path to take an arbitrary xml parse function.
+
+	Use this to simplify some xml parsing in the codebase.
+	[128d0ea5655e]
+
+	* virtinst/VirtualDisk.py, virtinst/VirtualNetworkInterface.py,
+	virtinst/_util.py:
+	Factor out duplicate domain lookup code to util.fetch_all_guests
+	[ccd4b8532800]
+
+2009-02-21  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/DistroInstaller.py:
+	Fix error message typo.
+	[a9b6fd658aa6]
+
+2009-02-21  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Remove useless check in Guest
+	[2c7536c6eea2]
+
+2009-02-18  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CapabilitiesParser.py:
+	Improve a CapabilitiesParser error.
+	[593e2a776396]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/LiveCDInstaller.py, virtinst/ParaVirtGuest.py,
+	virtinst/_util.py:
+	Centralize more xml building in Guest class
+	[e4e3827df729]
+
+	* tests/pylint-virtinst.sh, virt-image, virt-install,
+	virtinst/CapabilitiesParser.py, virtinst/Installer.py:
+	Add guest_from_installer helper method to Installer class.
+
+	The method returns a valid Guest instance built around the
+	installers values, since the installer instance has all the info we
+	need to decide what the user wants for a Guest class.
+
+	Also add a 'guest_lookup' method to CapabilitiesParser, which allows
+	a one stop function for requesting if a virt type is available and
+	returning the appropriate Capabilities objects, with useful error
+	messages.
+	[c5119665f2ca]
+
+	* virtinst/DistroInstaller.py, virtinst/FullVirtGuest.py,
+	virtinst/Guest.py, virtinst/ImageManager.py,
+	virtinst/LiveCDInstaller.py, virtinst/PXEInstaller.py:
+	Some formatting and comment cleanup across the board.
+	[bb58d105db97]
+
+	* tests/pylint-virtinst.sh, virtinst/DistroInstaller.py,
+	virtinst/FullVirtGuest.py, virtinst/ImageManager.py,
+	virtinst/Installer.py, virtinst/LiveCDInstaller.py,
+	virtinst/PXEInstaller.py, virtinst/ParaVirtGuest.py:
+	Add public 'get_install_xml' function to installer classes.
+
+	This basically swaps out _get_osblob with get_install_xml. There is
+	now a public interface for querying the installers xml which is
+	ideally future proof by passing the 'Guest' object for all the
+	needed parameters.
+	[cd4d3e7353cb]
+
+	* virt-clone:
+	Fix out of bounds error with virt-clone disk prompting.
+	[2fdf8457b292]
+
+	* tests/validation.py, virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ImageManager.py, virtinst/Installer.py,
+	virtinst/ParaVirtGuest.py:
+	Move arch prop from installer to guest
+	[488a2374cad9]
+
+	* tests/validation.py, virt-image, virtinst/ImageManager.py:
+	Allow passing a connection to ImageInstaller.
+
+	Also add ImageInstaller validation testing.
+	[28278c40459e]
+
+	* virtinst/Guest.py, virtinst/Storage.py, virtinst/_util.py:
+	Factor out duplicate name validation.
+	[a9cf7aa88c93]
+
+	* virtinst/__init__.py:
+	Add 'Storage' module to the public API.
+	[c4207d53197c]
+
+	* tests/pylint-virtinst.sh, virtinst/Guest.py,
+	virtinst/ImageManager.py, virtinst/Installer.py,
+	virtinst/Storage.py, virtinst/VirtualAudio.py,
+	virtinst/VirtualGraphics.py, virtinst/VirtualNetworkInterface.py:
+	Enable 'defined outside __init__' pylint checks and fix associated
+	errors.
+	[a16fe3e9e467]
+
+	* tests/xmlconfig-xml/boot-fullyvirt-pxe-nodisks.xml, tests/xmlconfig-
+	xml/boot-fullyvirt-pxe.xml, tests/xmlconfig-xml/install-fullyvirt-
+	pxe-nodisks.xml, tests/xmlconfig-xml/install-fullyvirt-pxe.xml,
+	tests/xmlconfig.py, virtinst/PXEInstaller.py:
+	If PXE installing and no disks attached to VM, always boot PXE.
+	[8a3a5dcad488]
+
+	* tests/xmlconfig-xml/install-paravirt-disk-block.xml, tests
+	/xmlconfig-xml/install-paravirt-disk-drv-file.xml, tests/xmlconfig-
+	xml/install-paravirt-disk-drv-phy.xml, tests/xmlconfig-xml/install-
+	paravirt-disk-drv-tap-qcow.xml, tests/xmlconfig-xml/install-
+	paravirt-disk-drv-tap.xml, tests/xmlconfig-xml/install-paravirt-
+	disk-file.xml, tests/xmlconfig-xml/install-paravirt-many-disks.xml,
+	virtinst/DistroInstaller.py, virtinst/FullVirtGuest.py,
+	virtinst/ImageManager.py, virtinst/Installer.py,
+	virtinst/LiveCDInstaller.py, virtinst/PXEInstaller.py,
+	virtinst/ParaVirtGuest.py:
+	Pass Guest instance to Installer._get_osblob.
+
+	Rather than pull out each individual piece of info we need (ishvm,
+	arch, loader).
+	[07e0d893a925]
+
+	* tests/urltest.py, virt-image, virt-install,
+	virtinst/DistroInstaller.py, virtinst/FullVirtGuest.py,
+	virtinst/Guest.py, virtinst/OSDistro.py:
+	Make 'arch' an attribute of all guest classes.
+
+	As such, try to fix up all places where 'arch' is optional
+	(OSDistro, etc.) Remove lots of uses of 'platform' and 'uname' since
+	they aren't applicable in the remote case anyways.
+	[caf166fc4cde]
+
+	* virtinst/Installer.py:
+	Add some general documentation on what Installers do
+	[bd36436ab060]
+
+	* virtinst/OSDistro.py:
+	Centralize Distro instantiation.
+	[ea29abe3feec]
+
+	* setup.py:
+	Fix url test suite if not specifying a local path.
+	[6595233a24e8]
+
+	* tests/xmlconfig.py:
+	Use helper functions for xmlconfig test.
+	[e5be89fd0446]
+
+	* virtinst/CloneManager.py:
+	Accomodate no passed meter in CloneManager
+	[7f388a491d46]
+
+	* virt-clone, virtinst/CloneManager.py, virtinst/VirtualDisk.py:
+	virt-clone: better prompting/command line interaction for storage
+	paths.
+	[fd1dc7a47b71]
+
+	* virt-clone:
+	Print confirmation when virt-clone finishes.
+	[1a8bff126e32]
+
+	* tests/__init__.py, tests/image-xml/image2guest/image-xenfv32.xml,
+	tests/xmlconfig-xml/boot-fullyvirt-disk-block.xml, tests/xmlconfig-
+	xml/boot-fullyvirt-disk-file.xml, tests/xmlconfig-xml/install-
+	fullyvirt-disk-block.xml, tests/xmlconfig-xml/install-fullyvirt-
+	disk-file.xml, tests/xmlconfig-xml/install-fullyvirt-livecd.xml,
+	tests/xmlconfig-xml/install-fullyvirt-pxe.xml, tests/xmlconfig-xml
+	/misc-xml-escaping.xml, virtinst/VirtualGraphics.py:
+	Populate SDL display and xauth xml attributes in VirtualGraphics.
+	[75525ce5edc2]
+
+2009-02-16  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualAudio.py, virtinst/VirtualGraphics.py:
+	Have all device classes extend VirtualDevice
+	[55b216e9b217]
+
+2009-02-15  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/keytable.py, virtinst/util.py:
+	Be a bit more intelligent when trying to determine VNC keymaps.
+	[b9a4f2d775ca]
+
+2009-02-13  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Installer.py:
+	Set default install _os_type value.
+	[fc17a264e2a5]
+
+2009-02-12  John Levon  <john.levon@sun.com>
+
+	* virtconv/parsers/virtimage.py:
+	Fix virt-convert osdict usage
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[d8c2fc154a87]
+
+2009-02-10  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/pylint-virtinst.sh, virtinst/OSDistro.py:
+	Accommodate yet more pylint.
+	[e89c559da3ff]
+
+	* virtinst/ImageFetcher.py:
+	Use urlgrabber for LocalImageFetcher
+	[848709f8f4d9]
+
+	* virtinst/User.py:
+	Fix User pylint.
+	[359f95e86214]
+
+	* virtinst/ImageFetcher.py:
+	Use safe path building function for local image fetchers.
+	[50c21b120489]
+
+	* virtinst/DistroInstaller.py:
+	Protect against unspecified connection in distroinstaller.
+	[c5a5a1418151]
+
+	* setup.py, tests/urltest.py, tests/validation.py:
+	Allow specifying local file paths (isos, dirs) to test_urls
+	[a87c0b61114e]
+
+	* virtinst/OSDistro.py:
+	Check we have mandriva VERSION before attempting to fetch
+	[a81a68dd07ed]
+
+	* tests/urltest.py:
+	urltest: Try to handle the occasionaly proxy error
+	[f21a2c8f36cc]
+
+	* virtinst/OSDistro.py:
+	Factor out some duplicate fetching code in OSDistro.
+	[9fc35967030e]
+
+2009-02-09  Cole Robinson  <crobinso@redhat.com>
+
+	* HACKING, virtinst/__init__.py:
+	Document the public API.
+	[0e42b4fd325f]
+
+	* tests/urltest.py, virtinst/CloneManager.py,
+	virtinst/DistroInstaller.py, virtinst/DistroManager.py,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ImageManager.py, virtinst/Installer.py,
+	virtinst/LiveCDInstaller.py, virtinst/OSDistro.py,
+	virtinst/PXEInstaller.py, virtinst/ParaVirtGuest.py,
+	virtinst/VirtualAudio.py, virtinst/VirtualGraphics.py,
+	virtinst/VirtualNetworkInterface.py, virtinst/__init__.py:
+	Break out Device and Installer classes to their own files.
+
+	From Guest.py: Break out VirtualAudio to VirtualAudio.py Break
+	out VirtualGraphics to VirtualGraphics.py Break out
+	VirtualNetworkInterface to VirtualNetworkInterface.py Break out
+	Installer to Installer.py
+
+	From DistroManager.py: Break out PXEInstaller to PXEInstaller.py
+	Move distro fetch helpers to OSDistro
+
+	Rename DistroManager.py to DistroInstaller.py
+	[8efdc357ba55]
+
+	* virt-install:
+	Fix --wait 0 to imply --noautoconsole
+	[e5d7877dbd7c]
+
+2009-02-07  "Cole Robinson  <crobinso@redhat.com>
+
+	* virt-install:
+	Clean up variable names in virt-install
+	[e757b7dc583a]
+
+2009-02-06  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/validation.py, virtinst/LiveCDInstaller.py:
+	Validate livecd installer location at set time, rather than
+	prepare() time.
+	[a61838f66abf]
+
+	* virt-install:
+	Hook up specifying disk as 'shareable' via virt-install cli.
+	[c289f6de6bfe]
+
+	* tests/validation.py, virtinst/VirtualDisk.py:
+	Allow specifying 'shareable' attribute to VirtualDisk
+	[a20f371eb6fa]
+
+	* po/zh-CN.po, po/zh_CN.po:
+	Renaming zh_CN translation file.
+	[b070b354ebe4]
+
+2009-02-06  john  <john.levon@sun.com>
+
+	* virt-install, virtinst/Guest.py:
+	Kill console process if control-C is pressed
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[f9800a2a6a89]
+
+	* virt-install:
+	Default --wait indefinitely for Windows
+
+	If we're installing a Windows guest, it will reboot during the
+	installation. Default to waiting in this case so virt-install is
+	still around to manage the reboot.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[dd23099a893b]
+
+	* virt-install:
+	Clean up help message for --livecd
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[5c35b7e74947]
+
+2009-01-30  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod:
+	virt-install man page type s/bux/bus (Guido Gunther)
+	[446816fe543f]
+
+2009-01-30  john  <john.levon@sun.com>
+
+	* man/en/virt-install.pod, virt-install:
+	Add --nonetworks option
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[d4e641b66ddd]
+
+2009-01-30  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py:
+	Add CloneManager API to return VirtualDisk objs for original/clone
+	disks.
+
+	Now we carry these instances around internally, providing a nice way
+	to contain size, type, and path info, rather than deal with multiple
+	lists. This also gives us remote/storage awareness (though we can't
+	do anything with it yet).
+	[cb2b07d4c1b5]
+
+	* tests/clone-xml/empty-disks-in.xml, tests/clone-xml/general-cfg-
+	in.xml, tests/clone-xml/noclone-storage-in.xml, tests/clone-xml
+	/noclone-storage-out.xml, tests/clone-xml/readonly-disks-in.xml,
+	tests/clonetest.py:
+	Touch some temp files for clone testing.
+	[1297d5f45cf6]
+
+	* tests/clone-xml/empty-disks-out.xml, tests/clone-xml/general-cfg-
+	in.xml, tests/clone-xml/general-cfg-out.xml, tests/clone-xml
+	/readonly-disks-out.xml, tests/clonetest.py:
+	Alter clone test suite to test File->Block and Block->File
+	[75baa5f68d64]
+
+	* virtinst/CloneManager.py:
+	Move more functionality into _local_clone.
+	[619215b828bf]
+
+	* virtinst/DistroManager.py, virtinst/VirtualDisk.py,
+	virtinst/_util.py:
+	Have VirtualDisk set 'size' for existing storage.
+	[0e83ad363431]
+
+	* tests/validation.py, virtinst/CloneManager.py:
+	Check clone name collision and set time.
+	[ebd4a1ab7f85]
+
+2009-01-29  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py:
+	Generate UUID at init time in CloneManager
+	[33ba759d3ea6]
+
+	* virtinst/CloneManager.py:
+	Define clone VM before duplicating any storage.
+
+	This way if the 'define' step fails, we haven't wasted the users
+	time.
+	[8802a0d44f15]
+
+	* tests/clone-xml/noclone-storage-in.xml, tests/clone-xml/noclone-
+	storage-out.xml, tests/clonetest.py, tests/pylint-virtinst.sh:
+	Add clone tests for remote VM cloning.
+	[d74eb578f3fd]
+
+	* virt-clone, virtinst/CloneManager.py, virtinst/cli.py:
+	Have virt-clone validation be a bit more remote URI and storage
+	aware.
+	[18487c022750]
+
+	* virtinst/VirtualDisk.py:
+	Improve some VirtualDisk error messages when looking up remote
+	storage.
+	[28cfa8af62d4]
+
+	* virtinst/VirtualDisk.py:
+	Fix VirtualDisk.path building for a vol_install object.
+
+	Also touch up some log messages in that area.
+	[1700abba882a]
+
+2009-01-30  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py:
+	Refactor disk cloning to provide better validation.
+
+	Essentially, break out cloning into two loops: one to validate and
+	choose clone method, one to do the actual cloning. This way we can
+	catch failures early, rather than after cloning a disk or two.
+	[44dee1dd1836]
+
+2009-01-29  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-clone.pod, tests/validation.py, virt-clone,
+	virtinst/CloneManager.py:
+	UUID has never been a valid value for virt-clone original guest.
+
+	And since no one has ever reported a bug, just remove the behavior
+	and change the docs.
+
+	Also centralized original guest name validation to be done at set
+	time.
+	[f9c4be9bf6fc]
+
+2009-01-28  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py:
+	Break out cloning of local storage to its own function.
+	[6715c9f199c7]
+
+2009-01-29  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clone-xml/empty-disks-in.xml, tests/clone-xml/empty-disks-
+	out.xml, tests/clone-xml/general-cfg-in.xml, tests/clone-xml
+	/general-cfg-out.xml, tests/clone-xml/nostorage-in.xml, tests/clone-
+	xml/nostorage-out.xml, tests/clone-xml/readonly-disks-in.xml, tests
+	/clone-xml/readonly-disks-out.xml, tests/clonetest.py:
+	Actually add all the clone test suite files.
+	[1403c69d0344]
+
+2009-01-28  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/__init__.py:
+	Silence libvirt spew during test suite.
+	[39592dc6967b]
+
+2009-01-29  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/__init__.py:
+	Add test suite for clone xml altering.
+	[dabab5990a86]
+
+	* virtinst/CloneManager.py:
+	Allow specifying original guest XML to CloneManager.
+
+	This removes to requirement to clone an existing guest.
+	[dd059b598e9c]
+
+2009-01-28  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/pylint-virtinst.sh:
+	Revert pylint script change so that we actually check virtconv
+	[fec5b7a4a50b]
+
+	* virtinst/Guest.py, virtinst/ParaVirtGuest.py:
+	Don't use os_type="linux' for default PV installer.
+
+	Also try to validate this at the Installer level and only carry
+	around 'xen' internally.
+	[9e41393d3fcc]
+
+2009-01-27  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Add function to VirtualGraphics to list valid keymap options.
+	[e4e4d07e2339]
+
 2009-01-26  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/urltest.py:
+	Fix up url test suite.
+	[b30ad184a207]
+
+	* virtinst/Guest.py:
+	Silence a deprecation warning
+	[5eb07bdc9539]
+
+	* virtinst/OSDistro.py:
+	Argh, unbreak URL install with extra kernel arguments.
+	[5ea2332d65ff]
+
+	* .hgtags:
+	Added tag virtinst-0_400_1 for changeset 1a2a09eef64e
+	[689089a33481]
+
+	* ChangeLog, NEWS, setup.py:
+	Update NEWS, changelog, bump release number.
+	[1a2a09eef64e] [virtinst-0_400_1]
+
+	* MANIFEST.in:
+	Add pylint script to MANIFEST.
+	[1287af113182]
+
+	* man/en/virt-clone.1, man/en/virt-convert.1, man/en/virt-image.1,
+	man/en/virt-image.pod, man/en/virt-pack.1, man/en/virt-pack.pod:
+	Remove virt-pack docs. Fix virt-image man page error.
+	[65bf8fa6c35c]
 
 	* po/fr.po, po/it.po, po/ja.po, po/pl.po, po/pt_BR.po, po/sr.po,
 	po/sr@latin.po, po/virtinst.pot, po/zh-CN.po:
 	Refresh translations.
-	[cf57772e23a1] [tip]
+	[cf57772e23a1]
 
 	* man/en/virt-clone.1, man/en/virt-install.1, man/en/virt-install.pod:
 	Add URL examples to virt-install man page, regenerate docs.

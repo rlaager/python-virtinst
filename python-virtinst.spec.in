@@ -77,6 +77,17 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-convert
 
 %changelog
+* Tue Mar  3 2009 Cole Robinson <crobinso@redhat.com> - 0.400.2-1
+- virt-install --import option for creating a guest from an existing disk
+- virt-install --host-device option for host device passthrough
+- virt-clone --original-xml for cloning from an xml file
+- virt-install --nonetworks option.
+
+* Mon Jan 26 2009 Cole Robinson <crobinso@redhat.com> - 0.400.1-1
+- virt-convert virt-image -> vmx support
+- virt-image checksum support
+- Improved URL fetching support (Debian Xen, Ubuntu kernel + boot.iso)
+
 * Wed Sep 10 2008 Cole Robinson <crobinso@redhat.com> - 0.400.0-1
 - Add virt-convert tool
 - Add virt-pack tool
