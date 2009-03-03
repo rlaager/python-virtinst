@@ -1,6 +1,20 @@
    Virt Install News
    =================
 
+Release 0.400.2 (March 3, 2009)
+-------------------------------
+
+  - New virt-clone option --original-xml, allows cloning a guest from
+      an xml file, rather than require an existing, defined guest.
+  - New virt-install option --import, allows creating a guest from an
+      existing disk image, bypassing any OS install phase.
+  - New virt-install option --host-device, for connecting a physical
+      host device to the guest.
+  - Allow specifying 'cache' value via virt-install's --disk options
+      (Ben Kochie)
+  - New virt-install option --nonetworks (John Levon)
+  - Lots of backend cleanups and documentation improvements.
+
 Release 0.400.1 (January 26, 2009)
 ----------------------------------
 
