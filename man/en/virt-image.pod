@@ -24,10 +24,10 @@ disks.
 
 =head1 OPTIONS
 
-Any of the options can be omitted, in which case B<virt-image> will either
-use defaults from the XML descriptor or interactively prompt for input as
-required. When defaults are taken from the XML descriptor, they are
-indicated below as a path.
+Most options can be omitted, in which case B<virt-image> will use defaults
+from the XML descriptor. When defaults are taken from the XML descriptor,
+they are indicated below as a path. --name is the only required command
+line option.
 
 =over 4
 
@@ -35,7 +35,19 @@ indicated below as a path.
 
 Show the help message and exit
 
-=item  -n NAME, --name=NAME  
+=item --connect=CONNECT
+
+Connect to a non-default hypervisor. See L<virt-install(1)> for details
+
+=back
+
+=head2 General Options
+
+General configuration parameters that apply to all types of guest installs.
+
+=over 2
+
+=item  -n NAME, --name=NAME
 
 Name of the guest instance
 
@@ -44,12 +56,12 @@ Name of the guest instance
 Memory to allocate for guest instance in megabytes. Defaults to
 C</image/devices/memory> in the XML descriptor.
 
-=item  -u UUID, --uuid=UUID  
+=item  -u UUID, --uuid=UUID
 
 UUID for the guest; if none is given a random UUID will be generated. If
 you specify UUID, you should use a 32-digit hexadecimal number.
 
-=item --vcpus=VCPUS 
+=item --vcpus=VCPUS
 
 Number of vcpus to configure for your guest. Defaults to
 C</image/devices/vcpu> in the XML descriptor.
@@ -72,17 +84,49 @@ variant (ex. 'fedora8', 'winxp'). This parameter is optional, and does not
 require an C<--os-type> to be specified. See L<virt-install(1)> for valid
 values.
 
+=back
+
+=head2 Full Virtualization specific options
+
+Parameters specific only to fully virtualized guest installs.
+
+=over 2
+
+=item --noapic
+
+Disables APIC for fully virtualized guest (overrides value in XML descriptor)
+
+=item --noacpi
+
+Disables ACPI for fully virtualized guest (overrides value in XML descriptor)
+
+=back
+
+=head2 Networking Configuration
+
+=over 2
+
 =item -m MAC, --mac=MAC
 
 Fixed MAC address for the guest. See L<virt-install(1)> for details
 
 =item -b BRIDGE, --bridge=BRIDGE
 
-Bridge device to connect the guest NIC to. See L<virt-install(1)> for details
+Bridge device to connect the guest NIC to. This is deprecated in favor of
+C<--network>
 
 =item -w NETWORK, --network=NETWORK
 
 Connect the guest to the host network. See L<virt-install(1)> for details
+
+=back
+
+=head2 Graphics Configuration
+
+If no graphics option is specified, C<virt-install> will default to --vnc
+if the DISPLAY environment variable is set, otherwise --nographics is used.
+
+=over 2
 
 =item --vnc
 
@@ -109,21 +153,11 @@ L<virt-install(1)> for details
 Request that the virtual console be configured to run with a non-English
 keyboard layout.
 
-=item --connect=CONNECT     Connect to hypervisor with URI
+=back
 
-Connect to a non-default hypervisor. See L<virt-install(1)> for details
+=head2 Miscellaneous Options
 
-=item --noapic
-
-Disables APIC for fully virtualized guest (overrides value in XML descriptor)
-
-=item --noacpi
-
-Disables ACPI for fully virtualized guest (overrides value in XML descriptor)
-
-=item -d, --debug
-
-Print debugging information
+=over 2
 
 =item -p, --print
 
@@ -135,6 +169,20 @@ The zero-based index of the boot record to use. The XML descriptor can
 contain multiple C</image/domain/boot> elements for use on different
 hypervisors. By default, the one that is most appropriate for the current
 hypervisor is selected.
+
+=item --replace
+
+Shutdown and remove any existing guest with the passed C<--name> before
+installing from the image.
+
+=item --skip-checksum
+
+Do not check disk images against checksums (if they are listed in the
+image xml).
+
+=item -d, --debug
+
+Print debugging information
 
 =item --force
 
@@ -157,21 +205,22 @@ do not create or start a virtual machine:
 
 =head1 AUTHOR
 
-Written by David Lutterkort. See the AUTHORS file in the source distribution for
-the complete list of credits.
+Written by David Lutterkort. See the AUTHORS file in the source
+distribution for the complete list of credits.
 
 =head1 BUGS
 
-Report bugs to the mailing list C<http://www.redhat.com/mailman/listinfo/et-mgmt-tools>
-or directly to BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the
-C<Fedora> product, and the C<python-virtinst> component.
+Report bugs to the mailing list
+C<http://www.redhat.com/mailman/listinfo/et-mgmt-tools> or directly to
+BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the C<Fedora>
+product, and the C<python-virtinst> component.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2006-2007 Red Hat, Inc, and various contributors. 
-This is free software. You may redistribute copies of it under the terms of the GNU General 
-Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent 
-permitted by law.
+Copyright (C) 2006-2007 Red Hat, Inc, and various contributors.
+This is free software. You may redistribute copies of it under the terms
+of the GNU General Public License C<http://www.gnu.org/licenses/gpl.html>.
+There is NO WARRANTY, to the extent permitted by law.
 
 =head1 SEE ALSO
 

@@ -12,50 +12,89 @@ B<virt-install> [OPTION]...
 
 B<virt-install> is a command line tool for provisioning new virtual machines
 using the C<libvirt> hypervisor management library. The tool supports both
-text based & graphical installations, using serial console, SDL graphics 
-or a VNC client/server pair. The guest can be configured with one or more
-virtual disks and network interfaces plumbed through to the host.
+text based & graphical installations, using serial console, SDL graphics
+or a VNC client/server pair. The guest can be configured to use one or more
+virtual disks, network interfaces, audio devices, and physical host devices
+(USB, PCI).
 
 The installation media can be held locally or remotely on NFS, HTTP, FTP
 servers. In the latter case C<virt-install> will fetch the minimal files
 necessary to kick off the installation process, allowing the guest
-to fetch the rest of the OS distribution as needed.
+to fetch the rest of the OS distribution as needed. PXE booting, and importing
+an existing disk image (thus skipping the install phase) are also supported.
 
 Given suitable command line arguments, C<virt-install> is capable of running
 completely unattended, with the guest 'kickstarting' itself too. This allows
 for easy automation of guest installs. A companion tool C<virt-clone(1)> is
-provided for cloning pre-existing guests if their installation cannot be easily
-automated from pristine media.
+provided for cloning pre-existing guests.
 
 =head1 OPTIONS
 
-Any of the options can be omitted, in which case C<virt-install> will run
-interactively prompting for input as required.
+Most options are not required. Minimum requirements are --name, --ram,
+guest storage (--disk or --nodisks), and an install option.
 
-=over 4
+=over 2
 
 =item -h, --help
 
 Show the help message and exit
 
+=item  --connect=CONNECT
+
+Connect to a non-default hypervisor. The default connection is chosen based
+on the following rules:
+
+=over 4
+
+=item xen
+
+If running on a host with the Xen kernel (checks against /proc/xen)
+
+=item qemu:///system
+
+If running on a bare metal kernel as root (needed for KVM installs)
+
+=item qemu:///session
+
+If running on a bare metal kernel as non-root
+
+It is only necessary to provide the C<--connect> argument if this default
+prioritization is incorrect, eg if wanting to use QEMU while on a Xen kernel.
+
+=back
+
+=back
+
+=head2 General Options
+
+General configuration parameters that apply to all types of guest installs.
+
+=over 2
+
 =item -n NAME, --name=NAME
 
 Name of the new guest virtual machine instance. This must be unique amongst
-all guests known to the hypervisor on this machine, including those not
+all guests known to the hypervisor on the connection, including those not
 currently active. To re-define an existing guest, use the C<virsh(1)> tool
-to shut it down & delete it prior to running C<virt-install>. This parameter
-will be prompted for if omitted on the command line.
+to shut it down ('virsh shutdown') & delete ('virsh undefine') it prior to
+running C<virt-install>.
 
 =item -r MEMORY, --ram=MEMORY
 
 Memory to allocate for guest instance in megabytes. If the hypervisor does
 not have enough free memory, it is usual for it to automatically take memory
-away from the host operating system to satisfy this allocation. This parameter
-will be prompted for if omitted on the command line.
+away from the host operating system to satisfy this allocation.
 
-=item -u UUID, --uuid=UUID 
+=item  --arch=ARCH
 
-UUID for the guest; if none is given a random UUID will be generated. If you 
+Request a non-native CPU architecture for the guest virtual machine.
+The option is only currently available with QEMU guests, and will not
+enable use of acceleration. If omitted, the host CPU architecture will
+be used in the guest.
+
+=item -u UUID, --uuid=UUID
+
+UUID for the guest; if none is given a random UUID will be generated. If you
 specify UUID, you should use a 32-digit hexadecimal number. UUID are intended
 to be unique across the entire data center, and indeed world. Bear this in
 mind if manually specifying a UUID
@@ -67,8 +106,8 @@ SMP guests, in which case this argument will be silently ignored
 
 =item --check-cpu
 
-Check that the number virtual cpus requested does not exceed physical CPUs and warn
-if they do.
+Check that the number virtual cpus requested does not exceed physical CPUs and
+warn if they do.
 
 =item --cpuset=CPUSET
 
@@ -79,6 +118,161 @@ Set which physical cpus the guest can use. C<CPUSET> is a comma separated list o
 
 If the value 'auto' is passed, virt-install attempts to automatically determine
 an optimal cpu pinning using NUMA data, if available.
+
+=item  --os-type=OS_TYPE
+
+Optimize the guest configuration for a type of operating system (ex. 'linux',
+'windows'). This will attempt to pick the most suitable ACPI & APIC settings,
+optimally supported mouse drivers, virtio, and generally accommodate other
+operating system quirks. See C<--os-variant> for valid options.
+
+=item --os-variant=OS_VARIANT
+
+Further optimize the guest configuration for a specific operating system
+variant (ex. 'fedora8', 'winxp'). This parameter is optional, and does not
+require an C<--os-type> to be specified. Valid values are:
+
+::VARIANT VALUES::
+
+=back
+
+=head2 Full Virtualization specific options
+
+Parameters specific only to fully virtualized guest installs.
+
+=over 2
+
+=item --sound
+
+Attach a virtual audio device to the guest.
+
+=item  --noapic
+
+Override the OS type / variant to disables the APIC setting for fully
+virtualized guest.
+
+=item  --noacpi
+
+Override the OS type / variant to disables the ACPI setting for fully
+virtualized guest.
+
+=back
+
+=head2 Virtualization Type options
+
+Options to override the default virtualization type choices.
+
+=over 2
+
+=item  -v, --hvm
+
+Request the use of full virtualization, if both para & full virtualization are
+available on the host. This parameter may not be available if connecting to a
+Xen hypervisor on a machine without hardware virtualization support. This
+parameter is implied if connecting to a QEMU based hypervisor.
+
+=item  -p, --paravirt
+
+This guest should be a paravirtualized guest. If the host supports both
+para & full virtualization, and neither this parameter nor the C<--hvm>
+are specified, this will be assumed.
+
+=item  --accelerate
+
+When installing a QEMU guest, make use of the KVM or KQEMU kernel acceleration
+capabilities if available. Use of this option is recommended unless a guest
+OS is known to be incompatible with the accelerators. The KVM accelerator is
+preferred over KQEMU if both are available.
+
+=back
+
+=head2 Installation Method options
+
+=over 2
+
+=item  -c CDROM, --cdrom=CDROM
+
+File or device use as a virtual CD-ROM device for fully virtualized guests.
+It can be path to an ISO image, or to a CDROM device. It can also be a URL
+from which to fetch/access a minimal boot ISO image. The URLs take the same
+format as described for the C<--location> argument. If a cdrom has been
+specified via the C<--disk> option, and neither C<--cdrom> nor any other
+install option is specified, the C<--disk> cdrom is used as the install media.
+
+=item  -l LOCATION, --location=LOCATION
+
+Installation source for guest virtual machine kernel+initrd pair.
+The C<LOCATION> can take one of the following forms:
+
+=over 4
+
+=item DIRECTORY
+
+Path to a local directory containing an installable distribution image
+
+=item nfs:host:/path or nfs://host/path
+
+An NFS server location containing an installable distribution image
+
+=item http://host/path
+
+An HTTP server location containing an installable distribution image
+
+=item ftp://host/path
+
+An FTP server location containing an installable distribution image
+
+=back
+
+Some distro specific url samples:
+
+=over 4
+
+=item Fedora/Red Hat Based
+
+http://download.fedoraproject.org/pub/fedora/linux/releases/10/Fedora/i386/os/
+
+=item Debian/Ubuntu
+
+http://ftp.us.debian.org/debian/dists/etch/main/installer-amd64/
+
+=item Suse
+
+http://download.opensuse.org/distribution/11.0/repo/oss/
+
+=item Mandriva
+
+ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2009.0/i586/
+
+=back
+
+=item  --pxe
+
+Use the PXE boot protocol to load the initial ramdisk and kernel for starting
+the guest installation process.
+
+=item  --import
+
+Skip the OS installation process, and build a guest around an existing
+disk image. The device used for booting is the first device specified via
+C<--disk> or C<--file>.
+
+=item  --livecd
+
+Specify that the installation media is a live CD and thus the guest
+needs to be configured to boot off the CDROM device permanently. It
+may be desirable to also use the C<--nodisks> flag in combination.
+
+=item  -x EXTRA, --extra-args=EXTRA
+
+Additional kernel command line arguments to pass to the installer when
+performing a guest install from C<--location>.
+
+=back
+
+=head2 Storage Configuration
+
+=over 2
 
 =item --disk=DISKOPTS
 
@@ -145,6 +339,11 @@ size (in GB) to use if creating new storage
 whether to skip fully allocating newly created storage. Value is 'true' or
 'false'. Default is 'true' (do not fully allocate).
 
+The initial time taken to fully-allocate the guest virtual disk (spare=false)
+will be usually by balanced by faster install times inside the guest. Thus
+use of this option is recommended to ensure consistently high performance
+and to avoid I/O errors in the guest should the host filesystem fill up.
+
 =item B<cache>
 
 The cache mode to be used. The host pagecache provides cache memory.
@@ -157,51 +356,31 @@ read and write caching.
 See the examples section for some uses. This option deprecates C<--file>,
 C<--file-size>, and C<--nonsparse>.
 
+=item -f DISKFILE, --file=DISKFILE
+
+Path to the file, disk partition, or logical volume to use as the backing store
+for the guest's virtual disk. This option is deprecated in favor of C<--disk>.
+
+=item -s DISKSIZE, --file-size=DISKSIZE
+
+Size of the file to create for the guest virtual disk. This is deprecated in
+favor of C<--disk>.
+
+=item --nonsparse
+
+Fully allocate the storage when creating. This is deprecated in favort of
+C<--disk>
+
 =item --nodisks
 
 Request a virtual machine without any local disk storage, typically used for
 running 'Live CD' images or installing to network storage (iSCSI or NFS root).
 
-=item -f DISKFILE, --file=DISKFILE
+=back
 
-Path to the file, disk partition, or logical volume to use as the backing store
-for the guest's virtual disk. If the path does not exist, then C<--file-size>
-option should also be specified, allowing the disk to be created. This parameter
-can be repeated multiple times to add many disk. This option is deprecated in
-favor of --disk.
+=head2 Networking Configuration
 
-=item -s DISKSIZE, --file-size=DISKSIZE
-
-Size of the file to create for the guest virtual disk, if the path given to C<--file>
-does not already exist. The size is to be specified in gigabytes, with fractional
-numbers allowed. The storage for the file will not be pre-allocated unless the
-C<--nonsparse> option is also specified. This parameter will be prompted for if 
-omitted on the command line & a new file is to be created.
-
-=item --nonsparse
-
-Request creation of a non-sparse file for the guest virtual disk. The initial
-time taken to fully-allocate the guest virtual disk will be usually by balanced
-by faster install times inside the guest. Thus use of this optional is recommended 
-to ensure consistently high performance and to avoid I/O errors in the guest 
-should the host filesystem fill up. 
-
-=item --nonetworks
-
-Request a virtual machine without any network interfaces.
-
-=item -m MAC, --mac=MAC
-
-Fixed MAC address for the guest; If this parameter is omitted, or the value
-C<RANDOM> is specified a suitable address will be randomly generated. For
-Xen virtual machines it is required that the first 3 pairs in the MAC address
-be the sequence '00:16:3e', while for QEMU or KVM virtual machines it must
-be '54:52:00'.
-
-=item -b BRIDGE, --bridge=BRIDGE
-
-Bridge device to connect the guest NIC to. This parameter is deprecated in
-favour of the C<--network> parameter.
+=over 2
 
 =item -w NETWORK, --network=NETWORK
 
@@ -239,33 +418,60 @@ that will be used for connectivity. Failing that, the virtual network
 called C<default> will be used. This option can be specified multiple
 times to setup more than one NIC.
 
+=item -b BRIDGE, --bridge=BRIDGE
+
+Bridge device to connect the guest NIC to. This parameter is deprecated in
+favour of the C<--network> parameter.
+
+=item -m MAC, --mac=MAC
+
+Fixed MAC address for the guest; If this parameter is omitted, or the value
+C<RANDOM> is specified a suitable address will be randomly generated. For
+Xen virtual machines it is required that the first 3 pairs in the MAC address
+be the sequence '00:16:3e', while for QEMU or KVM virtual machines it must
+be '54:52:00'.
+
+=item --nonetworks
+
+Request a virtual machine without any network interfaces.
+
+=back
+
+=head2 Graphics Configuration
+
+If no graphics option is specified, C<virt-install> will default to --vnc
+if the DISPLAY environment variable is set, otherwise --nographics is used.
+
+=over 2
+
 =item  --vnc
 
 Setup a virtual console in the guest and export it as a VNC server in
 the host. Unless the C<--vncport> parameter is also provided, the VNC
 server will run on the first free port number at 5900 or above. The
 actual VNC display allocated can be obtained using the C<vncdisplay>
-command to C<virsh>. If neither this, nor the C<--sdl> or C<--nographics> 
-parameters are specified, this will be prompted for.
+command to C<virsh> (or L<virt-viewer(1)> can be used which handles this
+detail for the use).
 
 =item  --vncport=VNCPORT
 
 Request a permanent, statically assigned port number for the guest VNC
 console. Use of this option is discouraged as other guests may automatically
-choose to run on this port causing a clash. 
+choose to run on this port causing a clash.
 
 =item  --sdl
 
 Setup a virtual console in the guest and display an SDL window in the
 host to render the output. If the SDL window is closed the guest may
-be unconditionally terminated. 
+be unconditionally terminated.
 
 =item  --nographics
 
-Disable all interactive prompts for the guest virtual console. No graphical
-console will be allocated for the guest. A text based console will always
-be available on the first serial port (or equivalent paravirtualised console
-device).
+No graphical console will be allocated for the guest. Fully virtualized guests
+(Xen FV or QEmu/KVM) will need to have a text console configured on the first
+serial port in the guest (this can be done via the --extra-args option). Xen
+PV will set this up automatically. The command 'virsh console NAME' can be
+used to connect to the serial device.
 
 =item  --noautoconsole
 
@@ -276,174 +482,14 @@ will disable this behaviour.
 
 =item  -k KEYMAP, --keymap=KEYMAP
 
-Request that the virtual console be configured to run with a non-English
+Request that the virtual VNC console be configured to run with a non-English
 keyboard layout.
 
-=item  --accelerate
-
-When installing a QEMU guest, make use of the KVM or KQEMU kernel acceleration
-capabilities if available. Use of this option is recommended unless a guest
-OS is known to be incompatible with the accelerators. The KVM accelerator is
-preferred over KQEMU if both are available.
-
-=item  --connect=CONNECT     Connect to hypervisor with URI
-
-Connect to a non-default hypervisor. The default connection is chosen based
-on the following rules:
-
-=over 4
-
-=item xen
-
-If running on a host with the Xen kernel (checks against /proc/xen)
-
-=item qemu:///system
-
-If running on a bare metal kernel as root
-
-=item qemu:///session
-
-If running on a bare metal kernel as non-root
-
 =back
 
-It is only necessary to provide the C<--connect> argument if this default
-prioritization is incorrect, eg if wanting to use QEMU while on a Xen kernel.
+=head2 Miscellaneous Options
 
-=item  --livecd
-
-Specify that the installation media is a live CD and thus the guest
-needs to be configured to boot off the CDROM device permanently. It
-may be desirable to also use the C<--nodisks> flag in combination.
-
-=item  --import
-
-Skip the OS installation process, and build a guest around an existing
-disk image. The device used for booting is the first device specified via
-C<--disk> or C<--file>.
-
-=item  -v, --hvm             This guest should be a fully virtualized guest
-
-Request the use of full virtualization, if both para & full virtualization are
-available on the host. This parameter may not be available if connecting to a
-Xen hypervisor on a machine without hardware virtualization support. This 
-parameter is implied if connecting to a QEMU based hypervisor.
-
-=item  -c CDROM, --cdrom=CDROM
-
-File to use a virtual CD-ROM device for fully virtualized guests. It can be
-path to an ISO image, or to a CDROM device. It can also be a URL from which
-to fetch/access a minimal boot ISO image. The URLs take the same format as
-described for the C<--location> argument. If a cdrom has been specified via
-the C<--disk> option, and neither C<--cdrom> nor any other install option is
-specified, the C<--disk> cdrom is used as the install media.
-
-=item  --pxe
-
-Use the PXE boot protocol to load the initial ramdisk and kernel for starting
-the guest installation process. If this parameter is omitted then either the
-C<--location> or C<--cdrom> arguments must be given to specify a location for
-the kernel and initrd.
-
-=item  --os-type=OS_TYPE
-
-Optimize the guest configuration for a type of operating system. This will
-attempt to pick the most suitable ACPI & APIC settings, optimally supported
-mouse drivers and generally accommodate other operating system quirks. The
-valid operating system types are
-
-=item  --os-type=OS_TYPE
-
-Optimize the guest configuration for a type of operating system (ex. 'linux',
-'windows'). This will attempt to pick the most suitable ACPI & APIC settings,
-optimally supported mouse drivers, virtio, and generally accommodate other
-operating system quirks. See C<--os-variant> for valid options.
-
-=item --os-variant=OS_VARIANT
-
-Further optimize the guest configuration for a specific operating system
-variant (ex. 'fedora8', 'winxp'). This parameter is optional, and does not
-require an C<--os-type> to be specified. Valid values are:
-
-::VARIANT VALUES::
-
-=item  --noapic
-
-Override the OS type / variant to disables the APIC setting for fully 
-virtualized guest.
-
-=item  --noacpi
-
-Override the OS type / variant to disables the ACPI setting for fully 
-virtualized guest. 
-
-=item  --arch=ARCH
-
-Request a non-native CPU architecture for the guest virtual machine.
-The option is only currently available with QEMU guests, and will not
-enable use of acceleration. If omitted, the host CPU architecture will
-be used in the guest.
-
-=item  -p, --paravirt
-
-This guest should be a paravirtualized guest. If the host supports both
-para & full virtualization, and neither this parameter nor the C<--hvm>
-are specified, this will be prompted for interactively.
-
-=item  -l LOCATION, --location=LOCATION
-
-Installation source for guest virtual machine kernel+initrd pair. This
-is required for paravirtualized guests. Fully virtualized guests must
-use either C<--location> to specify a kernel+initrd, or the C<--cdrom>
-parameter to specify an ISO/CDROM image. The C<LOCATION> can take one 
-of the following forms:
-
-=over 4
-
-=item DIRECTORY
-
-Path to a local directory containing an installable distribution image
-
-=item nfs:host:/path or nfs://host/path
-
-An NFS server location containing an installable distribution image
-
-=item http://host/path
-
-An HTTP server location containing an installable distribution image
-
-=item ftp://host/path
-
-An FTP server location containing an installable distribution image
-
-=back
-
-Some distro specific url samples:
-
-=over 4
-
-=item Fedora/Red Hat Based
-
-http://download.fedoraproject.org/pub/fedora/linux/releases/10/Fedora/i386/os/
-
-=item Debian/Ubuntu
-
-http://ftp.us.debian.org/debian/dists/etch/main/installer-amd64/
-
-=item Suse
-
-http://download.opensuse.org/distribution/11.0/repo/oss/
-
-=item Mandriva
-
-ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2009.0/i586/
-
-=back
-
-=item  -x EXTRA, --extra-args=EXTRA
-
-Additional kernel command line arguments to pass to the installer when
-performing a guest install from a kernel+initrd.
+=over 2
 
 =item  -d, --debug
 
@@ -453,16 +499,8 @@ even if this parameter is omitted.
 
 =item --noreboot
 
-Prevent the domain from automatically rebooting after a graphical install.
-
-=item --force
-
-Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
-say yes. For any other prompts, the application will exit.
-
-=item --prompt
-
-Specifically enable prompting. Default prompting is off (as os virtinst 0.400.0)
+Prevent the domain from automatically rebooting after the install has
+completed.
 
 =item --wait=WAIT
 
@@ -473,6 +511,16 @@ neccessarily indicating the guest has shutdown), or in the case of
 value will make virt-install wait indefinitely, a value of 0 triggers the
 same results as noautoconsole. If the time limit is succeeded, virt-install
 simply exits, leaving the virtual machine in its current state.
+
+=item --force
+
+Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
+say yes. For any other prompts, the application will exit.
+
+=item --prompt
+
+Specifically enable prompting. Default prompting is off (as of
+virtinst 0.400.0)
 
 =back
 
@@ -570,10 +618,10 @@ $HOME/.virtinst/virt-install.log
 
 =head1 COPYRIGHT
 
-Copyright (C) 2006-2009 Red Hat, Inc, and various contributors. 
-This is free software. You may redistribute copies of it under the terms of the GNU General 
-Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent 
-permitted by law.
+Copyright (C) 2006-2009 Red Hat, Inc, and various contributors.
+This is free software. You may redistribute copies of it under the terms of
+the GNU General Public License C<http://www.gnu.org/licenses/gpl.html>. There
+is NO WARRANTY, to the extent permitted by law.
 
 =head1 SEE ALSO
 

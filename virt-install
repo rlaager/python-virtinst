@@ -354,19 +354,19 @@ def parse_args():
     geng.add_option("", "--cpuset", type="string", dest="cpuset",
                     action="callback", callback=cli.check_before_store,
                     help=_("Set which physical CPUs Domain can use."))
-    parser.add_option_group(geng)
-
-    fulg = OptionGroup(parser, _("Full Virtualization specific options."))
-    fulg.add_option("", "--sound", action="store_true", dest="sound",
-                    default=False, help=_("Use sound device emulation"))
-    fulg.add_option("", "--os-type", type="string", dest="distro_type",
+    geng.add_option("", "--os-type", type="string", dest="distro_type",
                     action="callback", callback=cli.check_before_store,
                     help=_("The OS type for fully virtualized guests, e.g. "
                            "'linux', 'unix', 'windows'"))
-    fulg.add_option("", "--os-variant", type="string", dest="distro_variant",
+    geng.add_option("", "--os-variant", type="string", dest="distro_variant",
                       action="callback", callback=cli.check_before_store,
                       help=_("The OS variant for fully virtualized guests, "
                              "e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k'"))
+    parser.add_option_group(geng)
+
+    fulg = OptionGroup(parser, _("Full Virtualization specific options"))
+    fulg.add_option("", "--sound", action="store_true", dest="sound",
+                    default=False, help=_("Use sound device emulation"))
     fulg.add_option("", "--noapic", action="store_true", dest="noapic",
                     default=False,
                     help=_("Disables APIC for fully virtualized guest "
@@ -398,10 +398,10 @@ def parse_args():
                            "http://host/path, ftp://host/path)"))
     insg.add_option("", "--pxe", action="store_true", dest="pxe",
                     help=_("Boot from the network using the PXE protocol"))
-    insg.add_option("", "--livecd", action="store_true", dest="livecd",
-                    help=_("Treat the CD-ROM media as a Live CD"))
     insg.add_option("", "--import", action="store_true", dest="import_install",
                     help=_("Build guest around an existing disk image"))
+    insg.add_option("", "--livecd", action="store_true", dest="livecd",
+                    help=_("Treat the CD-ROM media as a Live CD"))
     insg.add_option("-x", "--extra-args", type="string", dest="extra",
                     default="",
                     help=_("Additional arguments to pass to the kernel "
@@ -429,8 +429,6 @@ def parse_args():
     parser.add_option_group(stog)
 
     netg = OptionGroup(parser, _("Networking Configuration"))
-    netg.add_option("", "--nonetworks", action="store_true",
-                    help=_("Don't create network interfaces for the guest."))
     netg.add_option("-b", "--bridge", type="string", dest="bridge",
                     action="callback", callback=cli.check_before_append,
                     help=_("Bridge to connect guest NIC to; if none given, "
@@ -443,6 +441,8 @@ def parse_args():
                     action="callback", callback=cli.check_before_append,
                     help=_("Fixed MAC address for the guest; if none or "
                            "RANDOM is given a random address will be used"))
+    netg.add_option("", "--nonetworks", action="store_true",
+                    help=_("Don't create network interfaces for the guest."))
     parser.add_option_group(netg)
 
     vncg = OptionGroup(parser, _("Graphics Configuration"))

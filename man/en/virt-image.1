@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-IMAGE 1"
-.TH VIRT-IMAGE 1 "2009-01-26" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-IMAGE 1 "2009-03-03" "perl v5.10.0" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -157,82 +157,117 @@ to bundle and distribute it together with the files backing the guest's
 disks.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
-Any of the options can be omitted, in which case \fBvirt-image\fR will either
-use defaults from the \s-1XML\s0 descriptor or interactively prompt for input as
-required. When defaults are taken from the \s-1XML\s0 descriptor, they are
-indicated below as a path.
+Most options can be omitted, in which case \fBvirt-image\fR will use defaults
+from the \s-1XML\s0 descriptor. When defaults are taken from the \s-1XML\s0 descriptor,
+they are indicated below as a path. \-\-name is the only required command
+line option.
 .IP "\-h, \-\-help" 4
 .IX Item "-h, --help"
 Show the help message and exit
-.IP "\-n \s-1NAME\s0, \-\-name=NAME" 4
+.IP "\-\-connect=CONNECT" 4
+.IX Item "--connect=CONNECT"
+Connect to a non-default hypervisor. See \fIvirt\-install\fR\|(1) for details
+.Sh "General Options"
+.IX Subsection "General Options"
+General configuration parameters that apply to all types of guest installs.
+.IP "\-n \s-1NAME\s0, \-\-name=NAME" 2
 .IX Item "-n NAME, --name=NAME"
 Name of the guest instance
-.IP "\-r \s-1MEMORY\s0, \-\-ram=MEMORY" 4
+.IP "\-r \s-1MEMORY\s0, \-\-ram=MEMORY" 2
 .IX Item "-r MEMORY, --ram=MEMORY"
 Memory to allocate for guest instance in megabytes. Defaults to
 \&\f(CW\*(C`/image/devices/memory\*(C'\fR in the \s-1XML\s0 descriptor.
-.IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 4
+.IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 2
 .IX Item "-u UUID, --uuid=UUID"
 \&\s-1UUID\s0 for the guest; if none is given a random \s-1UUID\s0 will be generated. If
 you specify \s-1UUID\s0, you should use a 32\-digit hexadecimal number.
-.IP "\-\-vcpus=VCPUS" 4
+.IP "\-\-vcpus=VCPUS" 2
 .IX Item "--vcpus=VCPUS"
 Number of vcpus to configure for your guest. Defaults to
 \&\f(CW\*(C`/image/devices/vcpu\*(C'\fR in the \s-1XML\s0 descriptor.
-.IP "\-\-check\-cpu" 4
+.IP "\-\-check\-cpu" 2
 .IX Item "--check-cpu"
 Check that vcpus do not exceed physical CPUs and warn if they do.
-.IP "\-m \s-1MAC\s0, \-\-mac=MAC" 4
+.IP "\-\-os\-type=OS_TYPE" 2
+.IX Item "--os-type=OS_TYPE"
+Optimize the guest configuration for a type of operating system (ex. 'linux',
+\&'windows'). This will attempt to pick the most suitable \s-1ACPI\s0 & \s-1APIC\s0 settings,
+optimally supported mouse drivers, virtio, and generally accommodate other
+operating system quirks.  See \fIvirt\-install\fR\|(1) for valid values.
+.IP "\-\-os\-variant=OS_VARIANT" 2
+.IX Item "--os-variant=OS_VARIANT"
+Further optimize the guest configuration for a specific operating system
+variant (ex. 'fedora8', 'winxp'). This parameter is optional, and does not
+require an \f(CW\*(C`\-\-os\-type\*(C'\fR to be specified. See \fIvirt\-install\fR\|(1) for valid
+values.
+.Sh "Full Virtualization specific options"
+.IX Subsection "Full Virtualization specific options"
+Parameters specific only to fully virtualized guest installs.
+.IP "\-\-noapic" 2
+.IX Item "--noapic"
+Disables \s-1APIC\s0 for fully virtualized guest (overrides value in \s-1XML\s0 descriptor)
+.IP "\-\-noacpi" 2
+.IX Item "--noacpi"
+Disables \s-1ACPI\s0 for fully virtualized guest (overrides value in \s-1XML\s0 descriptor)
+.Sh "Networking Configuration"
+.IX Subsection "Networking Configuration"
+.IP "\-m \s-1MAC\s0, \-\-mac=MAC" 2
 .IX Item "-m MAC, --mac=MAC"
 Fixed \s-1MAC\s0 address for the guest. See \fIvirt\-install\fR\|(1) for details
-.IP "\-b \s-1BRIDGE\s0, \-\-bridge=BRIDGE" 4
+.IP "\-b \s-1BRIDGE\s0, \-\-bridge=BRIDGE" 2
 .IX Item "-b BRIDGE, --bridge=BRIDGE"
-Bridge device to connect the guest \s-1NIC\s0 to. See \fIvirt\-install\fR\|(1) for details
-.IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK" 4
+Bridge device to connect the guest \s-1NIC\s0 to. This is deprecated in favor of
+\&\f(CW\*(C`\-\-network\*(C'\fR
+.IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK" 2
 .IX Item "-w NETWORK, --network=NETWORK"
 Connect the guest to the host network. See \fIvirt\-install\fR\|(1) for details
-.IP "\-\-vnc" 4
+.Sh "Graphics Configuration"
+.IX Subsection "Graphics Configuration"
+If no graphics option is specified, \f(CW\*(C`virt\-install\*(C'\fR will default to \-\-vnc
+if the \s-1DISPLAY\s0 environment variable is set, otherwise \-\-nographics is used.
+.IP "\-\-vnc" 2
 .IX Item "--vnc"
 Setup a virtual console in the guest and export it as a \s-1VNC\s0 server in
 the host. See \fIvirt\-install\fR\|(1) for details
-.IP "\-\-vncport=VNCPORT" 4
+.IP "\-\-vncport=VNCPORT" 2
 .IX Item "--vncport=VNCPORT"
 Request a permanent, statically assigned port number for the guest \s-1VNC\s0
 console. See \fIvirt\-install\fR\|(1) for details
-.IP "\-\-sdl" 4
+.IP "\-\-sdl" 2
 .IX Item "--sdl"
 Setup a virtual console in the guest and display an \s-1SDL\s0 window in the
 host to render the output. See \fIvirt\-install\fR\|(1) for details
-.IP "\-\-nographics" 4
+.IP "\-\-nographics" 2
 .IX Item "--nographics"
 Disable all interactive prompts for the guest virtual console. See
 \&\fIvirt\-install\fR\|(1) for details
-.IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 4
+.IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 2
 .IX Item "-k KEYMAP, --keymap=KEYMAP"
 Request that the virtual console be configured to run with a non-English
 keyboard layout.
-.IP "\-\-connect=CONNECT     Connect to hypervisor with \s-1URI\s0" 4
-.IX Item "--connect=CONNECT     Connect to hypervisor with URI"
-Connect to a non-default hypervisor. See \fIvirt\-install\fR\|(1) for details
-.IP "\-\-noapic" 4
-.IX Item "--noapic"
-Disables \s-1APIC\s0 for fully virtualized guest (overrides value in \s-1XML\s0 descriptor)
-.IP "\-\-noacpi" 4
-.IX Item "--noacpi"
-Disables \s-1ACPI\s0 for fully virtualized guest (overrides value in \s-1XML\s0 descriptor)
-.IP "\-d, \-\-debug" 4
-.IX Item "-d, --debug"
-Print debugging information
-.IP "\-p, \-\-print" 4
+.Sh "Miscellaneous Options"
+.IX Subsection "Miscellaneous Options"
+.IP "\-p, \-\-print" 2
 .IX Item "-p, --print"
 Print the libvirt \s-1XML\s0, but do not start the guest.
-.IP "\-\-boot=BOOT" 4
+.IP "\-\-boot=BOOT" 2
 .IX Item "--boot=BOOT"
 The zero-based index of the boot record to use. The \s-1XML\s0 descriptor can
 contain multiple \f(CW\*(C`/image/domain/boot\*(C'\fR elements for use on different
 hypervisors. By default, the one that is most appropriate for the current
 hypervisor is selected.
-.IP "\-\-force" 4
+.IP "\-\-replace" 2
+.IX Item "--replace"
+Shutdown and remove any existing guest with the passed \f(CW\*(C`\-\-name\*(C'\fR before
+installing from the image.
+.IP "\-\-skip\-checksum" 2
+.IX Item "--skip-checksum"
+Do not check disk images against checksums (if they are listed in the
+image xml).
+.IP "\-d, \-\-debug" 2
+.IX Item "-d, --debug"
+Print debugging information
+.IP "\-\-force" 2
 .IX Item "--force"
 Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
@@ -253,19 +288,20 @@ do not create or start a virtual machine:
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-Written by David Lutterkort. See the \s-1AUTHORS\s0 file in the source distribution for
-the complete list of credits.
+Written by David Lutterkort. See the \s-1AUTHORS\s0 file in the source
+distribution for the complete list of credits.
 .SH "BUGS"
 .IX Header "BUGS"
-Report bugs to the mailing list \f(CW\*(C`http://www.redhat.com/mailman/listinfo/et\-mgmt\-tools\*(C'\fR
-or directly to BugZilla \f(CW\*(C`http://bugzilla.redhat.com/bugzilla/\*(C'\fR against the
-\&\f(CW\*(C`Fedora\*(C'\fR product, and the \f(CW\*(C`python\-virtinst\*(C'\fR component.
+Report bugs to the mailing list
+\&\f(CW\*(C`http://www.redhat.com/mailman/listinfo/et\-mgmt\-tools\*(C'\fR or directly to
+BugZilla \f(CW\*(C`http://bugzilla.redhat.com/bugzilla/\*(C'\fR against the \f(CW\*(C`Fedora\*(C'\fR
+product, and the \f(CW\*(C`python\-virtinst\*(C'\fR component.
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
-Copyright (C) 2006\-2007 Red Hat, Inc, and various contributors. 
-This is free software. You may redistribute copies of it under the terms of the \s-1GNU\s0 General 
-Public License \f(CW\*(C`http://www.gnu.org/licenses/gpl.html\*(C'\fR. There is \s-1NO\s0 \s-1WARRANTY\s0, to the extent 
-permitted by law.
+Copyright (C) 2006\-2007 Red Hat, Inc, and various contributors.
+This is free software. You may redistribute copies of it under the terms
+of the \s-1GNU\s0 General Public License \f(CW\*(C`http://www.gnu.org/licenses/gpl.html\*(C'\fR.
+There is \s-1NO\s0 \s-1WARRANTY\s0, to the extent permitted by law.
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 \&\fIvirt\-image\fR\|(5), \fIvirt\-install\fR\|(1), the project website

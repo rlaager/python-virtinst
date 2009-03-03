@@ -25,11 +25,12 @@ alongside any disks in the same directory.
 
 =head1 OPTIONS
 
-Any of the options can be omitted, in which case B<virt-convert> will use defaults when required.
-An input VM definition or containing directory must be provided. By
-default, an output directory is generated based upon the name of the VM.
-The default input format is VMWare vmx, and the default output format is
-a libvirt "image" XML definition (see L<virt-image(5)>).
+Any of the options can be omitted, in which case B<virt-convert> will
+use defaults when required. An input VM definition or containing directory
+must be provided. By default, an output directory is generated based upon
+the name of the VM. The default input format is VMWare vmx, and the
+default output format is a libvirt "image" XML definition
+(see L<virt-image(5)>).
 
 =over 4
 
@@ -37,39 +38,54 @@ a libvirt "image" XML definition (see L<virt-image(5)>).
 
 Show the help message and exit
 
-=item -a ARCH, --arch=ARCH
+=back
 
-Architecture of the virtual machine (i686, x86_64, ppc). Defaults to
-that of the host machine.
+=head2 Conversion Options
 
-=item  -v, --hvm      Create  a fully virtualized guest image
-
-Convert machine to a hvm/qemu based image (this is the default if paravirt is not specified)
-
-=item  -p, --paravirt      Create  a paravirtualized guest image
-
-Convert machine to a paravirt xen based image
+=over 2
 
 =item  -i format
 
-Input format. Currently, C<vmx>  is the only supported input format.
+Input format. Currently, C<vmx>  and C<virt-image> are supported.
 
 =item  -o format
 
-Output format. Currently, C<virt-image>  is the only supported output format.
+Output format. Currently, C<vmx>  and C<virt-image> are supported.
 
 =item  -D format
 
 Output disk format, or C<none> if no conversion should be performed. See
 L<qemu-img(1)>.
 
-=item -d, --debug
+=back
 
-Print debugging information
+=head2 Virtualization Type options
 
-=item -q, --quiet
+Options to override the default virtualization type choices.
 
-Avoid verbose output.
+=over 2
+
+=item  -v, --hvm      Create  a fully virtualized guest image
+
+Convert machine to a hvm/qemu based image (this is the default if paravirt
+is not specified)
+
+=item  -p, --paravirt      Create  a paravirtualized guest image
+
+Convert machine to a paravirt xen based image
+
+=back
+
+=head2 General Options
+
+General configuration parameters that apply to all types of guest installs.
+
+=over 2
+
+=item -a ARCH, --arch=ARCH
+
+Architecture of the virtual machine (i686, x86_64, ppc). Defaults to
+that of the host machine.
 
 =item  --os-type=OS_TYPE
 
@@ -87,13 +103,27 @@ values.
 
 =item  --noapic
 
-Override the OS type / variant to disables the APIC setting for fully 
+Override the OS type / variant to disables the APIC setting for fully
 virtualized guest.
 
 =item  --noacpi
 
-Override the OS type / variant to disables the ACPI setting for fully 
-virtualized guest. 
+Override the OS type / variant to disables the ACPI setting for fully
+virtualized guest.
+
+=back
+
+=head2 Miscellaneous Options
+
+=over 2
+
+=item -q, --quiet
+
+Avoid verbose output.
+
+=item -d, --debug
+
+Print debugging information
 
 =back
 

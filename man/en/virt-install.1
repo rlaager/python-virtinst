@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2009-01-26" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2009-03-03" "perl v5.10.0" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -146,55 +146,84 @@ virt\-install \- provision new virtual machines
 .IX Header "DESCRIPTION"
 \&\fBvirt-install\fR is a command line tool for provisioning new virtual machines
 using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library. The tool supports both
-text based & graphical installations, using serial console, \s-1SDL\s0 graphics 
-or a \s-1VNC\s0 client/server pair. The guest can be configured with one or more
-virtual disks and network interfaces plumbed through to the host.
+text based & graphical installations, using serial console, \s-1SDL\s0 graphics
+or a \s-1VNC\s0 client/server pair. The guest can be configured to use one or more
+virtual disks, network interfaces, audio devices, and physical host devices
+(\s-1USB\s0, \s-1PCI\s0).
 .PP
 The installation media can be held locally or remotely on \s-1NFS\s0, \s-1HTTP\s0, \s-1FTP\s0
 servers. In the latter case \f(CW\*(C`virt\-install\*(C'\fR will fetch the minimal files
 necessary to kick off the installation process, allowing the guest
-to fetch the rest of the \s-1OS\s0 distribution as needed.
+to fetch the rest of the \s-1OS\s0 distribution as needed. \s-1PXE\s0 booting, and importing
+an existing disk image (thus skipping the install phase) are also supported.
 .PP
 Given suitable command line arguments, \f(CW\*(C`virt\-install\*(C'\fR is capable of running
 completely unattended, with the guest 'kickstarting' itself too. This allows
 for easy automation of guest installs. A companion tool \f(CW\*(C`virt\-clone(1)\*(C'\fR is
-provided for cloning pre-existing guests if their installation cannot be easily
-automated from pristine media.
+provided for cloning pre-existing guests.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
-Any of the options can be omitted, in which case \f(CW\*(C`virt\-install\*(C'\fR will run
-interactively prompting for input as required.
-.IP "\-h, \-\-help" 4
+Most options are not required. Minimum requirements are \-\-name, \-\-ram,
+guest storage (\-\-disk or \-\-nodisks), and an install option.
+.IP "\-h, \-\-help" 2
 .IX Item "-h, --help"
 Show the help message and exit
-.IP "\-n \s-1NAME\s0, \-\-name=NAME" 4
+.IP "\-\-connect=CONNECT" 2
+.IX Item "--connect=CONNECT"
+Connect to a non-default hypervisor. The default connection is chosen based
+on the following rules:
+.RS 2
+.IP "xen" 4
+.IX Item "xen"
+If running on a host with the Xen kernel (checks against /proc/xen)
+.IP "qemu:///system" 4
+.IX Item "qemu:///system"
+If running on a bare metal kernel as root (needed for \s-1KVM\s0 installs)
+.IP "qemu:///session" 4
+.IX Item "qemu:///session"
+If running on a bare metal kernel as non-root
+.Sp
+It is only necessary to provide the \f(CW\*(C`\-\-connect\*(C'\fR argument if this default
+prioritization is incorrect, eg if wanting to use \s-1QEMU\s0 while on a Xen kernel.
+.RE
+.RS 2
+.RE
+.Sh "General Options"
+.IX Subsection "General Options"
+General configuration parameters that apply to all types of guest installs.
+.IP "\-n \s-1NAME\s0, \-\-name=NAME" 2
 .IX Item "-n NAME, --name=NAME"
 Name of the new guest virtual machine instance. This must be unique amongst
-all guests known to the hypervisor on this machine, including those not
+all guests known to the hypervisor on the connection, including those not
 currently active. To re-define an existing guest, use the \f(CWvirsh(1)\fR tool
-to shut it down & delete it prior to running \f(CW\*(C`virt\-install\*(C'\fR. This parameter
-will be prompted for if omitted on the command line.
-.IP "\-r \s-1MEMORY\s0, \-\-ram=MEMORY" 4
+to shut it down ('virsh shutdown') & delete ('virsh undefine') it prior to
+running \f(CW\*(C`virt\-install\*(C'\fR.
+.IP "\-r \s-1MEMORY\s0, \-\-ram=MEMORY" 2
 .IX Item "-r MEMORY, --ram=MEMORY"
 Memory to allocate for guest instance in megabytes. If the hypervisor does
 not have enough free memory, it is usual for it to automatically take memory
-away from the host operating system to satisfy this allocation. This parameter
-will be prompted for if omitted on the command line.
-.IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 4
+away from the host operating system to satisfy this allocation.
+.IP "\-\-arch=ARCH" 2
+.IX Item "--arch=ARCH"
+Request a non-native \s-1CPU\s0 architecture for the guest virtual machine.
+The option is only currently available with \s-1QEMU\s0 guests, and will not
+enable use of acceleration. If omitted, the host \s-1CPU\s0 architecture will
+be used in the guest.
+.IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 2
 .IX Item "-u UUID, --uuid=UUID"
-\&\s-1UUID\s0 for the guest; if none is given a random \s-1UUID\s0 will be generated. If you 
+\&\s-1UUID\s0 for the guest; if none is given a random \s-1UUID\s0 will be generated. If you
 specify \s-1UUID\s0, you should use a 32\-digit hexadecimal number. \s-1UUID\s0 are intended
 to be unique across the entire data center, and indeed world. Bear this in
 mind if manually specifying a \s-1UUID\s0
-.IP "\-\-vcpus=VCPUS" 4
+.IP "\-\-vcpus=VCPUS" 2
 .IX Item "--vcpus=VCPUS"
 Number of virtual cpus to configure for the guest. Not all hypervisors support
 \&\s-1SMP\s0 guests, in which case this argument will be silently ignored
-.IP "\-\-check\-cpu" 4
+.IP "\-\-check\-cpu" 2
 .IX Item "--check-cpu"
-Check that the number virtual cpus requested does not exceed physical CPUs and warn
-if they do.
-.IP "\-\-cpuset=CPUSET" 4
+Check that the number virtual cpus requested does not exceed physical CPUs and
+warn if they do.
+.IP "\-\-cpuset=CPUSET" 2
 .IX Item "--cpuset=CPUSET"
 Set which physical cpus the guest can use. \f(CW\*(C`CPUSET\*(C'\fR is a comma separated list of numbers, which can also be specified in ranges. Example:
 .Sp
@@ -205,7 +234,273 @@ Set which physical cpus the guest can use. \f(CW\*(C`CPUSET\*(C'\fR is a comma s
 .Sp
 If the value 'auto' is passed, virt-install attempts to automatically determine
 an optimal cpu pinning using \s-1NUMA\s0 data, if available.
-.IP "\-\-disk=DISKOPTS" 4
+.IP "\-\-os\-type=OS_TYPE" 2
+.IX Item "--os-type=OS_TYPE"
+Optimize the guest configuration for a type of operating system (ex. 'linux',
+\&'windows'). This will attempt to pick the most suitable \s-1ACPI\s0 & \s-1APIC\s0 settings,
+optimally supported mouse drivers, virtio, and generally accommodate other
+operating system quirks. See \f(CW\*(C`\-\-os\-variant\*(C'\fR for valid options.
+.IP "\-\-os\-variant=OS_VARIANT" 2
+.IX Item "--os-variant=OS_VARIANT"
+Further optimize the guest configuration for a specific operating system
+variant (ex. 'fedora8', 'winxp'). This parameter is optional, and does not
+require an \f(CW\*(C`\-\-os\-type\*(C'\fR to be specified. Valid values are:
+.RS 2
+.IP "linux" 4
+.IX Item "linux"
+.RS 4
+.PD 0
+.IP "debianetch" 4
+.IX Item "debianetch"
+.PD
+Debian Etch
+.IP "debianlenny" 4
+.IX Item "debianlenny"
+Debian Lenny
+.IP "fedora5" 4
+.IX Item "fedora5"
+Fedora Core 5
+.IP "fedora6" 4
+.IX Item "fedora6"
+Fedora Core 6
+.IP "fedora7" 4
+.IX Item "fedora7"
+Fedora 7
+.IP "fedora8" 4
+.IX Item "fedora8"
+Fedora 8
+.IP "fedora9" 4
+.IX Item "fedora9"
+Fedora 9
+.IP "fedora10" 4
+.IX Item "fedora10"
+Fedora 10
+.IP "fedora11" 4
+.IX Item "fedora11"
+Fedora 11
+.IP "generic24" 4
+.IX Item "generic24"
+Generic 2.4.x kernel
+.IP "generic26" 4
+.IX Item "generic26"
+Generic 2.6.x kernel
+.IP "virtio26" 4
+.IX Item "virtio26"
+Generic 2.6.25 or later kernel with virtio
+.IP "rhel2.1" 4
+.IX Item "rhel2.1"
+Red Hat Enterprise Linux 2.1
+.IP "rhel3" 4
+.IX Item "rhel3"
+Red Hat Enterprise Linux 3
+.IP "rhel4" 4
+.IX Item "rhel4"
+Red Hat Enterprise Linux 4
+.IP "rhel5" 4
+.IX Item "rhel5"
+Red Hat Enterprise Linux 5
+.IP "sles10" 4
+.IX Item "sles10"
+Suse Linux Enterprise Server
+.IP "ubuntuhardy" 4
+.IX Item "ubuntuhardy"
+Ubuntu 8.04 \s-1LTS\s0 (Hardy Heron)
+.IP "ubuntuintrepid" 4
+.IX Item "ubuntuintrepid"
+Ubuntu 8.10 (Intrepid Ibex)
+.IP "ubuntujaunty" 4
+.IX Item "ubuntujaunty"
+Ubuntu 9.04 (Jaunty Jackalope)
+.RE
+.RS 4
+.RE
+.IP "other" 4
+.IX Item "other"
+.RS 4
+.PD 0
+.IP "generic" 4
+.IX Item "generic"
+.PD
+Generic
+.IP "msdos" 4
+.IX Item "msdos"
+MS-DOS
+.IP "netware4" 4
+.IX Item "netware4"
+Novell Netware 4
+.IP "netware5" 4
+.IX Item "netware5"
+Novell Netware 5
+.IP "netware6" 4
+.IX Item "netware6"
+Novell Netware 6
+.RE
+.RS 4
+.RE
+.IP "solaris" 4
+.IX Item "solaris"
+.RS 4
+.PD 0
+.IP "opensolaris" 4
+.IX Item "opensolaris"
+.PD
+Sun OpenSolaris
+.IP "solaris10" 4
+.IX Item "solaris10"
+Sun Solaris 10
+.IP "solaris9" 4
+.IX Item "solaris9"
+Sun Solaris 9
+.RE
+.RS 4
+.RE
+.IP "unix" 4
+.IX Item "unix"
+.RS 4
+.PD 0
+.IP "freebsd6" 4
+.IX Item "freebsd6"
+.PD
+Free \s-1BSD\s0 6.x
+.IP "freebsd7" 4
+.IX Item "freebsd7"
+Free \s-1BSD\s0 7.x
+.IP "openbsd4" 4
+.IX Item "openbsd4"
+Open \s-1BSD\s0 4.x
+.RE
+.RS 4
+.RE
+.IP "windows" 4
+.IX Item "windows"
+.RS 4
+.PD 0
+.IP "vista" 4
+.IX Item "vista"
+.PD
+Microsoft Windows Vista
+.IP "win2k" 4
+.IX Item "win2k"
+Microsoft Windows 2000
+.IP "win2k3" 4
+.IX Item "win2k3"
+Microsoft Windows 2003
+.IP "win2k8" 4
+.IX Item "win2k8"
+Microsoft Windows 2008
+.IP "winxp" 4
+.IX Item "winxp"
+Microsoft Windows \s-1XP\s0 (x86)
+.IP "winxp64" 4
+.IX Item "winxp64"
+Microsoft Windows \s-1XP\s0 (x86_64)
+.RE
+.RS 4
+.RE
+.RE
+.RS 2
+.RE
+.Sh "Full Virtualization specific options"
+.IX Subsection "Full Virtualization specific options"
+Parameters specific only to fully virtualized guest installs.
+.IP "\-\-sound" 2
+.IX Item "--sound"
+Attach a virtual audio device to the guest.
+.IP "\-\-noapic" 2
+.IX Item "--noapic"
+Override the \s-1OS\s0 type / variant to disables the \s-1APIC\s0 setting for fully
+virtualized guest.
+.IP "\-\-noacpi" 2
+.IX Item "--noacpi"
+Override the \s-1OS\s0 type / variant to disables the \s-1ACPI\s0 setting for fully
+virtualized guest.
+.Sh "Virtualization Type options"
+.IX Subsection "Virtualization Type options"
+Options to override the default virtualization type choices.
+.IP "\-v, \-\-hvm" 2
+.IX Item "-v, --hvm"
+Request the use of full virtualization, if both para & full virtualization are
+available on the host. This parameter may not be available if connecting to a
+Xen hypervisor on a machine without hardware virtualization support. This
+parameter is implied if connecting to a \s-1QEMU\s0 based hypervisor.
+.IP "\-p, \-\-paravirt" 2
+.IX Item "-p, --paravirt"
+This guest should be a paravirtualized guest. If the host supports both
+para & full virtualization, and neither this parameter nor the \f(CW\*(C`\-\-hvm\*(C'\fR
+are specified, this will be assumed.
+.IP "\-\-accelerate" 2
+.IX Item "--accelerate"
+When installing a \s-1QEMU\s0 guest, make use of the \s-1KVM\s0 or \s-1KQEMU\s0 kernel acceleration
+capabilities if available. Use of this option is recommended unless a guest
+\&\s-1OS\s0 is known to be incompatible with the accelerators. The \s-1KVM\s0 accelerator is
+preferred over \s-1KQEMU\s0 if both are available.
+.Sh "Installation Method options"
+.IX Subsection "Installation Method options"
+.IP "\-c \s-1CDROM\s0, \-\-cdrom=CDROM" 2
+.IX Item "-c CDROM, --cdrom=CDROM"
+File or device use as a virtual CD-ROM device for fully virtualized guests.
+It can be path to an \s-1ISO\s0 image, or to a \s-1CDROM\s0 device. It can also be a \s-1URL\s0
+from which to fetch/access a minimal boot \s-1ISO\s0 image. The URLs take the same
+format as described for the \f(CW\*(C`\-\-location\*(C'\fR argument. If a cdrom has been
+specified via the \f(CW\*(C`\-\-disk\*(C'\fR option, and neither \f(CW\*(C`\-\-cdrom\*(C'\fR nor any other
+install option is specified, the \f(CW\*(C`\-\-disk\*(C'\fR cdrom is used as the install media.
+.IP "\-l \s-1LOCATION\s0, \-\-location=LOCATION" 2
+.IX Item "-l LOCATION, --location=LOCATION"
+Installation source for guest virtual machine kernel+initrd pair.
+The \f(CW\*(C`LOCATION\*(C'\fR can take one of the following forms:
+.RS 2
+.IP "\s-1DIRECTORY\s0" 4
+.IX Item "DIRECTORY"
+Path to a local directory containing an installable distribution image
+.IP "nfs:host:/path or nfs://host/path" 4
+.IX Item "nfs:host:/path or nfs://host/path"
+An \s-1NFS\s0 server location containing an installable distribution image
+.IP "http://host/path" 4
+.IX Item "http://host/path"
+An \s-1HTTP\s0 server location containing an installable distribution image
+.IP "ftp://host/path" 4
+.IX Item "ftp://host/path"
+An \s-1FTP\s0 server location containing an installable distribution image
+.RE
+.RS 2
+.Sp
+Some distro specific url samples:
+.IP "Fedora/Red Hat Based" 4
+.IX Item "Fedora/Red Hat Based"
+http://download.fedoraproject.org/pub/fedora/linux/releases/10/Fedora/i386/os/
+.IP "Debian/Ubuntu" 4
+.IX Item "Debian/Ubuntu"
+http://ftp.us.debian.org/debian/dists/etch/main/installer\-amd64/
+.IP "Suse" 4
+.IX Item "Suse"
+http://download.opensuse.org/distribution/11.0/repo/oss/
+.IP "Mandriva" 4
+.IX Item "Mandriva"
+ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2009.0/i586/
+.RE
+.RS 2
+.RE
+.IP "\-\-pxe" 2
+.IX Item "--pxe"
+Use the \s-1PXE\s0 boot protocol to load the initial ramdisk and kernel for starting
+the guest installation process.
+.IP "\-\-import" 2
+.IX Item "--import"
+Skip the \s-1OS\s0 installation process, and build a guest around an existing
+disk image. The device used for booting is the first device specified via
+\&\f(CW\*(C`\-\-disk\*(C'\fR or \f(CW\*(C`\-\-file\*(C'\fR.
+.IP "\-\-livecd" 2
+.IX Item "--livecd"
+Specify that the installation media is a live \s-1CD\s0 and thus the guest
+needs to be configured to boot off the \s-1CDROM\s0 device permanently. It
+may be desirable to also use the \f(CW\*(C`\-\-nodisks\*(C'\fR flag in combination.
+.IP "\-x \s-1EXTRA\s0, \-\-extra\-args=EXTRA" 2
+.IX Item "-x EXTRA, --extra-args=EXTRA"
+Additional kernel command line arguments to pass to the installer when
+performing a guest install from \f(CW\*(C`\-\-location\*(C'\fR.
+.Sh "Storage Configuration"
+.IX Subsection "Storage Configuration"
+.IP "\-\-disk=DISKOPTS" 2
 .IX Item "--disk=DISKOPTS"
 Specifies media to use as storage for the guest, with various options. The
 general format of a disk string is
@@ -215,7 +510,7 @@ general format of a disk string is
 .Ve
 .Sp
 To specify media, one of the following options is required:
-.RS 4
+.RS 2
 .IP "\fBpath\fR" 4
 .IX Item "path"
 A path to some storage media to use, existing or not. Existing media can be
@@ -236,7 +531,7 @@ specifying a 'size' value.
 An existing libvirt storage volume to use. This is specified as
 \&'poolname/volname'.
 .RE
-.RS 4
+.RS 2
 .Sp
 Other available options:
 .IP "\fBdevice\fR" 4
@@ -244,8 +539,8 @@ Other available options:
 Disk device type. Value can be 'cdrom', 'disk', or 'floppy'. Default is
 \&'disk'. If a 'cdrom' is specified, and no install method is chosen, the
 cdrom is used as the install media.
-.IP "\fBbux\fR" 4
-.IX Item "bux"
+.IP "\fBbus\fR" 4
+.IX Item "bus"
 Disk bus type. Value can be 'ide', 'scsi', 'usb', 'virtio' or 'xen'.  The
 default is hypervisor dependent since not all hypervisors support all bus
 types.
@@ -260,53 +555,46 @@ size (in \s-1GB\s0) to use if creating new storage
 .IX Item "sparse"
 whether to skip fully allocating newly created storage. Value is 'true' or
 \&'false'. Default is 'true' (do not fully allocate).
+.Sp
+The initial time taken to fully-allocate the guest virtual disk (spare=false)
+will be usually by balanced by faster install times inside the guest. Thus
+use of this option is recommended to ensure consistently high performance
+and to avoid I/O errors in the guest should the host filesystem fill up.
+.IP "\fBcache\fR" 4
+.IX Item "cache"
+The cache mode to be used. The host pagecache provides cache memory.
+The cache value can be 'none', 'writethrough', or 'writeback'.
+\&'writethrough' provides read caching. 'writeback' provides
+read and write caching.
 .RE
-.RS 4
+.RS 2
 .Sp
 See the examples section for some uses. This option deprecates \f(CW\*(C`\-\-file\*(C'\fR,
 \&\f(CW\*(C`\-\-file\-size\*(C'\fR, and \f(CW\*(C`\-\-nonsparse\*(C'\fR.
 .RE
-.IP "\-\-nodisks" 4
+.IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 2
+.IX Item "-f DISKFILE, --file=DISKFILE"
+Path to the file, disk partition, or logical volume to use as the backing store
+for the guest's virtual disk. This option is deprecated in favor of \f(CW\*(C`\-\-disk\*(C'\fR.
+.IP "\-s \s-1DISKSIZE\s0, \-\-file\-size=DISKSIZE" 2
+.IX Item "-s DISKSIZE, --file-size=DISKSIZE"
+Size of the file to create for the guest virtual disk. This is deprecated in
+favor of \f(CW\*(C`\-\-disk\*(C'\fR.
+.IP "\-\-nonsparse" 2
+.IX Item "--nonsparse"
+Fully allocate the storage when creating. This is deprecated in favort of
+\&\f(CW\*(C`\-\-disk\*(C'\fR
+.IP "\-\-nodisks" 2
 .IX Item "--nodisks"
 Request a virtual machine without any local disk storage, typically used for
 running 'Live \s-1CD\s0' images or installing to network storage (iSCSI or \s-1NFS\s0 root).
-.IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 4
-.IX Item "-f DISKFILE, --file=DISKFILE"
-Path to the file, disk partition, or logical volume to use as the backing store
-for the guest's virtual disk. If the path does not exist, then \f(CW\*(C`\-\-file\-size\*(C'\fR
-option should also be specified, allowing the disk to be created. This parameter
-can be repeated multiple times to add many disk. This option is deprecated in
-favor of \-\-disk.
-.IP "\-s \s-1DISKSIZE\s0, \-\-file\-size=DISKSIZE" 4
-.IX Item "-s DISKSIZE, --file-size=DISKSIZE"
-Size of the file to create for the guest virtual disk, if the path given to \f(CW\*(C`\-\-file\*(C'\fR
-does not already exist. The size is to be specified in gigabytes, with fractional
-numbers allowed. The storage for the file will not be pre-allocated unless the
-\&\f(CW\*(C`\-\-nonsparse\*(C'\fR option is also specified. This parameter will be prompted for if 
-omitted on the command line & a new file is to be created.
-.IP "\-\-nonsparse" 4
-.IX Item "--nonsparse"
-Request creation of a non-sparse file for the guest virtual disk. The initial
-time taken to fully-allocate the guest virtual disk will be usually by balanced
-by faster install times inside the guest. Thus use of this optional is recommended 
-to ensure consistently high performance and to avoid I/O errors in the guest 
-should the host filesystem fill up.
-.IP "\-m \s-1MAC\s0, \-\-mac=MAC" 4
-.IX Item "-m MAC, --mac=MAC"
-Fixed \s-1MAC\s0 address for the guest; If this parameter is omitted, or the value
-\&\f(CW\*(C`RANDOM\*(C'\fR is specified a suitable address will be randomly generated. For
-Xen virtual machines it is required that the first 3 pairs in the \s-1MAC\s0 address
-be the sequence '00:16:3e', while for \s-1QEMU\s0 or \s-1KVM\s0 virtual machines it must
-be '54:52:00'.
-.IP "\-b \s-1BRIDGE\s0, \-\-bridge=BRIDGE" 4
-.IX Item "-b BRIDGE, --bridge=BRIDGE"
-Bridge device to connect the guest \s-1NIC\s0 to. This parameter is deprecated in
-favour of the \f(CW\*(C`\-\-network\*(C'\fR parameter.
-.IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK" 4
+.Sh "Networking Configuration"
+.IX Subsection "Networking Configuration"
+.IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK" 2
 .IX Item "-w NETWORK, --network=NETWORK"
 Connect the guest to the host network. The value for \f(CW\*(C`NETWORK\*(C'\fR can take
 one of 3 formats:
-.RS 4
+.RS 2
 .IP "bridge:BRIDGE" 4
 .IX Item "bridge:BRIDGE"
 Connect to a bridge device in the host called \f(CW\*(C`BRIDGE\*(C'\fR. Use this option if
@@ -326,7 +614,7 @@ NATed to the \s-1LAN\s0 by whichever connection is active.
 Connect to the \s-1LAN\s0 using \s-1SLIRP\s0. Only use this if running a \s-1QEMU\s0 guest as
 an unprivileged user. This provides a very limited form of \s-1NAT\s0.
 .RE
-.RS 4
+.RS 2
 .Sp
 If this option is omitted a single \s-1NIC\s0 will be created in the guest. If
 there is a bridge device in the host with a physical interface enslaved,
@@ -334,306 +622,71 @@ that will be used for connectivity. Failing that, the virtual network
 called \f(CW\*(C`default\*(C'\fR will be used. This option can be specified multiple
 times to setup more than one \s-1NIC\s0.
 .RE
-.IP "\-\-vnc" 4
+.IP "\-b \s-1BRIDGE\s0, \-\-bridge=BRIDGE" 2
+.IX Item "-b BRIDGE, --bridge=BRIDGE"
+Bridge device to connect the guest \s-1NIC\s0 to. This parameter is deprecated in
+favour of the \f(CW\*(C`\-\-network\*(C'\fR parameter.
+.IP "\-m \s-1MAC\s0, \-\-mac=MAC" 2
+.IX Item "-m MAC, --mac=MAC"
+Fixed \s-1MAC\s0 address for the guest; If this parameter is omitted, or the value
+\&\f(CW\*(C`RANDOM\*(C'\fR is specified a suitable address will be randomly generated. For
+Xen virtual machines it is required that the first 3 pairs in the \s-1MAC\s0 address
+be the sequence '00:16:3e', while for \s-1QEMU\s0 or \s-1KVM\s0 virtual machines it must
+be '54:52:00'.
+.IP "\-\-nonetworks" 2
+.IX Item "--nonetworks"
+Request a virtual machine without any network interfaces.
+.Sh "Graphics Configuration"
+.IX Subsection "Graphics Configuration"
+If no graphics option is specified, \f(CW\*(C`virt\-install\*(C'\fR will default to \-\-vnc
+if the \s-1DISPLAY\s0 environment variable is set, otherwise \-\-nographics is used.
+.IP "\-\-vnc" 2
 .IX Item "--vnc"
 Setup a virtual console in the guest and export it as a \s-1VNC\s0 server in
 the host. Unless the \f(CW\*(C`\-\-vncport\*(C'\fR parameter is also provided, the \s-1VNC\s0
 server will run on the first free port number at 5900 or above. The
 actual \s-1VNC\s0 display allocated can be obtained using the \f(CW\*(C`vncdisplay\*(C'\fR
-command to \f(CW\*(C`virsh\*(C'\fR. If neither this, nor the \f(CW\*(C`\-\-sdl\*(C'\fR or \f(CW\*(C`\-\-nographics\*(C'\fR 
-parameters are specified, this will be prompted for.
-.IP "\-\-vncport=VNCPORT" 4
+command to \f(CW\*(C`virsh\*(C'\fR (or \fIvirt\-viewer\fR\|(1) can be used which handles this
+detail for the use).
+.IP "\-\-vncport=VNCPORT" 2
 .IX Item "--vncport=VNCPORT"
 Request a permanent, statically assigned port number for the guest \s-1VNC\s0
 console. Use of this option is discouraged as other guests may automatically
 choose to run on this port causing a clash.
-.IP "\-\-sdl" 4
+.IP "\-\-sdl" 2
 .IX Item "--sdl"
 Setup a virtual console in the guest and display an \s-1SDL\s0 window in the
 host to render the output. If the \s-1SDL\s0 window is closed the guest may
 be unconditionally terminated.
-.IP "\-\-nographics" 4
+.IP "\-\-nographics" 2
 .IX Item "--nographics"
-Disable all interactive prompts for the guest virtual console. No graphical
-console will be allocated for the guest. A text based console will always
-be available on the first serial port (or equivalent paravirtualised console
-device).
-.IP "\-\-noautoconsole" 4
+No graphical console will be allocated for the guest. Fully virtualized guests
+(Xen \s-1FV\s0 or QEmu/KVM) will need to have a text console configured on the first
+serial port in the guest (this can be done via the \-\-extra\-args option). Xen
+\&\s-1PV\s0 will set this up automatically. The command 'virsh console \s-1NAME\s0' can be
+used to connect to the serial device.
+.IP "\-\-noautoconsole" 2
 .IX Item "--noautoconsole"
 Don't automatically try to connect to the guest console. The default behaviour
 is to launch a \s-1VNC\s0 client to display the graphical console, or to run the
 \&\f(CW\*(C`virsh\*(C'\fR \f(CW\*(C`console\*(C'\fR command to display the text console. Use of this parameter
 will disable this behaviour.
-.IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 4
+.IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 2
 .IX Item "-k KEYMAP, --keymap=KEYMAP"
-Request that the virtual console be configured to run with a non-English
+Request that the virtual \s-1VNC\s0 console be configured to run with a non-English
 keyboard layout.
-.IP "\-\-accelerate" 4
-.IX Item "--accelerate"
-When installing a \s-1QEMU\s0 guest, make use of the \s-1KVM\s0 or \s-1KQEMU\s0 kernel acceleration
-capabilities if available. Use of this option is recommended unless a guest
-\&\s-1OS\s0 is known to be incompatible with the accelerators. The \s-1KVM\s0 accelerator is
-preferred over \s-1KQEMU\s0 if both are available.
-.IP "\-\-connect=CONNECT     Connect to hypervisor with \s-1URI\s0" 4
-.IX Item "--connect=CONNECT     Connect to hypervisor with URI"
-Connect to a non-default hypervisor. The default connection is chosen based
-on the following rules:
-.RS 4
-.IP "xen" 4
-.IX Item "xen"
-If running on a host with the Xen kernel (checks against /proc/xen)
-.IP "qemu:///system" 4
-.IX Item "qemu:///system"
-If running on a bare metal kernel as root
-.IP "qemu:///session" 4
-.IX Item "qemu:///session"
-If running on a bare metal kernel as non-root
-.RE
-.RS 4
-.Sp
-It is only necessary to provide the \f(CW\*(C`\-\-connect\*(C'\fR argument if this default
-prioritization is incorrect, eg if wanting to use \s-1QEMU\s0 while on a Xen kernel.
-.RE
-.IP "\-\-livecd" 4
-.IX Item "--livecd"
-Specify that the installation media is a live \s-1CD\s0 and thus the guest
-needs to be configured to boot off the \s-1CDROM\s0 device permanently. It
-may be desirable to also use the \f(CW\*(C`\-\-nodisks\*(C'\fR flag in combination.
-.IP "\-v, \-\-hvm             This guest should be a fully virtualized guest" 4
-.IX Item "-v, --hvm             This guest should be a fully virtualized guest"
-Request the use of full virtualization, if both para & full virtualization are
-available on the host. This parameter may not be available if connecting to a
-Xen hypervisor on a machine without hardware virtualization support. This 
-parameter is implied if connecting to a \s-1QEMU\s0 based hypervisor.
-.IP "\-c \s-1CDROM\s0, \-\-cdrom=CDROM" 4
-.IX Item "-c CDROM, --cdrom=CDROM"
-File to use a virtual CD-ROM device for fully virtualized guests. It can be
-path to an \s-1ISO\s0 image, or to a \s-1CDROM\s0 device. It can also be a \s-1URL\s0 from which
-to fetch/access a minimal boot \s-1ISO\s0 image. The URLs take the same format as
-described for the \f(CW\*(C`\-\-location\*(C'\fR argument. If a cdrom has been specified via
-the \f(CW\*(C`\-\-disk\*(C'\fR option, and neither \f(CW\*(C`\-\-cdrom\*(C'\fR nor any other install option is
-specified, the \f(CW\*(C`\-\-disk\*(C'\fR cdrom is used as the install media.
-.IP "\-\-pxe" 4
-.IX Item "--pxe"
-Use the \s-1PXE\s0 boot protocol to load the initial ramdisk and kernel for starting
-the guest installation process. If this parameter is omitted then either the
-\&\f(CW\*(C`\-\-location\*(C'\fR or \f(CW\*(C`\-\-cdrom\*(C'\fR arguments must be given to specify a location for
-the kernel and initrd.
-.IP "\-\-os\-type=OS_TYPE" 4
-.IX Item "--os-type=OS_TYPE"
-Optimize the guest configuration for a type of operating system. This will
-attempt to pick the most suitable \s-1ACPI\s0 & \s-1APIC\s0 settings, optimally supported
-mouse drivers and generally accommodate other operating system quirks. The
-valid operating system types are
-.RS 4
-.IP "linux" 4
-.IX Item "linux"
-Linux 2.x series
-.IP "windows" 4
-.IX Item "windows"
-Microsoft Windows 9x or later
-.IP "unix" 4
-.IX Item "unix"
-Traditional \s-1UNIX\s0 \s-1BSD\s0 or SysV derivatives
-.IP "other" 4
-.IX Item "other"
-Operating systems not in one of the 3 prior groups
-.RE
-.RS 4
-.RE
-.IP "\-\-os\-variant=OS_VARIANT" 4
-.IX Item "--os-variant=OS_VARIANT"
-Further optimize the guest configuration for a specific operating system
-variant. This parameter is optional. The valid variants are
-.RS 4
-.IP "linux" 4
-.IX Item "linux"
-.RS 4
-.PD 0
-.IP "rhel2.1" 4
-.IX Item "rhel2.1"
-.PD
-Red Hat Enterprise Linux 2.1
-.IP "rhel3" 4
-.IX Item "rhel3"
-Red Hat Enterprise Linux 3
-.IP "rhel4" 4
-.IX Item "rhel4"
-Red Hat Enterprise Linux 4
-.IP "rhel5" 4
-.IX Item "rhel5"
-Red Hat Enterprise Linux 5
-.IP "centos5" 4
-.IX Item "centos5"
-Cent \s-1OS\s0 5
-.IP "fedora5" 4
-.IX Item "fedora5"
-Fedora Core 5
-.IP "fedora6" 4
-.IX Item "fedora6"
-Fedora Core 6
-.IP "fedora7" 4
-.IX Item "fedora7"
-Fedora 7
-.IP "sles10" 4
-.IX Item "sles10"
-Suse Linux Enterprise Server 10.x
-.IP "debianEtch" 4
-.IX Item "debianEtch"
-Debian 4.0 (Etch)
-.IP "debianLenny" 4
-.IX Item "debianLenny"
-Debian Lenny
-.IP "generic26" 4
-.IX Item "generic26"
-Generic Linux 2.6.x kernel
-.IP "generic24" 4
-.IX Item "generic24"
-Generic Linux 2.4.x kernel
-.RE
-.RS 4
-.RE
-.IP "windows" 4
-.IX Item "windows"
-.RS 4
-.PD 0
-.IP "winxp" 4
-.IX Item "winxp"
-.PD
-Microsoft Windows \s-1XP\s0
-.IP "win2k" 4
-.IX Item "win2k"
-Microsoft Windows 2000
-.IP "win2k3" 4
-.IX Item "win2k3"
-Microsoft Windows 2003
-.IP "vista" 4
-.IX Item "vista"
-Microsoft Windows Vista
-.RE
-.RS 4
-.RE
-.IP "unix" 4
-.IX Item "unix"
-.RS 4
-.PD 0
-.IP "solaris9" 4
-.IX Item "solaris9"
-.PD
-Sun Solaris 9
-.IP "solaris10" 4
-.IX Item "solaris10"
-Sun Solaris 10
-.IP "freebsd6" 4
-.IX Item "freebsd6"
-Free \s-1BSD\s0 6.x
-.IP "openbsd4" 4
-.IX Item "openbsd4"
-Open \s-1BSD\s0 4.x
-.RE
-.RS 4
-.RE
-.IP "other" 4
-.IX Item "other"
-.RS 4
-.PD 0
-.IP "msdos" 4
-.IX Item "msdos"
-.PD
-Microsoft \s-1DOS\s0
-.IP "netware4" 4
-.IX Item "netware4"
-Novell Netware 4
-.IP "netware5" 4
-.IX Item "netware5"
-Novell Netware 5
-.IP "netware6" 4
-.IX Item "netware6"
-Novell Netware 6
-.RE
-.RS 4
-.RE
-.RE
-.RS 4
-.RE
-.IP "\-\-noapic" 4
-.IX Item "--noapic"
-Override the \s-1OS\s0 type / variant to disables the \s-1APIC\s0 setting for fully 
-virtualized guest.
-.IP "\-\-noacpi" 4
-.IX Item "--noacpi"
-Override the \s-1OS\s0 type / variant to disables the \s-1ACPI\s0 setting for fully 
-virtualized guest.
-.IP "\-\-arch=ARCH" 4
-.IX Item "--arch=ARCH"
-Request a non-native \s-1CPU\s0 architecture for the guest virtual machine.
-The option is only currently available with \s-1QEMU\s0 guests, and will not
-enable use of acceleration. If omitted, the host \s-1CPU\s0 architecture will
-be used in the guest.
-.IP "\-p, \-\-paravirt" 4
-.IX Item "-p, --paravirt"
-This guest should be a paravirtualized guest. If the host supports both
-para & full virtualization, and neither this parameter nor the \f(CW\*(C`\-\-hvm\*(C'\fR
-are specified, this will be prompted for interactively.
-.IP "\-l \s-1LOCATION\s0, \-\-location=LOCATION" 4
-.IX Item "-l LOCATION, --location=LOCATION"
-Installation source for guest virtual machine kernel+initrd pair. This
-is required for paravirtualized guests. Fully virtualized guests must
-use either \f(CW\*(C`\-\-location\*(C'\fR to specify a kernel+initrd, or the \f(CW\*(C`\-\-cdrom\*(C'\fR
-parameter to specify an \s-1ISO/CDROM\s0 image. The \f(CW\*(C`LOCATION\*(C'\fR can take one 
-of the following forms:
-.RS 4
-.IP "\s-1DIRECTORY\s0" 4
-.IX Item "DIRECTORY"
-Path to a local directory containing an installable distribution image
-.IP "nfs:host:/path or nfs://host/path" 4
-.IX Item "nfs:host:/path or nfs://host/path"
-An \s-1NFS\s0 server location containing an installable distribution image
-.IP "http://host/path" 4
-.IX Item "http://host/path"
-An \s-1HTTP\s0 server location containing an installable distribution image
-.IP "ftp://host/path" 4
-.IX Item "ftp://host/path"
-An \s-1FTP\s0 server location containing an installable distribution image
-.RE
-.RS 4
-.Sp
-Some distro specific url samples:
-.IP "Fedora/Red Hat Based" 4
-.IX Item "Fedora/Red Hat Based"
-http://download.fedoraproject.org/pub/fedora/linux/releases/10/Fedora/i386/os/
-.IP "Debian/Ubuntu" 4
-.IX Item "Debian/Ubuntu"
-http://ftp.us.debian.org/debian/dists/etch/main/installer\-amd64/
-.IP "Suse" 4
-.IX Item "Suse"
-http://download.opensuse.org/distribution/11.0/repo/oss/
-.IP "Mandriva" 4
-.IX Item "Mandriva"
-ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2009.0/i586/
-.RE
-.RS 4
-.RE
-.IP "\-x \s-1EXTRA\s0, \-\-extra\-args=EXTRA" 4
-.IX Item "-x EXTRA, --extra-args=EXTRA"
-Additional kernel command line arguments to pass to the installer when
-performing a guest install from a kernel+initrd.
-.IP "\-d, \-\-debug" 4
+.Sh "Miscellaneous Options"
+.IX Subsection "Miscellaneous Options"
+.IP "\-d, \-\-debug" 2
 .IX Item "-d, --debug"
 Print debugging information to the terminal when running the install process.
 The debugging information is also stored in \f(CW\*(C`$HOME/.virtinst/virt\-install.log\*(C'\fR
 even if this parameter is omitted.
-.IP "\-\-noreboot" 4
+.IP "\-\-noreboot" 2
 .IX Item "--noreboot"
-Prevent the domain from automatically rebooting after a graphical install.
-.IP "\-\-force" 4
-.IX Item "--force"
-Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
-say yes. For any other prompts, the application will exit.
-.IP "\-\-prompt" 4
-.IX Item "--prompt"
-Specifically enable prompting. Default prompting is off (as os virtinst 0.400.0)
-.IP "\-\-wait=WAIT" 4
+Prevent the domain from automatically rebooting after the install has
+completed.
+.IP "\-\-wait=WAIT" 2
 .IX Item "--wait=WAIT"
 Amount of time to wait (in minutes) for a \s-1VM\s0 to complete its install.
 Without this option, virt-install will wait for the console to close (not
@@ -642,6 +695,14 @@ neccessarily indicating the guest has shutdown), or in the case of
 value will make virt-install wait indefinitely, a value of 0 triggers the
 same results as noautoconsole. If the time limit is succeeded, virt-install
 simply exits, leaving the virtual machine in its current state.
+.IP "\-\-force" 2
+.IX Item "--force"
+Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
+say yes. For any other prompts, the application will exit.
+.IP "\-\-prompt" 2
+.IX Item "--prompt"
+Specifically enable prompting. Default prompting is off (as of
+virtinst 0.400.0)
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 Install a \s-1KVM\s0 guest, creating a new storage file, virtual networking,
@@ -716,8 +777,19 @@ options:
 \&       \-\-nographics \e
 \&       \-\-location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 .Ve
-.SH "AUTHOR"
-.IX Header "AUTHOR"
+.PP
+Create a guest from an existing disk image 'mydisk.img' using defaults for
+the rest of the options.
+.PP
+.Vb 5
+\&  # virt\-install \e
+\&       \-\-name demo
+\&       \-\-ram 512
+\&       \-\-disk path=/home/user/VMs/mydisk.img
+\&       \-\-import
+.Ve
+.SH "AUTHORS"
+.IX Header "AUTHORS"
 Written by Daniel P. Berrange, Hugh Brock, Jeremy Katz, Cole Robinson and a
 team of many other contributors. See the \s-1AUTHORS\s0 file in the source
 distribution for the complete list of credits.
@@ -733,10 +805,10 @@ line flag and post the output to the bug report, along with
 \&\f(CW$HOME\fR/.virtinst/virt\-install.log
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
-Copyright (C) 2006\-2007 Red Hat, Inc, and various contributors. 
-This is free software. You may redistribute copies of it under the terms of the \s-1GNU\s0 General 
-Public License \f(CW\*(C`http://www.gnu.org/licenses/gpl.html\*(C'\fR. There is \s-1NO\s0 \s-1WARRANTY\s0, to the extent 
-permitted by law.
+Copyright (C) 2006\-2009 Red Hat, Inc, and various contributors.
+This is free software. You may redistribute copies of it under the terms of
+the \s-1GNU\s0 General Public License \f(CW\*(C`http://www.gnu.org/licenses/gpl.html\*(C'\fR. There
+is \s-1NO\s0 \s-1WARRANTY\s0, to the extent permitted by law.
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 \&\f(CWvirsh(1)\fR, \f(CW\*(C`virt\-clone(1)\*(C'\fR, \f(CW\*(C`virt\-manager(1)\*(C'\fR, the project website \f(CW\*(C`http://virt\-manager.org\*(C'\fR

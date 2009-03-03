@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-CLONE 1"
-.TH VIRT-CLONE 1 "2009-01-26" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-CLONE 1 "2009-03-03" "perl v5.10.0" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -149,78 +149,76 @@ images using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library. It wil
 the disk images of any existing virtual machine, and define a new guest
 with an identical virtual hardware configuration. Elements which require
 uniqueness will be updated to avoid a clash between old and new guests.
-.PP
-Given suitable command line arguments, \f(CW\*(C`virt\-clone\*(C'\fR is capable of running
-completely unattended, with the guest 'kickstarting' itself too. This allows
-for easy automation of guest installs. A companion tool \f(CW\*(C`virt\-clone(1)\*(C'\fR is
-provided for cloning pre-existing guests if their installation cannot be easily
-automated from pristine media.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
-Any of the options can be omitted, in which case \f(CW\*(C`virt\-clone\*(C'\fR will run
-interactively prompting for input as required.
+Most options are not required. Minimum requirements are \-\-original or
+\&\-\-original\-xml (to specify the guest to clone), \-\-name, and appropriate
+storage options via \-file.
 .IP "\-h, \-\-help" 4
 .IX Item "-h, --help"
 Show the help message and exit
-.IP "\-o \s-1ORIGINAL_GUEST\s0, \-\-original=ORIGINAL_GUEST" 4
+.IP "\-\-connect=CONNECT" 4
+.IX Item "--connect=CONNECT"
+Connect to a non-default hypervisor. See \fIvirt\-install\fR\|(1) for details
+.Sh "General Options"
+.IX Subsection "General Options"
+General configuration parameters that apply to all guest clones.
+.IP "\-o \s-1ORIGINAL_GUEST\s0, \-\-original=ORIGINAL_GUEST" 2
 .IX Item "-o ORIGINAL_GUEST, --original=ORIGINAL_GUEST"
-Name or uuid for the original guest to be cloned. This guest must be shut
-off since it is not possible to safely clone active guests at this time.
-.IP "\-n \s-1NAME\s0, \-\-name=NAME" 4
+Name of the original guest to be cloned. This guest must be shut off or paused
+since it is not possible to safely clone active guests at this time.
+.IP "\-\-original\-xml=ORIGINAL_XML" 2
+.IX Item "--original-xml=ORIGINAL_XML"
+Libvirt guest xml file to use as the original guest. The guest does not need to
+be defined on the libvirt connection. This takes the place of the
+\&\f(CW\*(C`\-\-original\*(C'\fR parameter.
+.IP "\-n \s-1NAME\s0, \-\-name=NAME" 2
 .IX Item "-n NAME, --name=NAME"
 Name of the new guest virtual machine instance. This must be unique amongst
-all guests known to the hypervisor on this machine, including those not
-currently active. To re-define an existing guest, use the \f(CWvirsh(1)\fR tool
-to shut it down & delete it prior to running \f(CW\*(C`virt\-clone\*(C'\fR. This parameter
-will be prompted for if omitted on the command line.
-.IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 4
+all guests known to the hypervisor connection, including those not
+currently active.
+.IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 2
 .IX Item "-u UUID, --uuid=UUID"
-\&\s-1UUID\s0 for the guest; if none is given a random \s-1UUID\s0 will be generated. If you 
+\&\s-1UUID\s0 for the guest; if none is given a random \s-1UUID\s0 will be generated. If you
 specify \s-1UUID\s0, you should use a 32\-digit hexadecimal number. \s-1UUID\s0 are intended
 to be unique across the entire data center, and indeed world. Bear this in
 mind if manually specifying a \s-1UUID\s0
-.IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 4
+.Sh "Storage Configuration"
+.IX Subsection "Storage Configuration"
+.IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 2
 .IX Item "-f DISKFILE, --file=DISKFILE"
 Path to the file, disk partition, or logical volume to use as the backing store
 for the new guest's virtual disk. If the original guest has multiple disks,
 this parameter must be repeated multiple times, once per disk in the original
 virtual machine.
-.IP "\-m \s-1MAC\s0, \-\-mac=MAC" 4
-.IX Item "-m MAC, --mac=MAC"
-Fixed \s-1MAC\s0 address for the guest; If this parameter is omitted, or the value
-\&\f(CW\*(C`RANDOM\*(C'\fR is specified a suitable address will be randomly generated. For
-Xen virtual machines it is required that the first 3 pairs in the \s-1MAC\s0 address
-be the sequence '00:16:3e', while for \s-1QEMU\s0 or \s-1KVM\s0 virtual machines it must
-be '54:52:00'.
-.IP "\-\-connect=CONNECT     Connect to hypervisor with \s-1URI\s0" 4
-.IX Item "--connect=CONNECT     Connect to hypervisor with URI"
-Connect to a non-default hypervisor. The default connection is chosen based
-on the following rules:
-.RS 4
-.IP "xen" 4
-.IX Item "xen"
-If running on a host with the Xen kernel (checks against /proc/xen)
-.IP "qemu:///system" 4
-.IX Item "qemu:///system"
-If running on a bare metal kernel as root
-.IP "qemu:///session" 4
-.IX Item "qemu:///session"
-If running on a bare metal kernel as non-root
-.RE
-.RS 4
-.Sp
-It is only necessary to provide the \f(CW\*(C`\-\-connect\*(C'\fR argument if this default
-prioritization is incorrect, eg if wanting to use \s-1QEMU\s0 while on a Xen kernel.
-.RE
-.IP "\-\-preserve\-data" 4
+.IP "\-\-force\-copy=TARGET" 2
+.IX Item "--force-copy=TARGET"
+Force cloning the passed disk target ('hdc', 'sda', etc.). By default,
+\&\f(CW\*(C`virt\-clone\*(C'\fR will skip certain disks, such as those marked 'readonly' or
+\&'shareable'.
+.IP "\-\-nonsparse" 2
+.IX Item "--nonsparse"
+Fully allocate the new storage if the path being cloned is a sparse file.
+See \fIvirt\-install\fR\|(1) for more details on sparse vs. nonsparse.
+.IP "\-\-preserve\-data" 2
 .IX Item "--preserve-data"
 Preserve a new file to use as the disk image for the new guest.
-.IP "\-d, \-\-debug" 4
+.Sh "Networking Configuration"
+.IX Subsection "Networking Configuration"
+.IP "\-m \s-1MAC\s0, \-\-mac=MAC" 2
+.IX Item "-m MAC, --mac=MAC"
+Fixed \s-1MAC\s0 address for the guest; If this parameter is omitted, or the value
+\&\f(CW\*(C`RANDOM\*(C'\fR is specified a suitable address will be randomly generated. Addresses
+are applied sequentially to the networks as they are listed in the original
+guest \s-1XML\s0.
+.Sh "Miscellaneous Options"
+.IX Subsection "Miscellaneous Options"
+.IP "\-d, \-\-debug" 2
 .IX Item "-d, --debug"
 Print debugging information to the terminal when running the install process.
 The debugging information is also stored in \f(CW\*(C`$HOME/.virtinst/virt\-clone.log\*(C'\fR
 even if this parameter is omitted.
-.IP "\-\-force" 4
+.IP "\-\-force" 2
 .IX Item "--force"
 Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
