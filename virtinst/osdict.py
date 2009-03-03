@@ -115,10 +115,22 @@ OS_TYPES = {\
                         "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
                         "net"  : { "model" : [ (["kvm"], "virtio") ] }
                       }},
-        "ubuntuhardy": { "label": "Ubuntu Hardy", "distro": "ubuntu",
+        "ubuntuhardy": { "label": "Ubuntu 8.04 LTS (Hardy Heron)",
+                         "distro": "ubuntu",
                          "devices" : {
                             "net"  : { "model" : [ (["kvm"], "virtio") ] }
                          }},
+        "ubuntuintrepid": { "label": "Ubuntu 8.10 (Intrepid Ibex)",
+                            "distro": "ubuntu",
+                            "devices" : {
+                                "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                           }},
+        "ubuntujaunty": { "label": "Ubuntu 9.04 (Jaunty Jackalope)",
+                          "distro": "ubuntu",
+                          "devices" : {
+                            "net"  : { "model" : [ (["kvm"], "virtio") ] },
+                            "disk" : { "bus"   : [ (["kvm"], "virtio") ] }
+                        }},
         "generic24": { "label": "Generic 2.4.x kernel" },
         "generic26": { "label": "Generic 2.6.x kernel" },
         "virtio26": { "sortby": "genericvirtio26",
