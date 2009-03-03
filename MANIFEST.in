@@ -7,5 +7,5 @@ recursive-include tests *.py *.xml *.vmx *.virt-image *.sh
 include virt-install virt-clone virt-image virt-convert
 include autobuild.sh
 include doc/*
-recursive-include man *.1 *.5 *.pod
+recursive-include man *.1 *.5 *.pod *.pod.in
 recursive-include po *.po *.pot

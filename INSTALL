@@ -6,11 +6,18 @@ run the command:
 Please see http://docs.python.org/inst/standard-install.html for more info
 on the standard python install process.
 
+If installing from an upstream checkout, the 'man' pages may not be up to
+date. You can force man page generation (which will be picked up by the next
+'install' command) with:
+
+    python setup.py sdist
+
 An RPM can be built and placed in the local rpmroot with:
 
     python setup.py rpm
 
-Note this RPM has been catered to Fedora/Red Hat distros.
+Note this RPM has been catered to Fedora/Red Hat distros, but may work
+elsewhere..
 
 For translators, running:
 

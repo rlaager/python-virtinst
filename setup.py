@@ -166,7 +166,45 @@ class sdist(_sdist):
         cmd = (""" sed -e "s/::VERSION::/%s/g" < python-virtinst.spec.in """ %
                VERSION) + " > python-virtinst.spec"
         os.system(cmd)
+
+        # Update and generate man pages
+        self._update_manpages()
+
         _sdist.run(self)
+
+    def _update_manpages(self):
+        # Update virt-install.1 with latest os type/variant values
+        import virtinst.osdict as osdict
+
+        output = ""
+        output += "=over 4\n\n"
+        for t in osdict.sort_helper(osdict.OS_TYPES):
+            output += "=item %s\n\n" % t
+
+            output += "=over 4\n\n"
+            for v in osdict.sort_helper(osdict.OS_TYPES[t]["variants"]):
+                output += "=item %s\n\n" % v
+                output += osdict.OS_TYPES[t]["variants"][v]["label"] + "\n\n"
+
+            output += "=back\n\n"
+        output += "=back\n\n"
+
+        infile = "man/en/virt-install.pod.in"
+        outfile = "man/en/virt-install.pod"
+
+        infd  = open(infile, "r")
+        outfd = open(outfile, "w")
+
+        inp = infd.read()
+        infd.close()
+
+        outp = inp.replace("::VARIANT VALUES::", output)
+        outfd.write(outp)
+        outfd.close()
+
+        # Generate new manpages
+        if os.system("make -C man/en"):
+            raise RuntimeError("Couldn't generate man pages.")
 
 class build(_build):
     """ custom build command to compile i18n files"""
