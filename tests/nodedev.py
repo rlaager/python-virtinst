@@ -14,9 +14,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import tests
 import os.path
 import unittest
 import virtinst.NodeDeviceParser as nodeparse
+from virtinst import VirtualHostDevice
 import libvirt
 
 conn = libvirt.open("test:///default")
@@ -32,6 +34,14 @@ class TestNodeDev(unittest.TestCase):
 
         for attr in vals.keys():
             self.assertEqual(vals[attr], getattr(dev, attr))
+
+    def _testNode2DeviceCompare(self, nodefile, devfile, nodedev=None):
+        devfile = os.path.join("tests/nodedev-xml/devxml", devfile)
+        if not nodedev:
+            nodedev = self._nodeDevFromFile(nodefile)
+
+        dev = VirtualHostDevice.device_from_node(conn, nodedev=nodedev)
+        tests.diff_compare(dev.get_xml_config(), devfile)
 
     def testSystemDevice(self):
         filename = "system.xml"
@@ -149,6 +159,38 @@ class TestNodeDev(unittest.TestCase):
                 "host": "5", "bus": "0", "target": "0", "lun": "0",
                 "type": "disk"}
         self._testCompare(filename, vals)
+
+
+        # NodeDevice 2 Device XML tests
+    def testNodeDev2USB1(self):
+        nodefile = "usbdev1.xml"
+        devfile = "usbdev1.xml"
+        self._testNode2DeviceCompare(nodefile, devfile)
+
+    def testNodeDev2USB2(self):
+        nodefile = "usbdev1.xml"
+        devfile = "usbdev2.xml"
+        nodedev = self._nodeDevFromFile(nodefile)
+
+        # Force xml building to use bus, addr
+        nodedev.product_id = None
+        nodedev.vendor_id = None
+
+        self._testNode2DeviceCompare(nodefile, devfile, nodedev=nodedev)
+
+    def testNodeDev2PCI(self):
+        nodefile = "pci1.xml"
+        devfile = "pcidev.xml"
+        self._testNode2DeviceCompare(nodefile, devfile)
+
+    def testNodeDevFail(self):
+        nodefile = "usbbus.xml"
+        devfile = ""
+
+        # This should exist, since usbbus is not a valid device to
+        # pass to a guest.
+        self.assertRaises(ValueError,
+                          self._testNode2DeviceCompare, nodefile, devfile)
 
 if __name__ == "__main__":
     unittest.main()

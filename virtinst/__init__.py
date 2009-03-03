@@ -32,6 +32,8 @@ from VirtualNetworkInterface import VirtualNetworkInterface, \
 from VirtualGraphics import VirtualGraphics
 from VirtualAudio import VirtualAudio
 from VirtualDisk import VirtualDisk, XenDisk
+from VirtualHostDevice import (VirtualHostDevice, VirtualHostDeviceUSB,
+                               VirtualHostDevicePCI)
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
 from DistroInstaller import DistroInstaller

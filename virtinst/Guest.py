@@ -79,6 +79,7 @@ class Guest(object):
         self.disks = []
         self.nics = []
         self.sound_devs = []
+        self.hostdevs = []
 
         # Device lists to use/alter during install process
         self._install_disks = []
@@ -413,6 +414,12 @@ class Guest(object):
             xml = _util.xml_append(xml, sound_dev.get_xml_config())
         return xml
 
+    def _get_hostdev_xml(self):
+        xml = ""
+        for hostdev in self.hostdevs:
+            xml = _util.xml_append(xml, hostdev.get_xml_config())
+        return xml
+
     def _get_device_xml(self, install=True):
         xml = ""
 
@@ -421,6 +428,7 @@ class Guest(object):
         xml = _util.xml_append(xml, self._get_input_xml())
         xml = _util.xml_append(xml, self._get_graphics_xml())
         xml = _util.xml_append(xml, self._get_sound_xml())
+        xml = _util.xml_append(xml, self._get_hostdev_xml())
         return xml
 
     def _get_features_xml(self):
@@ -582,12 +590,14 @@ class Guest(object):
         if self._installer.install_disk is not None:
             self._install_disks.append(self._installer.install_disk)
 
-    def _create_devices(self,progresscb):
+    def _create_devices(self, progresscb):
         """Ensure that devices are setup"""
         for disk in self._install_disks:
             disk.setup(progresscb)
         for nic in self._install_nics:
             nic.setup(self.conn)
+        for hostdev in self.hostdevs:
+            hostdev.setup()
 
     def _do_install(self, consolecb, meter, removeOld=False, wait=True):
         vm = None

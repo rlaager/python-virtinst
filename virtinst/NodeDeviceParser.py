@@ -330,6 +330,25 @@ def is_nodedev_capable(conn):
 
     return True
 
+def is_pci_detach_capable(conn):
+    """
+    Check if the passed libvirt connection support pci device Detach/Reset
+
+    @param conn: Connection to check
+    @type conn: libvirt.virConnect
+
+    @rtype: C{bool}
+    """
+    if not conn:
+        return False
+    if not isinstance(conn, libvirt.virConnect):
+        raise ValueError(_("'conn' must be a virConnect instance."))
+
+    if dir(libvirt).count("virNodeDeviceDettach") == 0:
+        return False
+
+    return True
+
 def lookupNodeName(conn, name):
     """
     Convert the passed libvirt node device name to a NodeDevice
