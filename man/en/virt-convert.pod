@@ -76,7 +76,7 @@ Avoid verbose output.
 Optimize the guest configuration for a type of operating system (ex. 'linux',
 'windows'). This will attempt to pick the most suitable ACPI & APIC settings,
 optimally supported mouse drivers, virtio, and generally accommodate other
-operating system quirks.
+operating system quirks.  See L<virt-install(1)> for valid values.
 
 =item --os-variant=OS_VARIANT
 

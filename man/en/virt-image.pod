@@ -58,6 +58,20 @@ C</image/devices/vcpu> in the XML descriptor.
 
 Check that vcpus do not exceed physical CPUs and warn if they do.
 
+=item  --os-type=OS_TYPE
+
+Optimize the guest configuration for a type of operating system (ex. 'linux',
+'windows'). This will attempt to pick the most suitable ACPI & APIC settings,
+optimally supported mouse drivers, virtio, and generally accommodate other
+operating system quirks.  See L<virt-install(1)> for valid values.
+
+=item --os-variant=OS_VARIANT
+
+Further optimize the guest configuration for a specific operating system
+variant (ex. 'fedora8', 'winxp'). This parameter is optional, and does not
+require an C<--os-type> to be specified. See L<virt-install(1)> for valid
+values.
+
 =item -m MAC, --mac=MAC
 
 Fixed MAC address for the guest. See L<virt-install(1)> for details
