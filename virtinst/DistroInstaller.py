@@ -239,7 +239,6 @@ class DistroInstaller(Installer.Installer):
             logging.exception("Error attempting to detect distro.")
             return (None, None)
 
-        print dist_info
         # Verify these are valid values
         dtype, dvariant = dist_info
         import osdict
