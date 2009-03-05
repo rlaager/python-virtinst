@@ -168,7 +168,8 @@ def parse_disk_option(guest, path, size):
 
     if not devtype:
         devtype = virtinst.VirtualDisk.DEVICE_DISK
-    ret = (abspath, voltuple, volinst, devtype, bus, ro, shared, size, sparse, cache)
+    ret = (abspath, voltuple, volinst, devtype, bus, ro, shared, size, sparse,
+           cache)
     logging.debug("parse_disk: returning %s" % str(ret))
     return ret
 
@@ -178,9 +179,9 @@ def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
         # Get disk parameters
         if is_file_path:
             (path, voltuple, volinst, device, bus, readOnly, shared, size,
-             sparse) = \
+             sparse, cache) = \
              (disk, None, None, virtinst.VirtualDisk.DEVICE_DISK, None, False,
-              False, size, sparse)
+              False, size, sparse, None)
         else:
             (path, voltuple, volinst,
              device, bus, readOnly, shared,
