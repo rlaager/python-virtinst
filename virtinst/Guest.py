@@ -67,7 +67,7 @@ class Guest(object):
         self._uuid = None
         self._memory = None
         self._maxmemory = None
-        self._vcpus = None
+        self._vcpus = 1
         self._cpuset = None
         self._graphics_dev = None
         self._consolechild = None
@@ -706,8 +706,6 @@ class Guest(object):
             if _util.vm_uuid_collision(self.conn, self.uuid):
                 raise RuntimeError, _("The UUID you entered is already in "
                                       "use by another guest!")
-        if self.vcpus is None:
-            self.vcpus = 1
         if self.name is None or self.memory is None:
             raise RuntimeError, _("Name and memory must be specified for all guests!")
 
