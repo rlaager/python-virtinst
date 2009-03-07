@@ -180,7 +180,10 @@ class DistroInstaller(Installer.Installer):
                 self.location, meter, guest.arch, scratchdir=self.scratchdir,
                 type=self.os_type, distro=distro)
 
-            guest.os_type = os_type
+            # Only set OS type if the user didn't explictly pass one
+            if guest.os_type == None and os_type:
+                guest.os_type = os_type
+
             self.install["kernel"] = kernelfn
             self.install["initrd"] = initrdfn
             self.install["extraargs"] = args
