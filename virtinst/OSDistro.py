@@ -114,8 +114,10 @@ def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
                                 scratchdir=scratchdir, arch=arch)
 
         if iskernel is True:
+            # FIXME: We should probably do this for both kernel and boot
+            # disk?
             return (store.acquireKernel(guest, fetcher, progresscb),
-                    store.os_type)
+                    store.os_type, store.os_variant)
         elif iskernel is False:
             return store.acquireBootDisk(fetcher, progresscb)
         else:

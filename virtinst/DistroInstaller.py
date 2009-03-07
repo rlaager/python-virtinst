@@ -176,13 +176,20 @@ class DistroInstaller(Installer.Installer):
             # Need to fetch the kernel & initrd from a remote site, or
             # out of a loopback mounted disk image/device
 
-            (kernelfn, initrdfn, args), os_type = OSDistro.acquireKernel(guest,
+            ((kernelfn, initrdfn, args),
+             os_type, os_variant) = OSDistro.acquireKernel(guest,
                 self.location, meter, guest.arch, scratchdir=self.scratchdir,
                 type=self.os_type, distro=distro)
 
             # Only set OS type if the user didn't explictly pass one
+            # XXX: Should this be opt in?
             if guest.os_type == None and os_type:
+                logging.debug("Auto detected OS type as: %s" % os_type)
                 guest.os_type = os_type
+            if (guest.os_variant == None and os_variant
+                and guest.os_type == os_type):
+                logging.debug("Auto detected OS variant as: %s" % os_variant)
+                guest.os_variant = os_variant
 
             self.install["kernel"] = kernelfn
             self.install["initrd"] = initrdfn
