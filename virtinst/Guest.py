@@ -211,9 +211,14 @@ class Guest(object):
         if type(val) is not str:
             raise ValueError(_("OS type must be a string."))
         val = val.lower()
+
         if self._OS_TYPES.has_key(val):
-            self._os_type = val
+            if self._os_type == val:
+                # No change, don't invalidate variant
+                return
+
             # Invalidate variant, since it may not apply to the new os type
+            self._os_type = val
             self._os_variant = None
         else:
             raise ValueError, _("OS type '%s' does not exist in our "
