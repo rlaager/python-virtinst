@@ -40,6 +40,15 @@ class NodeDevice(object):
 
         self._parseNodeXML(node)
 
+    def pretty_name(self):
+        """
+        Use device information to attempt to print a human readable device
+        name.
+
+        @returns Device description string
+        @rtype C{str}
+        """
+        raise NotImplementedError
 
     def _parseNodeXML(self, node):
         child = node.children
@@ -101,6 +110,15 @@ class SystemDevice(NodeDevice):
                 self._parseHelper(child, firmware_map)
             child = child.next
 
+    def pretty_name(self):
+        desc = _("System")
+        if self.hw_vendor:
+            desc += ": %s" % self.hw_vendor
+            if self.hw_version:
+                desc += " %s" % self.hw_version
+
+        return desc
+
 class NetDevice(NodeDevice):
     def __init__(self, node):
         NodeDevice.__init__(self, node)
@@ -121,6 +139,13 @@ class NetDevice(NodeDevice):
             else:
                 self._parseValueHelper(child, value_map)
             child = child.next
+
+    def pretty_name(self):
+        desc = self.name
+        if self.interface:
+            desc = _("Interface %s") % self.interface
+
+        return desc
 
 class PCIDevice(NodeDevice):
     def __init__(self, node):
@@ -158,6 +183,13 @@ class PCIDevice(NodeDevice):
 
             child = child.next
 
+    def pretty_name(self):
+        devstr = "%.2X:%.2X:%X" % (int(self.bus),
+                                   int(self.slot),
+                                   int(self.function))
+        desc = "%s %s" % (devstr, str(self.product_name))
+        return desc
+
 class USBDevice(NodeDevice):
     def __init__(self, node):
         NodeDevice.__init__(self, node)
@@ -188,6 +220,12 @@ class USBDevice(NodeDevice):
                 self._parseValueHelper(child, val_map)
 
             child = child.next
+
+    def pretty_name(self):
+        devstr = "%.3d:%.3d" % (int(self.bus), int(self.device))
+        desc = "%s %s %s" % (devstr, str(self.vendor_name),
+                             str(self.product_name))
+        return desc
 
 class StorageDevice(NodeDevice):
     def __init__(self, node):
@@ -239,6 +277,19 @@ class StorageDevice(NodeDevice):
 
             child = child.next
 
+    def pretty_name(self):
+        desc = ""
+        if self.drive_type:
+            desc = self.drive_type
+
+        if self.block:
+            desc = ": ".join((desc, self.block))
+        elif self.model:
+            desc = ": ".join((desc, self.model))
+        else:
+            desc = ": ".join((desc, self.name))
+        return desc
+
 class USBBus(NodeDevice):
     def __init__(self, node):
         NodeDevice.__init__(self, node)
@@ -256,6 +307,9 @@ class USBBus(NodeDevice):
                     "subclass" : "subclass",
                     "protocol" : "protocol" }
         self._parseHelper(node, val_map)
+
+    def pretty_name(self):
+        return self.name
 
 class SCSIDevice(NodeDevice):
     def __init__(self, node):
@@ -277,6 +331,9 @@ class SCSIDevice(NodeDevice):
                     "type" : "type"}
         self._parseHelper(node, val_map)
 
+    def pretty_name(self):
+        return self.name
+
 class SCSIBus(NodeDevice):
     def __init__(self, node):
         NodeDevice.__init__(self, node)
@@ -289,6 +346,8 @@ class SCSIBus(NodeDevice):
         val_map = { "host" : "host" }
         self._parseHelper(node, val_map)
 
+    def pretty_name(self):
+        return self.name
 
 def is_nodedev_capable(conn):
     """
