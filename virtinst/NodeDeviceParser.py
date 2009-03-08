@@ -40,18 +40,6 @@ class NodeDevice(object):
 
         self._parseNodeXML(node)
 
-    def getVirtualHostDevice(self, conn):
-        """
-        Convert this NodeDevice to a VirtualHostDevice for attaching to a
-        guest.
-
-        @param conn: connection to pass to the VirtualHostDevice instance
-        @type conn: libvirt.virConnect
-
-        @rtype: L{virtinst.VirtualHostDevice}
-        """
-        raise ValueError(_("Node device type '%s' cannot be "
-                           "attached.") % self.device_type)
 
     def _parseNodeXML(self, node):
         child = node.children
