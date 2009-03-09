@@ -40,10 +40,13 @@ class NodeDevice(object):
 
         self._parseNodeXML(node)
 
-    def pretty_name(self):
+    def pretty_name(self, child_dev=None):
         """
         Use device information to attempt to print a human readable device
         name.
+
+        @param child_dev: Child node device to display in description
+        @type child_dev: L{NodeDevice}
 
         @returns Device description string
         @rtype C{str}
@@ -110,7 +113,8 @@ class SystemDevice(NodeDevice):
                 self._parseHelper(child, firmware_map)
             child = child.next
 
-    def pretty_name(self):
+    def pretty_name(self, child_dev=None):
+        ignore = child_dev
         desc = _("System")
         if self.hw_vendor:
             desc += ": %s" % self.hw_vendor
@@ -140,7 +144,8 @@ class NetDevice(NodeDevice):
                 self._parseValueHelper(child, value_map)
             child = child.next
 
-    def pretty_name(self):
+    def pretty_name(self, child_dev=None):
+        ignore = child_dev
         desc = self.name
         if self.interface:
             desc = _("Interface %s") % self.interface
@@ -183,11 +188,15 @@ class PCIDevice(NodeDevice):
 
             child = child.next
 
-    def pretty_name(self):
+    def pretty_name(self, child_dev=None):
         devstr = "%.2X:%.2X:%X" % (int(self.bus),
                                    int(self.slot),
                                    int(self.function))
-        desc = "%s %s" % (devstr, str(self.product_name))
+        if child_dev:
+            desc = "%s %s (%s)" % (devstr, child_dev.pretty_name(),
+                                   str(self.product_name))
+        else:
+            desc = "%s %s" % (devstr, str(self.product_name))
         return desc
 
 class USBDevice(NodeDevice):
@@ -221,7 +230,8 @@ class USBDevice(NodeDevice):
 
             child = child.next
 
-    def pretty_name(self):
+    def pretty_name(self, child_dev=None):
+        ignore = child_dev
         devstr = "%.3d:%.3d" % (int(self.bus), int(self.device))
         desc = "%s %s %s" % (devstr, str(self.vendor_name),
                              str(self.product_name))
@@ -277,7 +287,8 @@ class StorageDevice(NodeDevice):
 
             child = child.next
 
-    def pretty_name(self):
+    def pretty_name(self, child_dev=None):
+        ignore = child_dev
         desc = ""
         if self.drive_type:
             desc = self.drive_type
@@ -308,7 +319,8 @@ class USBBus(NodeDevice):
                     "protocol" : "protocol" }
         self._parseHelper(node, val_map)
 
-    def pretty_name(self):
+    def pretty_name(self, child_dev=None):
+        ignore = child_dev
         return self.name
 
 class SCSIDevice(NodeDevice):
@@ -331,7 +343,8 @@ class SCSIDevice(NodeDevice):
                     "type" : "type"}
         self._parseHelper(node, val_map)
 
-    def pretty_name(self):
+    def pretty_name(self, child_dev=None):
+        ignore = child_dev
         return self.name
 
 class SCSIBus(NodeDevice):
@@ -346,7 +359,8 @@ class SCSIBus(NodeDevice):
         val_map = { "host" : "host" }
         self._parseHelper(node, val_map)
 
-    def pretty_name(self):
+    def pretty_name(self, child_dev=None):
+        ignore = child_dev
         return self.name
 
 def is_nodedev_capable(conn):
