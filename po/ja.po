@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ja\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-03-03 17:43-0500\n"
+"POT-Creation-Date: 2009-03-09 20:41-0400\n"
 "PO-Revision-Date: 2007-10-08 12:29+0900\n"
 "Last-Translator: hyu_gabaru <hyu_gabaru@yahoo.co.jp>\n"
 "Language-Team: Japanese <gnome-translation@gnome.gr.jp>\n"
@@ -123,7 +123,8 @@ msgstr "ネットワークと mac アドレスとは同じ数だけ渡す必要�
 msgid "Can't specify more than one of VNC, SDL, or --nographics"
 msgstr ""
 
-#: virtinst/cli.py:376 virtinst/cli.py:381 virt-install:319 virt-install:324
+#: virtinst/cli.py:376 virtinst/cli.py:381 virt-install:320 virt-install:325
+#: virt-install.orig:320 virt-install.orig:325
 #, python-format
 msgid "%s option requires an argument"
 msgstr "%s オプションには実引数が必要です"
@@ -301,99 +302,99 @@ msgstr ""
 msgid "OS type must be a string."
 msgstr "キーマップは文字列でなければなりません"
 
-#: virtinst/Guest.py:219
+#: virtinst/Guest.py:224
 #, fuzzy, python-format
 msgid "OS type '%s' does not exist in our dictionary"
 msgstr "OS タイプ %s は辞書にありません"
 
-#: virtinst/Guest.py:227
+#: virtinst/Guest.py:232
 #, fuzzy
 msgid "OS variant must be a string."
 msgstr "キーマップは文字列でなければなりません"
 
-#: virtinst/Guest.py:233
+#: virtinst/Guest.py:238
 #, fuzzy, python-format
 msgid ""
 "OS variant '%(var)s; does not exist in our dictionary for OS type '%(ty)s'"
 msgstr "OS 種別 %(var)s が辞書の OS タイプ %(type)s にありません"
 
-#: virtinst/Guest.py:245
+#: virtinst/Guest.py:250
 #, fuzzy, python-format
 msgid "Unknown OS variant '%s'"
 msgstr "不明なインストーラータイプ '%s'"
 
-#: virtinst/Guest.py:286
+#: virtinst/Guest.py:291
 msgid "Must specify whether graphics are enabled"
 msgstr "グラフィックを有効にするかどうかを指定しなければなりません"
 
-#: virtinst/Guest.py:309
+#: virtinst/Guest.py:314
 msgid "Graphics enabled must be True or False"
 msgstr ""
 "グラフィックを有効にするかどうかは 'True' か 'False' でなければなりません"
 
-#: virtinst/Guest.py:368
+#: virtinst/Guest.py:373
 #, fuzzy
 msgid "You must specify a valid ISO or CD-ROM location for the installation"
 msgstr "インストール用の ISO か CD-ROM の場所を指定しなければなりません"
 
-#: virtinst/Guest.py:371
+#: virtinst/Guest.py:376
 msgid "The specified media path does not exist."
 msgstr "指定された媒体のパスは存在しません。"
 
-#: virtinst/Guest.py:568
+#: virtinst/Guest.py:573
 msgid "Unable to start domain for guest, aborting installation!"
 msgstr "ゲスト用のドメインを開始できません、インストールを終了します!"
 
-#: virtinst/Guest.py:618
+#: virtinst/Guest.py:623
 #, python-format
 msgid "Could not remove old vm '%s': %s"
 msgstr ""
 
-#: virtinst/Guest.py:620
+#: virtinst/Guest.py:625
 #, python-format
 msgid "Domain named %s already exists!"
 msgstr "ドメイン名 %s は既に存在します!"
 
-#: virtinst/Guest.py:627
+#: virtinst/Guest.py:632
 msgid "Creating domain..."
 msgstr "ドメインを作成中..."
 
-#: virtinst/Guest.py:630
+#: virtinst/Guest.py:635
 msgid "Unable to create domain for the guest, aborting installation!"
 msgstr "ゲスト用のドメインを作成できません、インストールを終了します!"
 
-#: virtinst/Guest.py:638
+#: virtinst/Guest.py:643
 msgid ""
 "It appears that your installation has crashed.  You should be able to find "
 "more information in the logs"
 msgstr "インストールは失敗しました。ログに詳細な情報を見つけることができます"
 
-#: virtinst/Guest.py:672
+#: virtinst/Guest.py:677
 msgid ""
 "Domain has not existed.  You should be able to find more information in the "
 "logs"
 msgstr "ドメインは存在しません。ログに詳細な情報を見つけることができます"
 
-#: virtinst/Guest.py:674
+#: virtinst/Guest.py:679
 msgid ""
 "Domain has not run yet.  You should be able to find more information in the "
 "logs"
 msgstr ""
 "ドメインはまだ実行していません。ログに詳細な情報を見つけることができます"
 
-#: virtinst/Guest.py:691
+#: virtinst/Guest.py:696
 msgid "Domain has already been started!"
 msgstr "ドメインは既に開始しています!"
 
-#: virtinst/Guest.py:702
+#: virtinst/Guest.py:707
 msgid "The UUID you entered is already in use by another guest!"
 msgstr "入力した UUID は既に他のゲストで使用中です!"
 
-#: virtinst/Guest.py:707
+#: virtinst/Guest.py:710
 msgid "Name and memory must be specified for all guests!"
 msgstr "全てのゲストに対して名前とメモリーを指定しなければなりません!"
 
-#: virtinst/Guest.py:742
+#: virtinst/Guest.py:745
 #, fuzzy, python-format
 msgid "Invalid dictionary entry for device '%s %s'"
 msgstr "不当な新ゲストの名前: %s"
@@ -515,22 +516,26 @@ msgstr ""
 msgid "CDROM media must be specified for the live CD installer."
 msgstr "起動する CD を指定しなければなりません"
 
-#: virtinst/NodeDeviceParser.py:53
-#, python-format
-msgid "Node device type '%s' cannot be attached."
+#: virtinst/NodeDeviceParser.py:114
+msgid "System"
 msgstr ""
 
-#: virtinst/NodeDeviceParser.py:317 virtinst/NodeDeviceParser.py:345
+#: virtinst/NodeDeviceParser.py:146
+#, python-format
+msgid "Interface %s"
+msgstr ""
+
+#: virtinst/NodeDeviceParser.py:364 virtinst/NodeDeviceParser.py:392
 #: virtinst/util.py:531 virtinst/VirtualDevice.py:58
 msgid "'conn' must be a virConnect instance."
 msgstr ""
 
-#: virtinst/NodeDeviceParser.py:364
+#: virtinst/NodeDeviceParser.py:411
 #, fuzzy
 msgid "Connection does not support host device enumeration."
 msgstr "HVM 仮想化はサポートされていません; ライブ CD から起動できません"
 
-#: virtinst/NodeDeviceParser.py:440
+#: virtinst/NodeDeviceParser.py:487
 #, fuzzy, python-format
 msgid "Unknown host device capability '%s'."
 msgstr "不明なインストーラータイプ '%s'"
@@ -544,49 +549,49 @@ msgstr "インストール場所にインストールできる配布物が見つ
 msgid "Invalid install location: "
 msgstr "不当なインストール場所: "
 
-#: virtinst/OSDistro.py:228
+#: virtinst/OSDistro.py:230
 #, fuzzy, python-format
 msgid "Couldn't find %(type)s kernel for %(distro)s tree."
 msgstr "インストール場所にインストールできる配布物が見つかりませんでした"
 
-#: virtinst/OSDistro.py:242
+#: virtinst/OSDistro.py:244
 #, fuzzy, python-format
 msgid "Could not find boot.iso in %s tree."
 msgstr "インストール場所にインストールできる配布物が見つかりませんでした"
 
-#: virtinst/OSDistro.py:381
+#: virtinst/OSDistro.py:383
 #, fuzzy, python-format
 msgid "Could not find a kernel path for virt type '%s'"
 msgstr "インストール場所にインストールできる配布物が見つかりませんでした"
 
-#: virtinst/OSDistro.py:390
+#: virtinst/OSDistro.py:392
 #, fuzzy
 msgid "Could not find a boot iso path for this tree."
 msgstr "インストール場所にインストールできる配布物が見つかりませんでした"
 
-#: virtinst/OSDistro.py:644
+#: virtinst/OSDistro.py:646
 msgid "Unable to determine kernel RPM path"
 msgstr "カーネル RPM のパスを決定できません"
 
-#: virtinst/OSDistro.py:646
+#: virtinst/OSDistro.py:648
 msgid "Unable to determine install-initrd RPM path"
 msgstr "インストール-initrd RPM のパスを決定できません"
 
-#: virtinst/OSDistro.py:657
+#: virtinst/OSDistro.py:659
 msgid "Building initrd"
 msgstr "initrd を構築中"
 
-#: virtinst/OSDistro.py:1019
+#: virtinst/OSDistro.py:1021
 #, python-format
 msgid "Solaris miniroot not found at %s"
 msgstr ""
 
-#: virtinst/OSDistro.py:1054
+#: virtinst/OSDistro.py:1056
 #, python-format
 msgid "OpenSolaris PV kernel not found at %s"
 msgstr ""
 
-#: virtinst/OSDistro.py:1064
+#: virtinst/OSDistro.py:1066
 #, python-format
 msgid "OpenSolaris microroot not found at %s"
 msgstr ""
@@ -1249,21 +1254,21 @@ msgstr ""
 msgid "Do you really want to use this disk (yes or no)?"
 msgstr "そのディスクを本当に使いたいのですか (yes または no)? "
 
-#: virt-clone:120 virt-install:205
+#: virt-clone:120 virt-install:206 virt-install.orig:206
 #, fuzzy, python-format
 msgid "Disk %s is already in use by another guest!\n"
 msgstr "ディスク %s は既に他のゲストで使用されています!"
 
-#: virt-clone:121 virt-install:206
+#: virt-clone:121 virt-install:207 virt-install.orig:207
 #, fuzzy
 msgid "Do you really want to use the disk (yes or no)? "
 msgstr "そのディスクを本当に使いたいのですか (yes または no)? "
 
-#: virt-clone:148 virt-image:88 virt-install:333
+#: virt-clone:148 virt-image:88 virt-install:334 virt-install.orig:334
 msgid "Connect to hypervisor with URI"
 msgstr "URI でハイパーバイザーに接続"
 
-#: virt-clone:151 virt-image:91 virt-install:336
+#: virt-clone:151 virt-image:91 virt-install:337 virt-install.orig:337
 msgid "General Options"
 msgstr ""
 
@@ -1285,7 +1290,7 @@ msgstr "新しいゲストの名前"
 msgid "New UUID for the clone guest; Default is a randomly generated UUID"
 msgstr "クローンゲストの新しい uuid: 省略値はランダムに生成された UUID です"
 
-#: virt-clone:170 virt-install:414
+#: virt-clone:170 virt-install:415 virt-install.orig:415
 msgid "Storage Configuration"
 msgstr ""
 
@@ -1309,7 +1314,7 @@ msgstr "クローニングのディスクイメージに疎らなファイルを
 msgid "Preserve a new file to use as the disk image for the new guest"
 msgstr "新ファイルを新ゲスト用のディスクイメージとして使用するよう保存する"
 
-#: virt-clone:191 virt-image:128 virt-install:434
+#: virt-clone:191 virt-image:128 virt-install:435 virt-install.orig:435
 msgid "Networking Configuration"
 msgstr ""
 
@@ -1319,11 +1324,12 @@ msgid ""
 "MAC"
 msgstr "クローンゲスト用の固定 MAC アドレス。省略値はランダムに生成されます"
 
-#: virt-clone:199 virt-image:158 virt-install:469
+#: virt-clone:199 virt-image:158 virt-install:470 virt-install.orig:470
 msgid "Miscellaneous Options"
 msgstr ""
 
-#: virt-clone:201 virt-convert:91 virt-image:172 virt-install:471
+#: virt-clone:201 virt-convert:91 virt-image:172 virt-install:472
+#: virt-install.orig:472
 msgid "Print debugging information"
 msgstr "デバッグ情報を印刷"
 
@@ -1345,7 +1351,7 @@ msgid ""
 "Clone '%s' created successfully."
 msgstr ""
 
-#: virt-clone:265 virt-image:283 virt-install:783
+#: virt-clone:265 virt-image:283 virt-install:784 virt-install.orig:784
 #, fuzzy
 msgid "Installation aborted at user request"
 msgstr "NFS インストールは root のみサポートしています"
@@ -1362,11 +1368,11 @@ msgstr ""
 msgid "Output disk format"
 msgstr ""
 
-#: virt-convert:60 virt-install:385
+#: virt-convert:60 virt-install:386 virt-install.orig:386
 msgid "This guest should be a fully virtualized guest"
 msgstr "このゲストは完全仮想化ゲストでなければなりません"
 
-#: virt-convert:62 virt-install:387
+#: virt-convert:62 virt-install:388 virt-install.orig:388
 msgid "This guest should be a paravirtualized guest"
 msgstr "このゲストは準仮想化ゲストでなければなりません"
 
@@ -1374,7 +1380,7 @@ msgstr "このゲストは準仮想化ゲストでなければなりません"
 msgid "Machine Architecture Type (i686/x86_64/ppc)"
 msgstr ""
 
-#: virt-convert:71 virt-install:359
+#: virt-convert:71 virt-install:360 virt-install.orig:360
 msgid ""
 "The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
 msgstr ""
@@ -1389,7 +1395,7 @@ msgstr ""
 "例えば 'fedora6'、'rhel5'、'solaris10'、'win2k'、'vista' のような、完全仮想化"
 "ゲストの OS 種別"
 
-#: virt-convert:78 virt-install:375
+#: virt-convert:78 virt-install:376 virt-install.orig:376
 msgid ""
 "Disables APIC for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
@@ -1397,7 +1403,7 @@ msgstr ""
 "完全仮想化ゲストの APIC を無効にします (os-タイプ/os-種別の db の値を上書きし"
 "ます)"
 
-#: virt-convert:82 virt-install:379
+#: virt-convert:82 virt-install:380 virt-install.orig:380
 msgid ""
 "Disables ACPI for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
@@ -1499,28 +1505,28 @@ msgstr ""
 msgid "The image requires %i network interface"
 msgstr ""
 
-#: virt-image:94 virt-install:339
+#: virt-image:94 virt-install:340 virt-install.orig:340
 msgid "Name of the guest instance"
 msgstr "ゲストの実体の名前"
 
-#: virt-image:96 virt-install:341
+#: virt-image:96 virt-install:342 virt-install.orig:342
 msgid "Memory to allocate for guest instance in megabytes"
 msgstr "ゲストの実体のために割り当てる、メガバイトでのメモリー"
 
-#: virt-image:100 virt-install:348
+#: virt-image:100 virt-install:349 virt-install.orig:349
 #, fuzzy
 msgid "UUID for the guest."
 msgstr "新しいゲストの名前"
 
-#: virt-image:102 virt-install:350
+#: virt-image:102 virt-install:351 virt-install.orig:351
 msgid "Number of vcpus to configure for your guest"
 msgstr "ゲスト用に設定する vcpu の数"
 
-#: virt-image:104 virt-install:352
+#: virt-image:104 virt-install:353 virt-install.orig:353
 msgid "Check that vcpus do not exceed physical CPUs and warn if they do."
 msgstr "vcpu が物理 CPU を越えないことをチェックし、越えたら警告します。"
 
-#: virt-image:108 virt-install:356
+#: virt-image:108 virt-install:357 virt-install.orig:357
 msgid "Set which physical CPUs Domain can use."
 msgstr ""
 
@@ -1538,7 +1544,7 @@ msgstr ""
 "例えば 'fedora6'、'rhel5'、'solaris10'、'win2k'、'vista' のような、完全仮想化"
 "ゲストの OS 種別"
 
-#: virt-image:119 virt-install:370
+#: virt-image:119 virt-install:371 virt-install.orig:371
 msgid "Full Virtualization specific options"
 msgstr ""
 
@@ -1552,7 +1558,7 @@ msgstr "このゲストは完全仮想化ゲストでなければなりません
 msgid "Disables ACPI for fully virtualized guest"
 msgstr "このゲストは完全仮想化ゲストでなければなりません"
 
-#: virt-image:131 virt-install:437
+#: virt-image:131 virt-install:438 virt-install.orig:438
 msgid ""
 "Bridge to connect guest NIC to; if none given, will try to determine the "
 "default"
@@ -1560,7 +1566,7 @@ msgstr ""
 "ゲストの NIC が接続されるブリッジ; 指定しなければデフォルトを決定しようとしま"
 "す"
 
-#: virt-image:135 virt-install:441
+#: virt-image:135 virt-install:442 virt-install.orig:442
 msgid ""
 "Connect the guest to a virtual network, forwarding to the physical network "
 "with NAT"
@@ -1568,7 +1574,7 @@ msgstr ""
 "物理ネットワークに NAT でフォワーディングすることでゲストを仮想ネットワークに"
 "接続します"
 
-#: virt-image:139 virt-install:445
+#: virt-image:139 virt-install:446 virt-install.orig:446
 msgid ""
 "Fixed MAC address for the guest; if none or RANDOM is given a random address "
 "will be used"
@@ -1576,27 +1582,27 @@ msgstr ""
 "ゲスト用の固定 MAC アドレス; 何も指定しないか、 RANDOM が指定された場合、ラン"
 "ダムなアドレスが使われます"
 
-#: virt-image:143 virt-install:451
+#: virt-image:143 virt-install:452 virt-install.orig:452
 msgid "Graphics Configuration"
 msgstr ""
 
-#: virt-image:145 virt-install:453
+#: virt-image:145 virt-install:454 virt-install.orig:454
 msgid "Use VNC for graphics support"
 msgstr "グラフィックサポートのために VNC を使用します"
 
-#: virt-image:147 virt-install:455
+#: virt-image:147 virt-install:456 virt-install.orig:456
 msgid "Port to use for VNC"
 msgstr "VNC で使用するためのポート"
 
-#: virt-image:149 virt-install:457
+#: virt-image:149 virt-install:458 virt-install.orig:458
 msgid "Use SDL for graphics support"
 msgstr "グラフィックサポートのために SDL を使用します"
 
-#: virt-image:151 virt-install:459
+#: virt-image:151 virt-install:460 virt-install.orig:460
 msgid "Don't set up a graphical console for the guest."
 msgstr "ゲスト用にグラフィックコンソールを設定しないでください。"
 
-#: virt-image:154 virt-install:466
+#: virt-image:154 virt-install:467 virt-install.orig:467
 msgid "set up keymap for a graphical console"
 msgstr "グラフィックコンソールのためのキーマップを設定します"
 
@@ -1655,115 +1661,116 @@ msgstr ""
 "でドメインを再起動することができます; そうでなければ\n"
 "インストールを再開してください。"
 
-#: virt-install:70
+#: virt-install:70 virt-install.orig:70
 #, python-format
 msgid "Couldn't create default storage pool '%s': %s"
 msgstr ""
 
-#: virt-install:93
+#: virt-install:93 virt-install.orig:93
 msgid "--disk path must start with path=, pool=, or vol=."
 msgstr ""
 
-#: virt-install:121 virt-install:133
+#: virt-install:121 virt-install:133 virt-install.orig:121
+#: virt-install.orig:133
 #, fuzzy, python-format
 msgid "Unknown '%s' value '%s'"
 msgstr "不明なインストーラータイプ '%s'"
 
-#: virt-install:126
+#: virt-install:126 virt-install.orig:126
 #, python-format
 msgid "Improper value for 'size': %s"
 msgstr ""
 
-#: virt-install:137
+#: virt-install:137 virt-install.orig:137
 #, fuzzy, python-format
 msgid "Unknown --disk option '%s'."
 msgstr "不明なインストーラータイプ '%s'"
 
-#: virt-install:147
+#: virt-install:147 virt-install.orig:147
 #, fuzzy
 msgid "Size must be specified with all 'pool='"
 msgstr "インストールの元となる場所を指定しなければなりません"
 
-#: virt-install:160
+#: virt-install:160 virt-install.orig:160
 msgid "Storage volume must be specified as pool=poolname/volname"
 msgstr ""
 
-#: virt-install:201
+#: virt-install:202 virt-install.orig:202
 #, python-format
 msgid "Error with storage parameters: %s"
 msgstr ""
 
-#: virt-install:213
+#: virt-install:214 virt-install.orig:214
 #, fuzzy
 msgid " Do you really want to use the disk (yes or no)?"
 msgstr "そのディスクを本当に使いたいのですか (yes または no)? "
 
-#: virt-install:221
+#: virt-install:222 virt-install.orig:222
 #, fuzzy
 msgid "Cannot use --file, --size, or --disk with --nodisks"
 msgstr "--file は --nodisks と一緒には使えません"
 
-#: virt-install:224
+#: virt-install:225 virt-install.orig:225
 msgid ""
 "Cannot mix --file, --nonsparse, or --file-size with --disk options. Please "
 "see the manual for --disk syntax."
 msgstr ""
 
-#: virt-install:227
+#: virt-install:228 virt-install.orig:228
 msgid "A disk must be specified (use --nodisks to override)"
 msgstr ""
 
-#: virt-install:235
+#: virt-install:236 virt-install.orig:236
 msgid "Need to pass size for each disk"
 msgstr "個々のディスクの大きさを渡す必要があります"
 
-#: virt-install:250
+#: virt-install:251 virt-install.orig:251
 msgid "Cannot use --mac with --nonetworks"
 msgstr ""
 
-#: virt-install:252
+#: virt-install:253 virt-install.orig:253
 #, fuzzy
 msgid "Cannot use --bridges with --nonetworks"
 msgstr "--bridge と --network 引数の両方を混ぜることはできません"
 
-#: virt-install:254
+#: virt-install:255 virt-install.orig:255
 #, fuzzy
 msgid "Cannot use --network with --nonetworks"
 msgstr "--file は --nodisks と一緒には使えません"
 
-#: virt-install:274
+#: virt-install:275 virt-install.orig:275
 #, python-format
 msgid "Only one install method (%s) can be used"
 msgstr ""
 
-#: virt-install:280
+#: virt-install:281 virt-install.orig:281
 #, fuzzy
 msgid "Network PXE boot is not supported for paravirtualized guests"
 msgstr "NFS インストールは root のみサポートしています"
 
-#: virt-install:283
+#: virt-install:284 virt-install.orig:284
 msgid "Paravirtualized guests cannot install off cdrom media."
 msgstr ""
 
-#: virt-install:286
+#: virt-install:287 virt-install.orig:287
 msgid "--location can not be specified for remote connections."
 msgstr ""
 
-#: virt-install:295
+#: virt-install:296 virt-install.orig:296
 #, python-format
 msgid "One of %s, or cdrom media must be specified."
 msgstr ""
 
-#: virt-install:313
+#: virt-install:314 virt-install.orig:314
 #, python-format
 msgid "Error creating cdrom disk: %s"
 msgstr ""
 
-#: virt-install:345
+#: virt-install:346 virt-install.orig:346
 msgid "The CPU architecture to simulate"
 msgstr "シミュレートする CPU アーキテクチャー"
 
-#: virt-install:363
+#: virt-install:364 virt-install.orig:364
 #, fuzzy
 msgid ""
 "The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
@@ -1772,33 +1779,33 @@ msgstr ""
 "例えば 'fedora6'、'rhel5'、'solaris10'、'win2k'、'vista' のような、完全仮想化"
 "ゲストの OS 種別"
 
-#: virt-install:367
+#: virt-install:368 virt-install.orig:368
 msgid "Physical host device to attach to the domain."
 msgstr ""
 
-#: virt-install:372
+#: virt-install:373 virt-install.orig:373
 msgid "Use sound device emulation"
 msgstr ""
 
-#: virt-install:383
+#: virt-install:384 virt-install.orig:384
 msgid "Virtualization Type Options"
 msgstr ""
 
-#: virt-install:390
+#: virt-install:391 virt-install.orig:391
 #, fuzzy
 msgid "Use kernel acceleration capabilities (kvm, kqemu, ...)"
 msgstr "カーネル加速化機能を使用します"
 
-#: virt-install:394
+#: virt-install:395 virt-install.orig:395
 msgid "Installation Method Options"
 msgstr ""
 
-#: virt-install:397
+#: virt-install:398 virt-install.orig:398
 #, fuzzy
 msgid "CD-ROM installation media"
 msgstr "ゲストのインストールに失敗しました"
 
-#: virt-install:400
+#: virt-install:401 virt-install.orig:401
 #, fuzzy
 msgid ""
 "Installation source (eg, nfs:host:/path, http://host/path, ftp://host/path)"
@@ -1806,37 +1813,37 @@ msgstr ""
 "準仮想化ゲストのインストールソース (例えば nfs:ホスト:/パス、http://ホスト/パ"
 "ス、ftp://ホスト/パス)"
 
-#: virt-install:403
+#: virt-install:404 virt-install.orig:404
 msgid "Boot from the network using the PXE protocol"
 msgstr ""
 
-#: virt-install:405
+#: virt-install:406 virt-install.orig:406
 #, fuzzy
 msgid "Build guest around an existing disk image"
 msgstr "ディスクイメージとして使用するファイル"
 
-#: virt-install:407
+#: virt-install:408 virt-install.orig:408
 msgid "Treat the CD-ROM media as a Live CD"
 msgstr ""
 
-#: virt-install:410
+#: virt-install:411 virt-install.orig:411
 #, fuzzy
 msgid "Additional arguments to pass to the kernel booted from --location"
 msgstr "準仮想化ゲストのインストーラーに渡す追加の実引数"
 
-#: virt-install:417
+#: virt-install:418 virt-install.orig:418
 msgid "Specify storage to use as a disk with various options."
 msgstr ""
 
-#: virt-install:421
+#: virt-install:422 virt-install.orig:422
 msgid "File to use as the disk image"
 msgstr "ディスクイメージとして使用するファイル"
 
-#: virt-install:424
+#: virt-install:425 virt-install.orig:425
 msgid "Size of the disk image (if it doesn't exist) in gigabytes"
 msgstr "(存在しなければ)ギガバイトでディスクイメージの大きさ"
 
-#: virt-install:428
+#: virt-install:429 virt-install.orig:429
 msgid ""
 "Don't use sparse files for disks.  Note that this will be significantly "
 "slower for guest creation"
@@ -1844,38 +1851,38 @@ msgstr ""
 "ディスク用に疎らなファイルを使用しないでください。これはゲストの作成には著し"
 "く遅いことに注意して下さい"
 
-#: virt-install:431
+#: virt-install:432 virt-install.orig:432
 msgid "Don't set up any disks for the guest."
 msgstr "ゲスト用にディスクを設定しないでください。"
 
-#: virt-install:448
+#: virt-install:449 virt-install.orig:449
 #, fuzzy
 msgid "Don't create network interfaces for the guest."
 msgstr "ゲスト用にディスクを設定しないでください。"
 
-#: virt-install:462
+#: virt-install:463 virt-install.orig:463
 msgid "Don't automatically try to connect to the guest console"
 msgstr "ゲストコンソールに自動的に接続しようとしないでください"
 
-#: virt-install:473
+#: virt-install:474 virt-install.orig:474
 msgid "Disables the automatic rebooting when the installation is complete."
 msgstr ""
 
-#: virt-install:476
+#: virt-install:477 virt-install.orig:477
 msgid "Time to wait (in minutes)"
 msgstr ""
 
-#: virt-install:478
+#: virt-install:479 virt-install.orig:479
 msgid "Forces 'yes' for any applicable prompts, terminates for all others"
 msgstr ""
 
-#: virt-install:482
+#: virt-install:483 virt-install.orig:483
 msgid ""
 "Request user input for ambiguous situations. Default is false, so will "
 "terminate if a prompt would typically be fired. "
 msgstr ""
 
-#: virt-install:502
+#: virt-install:503 virt-install.orig:503
 #, fuzzy
 msgid ""
 "Unable to connect to graphical console: virt-viewer not installed. Please "
@@ -1884,19 +1891,19 @@ msgstr ""
 "グラフィカルコンソールに接続できません; vncviewer がインストールされていませ"
 "ん。%(serv)s:%(port)d に接続してください"
 
-#: virt-install:535
+#: virt-install:536 virt-install.orig:536
 msgid "Can't do both --hvm and --paravirt"
 msgstr "--hvm と --paravirt の両方はできません"
 
-#: virt-install:547
+#: virt-install:548 virt-install.orig:548
 msgid "default"
 msgstr ""
 
-#: virt-install:569
+#: virt-install:570 virt-install.orig:570
 msgid "Can't use --pxe with --nonetworks"
 msgstr ""
 
-#: virt-install:670
+#: virt-install:671 virt-install.orig:671
 msgid ""
 "\n"
 "\n"
@@ -1906,7 +1913,7 @@ msgstr ""
 "\n"
 "インストールを開始しています..."
 
-#: virt-install:681
+#: virt-install:682 virt-install.orig:682
 #, python-format
 msgid ""
 "Domain installation does not appear to have been\n"
@@ -1919,23 +1926,23 @@ msgstr ""
 "でドメインを再起動することができます; そうでなければ\n"
 "インストールを再開してください。"
 
-#: virt-install:692
+#: virt-install:693 virt-install.orig:693
 #, fuzzy, python-format
 msgid ""
 "Guest installation complete... you can restart your domain\n"
 "by running 'virsh start %s'"
 msgstr "ゲストのインストールが完了しました... ゲストを再起動しています。"
 
-#: virt-install:696
+#: virt-install:697 virt-install.orig:697
 msgid "Guest installation complete... restarting guest."
 msgstr "ゲストのインストールが完了しました... ゲストを再起動しています。"
 
-#: virt-install:702
+#: virt-install:703 virt-install.orig:703
 #, fuzzy
 msgid "Guest install interrupted."
 msgstr "ゲストのインストールに失敗しました"
 
-#: virt-install:709
+#: virt-install:710 virt-install.orig:710
 #, python-format
 msgid ""
 "Domain installation may not have been\n"
@@ -1948,17 +1955,17 @@ msgstr ""
 "でドメインを再起動することができます; そうでなければ\n"
 "インストールを再開してください。"
 
-#: virt-install:735
+#: virt-install:736 virt-install.orig:736
 #, fuzzy
 msgid "Guest installation failed."
 msgstr "ゲストのインストールに失敗しました"
 
-#: virt-install:745
+#: virt-install:746 virt-install.orig:746
 #, python-format
 msgid "%d minutes "
 msgstr ""
 
-#: virt-install:747
+#: virt-install:748 virt-install.orig:748
 #, fuzzy, python-format
 msgid ""
 "Domain installation still in progress. Waiting %sfor domain to complete "
@@ -1967,20 +1974,20 @@ msgstr ""
 "ドメインのインストールは続いています。インストール処理を完結\n"
 "させるためにコンソールに再接続することができます。"
 
-#: virt-install:753
+#: virt-install:754 virt-install.orig:754
 msgid "Domain has shutdown. Continuing."
 msgstr ""
 
-#: virt-install:760
+#: virt-install:761 virt-install.orig:761
 #, python-format
 msgid "Could not lookup domain after install: %s"
 msgstr ""
 
-#: virt-install:767
+#: virt-install:768 virt-install.orig:768
 msgid "Installation has exceeded specified time limit. Exiting application."
 msgstr ""
 
-#: virt-install:771
+#: virt-install:772 virt-install.orig:772
 #, fuzzy
 msgid ""
 "Domain installation still in progress. You can reconnect to \n"
