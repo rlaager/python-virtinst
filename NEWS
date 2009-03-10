@@ -1,6 +1,16 @@
    Virt Install News
    =================
 
+Release 0.400.3 (March 9, 2009)
+-------------------------------
+
+This is largely a bug fix release, which fixes several annoying bugs present
+in virtinst-0.400.2:
+
+ - virt-install --file was busted
+ - virt-install --os-type windows was busted for --cdrom installs
+ - virt-install --os-variant values weren't used if installing from a URL
+
 Release 0.400.2 (March 3, 2009)
 -------------------------------
 

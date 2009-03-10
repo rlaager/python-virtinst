@@ -1,12 +1,73 @@
+2009-03-09  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.1, po/fr.po, po/it.po, po/ja.po, po/pl.po,
+	po/pt_BR.po, po/sr.po, po/sr@latin.po, po/virtinst.pot, po/zh_CN.po:
+	Update translations.
+	[d89edf29dbb0] [tip]
+
+2009-03-08  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/NodeDeviceParser.py:
+	Add pretty_name function to NodeDeviceParser classes.
+	[95145b423854]
+
+	* virtinst/NodeDeviceParser.py:
+	Remove unimplemented NodeDeviceParser method.
+	[52daff67ed09]
+
+2009-03-07  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/DistroInstaller.py, virtinst/OSDistro.py:
+	Set Guest.os_variant if detect from install media (and user doesn't
+	override).
+	[c15ecfb17227]
+
+	* virtinst/Guest.py:
+	Default to vcpus=1 on Guest init.
+	[1415f655bb04]
+
+	* virtinst/DistroInstaller.py:
+	Don't override os_type from install media if it was manually set by
+	the user.
+	[fa15b5e5d82a]
+
+	* virtinst/Guest.py:
+	Don't invalidate os_variant if os_type value doesn't change.
+	[1842b7b829ee]
+
+2009-03-05  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-install:
+	Fix using virt-install --file (it's outright broken)
+	[eae3579380dd]
+
+	* virtinst/DistroInstaller.py:
+	Remove debugging print message.
+	[8a1d27ec3458]
+
+2009-03-04  Cole Robinson  <crobinso@redhat.com>
+
+	* po/pl.po:
+	Updated polish translations.
+	[8adf5b7ab1bf]
+
 2009-03-03  Cole Robinson  <crobinso@redhat.com>
 
 	* .hgtags:
+	Added tag virtinst-0_400_2 for changeset 4a0ffbcbb83e
+	[ba3abd7909b8]
+
+	* ChangeLog, python-virtinst.spec.in:
+	Sigh, Update Changelog and spec file.
+	[4a0ffbcbb83e] [virtinst-0_400_2]
+
+	* .hgtags:
 	Added tag virtinst-0_400_2 for changeset aac8602d12ea
-	[e3750eb9caff] [tip]
+	[e3750eb9caff]
 
 	* NEWS, setup.py:
 	Bump release.
-	[aac8602d12ea] [virtinst-0_400_2]
+	[aac8602d12ea]
 
 	* man/en/virt-clone.1, man/en/virt-convert.1, man/en/virt-image.1,
 	man/en/virt-install.1, po/fr.po, po/it.po, po/ja.po, po/pl.po,
