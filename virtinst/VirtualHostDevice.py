@@ -201,8 +201,8 @@ class VirtualHostDevicePCI(VirtualHostDevice):
         try:
             # Do this as a sanity check, so that we don't fail at domain
             # start time
-            self._nodedev.deviceDetach()
-            self._nodedev.deviceReset()
+            self._nodedev.dettach()
+            self._nodedev.reset()
         except Exception, e:
             raise RuntimeError(_("Could not detach PCI device: %s" % str(e)))
 

@@ -405,10 +405,11 @@ def is_pci_detach_capable(conn):
     if not isinstance(conn, libvirt.virConnect):
         raise ValueError(_("'conn' must be a virConnect instance."))
 
-    if dir(libvirt).count("virNodeDeviceDettach") == 0:
-        return False
+    if (hasattr(libvirt, "virNodeDevice") and
+        hasattr(libvirt.virNodeDevice, "dettach")):
+        return True
 
-    return True
+    return False
 
 def lookupNodeName(conn, name):
     """
