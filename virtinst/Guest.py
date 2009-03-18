@@ -747,7 +747,10 @@ class Guest(object):
 
     def terminate_console(self):
         if self._consolechild:
-            os.kill(self._consolechild, signal.SIGKILL)
+            try:
+                os.kill(self._consolechild, signal.SIGKILL)
+            except:
+                pass
 
 def _wait_for_domain(conn, name):
     # sleep in .25 second increments until either a) we get running
