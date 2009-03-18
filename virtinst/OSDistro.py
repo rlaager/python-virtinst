@@ -1028,7 +1028,7 @@ class OpenSolarisDistro(SunDistro):
     os_variant = "opensolaris"
  
     kernelpath = "platform/i86xpv/kernel/unix"
-    initrdpath = "boot/x86.microroot"
+    initrdpaths = [ "boot/boot_archive", "boot/x86.microroot" ]
 
     def isValidStore(self, fetcher, progresscb):
         if fetcher.hasFile(self.kernelpath):
@@ -1064,12 +1064,16 @@ class OpenSolarisDistro(SunDistro):
         args = "/" + self.kernelpath + self.install_args(guest)
 
         try:
-            initrd = fetcher.acquireFile(self.initrdpath, progresscb)
+            initrd = fetcher.acquireFile(self.initrdpaths[0], progresscb)
             return (kernel, initrd, args)
-        except:
-            os.unlink(kernel)
-            raise RuntimeError(_("OpenSolaris microroot not found at %s") %
-                self.initrdpath)
+        except Exception, e:
+            try:
+                initrd = fetcher.acquireFile(self.initrdpaths[1], progresscb)
+                return (kernel, initrd, args)
+            except:
+                os.unlink(kernel)
+                raise Exception("No OpenSolaris boot archive found: %s\n" % e)
+
 
 # NetWare 6 PV
 class NetWareDistro(Distro):
