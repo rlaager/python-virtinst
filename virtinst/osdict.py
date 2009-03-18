@@ -211,7 +211,7 @@ OS_TYPES = {\
         "msdos": { "label": "MS-DOS", "acpi": False, "apic": False },
         "netware4": { "label": "Novell Netware 4" },
         "netware5": { "label": "Novell Netware 5" },
-        "netware6": { "label": "Novell Netware 6" },
+        "netware6": { "label": "Novell Netware 6", "pv_cdrom_install": True, },
         "generic": { "label": "Generic" },
     },
 },}

@@ -86,6 +86,8 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
         stores.append(SolarisDistro)
     if distro == "solaris" or distro is None:
         stores.append(OpenSolarisDistro)
+    if distro == "netware" or distro is None:
+        stores.append(NetWareDistro)
 
     stores.append(GenericDistro)
 
@@ -1022,6 +1024,9 @@ class SolarisDistro(SunDistro):
                 self.initrdpath)
 
 class OpenSolarisDistro(SunDistro):
+
+    os_variant = "opensolaris"
+ 
     kernelpath = "platform/i86xpv/kernel/unix"
     initrdpath = "boot/x86.microroot"
 
@@ -1065,3 +1070,21 @@ class OpenSolarisDistro(SunDistro):
             os.unlink(kernel)
             raise RuntimeError(_("OpenSolaris microroot not found at %s") %
                 self.initrdpath)
+
+# NetWare 6 PV
+class NetWareDistro(Distro):
+    name = "NetWare"
+    os_type = "other"
+    os_variant = "netware6"
+
+    loaderpath = "STARTUP/XNLOADER.SYS"
+
+    def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile(self.loaderpath):
+            logging.debug("Detected NetWare")
+            return True
+        return False
+
+    def acquireKernel(self, guest, fetcher, progresscb):
+        loader = fetcher.acquireFile(self.loaderpath, progresscb)
+        return (loader, "", "")

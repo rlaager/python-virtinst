@@ -196,7 +196,8 @@ class DistroInstaller(Installer.Installer):
             self.install["extraargs"] = args
 
             self._tmpfiles.append(kernelfn)
-            self._tmpfiles.append(initrdfn)
+            if initrdfn:
+                self._tmpfiles.append(initrdfn)
 
         # If they're installing off a local file/device, we map it
         # through to a virtual CD or disk
