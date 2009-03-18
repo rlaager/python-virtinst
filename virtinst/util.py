@@ -359,7 +359,6 @@ def default_keymap():
        map it to a keymap supported by qemu"""
 
     # Set keymap to same as hosts
-    import keytable
     default = "en-us"
     keymap = None
 
@@ -392,26 +391,7 @@ def default_keymap():
 
     kt = kt.lower()
 
-    # Try a simple lookup in the keytable
-    if keytable.keytable.has_key(kt.lower()):
-        keymap = keytable.keytable[kt]
-    else:
-        # Try a more intelligent lookup: strip out all '-' and '_', sort
-        # the keytable keys putting the longest first, then compare
-        # by string prefix
-        def len_cmp(a, b):
-            return len(b) - len(a)
-
-        clean_kt = kt.replace("-", "").replace("_", "")
-        sorted_keys = sorted(keytable.keytable.keys(), len_cmp)
-
-        for key in sorted_keys:
-            origkey = key
-            key = key.replace("-", "").replace("_","")
-
-            if clean_kt.startswith(key):
-                keymap = keytable.keytable[origkey]
-                break
+    keymap = check_keytable(kt)
 
     if not keymap:
         logging.debug("Didn't match keymap '%s' in keytable!" % kt)
@@ -598,6 +578,31 @@ def lookup_pool_by_path(conn, path):
             if p:
                 return p
     return None
+
+def check_keytable(kt):
+    import keytable
+    keymap = None
+    # Try a simple lookup in the keytable
+    if keytable.keytable.has_key(kt.lower()):
+        return keytable.keytable[kt]
+    else:
+        # Try a more intelligent lookup: strip out all '-' and '_', sort
+        # the keytable keys putting the longest first, then compare
+        # by string prefix
+        def len_cmp(a, b):
+            return len(b) - len(a)
+
+        clean_kt = kt.replace("-", "").replace("_", "")
+        sorted_keys = sorted(keytable.keytable.keys(), len_cmp)
+
+        for key in sorted_keys:
+            origkey = key
+            key = key.replace("-", "").replace("_","")
+
+            if clean_kt.startswith(key):
+                return keytable.keytable[origkey]
+
+    return keymap
 
 def _test():
     import doctest

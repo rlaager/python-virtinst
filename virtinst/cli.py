@@ -351,7 +351,11 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
     if vncport:
         guest.graphics_dev.port = vncport
     if keymap:
-        guest.graphics_dev.keymap = keymap
+        checked_keymap = _util.check_keytable(keymap)
+        if checked_keymap:
+            guest.graphics_dev.keymap = checked_keymap
+        else:
+            raise ValueError, _("Didn't match keymap '%s' in keytable!" % keymap)
 
 def get_sound(sound, guest):
 

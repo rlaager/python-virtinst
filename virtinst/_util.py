@@ -206,3 +206,4 @@ get_uri_driver = util.get_uri_driver
 is_storage_capable = util.is_storage_capable
 get_xml_path = util.get_xml_path
 lookup_pool_by_path = util.lookup_pool_by_path
+check_keytable = util.check_keytable
