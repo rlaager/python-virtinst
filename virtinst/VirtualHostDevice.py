@@ -20,6 +20,8 @@
 import VirtualDevice
 import NodeDeviceParser
 import logging
+
+from virtinst import _util
 from virtinst import _virtinst as _
 
 class VirtualHostDevice(VirtualDevice.VirtualDevice):
@@ -74,6 +76,8 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
         self.type = None
 
         self.managed = True
+        if _util.get_uri_driver(self.conn.getURI()).lower() == "xen":
+            self.managed = False
 
         self._nodedev = nodedev
 
@@ -200,7 +204,8 @@ class VirtualHostDevicePCI(VirtualHostDevice):
 
         try:
             # Do this as a sanity check, so that we don't fail at domain
-            # start time
+            # start time. This is independent of the 'managed' state, since
+            # this should regardless.
             self._nodedev.dettach()
             self._nodedev.reset()
         except Exception, e:
