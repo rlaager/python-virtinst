@@ -40,7 +40,7 @@ URLTEST_ACCESS="TestURLFetch.*Access to a protected member"
 TEST_HACKS="TestClone.*protected member _util"
 
 # Scattered examples of legitimately unused arguments
-UNUSED_ARGS="(SuseDistro|SolarisDistro).isValidStore.*Unused argument 'progresscb'|.*Installer.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"
+UNUSED_ARGS="(SuseDistro|SolarisDistro|NetWareDistro).isValidStore.*Unused argument 'progresscb'|.*Installer.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"
 
 # Outside __init__ checks throw false positives with distutils custom commands
 # tests.storage also invokes false positives using hasattr
