@@ -813,10 +813,10 @@ class VirtualDisk(VirtualDevice):
             return ("sd", 16)
         elif self.bus == "xen":
             return ("xvd", 16)
+        elif self.bus == "fdc" or self.device == self.DEVICE_FLOPPY:
+            return ("fd", 2)
         elif self.bus == "ide":
             return ("hd", 4)
-        elif self.bus == "floppy" or self.device == self.DEVICE_FLOPPY:
-            return ("fd", 2)
         else:
             return (None, None)
 

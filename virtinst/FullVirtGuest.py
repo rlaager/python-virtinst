@@ -113,7 +113,10 @@ class FullVirtGuest(Guest):
         used_targets = []
         for disk in self._install_disks:
             if not disk.bus:
-                disk.bus = "ide"
+                if disk.device == disk.DEVICE_FLOPPY:
+                    disk.bus = "fdc"
+                else:
+                    disk.bus = "ide"
             used_targets.append(disk.generate_target(used_targets))
 
         for d in self._install_disks:
