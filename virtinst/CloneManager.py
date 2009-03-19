@@ -394,14 +394,11 @@ class CloneDesign(object):
         for path in lst:
             d = None
             try:
-                try:
-                    d = VirtualDisk(path, conn=self._hyper_conn)
-                except:
-                    # Let's specify a size, and see if the error goes away.
-                    # If so, we know the media doesn't exist
-                    d = VirtualDisk(path, conn=self._hyper_conn, size=.0001)
+                if not _util.disk_exists(self._hyper_conn, path):
                     raise ValueError(_("Disk '%s' does not exist.") %
                                      d.path)
+
+                d = VirtualDisk(path, conn=self._hyper_conn)
             except Exception, e:
                 raise ValueError(_("Could not determine original disk "
                                    "information: %s" % str(e)))
@@ -423,6 +420,8 @@ class CloneDesign(object):
             return None
 
         target = ctx.xpathEval("/domain/devices/disk[%d]/target/@dev" % i)
+        if len(target) == 0:
+            raise ValueError("XML has no 'dev' attribute in disk target")
         target = target[0].getContent()
 
         for f_target in force:

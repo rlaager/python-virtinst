@@ -31,6 +31,7 @@ import logging
 
 import libvirt
 
+import virtinst
 from virtinst import util
 from virtinst import _virtinst as _
 
@@ -175,6 +176,22 @@ def fetch_all_guests(conn):
 
     return (active, inactive)
 
+def disk_exists(conn, path):
+    """Use VirtualDisk errors to determine if a storage path exists."""
+    try:
+        virtinst.VirtualDisk(conn=conn, path=path, size=.000001)
+    except:
+        # This shouldn't fail, so just raise the error
+        raise
+
+    try:
+        virtinst.VirtualDisk(conn=conn, path=path)
+    except:
+        # If this fails, but the previous attempt didn't, assume that
+        # 'size' is failing factor, and the path doesn't exist
+        return False
+
+    return True
 
 #
 # These functions accidentally ended up in the API under virtinst.util
