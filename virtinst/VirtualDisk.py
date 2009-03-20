@@ -332,8 +332,6 @@ class VirtualDisk(VirtualDevice):
             newsize = newsize / 1024.0 / 1024.0 / 1024.0
 
         if newsize != self.size:
-            logging.debug("Setting size for existing storage to '%s'" %
-                          newsize)
             self._set_size(newsize, validate=False)
 
     def __set_dev_type(self):
@@ -366,9 +364,7 @@ class VirtualDisk(VirtualDevice):
                 self._driverName = self.DRIVER_TAP
                 self._driverType = self.DRIVER_TAP_VDISK
 
-        if self.type is None:
-            logging.debug("Detected storage as type '%s'" % dtype)
-        elif dtype != self.type:
+        if self.type and dtype != self.type:
             raise ValueError(_("Passed type '%s' does not match detected "
                                "storage type '%s'" % (self.type, dtype)))
         self.set_type(dtype, validate=False)
