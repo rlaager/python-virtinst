@@ -20,7 +20,7 @@
 # MA 02110-1301 USA.
 
 
-import os, sys
+import sys
 import logging
 import virtinst
 import virtinst.CloneManager as clmgr
@@ -39,16 +39,11 @@ gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
 ### General input gathering functions
 def get_clone_name(new_name, design):
-    while 1:
-        new_name = cli.prompt_for_input(_("What is the name for the cloned virtual machine?"), new_name)
-        try:
-            design.clone_name = new_name
-            break
-        except (ValueError, RuntimeError), e:
-            print _("ERROR: "), e
-            new_name = None
+    prompt_txt = _("What is the name for the cloned virtual machine?")
+    err_txt = _("A name is required for the new virtual machine.")
+    cli.prompt_loop(prompt_txt, err_txt, new_name, design, "clone_name")
 
-def get_original_guest(guest, origfile, design):
+def get_original_guest(guest_name, origfile, design):
 
     origxml = None
     if origfile:
@@ -56,19 +51,16 @@ def get_original_guest(guest, origfile, design):
         origxml = f.read()
         f.close()
 
-    while 1:
-        if not origxml:
-            guest = cli.prompt_for_input(_("What is the name of the original virtual machine?"), guest)
         try:
-            if origxml:
-                design.original_xml = origxml
-            else:
-                design.original_guest = guest
-            break
+            design.original_xml = origxml
+            return
         except (ValueError, RuntimeError), e:
-            print _("ERROR: "), e
-            guest = None
-            origxml = None
+            fail(e)
+
+    prompt_txt = _("What is the name of the original virtual machine?")
+    err_txt = _("An original machine name or xml file is required.")
+    cli.prompt_loop(prompt_txt, err_txt,
+                    guest_name, design, "original_guest")
 
 def get_clone_macaddr(new_mac, design):
     if new_mac is None:
@@ -87,44 +79,27 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False):
     if new_diskfiles is None:
         new_diskfiles = [None]
 
+    conn = design.original_conn
+
     newidx = 0
     for origdev in design.original_devices:
-        failed_loop = False
-        while 1:
-            if not failed_loop:
-                if len(new_diskfiles) <= newidx:
-                    new_diskfiles.append(None)
-                disk = new_diskfiles[newidx]
-            else:
-                disk = None
-            failed_loop = True
+        if len(new_diskfiles) <= newidx:
+            # Extend the new/passed paths list with None if it's not
+            # long enough
+            new_diskfiles.append(None)
+        disk = new_diskfiles[newidx]
 
-            disk = cli.prompt_for_input(_("What would you like to use as the cloned disk (file path) for '%s'?") % origdev, disk)
+        dev = _check_disk(conn, disk, origdev, preserve)
+        design.clone_devices = dev.path
+        newidx += 1
 
-            # Build disk object for validation
-            try:
-                d = virtinst.VirtualDisk(path=disk, size=.0001, conn=conn)
-            except ValueError, e:
-                print _("ERROR: "), e
-                continue
+def _check_disk(conn, clone_path, orig_path, preserve):
 
-            # Prompt if disk file already exists and preserve mode is not used
-            if not preserve  and  os.path.exists(d.path):
-                warnmsg = _("This will overwrite the existing path "
-                            "'%s'!\n") % d.path
-                if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use this disk (yes or no)?")):
-                    continue
-
-            # Check disk conflicts
-            if d.is_conflict_disk(conn) is True:
-                warnmsg = _("Disk %s is already in use by another guest!\n") % d.path
-                if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the disk (yes or no)? ")):
-                    continue
-
-            design.clone_devices = d.path
-            newidx += 1
-            break
-
+    prompt_txt = (_("What would you like to use as the cloned disk "
+                    "(file path) for '%s'?") % orig_path)
+    arg_dict = {"path": clone_path, "size": .00001, "conn": conn}
+    return cli.disk_prompt(prompt_txt, arg_dict, warn_overwrite=not preserve,
+                           prompt_size=False)
 
 def get_clone_sparse(sparse, design):
     design.set_clone_sparse(sparse)
@@ -199,10 +174,13 @@ def parse_args():
     misc = OptionGroup(parser, _("Miscellaneous Options"))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                       help=_("Print debugging information"))
+    misc.add_option("", "--prompt", action="store_true", dest="prompt",
+                    help=_("Request user input for ambiguous situations or "
+                           "required options."), default=False)
     misc.add_option("", "--force", action="store_true", dest="force",
-                      help=_("Do not prompt for input. Answers yes where "
-                             "applicable, terminates for all other prompts"),
-                      default=False)
+                    help=_("Do not prompt for input. Answers yes where "
+                           "applicable, terminates for all other prompts"),
+                    default=False)
     parser.add_option_group(misc)
 
     (options, dummy) = parser.parse_args()
@@ -213,6 +191,7 @@ def main():
     options = parse_args()
 
     cli.setupLogging("virt-clone", options.debug)
+    cli.set_prompt(options.prompt)
     cli.set_force(options.force)
 
     if not User.current().has_priv(User.PRIV_CLONE, options.connect):
@@ -222,8 +201,7 @@ def main():
     design = clmgr.CloneDesign(connection=conn)
 
     try:
-        get_clone_diskfile(options.new_diskfile, design, conn,
-                           not options.preserve)
+        get_clone_diskfile(options.new_diskfile, design, not options.preserve)
         get_clone_macaddr(options.new_mac, design)
         get_original_guest(options.original_guest, options.original_xml,
                            design)

@@ -16,6 +16,11 @@ the disk images of any existing virtual machine, and define a new guest
 with an identical virtual hardware configuration. Elements which require
 uniqueness will be updated to avoid a clash between old and new guests.
 
+By default, virt-clone will show an error if the necessary information to
+clone the guest is not provided. An interactive mode is available
+with the --prompt option, but this will only ask for the minimum required
+options.
+
 =head1 OPTIONS
 
 Most options are not required. Minimum requirements are --original or
@@ -121,6 +126,11 @@ even if this parameter is omitted.
 
 Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
+
+=item --prompt
+
+Specifically enable prompting for required information. Default prompting
+is off.
 
 =back
 

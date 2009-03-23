@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2009-03-09" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2009-03-23" "perl v5.10.0" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -159,8 +159,9 @@ an existing disk image (thus skipping the install phase) are also supported.
 .PP
 Given suitable command line arguments, \f(CW\*(C`virt\-install\*(C'\fR is capable of running
 completely unattended, with the guest 'kickstarting' itself too. This allows
-for easy automation of guest installs. A companion tool \f(CW\*(C`virt\-clone(1)\*(C'\fR is
-provided for cloning pre-existing guests.
+for easy automation of guest installs. An interactive mode is also available
+with the \-\-prompt option, but this will only ask for the minimum required
+options.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 Most options are not required. Minimum requirements are \-\-name, \-\-ram,
@@ -705,8 +706,8 @@ Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
 .IP "\-\-prompt" 2
 .IX Item "--prompt"
-Specifically enable prompting. Default prompting is off (as of
-virtinst 0.400.0)
+Specifically enable prompting for required information. Default prompting
+is off (as of virtinst 0.400.0)
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 Install a \s-1KVM\s0 guest, creating a new storage file, virtual networking,

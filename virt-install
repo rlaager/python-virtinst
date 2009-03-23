@@ -24,7 +24,7 @@
 import os, sys
 import time
 import errno
-from optparse import OptionValueError, OptionGroup
+from optparse import OptionGroup
 import logging
 import urlgrabber.progress as progress
 
@@ -155,6 +155,7 @@ def parse_disk_option(guest, path, size):
                                                               suffix=".img")
         volinst = vc(pool_name=path, name=vname, conn=guest.conn,
                      allocation=0, capacity=(size and size*1024*1024*1024))
+
     elif path_type == "vol=":
         if not path.count("/"):
             raise ValueError(_("Storage volume must be specified as "
@@ -175,6 +176,13 @@ def parse_disk_option(guest, path, size):
 
 def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
 
+    # If user specified --disk, disable prompting for the whole validation
+    # process, since falling back to prompting likely wouldn't
+
+    orig_prompt = cli.doprompt
+    if not is_file_path:
+        cli.set_prompt(False)
+
     try:
         # Get disk parameters
         if is_file_path:
@@ -189,32 +197,24 @@ def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
             if not sparse and volinst:
                 volinst.allocation = volinst.capacity
 
-        d = virtinst.VirtualDisk(path=path, size=size, sparse=sparse,
-                                 volInstall=volinst, volName=voltuple,
-                                 readOnly=readOnly, shareable=shared,
-                                 device=device, bus=bus, conn=guest.conn,
-                                 driverCache=cache)
+        kwargs = {'conn': conn, 'path': path, 'size': size, 'sparse': sparse,
+                  'volInstall': volinst, 'volName': voltuple,
+                  'readOnly': readOnly, 'shareable': shared,
+                  'device': device, 'bus': bus, 'conn': guest.conn,
+                  'driverCache': cache}
+
+        d = cli.disk_prompt(None, kwargs)
+
         # Default file backed PV guests to tap driver
         if d.type == virtinst.VirtualDisk.TYPE_FILE \
            and not(hvm) and virtinst.util.is_blktap_capable():
             d.driver_name = virtinst.VirtualDisk.DRIVER_TAP
+
     except ValueError, e:
         fail(_("Error with storage parameters: %s" % str(e)))
 
-    # Check disk conflicts
-    if d.is_conflict_disk(conn) is True:
-        warnmsg = _("Disk %s is already in use by another guest!\n") % d.path
-        if not cli.prompt_for_yes_or_no(warnmsg + _("Do you really want to use the disk (yes or no)? ")):
-            cli.nice_exit()
-
-    ret = d.is_size_conflict()
-    if ret[0]:
-        fail(ret[1])
-    elif ret[1]:
-        if not cli.prompt_for_yes_or_no(ret[1] + _(" Do you really want to use the disk (yes or no)?")):
-            cli.nice_exit()
-
     guest.disks.append(d)
+    cli.set_prompt(orig_prompt)
 
 def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, hvm, conn):
     if nodisks:
@@ -224,10 +224,10 @@ def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, hvm, conn):
     if (file_paths or size or sparse == False) and disk_paths:
         fail(_("Cannot mix --file, --nonsparse, or --file-size with --disk "
                "options. Please see the manual for --disk syntax."))
-    elif not file_paths and not disk_paths:
+    elif not file_paths and not disk_paths and not cli.is_prompt():
         fail(_("A disk must be specified (use --nodisks to override)"))
 
-    is_file_path = (file_paths or False)
+    is_file_path = ((file_paths or cli.is_prompt()) or False)
     disk = (file_paths or disk_paths)
 
     # ensure we have equal length lists
@@ -258,11 +258,97 @@ def get_networks(macs, bridges, networks, nonetworks, guest):
                                            networks, nics=1)
     map(lambda m, n: cli.get_network(m, n, guest), macs, networks)
 
+def prompt_virt(caps, arch, req_virt_type, req_accel):
+
+    supports_hvm   = False
+    supports_pv    = False
+    supports_accel = False
+    for guest in caps.guests:
+        if guest.os_type == "hvm":
+            supports_hvm = True
+
+        elif guest.os_type == "xen":
+            if (len(guest.domains) and
+                guest.domains[0].hypervisor_type == "kvm"):
+                # Don't prompt user for PV w/ xenner
+                continue
+            supports_pv = True
+
+    if not arch:
+        arch = caps.host.arch
+
+    if not req_virt_type:
+        if supports_hvm and supports_pv:
+            prompt_txt = _("Would you like a fully virtualized guest "
+                           "(yes or no)? This will allow you to run "
+                           "unmodified operating systems.")
+
+            if cli.prompt_for_yes_or_no(prompt_txt, ""):
+                req_virt_type = "hvm"
+            else:
+                req_virt_type = "xen"
+
+        elif supports_hvm:
+            req_virt_type = "hvm"
+
+        elif supports_pv:
+            req_virt_type = "xen"
+
+    # See if that domain supports acceleration
+    accel_type = ""
+    for guest in caps.guests:
+        if guest.os_type == req_virt_type and guest.arch == arch:
+            for dom in guest.domains:
+                if dom.hypervisor_type in [ "kvm", "kqemu" ]:
+                    supports_accel = True
+                    accel_type = dom.hypervisor_type.upper()
+
+    if supports_accel and not req_accel:
+        prompt_txt = (_("Would you like to use %s acceleration? "
+                        "(yes or no)") % accel_type)
+
+        req_accel = cli.prompt_for_yes_or_no(prompt_txt, "")
+
+    return (req_virt_type, req_accel)
 
 
-### Paravirt input gathering functions
-def get_extraargs(extra, guest):
-    guest.extraargs = extra
+def get_virt_type(conn, options):
+
+    # Set up all virt/hypervisor parameters
+    if options.fullvirt and options.paravirt:
+        fail(_("Can't do both --hvm and --paravirt"))
+
+    capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
+
+    req_accel = options.accelerate
+    if options.fullvirt:
+        req_virt_type = "hvm"
+    elif options.paravirt:
+        req_virt_type = "xen"
+    else:
+        # This should force capabilities to give us the most sensible default
+        req_virt_type = None
+
+    if cli.is_prompt():
+        # User requested prompting but passed no virt type flag, ask for
+        # needed info
+        req_virt_type, req_accel = prompt_virt(capabilities, options.arch,
+                                               req_virt_type, req_accel)
+
+    logging.debug("Requesting virt method '%s'" % (req_virt_type and
+                                                   req_virt_type or
+                                                   _("default")))
+
+    try:
+        (capsguest,
+         capsdomain) = virtinst.CapabilitiesParser.guest_lookup(conn=conn,
+                        caps=capabilities, os_type=req_virt_type,
+                        arch=options.arch, type=None,
+                        accelerated=req_accel)
+    except Exception, e:
+        fail(e)
+
+    return (capsguest, capsdomain)
 
 
 def get_install_media(location, cdpath, pxe, livecd, import_install,
@@ -292,39 +378,64 @@ def get_install_media(location, cdpath, pxe, livecd, import_install,
         for disk in guest.disks:
             if disk.device == virtinst.VirtualDisk.DEVICE_CDROM:
                 cdinstall = True
-        if not cdinstall:
+        if not cdinstall and not cli.is_prompt():
             fail(_("One of %s, or cdrom media must be specified.") %
                   "--pxe, --location, --import")
 
+
     if pxe or import_install:
         return
+
     try:
-        if location or cdpath:
-            guest.location = (location or cdpath)
-        if cdpath and os.path.exists(cdpath):
-            # Build a throwaway disk for validation for local CDs only
-            virtinst.VirtualDisk(path=cdpath,
-                                 conn=guest.conn,
-                                 transient=True,
-                                 device=virtinst.VirtualDisk.DEVICE_CDROM,
-                                 readOnly=True)
-        if cdinstall:
-            guest.installer.cdrom = True
+        if not location and not cdpath and cli.is_prompt():
+            media_prompt(guest, ishvm)
+        else:
+            validate_install_media(guest, location, cdpath, cdinstall)
     except ValueError, e:
         fail(_("Error creating cdrom disk: %s" % str(e)))
 
+def media_prompt(guest, ishvm):
+
+    if ishvm:
+        prompt_txt = _("What is the install CD-ROM/ISO or URL?")
+    else:
+        prompt_txt = _("What is the install URL?")
+
+    while 1:
+        location = None
+        cdpath = None
+        media = cli.prompt_for_input("", prompt_txt, None)
+
+        if not ishvm or media.count(":/"):
+            location = media
+        else:
+            cdpath = media
+
+        try:
+            validate_install_media(guest, location, cdpath)
+        except Exception, e:
+            logging.error(str(e))
+            continue
+        break
+
+def validate_install_media(guest, location, cdpath, cdinstall=False):
+
+    if location or cdpath:
+        guest.location = (location or cdpath)
+
+    if cdpath:
+        # Build a throwaway disk for validation for local CDs only
+        virtinst.VirtualDisk(path=cdpath,
+                             conn=guest.conn,
+                             transient=True,
+                             device=virtinst.VirtualDisk.DEVICE_CDROM,
+                             readOnly=True)
+
+    if cdinstall or cdpath:
+        guest.installer.cdrom = True
+
 
 ### Option parsing
-def check_before_store(option, opt_str, value, parser):
-    if len(value) == 0:
-        raise OptionValueError, _("%s option requires an argument") %opt_str
-    setattr(parser.values, option.dest, value)
-
-def check_before_append(option, opt_str, value, parser):
-    if len(value) == 0:
-        raise OptionValueError, _("%s option requires an argument") %opt_str
-    parser.values.ensure_value(option.dest, []).append(value)
-
 def parse_args():
     usage = "%prog --name NAME --ram RAM STORAGE INSTALL [options]"
     parser = cli.VirtOptionParser(usage=usage)
@@ -480,9 +591,8 @@ def parse_args():
                            "terminates for all others"),
                       default=False)
     misc.add_option("", "--prompt", action="store_true", dest="prompt",
-                    help=_("Request user input for ambiguous situations. "
-                           "Default is false, so will terminate if a prompt "
-                           "would typically be fired. "), default=False)
+                    help=_("Request user input for ambiguous situations or "
+                           "required options."), default=False)
     parser.add_option_group(misc)
 
     (options, dummy) = parser.parse_args()
@@ -528,33 +638,8 @@ def main():
     cli.set_force(options.force)
     cli.set_prompt(options.prompt)
     conn = cli.getConnection(options.connect)
-    capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
 
-
-    # Set up all virt/hypervisor parameters
-    if options.fullvirt and options.paravirt:
-        fail(_("Can't do both --hvm and --paravirt"))
-
-    if options.fullvirt:
-        req_virt_type = "hvm"
-    elif options.paravirt:
-        req_virt_type = "xen"
-    else:
-        # This should force capabilities to give us the most sensible default
-        req_virt_type = None
-
-    logging.debug("Requesting virt method '%s'" % (req_virt_type and
-                                                   req_virt_type or
-                                                   _("default")))
-
-    try:
-        (capsguest,
-         capsdomain) = virtinst.CapabilitiesParser.guest_lookup(conn=conn,
-                        caps=capabilities, os_type=req_virt_type,
-                        arch=options.arch, type=None,
-                        accelerated=options.accelerate)
-    except Exception, e:
-        fail(e)
+    capsguest, capsdomain = get_virt_type(conn, options)
 
     virt_type = capsguest.os_type
     hv_name = capsdomain.hypervisor_type
@@ -611,7 +696,7 @@ def main():
     # Set host device info
     cli.get_hostdevs(options.hostdevs, guest)
 
-    get_extraargs(options.extra, guest)
+    guest.extraargs = options.extra
     if options.distro_type:
         guest.set_os_type(options.distro_type)
     if options.distro_variant:

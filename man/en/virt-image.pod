@@ -15,8 +15,8 @@ XML image descriptor C<IMAGE.XML> (L<virt-image(5)>). Most attributes of
 the virtual machine are taken from the XML descriptor (e.g., where the
 files to back the virtual machine's disks are and how to map them into the
 guest), though certain information must be added on the command line, such
-as the name of the guest. Missing information will be queried
-interactively.
+as the name of the guest. By default, missing information will cause an
+error, but an interactive mode is available with the --prompt option.
 
 The XML descriptor defines most attributes of the guest, making it possible
 to bundle and distribute it together with the files backing the guest's
@@ -188,6 +188,11 @@ Print debugging information
 
 Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
+
+=item --prompt
+
+Specifically enable prompting for information not provided in the image
+description. Default prompting is off.
 
 =back
 

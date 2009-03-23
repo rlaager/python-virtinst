@@ -139,15 +139,20 @@ def set_prompt(prompt=True):
     global doprompt
     doprompt = prompt
 
-def prompt_for_input(prompt = "", val = None):
+def is_prompt():
+    return doprompt
+
+def prompt_for_input(noprompt_err, prompt = "", val = None):
     if val is not None:
         return val
-    if force:
-        fail(_("Force flag is set but input was required. "
-               "Prompt was: %s" % prompt))
-    if not doprompt:
-        fail(_("Prompting disabled, but input was requested. "
-               "Prompt was: %s" % prompt))
+
+    if force or not is_prompt():
+        msg = noprompt_err
+        if not force and not msg.count("--prompt"):
+            # msg wasn't already appended to from yes_or_no
+            msg = noprompt_err + " " + _("(use --prompt to run interactively)")
+        fail(msg)
+
     print prompt + " ",
     return sys.stdin.readline().strip()
 
@@ -159,48 +164,136 @@ def yes_or_no(s):
         return False
     raise ValueError, "A yes or no response is required"
 
-def prompt_for_yes_or_no(prompt):
+def prompt_for_yes_or_no(warning, question):
     """catches yes_or_no errors and ensures a valid bool return"""
     if force:
         logging.debug("Forcing return value of True to prompt '%s'")
         return True
 
-    if not doprompt:
-        fail(_("Prompting disabled, but yes/no was requested. "
-               "Try --force to force 'yes' for such prompts. "
-               "Prompt was: %s" % prompt))
+    errmsg = warning + _(" (Use --prompt or --force to override)")
 
     while 1:
-        inp = prompt_for_input(prompt, None)
+        inp = prompt_for_input(errmsg, warning + question, None)
         try:
             res = yes_or_no(inp)
             break
         except ValueError, e:
-            print _("ERROR: "), e
+            logging.error(e)
             continue
     return res
 
+# Prompt the user with 'prompt_txt' for a value. Set 'obj'.'param_name'
+# to the entered value. If it errors, use 'err_txt' to print a error
+# message, and then re prompt.
+def prompt_loop(prompt_txt, noprompt_err, passed_val, obj, param_name,
+                err_txt="%s", func=None):
+    while True:
+        passed_val = prompt_for_input(noprompt_err, prompt_txt, passed_val)
+        try:
+            if func:
+                return func(passed_val)
+            setattr(obj, param_name, passed_val)
+            break
+        except (ValueError, RuntimeError), e:
+            logging.error(err_txt % e)
+            passed_val = None
+
+# Specific function for disk prompting. Returns a validated VirtualDisk
+# device.
+#
+def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True):
+
+    retry_path = True
+    conn = arg_dict.get("conn")
+    passed_path = arg_dict.get("path")
+    size = arg_dict.get("size")
+
+    while 1:
+        if not retry_path:
+            passed_path = None
+            size = None
+        retry_path = False
+
+        msg = None
+        patherr = _("A disk path must be specified.")
+        if not prompt_txt:
+            msg = _("What would you like to use as the disk (file path)?")
+            if not size is None:
+                msg = _("Please enter the path to the file you would like to "
+                        "use for storage. It will have size %sGB.") %(size,)
+        path = prompt_for_input(patherr, prompt_txt or msg, passed_path)
+        arg_dict["path"] = path
+
+        sizeerr = _("A size must be specified for non-existent disks.")
+        if not size and prompt_size:
+            size_prompt = _("How large would you like the disk (%s) to "
+                            "be (in gigabytes)?") % path
+
+            try:
+                if not _util.disk_exists(conn, path):
+                    size = prompt_loop(size_prompt, sizeerr, size, None, None,
+                                       func=float)
+            except Exception, e:
+                # Path is probably bogus, raise the error
+                logging.error(str(e))
+                continue
+        arg_dict["size"] = size
+
+        # Build disk object for validation
+        try:
+            dev = virtinst.VirtualDisk(**arg_dict)
+        except ValueError, e:
+            if is_prompt():
+                logging.error(e)
+                continue
+            else:
+                fail(_("Error with storage parameters: %s" % str(e)))
+
+        askmsg = _("Do you really want to use this disk (yes or no)")
+
+        # Prompt if disk file already exists and preserve mode is not used
+        if warn_overwrite and os.path.exists(dev.path):
+            msg = (_("This will overwrite the existing path '%s'!\n" %
+                   dev.path))
+            if not prompt_for_yes_or_no(msg, askmsg):
+                continue
+
+        # Check disk conflicts
+        if dev.is_conflict_disk(conn) is True:
+            msg = (_("Disk %s is already in use by another guest!\n" %
+                   dev.path))
+            if not prompt_for_yes_or_no(msg, askmsg):
+                continue
+
+        isfatal, errmsg = dev.is_size_conflict()
+        if isfatal:
+            fail(errmsg)
+        elif errmsg:
+            if not prompt_for_yes_or_no(errmsg, askmsg):
+                continue
+
+        # Passed all validation, return path
+        return dev
 #
 # Ask for attributes
 #
 
 def get_name(name, guest):
-    if name is None:
-        fail(_("A name is required for the virtual machine."))
-    try:
-        guest.name = name
-    except ValueError, e:
-        fail(e)
+    prompt_txt = _("What is the name of your virtual machine?")
+    err_txt = _("A name is required for the virtual machine.")
+    prompt_loop(prompt_txt, err_txt, name, guest, "name")
 
 def get_memory(memory, guest):
-    if memory is None:
-        fail(_("Memory amount is required for the virtual machine."))
-    if memory < MIN_RAM:
-        fail(_("Installs currently require %d megs of RAM.") % MIN_RAM)
-    try:
-        guest.memory = memory
-    except ValueError, e:
-        fail(e)
+    prompt_txt = _("How much RAM should be allocated (in megabytes)?")
+    err_txt = _("Memory amount is required for the virtual machine.")
+    def check_memory(mem):
+        mem = int(mem)
+        if mem < MIN_RAM:
+            raise ValueError(_("Installs currently require %d megs "
+                               "of RAM.") % MIN_RAM)
+        guest.memory = mem
+    prompt_loop(prompt_txt, err_txt, memory, guest, "memory",
+                func=check_memory)
 
 def get_uuid(uuid, guest):
     if uuid:
@@ -214,10 +307,14 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
     if check_cpu:
         hostinfo = conn.getInfo()
         cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
-        if vcpus <= cpu_num:
-            pass
-        elif not prompt_for_yes_or_no(_("You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) on the host. This will work, but performance will be poor. Are you sure? (yes or no)") % (vcpus, cpu_num)):
-            nice_exit()
+        if not vcpus <= cpu_num:
+            msg = _("You have asked for more virtual CPUs (%d) than there "
+                    "are physical CPUs (%d) on the host. This will work, "
+                    "but performance will be poor. ") % (vcpus, cpu_num)
+            askmsg = _("Are you sure? (yes or no)")
+
+            if not prompt_for_yes_or_no(msg, askmsg):
+                nice_exit()
 
     if vcpus is not None:
         try:
