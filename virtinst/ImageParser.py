@@ -240,13 +240,7 @@ class Disk:
             import sha
             has_hashlib = False
 
-        meter_ct = 0
         m = None
-        disk_size = os.path.getsize(self.file)
-        if meter:
-            meter.start(size=disk_size,
-                        text=_("Checking disk signature for %s" % self.file))
-
         if has_hashlib is True:
             if self.csum.has_key("sha256"):
                 csumvalue = self.csum["sha256"]
@@ -261,6 +255,12 @@ class Disk:
 
         if not m:
             return
+
+        meter_ct = 0
+        disk_size = os.path.getsize(self.file)
+        if meter:
+            meter.start(size=disk_size,
+                        text=_("Checking disk signature for %s" % self.file))
 
         f = open(self.file,"r")
         while 1:
