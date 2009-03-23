@@ -145,7 +145,7 @@ host to render the output. See L<virt-install(1)> for details
 
 =item --nographics
 
-Disable all interactive prompts for the guest virtual console. See
+Do not attach a graphical device to the guest. See
 L<virt-install(1)> for details
 
 =item -k KEYMAP, --keymap=KEYMAP
