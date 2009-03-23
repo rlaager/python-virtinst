@@ -652,7 +652,7 @@ def main():
     wait_time = -1
     autoconsole = options.autoconsole
 
-    if options.wait:
+    if options.wait != None:
         wait = True
         wait_time = options.wait * 60
         if wait_time == 0:
@@ -706,7 +706,7 @@ def main():
     except SystemExit, e:
         sys.exit(e.code)
     except Exception, e:
-        print str(e)
+        logging.error(e)
         print (_("Domain installation may not have been\n successful.  If it "
                  "was, you can restart your domain\n by running 'virsh start "
                  "%s'; otherwise, please\n restart your installation.") %
@@ -740,7 +740,7 @@ def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
         return dom
 
     # Domain seems to be running
-    if wait:
+    if wait and wait_time > 0:
         timestr = ""
         if wait_time > 0:
             timestr = _("%d minutes ") % (int(wait_time) / 60)
