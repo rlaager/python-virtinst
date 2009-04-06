@@ -136,10 +136,11 @@ class Installer(object):
     def get_scratchdir(self):
         if platform.system() == 'SunOS':
             return '/var/tmp'
-        if self.type == "xen" and os.path.exists(XEN_SCRATCH):
-            return XEN_SCRATCH
-        if os.geteuid() == 0 and os.path.exists(LIBVIRT_SCRATCH):
-            return LIBVIRT_SCRATCH
+        if os.geteuid() == 0:
+            if self.type == "xen" and os.path.exists(XEN_SCRATCH):
+                return XEN_SCRATCH
+            if os.path.exists(LIBVIRT_SCRATCH):
+                return LIBVIRT_SCRATCH
         else:
             return os.path.expanduser("~/.virtinst/boot")
     scratchdir = property(get_scratchdir)
