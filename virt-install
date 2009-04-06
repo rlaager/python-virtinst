@@ -219,7 +219,7 @@ def get_disk(disk, size, sparse, guest, hvm, conn, is_file_path):
 def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, hvm, conn):
     if nodisks:
         if file_paths or disk_paths or size:
-            fail(_("Cannot use --file, --size, or --disk with --nodisks"))
+            fail(_("Cannot use --file, --file-size, or --disk with --nodisks"))
         return
     if (file_paths or size or sparse == False) and disk_paths:
         fail(_("Cannot mix --file, --nonsparse, or --file-size with --disk "
