@@ -3,6 +3,10 @@
     <cpu>
       <arch>x86_64</arch>
     </cpu>
+    <secmodel>
+      <model>selinux</model>
+      <doi>0</doi>
+    </secmodel>
   </host>
 
   <guest>

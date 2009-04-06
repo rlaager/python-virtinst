@@ -93,6 +93,7 @@ class Host(object):
 
         self.features = CapabilityFeatures()
         self.topology = None
+        self.secmodel = None
 
         if not node is None:
             self.parseXML(node)
@@ -102,6 +103,9 @@ class Host(object):
         while child:
             if child.name == "topology":
                 self.topology = Topology(child)
+
+            if child.name == "secmodel":
+                self.secmodel = SecurityModel(child)
 
             if child.name != "cpu":
                 child = child.next
@@ -251,6 +255,21 @@ class TopologyCPU(object):
     def parseXML(self, node):
         self.id = int(node.prop("id"))
 
+
+class SecurityModel(object):
+    def __init__(self, node = None):
+        self.model = None
+        self.doi = None
+
+        if not node is None:
+            self.parseXML(node)
+
+    def parseXML(self, node):
+        for child in node.children or []:
+            if child.name == "model":
+                self.model = child.content
+            elif child.name == "doi":
+                self.doi = child.content
 
 class Capabilities(object):
     def __init__(self, node = None):

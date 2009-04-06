@@ -32,17 +32,22 @@ class TestCapabilities(unittest.TestCase):
         for n in features:
             self.assertEqual(features[n],        guest.features[n])
 
-    def _testCapabilities(self, path, (host_arch, host_features), guests):
+    def _testCapabilities(self, path, (host_arch, host_features), guests,
+                          secmodel=None):
         caps = capabilities.parse(file(os.path.join("tests/capabilities-xml", path)).read())
 
         self.assertEqual(host_arch,     caps.host.arch)
         for n in host_features:
             self.assertEqual(host_features[n], caps.host.features[n])
 
+        if secmodel:
+            self.assertEqual(secmodel[0], caps.host.secmodel.model)
+            self.assertEqual(secmodel[1], caps.host.secmodel.doi)
+
         map(self._compareGuest, guests, caps.guests)
 
     def testCapabilities1(self):
-        host = ( 'x86_64', {'vmx': capabilities.FEATURE_ON} )
+        host = ( 'x86_64', {'vmx': capabilities.FEATURE_ON})
 
         guests = [
             ( 'x86_64', 'xen',
@@ -58,7 +63,8 @@ class TestCapabilities(unittest.TestCase):
         self._testCapabilities("capabilities-xen.xml", host, guests)
 
     def testCapabilities2(self):
-        host = ( 'x86_64', {} )
+        host = ( 'x86_64', {})
+        secmodel = ('selinux', '0')
 
         guests = [
             ( 'x86_64', 'hvm',
@@ -75,10 +81,10 @@ class TestCapabilities(unittest.TestCase):
               [['qemu','/usr/bin/qemu-system-ppc', ['g3bw', 'mac99', 'prep']]], {} ),
         ]
 
-        self._testCapabilities("capabilities-qemu.xml", host, guests)
+        self._testCapabilities("capabilities-qemu.xml", host, guests, secmodel)
 
     def testCapabilities3(self):
-        host = ( 'i686', {} )
+        host = ( 'i686', {})
 
         guests = [
             ( 'i686',   'hvm',
@@ -99,7 +105,8 @@ class TestCapabilities(unittest.TestCase):
         self._testCapabilities("capabilities-kvm.xml", host, guests)
 
     def testCapabilities4(self):
-        host = ( 'i686', { 'pae': capabilities.FEATURE_ON|capabilities.FEATURE_OFF } )
+        host = ( 'i686',
+                 { 'pae': capabilities.FEATURE_ON|capabilities.FEATURE_OFF })
 
         guests = [
             ( 'i686', 'linux',
