@@ -18,6 +18,7 @@ import unittest
 import os
 import libvirt
 import urlgrabber.progress as progress
+import logging
 
 import virtinst
 from virtinst import VirtualDisk
@@ -67,11 +68,20 @@ class TestXMLConfig(unittest.TestCase):
             actualXML = xenguest.get_config_xml(install=install)
             tests.diff_compare(actualXML, filename)
 
-            # Should probably break this out into a separate function
-            dom = xenguest.conn.defineXML(actualXML)
-            dom.create()
-            dom.destroy()
-            dom.undefine()
+            try:
+                # Should probably break this out into a separate function
+                dom = xenguest.conn.defineXML(actualXML)
+                dom.create()
+                dom.destroy()
+                dom.undefine()
+            except Exception, e:
+                # Libvirt throws errors since we are defining domain
+                # type='xen', when test driver can only handle type='test'
+                # Would be nice to turn this back on, but it we need a
+                # maintainable solution that still tests the important
+                # virtinst code paths.
+                logging.debug("Defining xmlconfig failed. Error is: %s"
+                              "\nXML is:\n%s" % (str(e), actualXML))
         finally:
             xenguest.installer.cleanup()
 
