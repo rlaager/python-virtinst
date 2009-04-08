@@ -13,6 +13,10 @@ EXCEPTHOOK='__excepthook__'
 BUILTIN_TYPE="(StoragePool.__init__|randomMAC|Capabilities.guestForOSType|acquireKernel|acquireBootDisk|DistroInstaller.__init__|PXEInstaller.__init__|Guest.list_os_variants|Guest.get_os_type_label|Guest.get_os_variant_label|FullVirtGuest.__init__|VirtualNetworkInterface.__init__|VirtualGraphics.__init__|Installer.__init__|Guest.__init__|LiveCDInstaller.__init__|ParaVirtGuest.__init__|VirtOptionParser.print_help|get_max_vcpus|setupLogging.exception_log|VirtualDisk.__init__|disk.__init__|netdev.__init__)|guest_lookup"
 BTYPE_TYPE="${BUILTIN_TYPE}.*Redefining built-in 'type'"
 
+# Built-in type 'format'
+BUILTIN_FORMAT="(*Pool.__init__|*Volume.__init__|find_input)"
+BTYPE_FORMAT="${BUILTIN_FORMAT}.*Redefining built-in 'format'"
+
 # Following functions are in the public api which have argument names that
 # override builtin 'str'.
 BUILTIN_STR="(xml_escape)"
@@ -29,6 +33,10 @@ USE_OF__EXIT="member _exit"
 # False positive: we install the _ function in the builtin namespace, but
 # pylint doesn't pick it up
 UNDEF_GETTEXT="Undefined variable '_'"
+
+# Don't complain about 'ucred' or 'selinux' not being available
+UCRED="import 'ucred'"
+SELINUX="import 'selinux'"
 
 # Public api error
 VD_MISMATCHED_ARGS="VirtualDisk.get_xml_config.*Arguments number differs"
@@ -107,6 +115,9 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$BTYPE_TYPE" \
         -ve "$BTYPE_FILE" \
         -ve "$BTYPE_STR" \
+        -ve "$BTYPE_FORMAT" \
+        -ve "$UCRED" \
+        -ve "$SELINUX" \
         -ve "$USE_OF__EXIT" \
         -ve "$UNDEF_GETTEXT" \
         -ve "$VD_MISMATCHED_ARGS" \

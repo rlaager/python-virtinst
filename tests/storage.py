@@ -29,7 +29,7 @@ def _findFreePoolName(conn, namebase):
         except:
             return poolname
 
-def createPool(conn, ptype, poolname=None, format=None, tpath=None,
+def createPool(conn, ptype, poolname=None, fmt=None, tpath=None,
                spath=None, start=True):
     poolclass = StoragePool.get_pool_class(ptype)
 
@@ -44,8 +44,8 @@ def createPool(conn, ptype, poolname=None, format=None, tpath=None,
         pool_inst.source_path = spath or "/some/source/path"
     if hasattr(pool_inst, "target_path"):
         pool_inst.target_path = tpath or "/some/target/path"
-    if format and hasattr(pool_inst, "format"):
-        pool_inst.format = format
+    if fmt and hasattr(pool_inst, "format"):
+        pool_inst.format = fmt
 
     return pool_inst.install(build=True, meter=None, create=start)
 
@@ -84,7 +84,7 @@ class TestStorage(unittest.TestCase):
         createVol(poolobj)
 
     def testDiskPool(self):
-        poolobj = createPool(self.conn, StoragePool.TYPE_DISK, format="dos")
+        poolobj = createPool(self.conn, StoragePool.TYPE_DISK, fmt="dos")
         # Not implemented yet
         #volobj = createVol(poolobj)
         self.assertRaises(RuntimeError, createVol, poolobj)

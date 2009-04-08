@@ -233,24 +233,24 @@ def main():
 
     try:
         for d in vmdef.disks.values():
-            format = options.disk_format
+            dformat = options.disk_format
 
             # VMDK disks on Solaris converted to vdisk by default
             if (d.format == diskcfg.DISK_FORMAT_VMDK and
-                not format and vmcfg.host() == "SunOS"):
-                format = "vdisk"
+                not dformat and vmcfg.host() == "SunOS"):
+                dformat = "vdisk"
 
             elif options.output_format == "vmx":
-                format = "vmdk"
-            if not format:
-                format = "raw"
+                dformat = "vmdk"
+            if not dformat:
+                dformat = "raw"
 
-            if d.path and format != "none":
+            if d.path and dformat != "none":
                 verbose(options, _("Converting disk '%(path)s' to type "
                                    "%(format)s...") % {"path": d.path,
-                                                       "format": format})
+                                                       "format": dformat})
 
-            d.convert(options.input_dir, options.output_dir, format)
+            d.convert(options.input_dir, options.output_dir, dformat)
 
     except OSError, e:
         cleanup(_("Couldn't convert disks: %s") % e.strerror,

@@ -49,7 +49,7 @@ virtimage = virtinst.ImageParser.parse_file("tests/image-xml/image.xml")
 offdskpaths = [ "/dev", ]
 for path in offdskpaths:
     createPool(testconn, virtinst.Storage.StoragePool.TYPE_DISK,
-               tpath=path, start=False, format="dos")
+               tpath=path, start=False, fmt="dos")
 
 dirpaths = [ "/var/lib/libvirt/images", "/", "/tmp" ]
 for path in dirpaths:
@@ -59,7 +59,7 @@ for path in dirpaths:
 dskpaths = [ "/somedev", "/dev/disk/by-uuid" ]
 for path in dskpaths:
     createPool(testconn, virtinst.Storage.StoragePool.TYPE_DISK,
-               format="dos", tpath=path, start=False)
+               fmt="dos", tpath=path, start=False)
 
 # Create a usable pool/vol pairs
 p = createPool(testconn, virtinst.Storage.StoragePool.TYPE_DIR,
