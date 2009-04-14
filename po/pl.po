@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-04-09 10:37-0400\n"
-"PO-Revision-Date: 2009-03-25 22:57+0100\n"
+"PO-Revision-Date: 2009-04-13 16:30+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -62,21 +62,19 @@ msgstr "Nie można znaleźć używalnego domyślnego połączenia libvirt."
 
 #: virtinst/cli.py:153
 msgid "(use --prompt to run interactively)"
-msgstr ""
+msgstr "(użyj --prompt, aby uruchomić interaktywnie)"
 
 #: virtinst/cli.py:173
 msgid " (Use --prompt or --force to override)"
-msgstr ""
+msgstr " (Użyj --prompt lub --force, aby zastąpić)"
 
 #: virtinst/cli.py:218
-#, fuzzy
 msgid "A disk path must be specified."
-msgstr "Urządzenie dysku musi zostać podane."
+msgstr "Ścieżka dysku musi zostać podana."
 
 #: virtinst/cli.py:220
-#, fuzzy
 msgid "What would you like to use as the disk (file path)?"
-msgstr "Co chcesz użyć jako sklonowany dysk (ścieżka do pliku) dla \"%s\"?"
+msgstr "Co chcesz użyć jako dysk (ścieżka do pliku)?"
 
 #: virtinst/cli.py:222
 #, python-format
@@ -84,17 +82,17 @@ msgid ""
 "Please enter the path to the file you would like to use for storage. It will "
 "have size %sGB."
 msgstr ""
+"Podaj ścieżkę do pliku, którego chcesz użyć dla pamięci masowej. Będzie miał "
+"rozmiar %sGB."
 
 #: virtinst/cli.py:227
-#, fuzzy
 msgid "A size must be specified for non-existent disks."
-msgstr ""
-"Rozmiar musi zostać podany dla nieistniejącej ścieżki do woluminu \"%s\""
+msgstr "Rozmiar musi zostać podany dla nieistniejących dysków."
 
 #: virtinst/cli.py:229
 #, python-format
 msgid "How large would you like the disk (%s) to be (in gigabytes)?"
-msgstr ""
+msgstr "Jak duży ma być dysk %s (w gigabajtach)?"
 
 #: virtinst/cli.py:250 virt-install:214
 #, python-format
@@ -102,9 +100,8 @@ msgid "Error with storage parameters: %s"
 msgstr "Błąd parametrów pamięci masowej: %s"
 
 #: virtinst/cli.py:252
-#, fuzzy
 msgid "Do you really want to use this disk (yes or no)"
-msgstr "Na pewno chcesz użyć tego dysku (\"yes\" lub \"no\")?"
+msgstr "Na pewno chcesz użyć tego dysku (\"yes\" lub \"no\")"
 
 #: virtinst/cli.py:256
 #, python-format
@@ -117,9 +114,8 @@ msgid "Disk %s is already in use by another guest!\n"
 msgstr "Dysk %s jest już używany przez innego gościa!\n"
 
 #: virtinst/cli.py:282
-#, fuzzy
 msgid "What is the name of your virtual machine?"
-msgstr "Jaka jest nazwa oryginalnej maszyny wirtualnej?"
+msgstr "Jaka jest nazwa maszyny wirtualnej?"
 
 #: virtinst/cli.py:283
 msgid "A name is required for the virtual machine."
@@ -127,7 +123,7 @@ msgstr "Nazwa maszyny wirtualnej jest wymagana."
 
 #: virtinst/cli.py:287
 msgid "How much RAM should be allocated (in megabytes)?"
-msgstr ""
+msgstr "Ile pamięci RAM powinno zostać przydzielonych (w megabajtach)?"
 
 #: virtinst/cli.py:288
 msgid "Memory amount is required for the virtual machine."
@@ -136,21 +132,20 @@ msgstr "Ilość pamięci dla maszyny wirtualnej jest wymagana."
 #: virtinst/cli.py:292
 #, python-format
 msgid "Installs currently require %d megs of RAM."
-msgstr "Instalacja obecnie wymaga %d megabajtów RAM-u."
+msgstr "Instalacja obecnie wymaga %d megabajtów pamięci RAM."
 
 #: virtinst/cli.py:311
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
 "on the host. This will work, but performance will be poor. "
 msgstr ""
 "Poprosiłeś o więcej procesorów wirtualnych (%d) niż jest procesorów "
 "fizycznych (%d) na hoście. To będzie działało, ale wydajność będzie słaba. "
-"Jesteś pewny? (\"yes\" lub \"no\")"
 
 #: virtinst/cli.py:314
 msgid "Are you sure? (yes or no)"
-msgstr ""
+msgstr "Jesteś pewny? (\"yes\" lub \"no\")"
 
 #: virtinst/cli.py:373
 msgid "Unknown network type "
@@ -171,7 +166,7 @@ msgstr "Nie można podać więcej niż jedno z VNC, SDL lub --nographics"
 #: virtinst/cli.py:455
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
-msgstr ""
+msgstr "Nie pasuje do mapy klawiszy \"%s\" w tablicy klawiszy!"
 
 #: virtinst/cli.py:477 virtinst/cli.py:482
 #, python-format
@@ -373,7 +368,7 @@ msgstr "Nieznany wariant systemu operacyjnego \"%s\""
 
 #: virtinst/Guest.py:291
 msgid "Must specify whether graphics are enabled"
-msgstr "Musisz określić, czy grafika ma być włączona"
+msgstr "Musisz określić, czy grafika ma zostać włączona"
 
 #: virtinst/Guest.py:314
 msgid "Graphics enabled must be True or False"
@@ -381,7 +376,7 @@ msgstr "Włączenie grafiki musi być \"True\" lub \"False\""
 
 #: virtinst/Guest.py:373
 msgid "You must specify a valid ISO or CD-ROM location for the installation"
-msgstr "Musisz podać prawidłowe położenie ISO lub CD-ROM-u dla instalacji"
+msgstr "Musisz podać prawidłowe położenie ISO lub CD-ROM dla instalacji"
 
 #: virtinst/Guest.py:376
 msgid "The specified media path does not exist."
@@ -1279,18 +1274,16 @@ msgid "What is the name for the cloned virtual machine?"
 msgstr "Jak jest nazwa sklonowanej maszyny wirtualnej?"
 
 #: virt-clone:43
-#, fuzzy
 msgid "A name is required for the new virtual machine."
-msgstr "Nazwa maszyny wirtualnej jest wymagana."
+msgstr "Nazwa nowej maszyny wirtualnej jest wymagana."
 
 #: virt-clone:60
 msgid "What is the name of the original virtual machine?"
 msgstr "Jaka jest nazwa oryginalnej maszyny wirtualnej?"
 
 #: virt-clone:61
-#, fuzzy
 msgid "An original machine name or xml file is required."
-msgstr "Oryginalna nazwa gościa lub XML są wymagane."
+msgstr "Oryginalna nazwa maszyny lub plik XML są wymagane."
 
 #: virt-clone:98
 #, python-format
@@ -1367,11 +1360,9 @@ msgid "Print debugging information"
 msgstr "Wyświetl informacje o debugowaniu"
 
 #: virt-clone:178 virt-image:174 virt-install:594
-#, fuzzy
 msgid "Request user input for ambiguous situations or required options."
 msgstr ""
-"Poproś użytkownika w niejasnych sytuacjach. Domyślnie \"fałsz\", więc będzie "
-"zamykane, jeśli zajdzie potrzeba poproszenia. "
+"Poproś użytkownika w niejasnych sytuacjach lub jeśli wymagane są opcje."
 
 #: virt-clone:181 virt-image:177
 msgid ""
@@ -1737,9 +1728,8 @@ msgstr ""
 "Wolumin pamięci masowej musi zostać podany jako pool=nazwapuli/nazwawoluminu"
 
 #: virt-install:222
-#, fuzzy
 msgid "Cannot use --file, --file-size, or --disk with --nodisks"
-msgstr "Nie można używać --file, --size lub --disk z --nodisks"
+msgstr "Nie można używać --file, --file-size lub --disk z --nodisks"
 
 #: virt-install:225
 msgid ""
@@ -1774,11 +1764,13 @@ msgid ""
 "Would you like a fully virtualized guest (yes or no)? This will allow you to "
 "run unmodified operating systems."
 msgstr ""
+"Czy chcesz pełną wirtualizację gościa (\"yes\" lub \"no\")? Umożliwi to "
+"uruchomienie niezmodyfikowanych systemów operacyjnych."
 
 #: virt-install:307
-#, fuzzy, python-format
+#, python-format
 msgid "Would you like to use %s acceleration? (yes or no)"
-msgstr "Na pewno chcesz użyć tego dysku (\"yes\" lub \"no\")?"
+msgstr "Na pewno chcesz użyć akceleracji %s? (\"yes\" lub \"no\")"
 
 #: virt-install:319
 msgid "Can't do both --hvm and --paravirt"
@@ -1818,11 +1810,11 @@ msgstr "Błąd podczas tworzenia dysku CD-ROM: %s"
 
 #: virt-install:400
 msgid "What is the install CD-ROM/ISO or URL?"
-msgstr ""
+msgstr "Jaki jest CD-ROM/ISO lub adres URL instalacji?"
 
 #: virt-install:402
 msgid "What is the install URL?"
-msgstr ""
+msgstr "Jaki jest adres URL instalacji?"
 
 #: virt-install:457
 msgid "The CPU architecture to simulate"
@@ -2033,29 +2025,3 @@ msgid ""
 msgstr ""
 "Trwa instalacja domeny. Możesz ponownie połączyć się z \n"
 "konsolą, aby zakończyć proces instalacji."
-
-#~ msgid "Force flag is set but input was required. Prompt was: %s"
-#~ msgstr ""
-#~ "Flaga wymuszenia jest ustawiona, ale prośba była wymagana. Było to: %s"
-
-#~ msgid "Prompting disabled, but input was requested. Prompt was: %s"
-#~ msgstr "Wyłączono prośby, ale jedna była wymagana. Była to: %s"
-
-#~ msgid ""
-#~ "Prompting disabled, but yes/no was requested. Try --force to force 'yes' "
-#~ "for such prompts. Prompt was: %s"
-#~ msgstr ""
-#~ "Wyłączono prośby, ale pytanie tak/nie zostało zażądane. Spróbuj --force, "
-#~ "aby wymusić \"tak\" dla takich próśb. Prośba to: %s"
-
-#~ msgid "ERROR: "
-#~ msgstr "BŁĄD: "
-
-#~ msgid "OpenSolaris microroot not found at %s"
-#~ msgstr "Nie znaleziono microroota OpenSolarisa w %s"
-
-#~ msgid "Do you really want to use the disk (yes or no)? "
-#~ msgstr "Na pewno chcesz użyć dysku (\"yes\" lub \"no\")? "
-
-#~ msgid " Do you really want to use the disk (yes or no)?"
-#~ msgstr " Na pewno chcesz użyć tego dysku (\"yes\" lub \"no\")?"
