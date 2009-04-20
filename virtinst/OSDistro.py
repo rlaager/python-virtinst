@@ -1028,7 +1028,7 @@ class OpenSolarisDistro(SunDistro):
     os_variant = "opensolaris"
  
     kernelpath = "platform/i86xpv/kernel/unix"
-    initrdpaths = [ "boot/boot_archive", "boot/x86.microroot" ]
+    initrdpaths = [ "platform/i86pc/boot_archive", "boot/x86.microroot" ]
 
     def isValidStore(self, fetcher, progresscb):
         if fetcher.hasFile(self.kernelpath):
