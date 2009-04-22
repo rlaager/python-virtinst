@@ -142,7 +142,11 @@ class Installer(object):
             if os.path.exists(LIBVIRT_SCRATCH):
                 return LIBVIRT_SCRATCH
         else:
-            return os.path.expanduser("~/.virtinst/boot")
+            scratch = os.path.expanduser("~/.virtinst/boot")
+            if not os.path.exists(scratch):
+                os.makedirs(scratch, 0750)
+            _util.selinux_restorecon(scratch)
+            return scratch
     scratchdir = property(get_scratchdir)
 
     def get_cdrom(self):

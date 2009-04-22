@@ -35,6 +35,11 @@ import virtinst
 from virtinst import util
 from virtinst import _virtinst as _
 
+try:
+    import selinux
+except ImportError:
+    selinux = None
+
 def is_vdisk(path):
     if not os.path.exists("/usr/sbin/vdiskadm"):
         return False
@@ -192,6 +197,20 @@ def disk_exists(conn, path):
         return False
 
     return True
+
+# Selinux helpers
+
+def have_selinux():
+    return bool(selinux) and bool(selinux.is_selinux_enabled())
+
+def selinux_restorecon(path):
+    if have_selinux() and hasattr(selinux, "restorecon"):
+        try:
+            selinux.restorecon(path)
+        except Exception, e:
+            logging.debug("Restoring context for '%s' failed: %s" % (path,
+                                                                     str(e)))
+
 
 #
 # These functions accidentally ended up in the API under virtinst.util
