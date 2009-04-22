@@ -37,7 +37,7 @@ UNDEF_GETTEXT="Undefined variable '_'"
 # Don't complain about 'ucred' or 'selinux' not being available
 UCRED="import 'ucred'"
 SELINUX="import 'selinux'"
-SELINUX_RESTORECON="'selinux' has no 'restorecon' member"
+OLDSELINUX="'selinux' has no "
 
 # Public api error
 VD_MISMATCHED_ARGS="VirtualDisk.get_xml_config.*Arguments number differs"
@@ -119,7 +119,7 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$BTYPE_FORMAT" \
         -ve "$UCRED" \
         -ve "$SELINUX" \
-        -ve "$SELINUX_RESTORECON" \
+        -ve "$OLDSELINUX" \
         -ve "$USE_OF__EXIT" \
         -ve "$UNDEF_GETTEXT" \
         -ve "$VD_MISMATCHED_ARGS" \

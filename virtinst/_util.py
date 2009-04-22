@@ -210,7 +210,47 @@ def selinux_restorecon(path):
         except Exception, e:
             logging.debug("Restoring context for '%s' failed: %s" % (path,
                                                                      str(e)))
+def selinux_getfilecon(path):
+    if have_selinux():
+        return selinux.getfilecon(path)[1]
+    return None
 
+def selinux_setfilecon(storage, label):
+    """
+    Wrapper for selinux.setfilecon. Libvirt may be able to relabel existing
+    storage someday, we can fold that into this.
+    """
+    if have_selinux():
+        selinux.setfilecon(storage, label)
+
+def selinux_is_label_valid(label):
+    """
+    Check if the passed label is an actually valid selinux context label
+    Returns False if selinux support is not present
+    """
+    return bool(have_selinux() and (not hasattr(selinux, "context_new") or
+                                    selinux.context_new(label)))
+
+def selinux_rw_label():
+    """
+    Expected SELinux label for read/write disks
+    """
+    con = "system_u:object_r:virt_image_t:s0"
+
+    if not selinux_is_label_valid(con):
+        con = ""
+    return con
+
+def selinux_readonly_label():
+    """
+    Expected SELinux label for things like readonly installation media
+    """
+    con = "system_u:object_r:virt_content_t:s0"
+
+    if not selinux_is_label_valid(con):
+        # The RW label is newer than the RO one, so see if that exists
+        con = selinux_rw_label()
+    return con
 
 #
 # These functions accidentally ended up in the API under virtinst.util

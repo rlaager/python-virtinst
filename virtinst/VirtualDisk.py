@@ -106,7 +106,7 @@ class VirtualDisk(VirtualDevice):
                  device=DEVICE_DISK, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
                  volInstall=None, volName=None, bus=None, shareable=False,
-                 driverCache=None):
+                 driverCache=None, selinuxLabel=None):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -141,6 +141,8 @@ class VirtualDisk(VirtualDevice):
         @type shareable: C{bool}
         @param driverCache: Disk cache mode (none, writethrough, writeback)
         @type driverCache: member of cache_types
+        @param selinuxLabel: Used for labelling new or relabel existing storage
+        @type selinuxLabel: C{str}
         """
 
         VirtualDevice.__init__(self, conn=conn)
@@ -156,6 +158,7 @@ class VirtualDisk(VirtualDevice):
         self._bus = None
         self._shareable = None
         self._driver_cache = None
+        self._selinux_label = None
 
         # XXX: No property methods for these
         self.transient = transient
@@ -174,6 +177,7 @@ class VirtualDisk(VirtualDevice):
         self._set_bus(bus, validate=False)
         self._set_shareable(shareable, validate=False)
         self._set_driver_cache(driverCache, validate=False)
+        self._set_selinux_label(selinuxLabel, validate=False)
 
         if volName:
             self.__lookup_vol_name(volName)
@@ -293,6 +297,22 @@ class VirtualDisk(VirtualDevice):
                 raise ValueError, _("Unknown cache mode '%s'" % val)
         self.__validate_wrapper("_driver_cache", val, validate)
     driver_cache = property(_get_driver_cache, _set_driver_cache)
+
+    # If there is no selinux support on the libvirt connection or the
+    # system, we won't throw errors if this is set, just silently ignore.
+    def _get_selinux_label(self):
+        return self._selinux_label
+    def _set_selinux_label(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "selinux_label")
+
+            if (self._support_selinux() and
+                not _util.selinux_is_label_valid(val)):
+                # XXX Not valid if we support changing labels remotely
+                raise ValueError(_("SELinux label '%s' is not valid.") % val)
+
+        self.__validate_wrapper("_selinux_label", val, validate)
+    selinux_label = property(_get_selinux_label, _set_selinux_label)
 
     # Validation assistance methods
 
@@ -512,11 +532,34 @@ class VirtualDisk(VirtualDevice):
                               "StorageVolume object")
                 self._set_size(newsize, validate=False)
 
-        # Remove this piece when storage volume creation is async
+        # XXX Remove this piece when storage volume creation is async
         if self.sparse and self.vol_install and \
            self.vol_install.allocation != 0:
             logging.debug("Setting vol_install allocation to 0 (sparse).")
             self.vol_install.allocation = 0
+
+    def _storage_security_label(self):
+        """
+        Return SELinux label of existing storage, or None
+        """
+        context = ""
+
+        if self.__no_storage():
+            return context
+
+        if self.vol_object:
+            context = _util.get_xml_path(self.vol_object.XMLDesc(0),
+                                         "/volume/target/permissions/label")
+        elif self.vol_install:
+            # XXX: If user entered a manual label, should we sync this
+            # to vol_install?
+            l = _util.get_xml_path(self.vol_install.pool.XMLDesc(0),
+                                   "/pool/target/permissions/label")
+            context = l or ""
+        else:
+            context = _util.selinux_getfilecon(self.path)
+
+        return context
 
 
     def __validate_params(self):
@@ -556,6 +599,19 @@ class VirtualDisk(VirtualDevice):
 
         self.__set_size()
 
+        if not self.selinux_label:
+            # If we are using existing storage, pull the label from it
+            # If we are installing via vol_install, pull from the parent pool
+            # If we are creating local storage, use the expected label
+            context = ""
+
+            if create_media and not managed_storage:
+                context = self._expected_security_label()
+            else:
+                context = self._storage_security_label()
+
+            self._selinux_label = context or ""
+
         # If not creating the storage, our job is easy
         if not create_media:
             # Make sure we have access to the local path
@@ -564,7 +620,6 @@ class VirtualDisk(VirtualDevice):
                     # vdisk _is_ a directory.
                     raise ValueError(_("The path '%s' must be a file or a "
                                        "device, not a directory") % self.path)
-                # XXX: Any selinux validation checks should go here
 
             self.__set_dev_type()
             return True
@@ -636,34 +691,44 @@ class VirtualDisk(VirtualDevice):
         @param progresscb: progress meter
         @type progresscb: instanceof urlgrabber.BaseMeter
         """
-        if not self.__creating_storage():
-            return
-
-        if self.vol_install:
-            self._set_vol_object(self.vol_install.install(meter=progresscb),
-                                 validate=False)
-            return
-
-        size_bytes = long(self.size * 1024L * 1024L * 1024L)
-
         if not progresscb:
             progresscb = progress.BaseMeter()
 
-        progresscb.start(filename=self.path, size=long(size_bytes),
-                         text=_("Creating storage file..."))
+        if self.__creating_storage():
+            if self.vol_install:
+                self._set_vol_object(self.vol_install.install(meter=progresscb),
+                                     validate=False)
+                # Then just leave: vol_install should handle any selinux stuff
+                return
 
-        if _util.is_vdisk(self.path):
-            progresscb.update(1024)
-            if not _vdisk_create(self.path, size_bytes, "vmdk", self.sparse):
-                raise RuntimeError, _("Error creating vdisk %s" % self.path)
-            self._driverName = self.DRIVER_TAP
-            self._driverType = self.DRIVER_TAP_VDISK
+            size_bytes = long(self.size * 1024L * 1024L * 1024L)
+            progresscb.start(filename=self.path, size=long(size_bytes),
+                             text=_("Creating storage file..."))
 
-            progresscb.end(self.size)
-        else:
-            self._create_local_file(progresscb, size_bytes)
+            if _util.is_vdisk(self.path):
+                progresscb.update(1024)
+                if not _vdisk_create(self.path, size_bytes, "vmdk",
+                                     self.sparse):
+                    raise RuntimeError, _("Error creating vdisk %s" % self.path)
+                self._driverName = self.DRIVER_TAP
+                self._driverType = self.DRIVER_TAP_VDISK
 
-        # FIXME: set selinux context?
+                progresscb.end(self.size)
+            else:
+                self._create_local_file(progresscb, size_bytes)
+
+        # Relabel storage if it was requested
+
+        storage_label = self._storage_security_label()
+        if storage_label and storage_label != self.selinux_label:
+            if not self._support_selinux():
+                logging.debug("No support for changing selinux context.")
+            elif not self._security_can_fix():
+                logging.debug("Can't fix selinux context in this case.")
+            else:
+                logging.debug("Changing path=%s selinux label %s -> %s" %
+                              (self.path, storage_label, self.selinux_label))
+                _util.selinux_setfilecon(self.path, self.selinux_label)
 
     def get_xml_config(self, disknode=None):
         """
@@ -811,6 +876,79 @@ class VirtualDisk(VirtualDevice):
             ret = names
 
         return ret
+
+    def _support_selinux(self):
+        """
+        Return True if we have the requisite libvirt and library support
+        for selinux commands
+        """
+        if (not self._caps and False):
+            #self._caps.host.secmodel is None or
+            #self._caps.host.secmodel.model != "selinux"):
+            # XXX: Libvirt support isn't strictly required, but all the
+            #      our label guesses are built with svirt in mind
+            return False
+
+        elif self._is_remote():
+            return False
+
+        elif not _util.have_selinux():
+            # XXX: When libvirt supports changing labels via storage APIs,
+            #      this will need changing.
+            return False
+
+        elif self.__storage_specified() and self.path:
+            try:
+                statinfo = os.stat(self.path)
+            except:
+                return False
+
+            # Not sure if this is even the correct metric for
+            # 'Can we change the file context'
+            return os.geteuid() in ['0', statinfo.st_uid]
+
+        return True
+
+    def _expected_security_label(self):
+        """
+        Best guess at what the expected selinux label should be for the disk
+        """
+        label = None
+
+        # XXX: These are really only approximations in the remote case?
+        # XXX: Maybe libvirt should expose the relevant selinux labels in
+        #      the capabilities XML?
+
+        if not self._support_selinux():
+            pass
+        elif self.__no_storage():
+            pass
+        elif self.read_only:
+            label = _util.selinux_readonly_label()
+        elif self.shareable:
+            # XXX: Should this be different? or do we not care about MLS here?
+            label = _util.selinux_rw_label()
+        else:
+            label = _util.selinux_rw_label()
+
+        return label or ""
+
+    def _security_can_fix(self):
+        can_fix = True
+
+        if not self._support_selinux():
+            can_fix = False
+        elif self.__no_storage():
+            can_fix = False
+        elif self.type == VirtualDisk.TYPE_BLOCK:
+            # Shouldn't change labelling on block devices (though we can)
+            can_fix = False
+        elif not self.read_only:
+            # XXX Leave all other (R/W disk) relabeling up to libvirt/svirt
+            # for now
+            can_fix = False
+
+        return can_fix
 
     def _get_target_type(self):
         """
