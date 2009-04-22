@@ -22,6 +22,7 @@
 import os, statvfs
 import subprocess
 import logging
+import urlgrabber.progress as progress
 import libvirt
 
 import _util
@@ -622,9 +623,11 @@ class VirtualDisk(VirtualDevice):
 
         size_bytes = long(self.size * 1024L * 1024L * 1024L)
 
-        if progresscb:
-            progresscb.start(filename=self.path, size=long(size_bytes),
-                             text=_("Creating storage file..."))
+        if not progresscb:
+            progresscb = progress.BaseMeter()
+
+        progresscb.start(filename=self.path, size=long(size_bytes),
+                         text=_("Creating storage file..."))
 
         if _util.is_vdisk(self.path):
             progresscb.update(1024)
@@ -641,22 +644,19 @@ class VirtualDisk(VirtualDevice):
                 fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
                 if self.sparse:
                     os.ftruncate(fd, size_bytes)
-                    if progresscb:
-                        progresscb.update(self.size)
+                    progresscb.update(self.size)
                 else:
                     buf = '\x00' * 1024 * 1024 # 1 meg of nulls
                     for i in range(0, long(self.size * 1024L)):
                         os.write(fd, buf)
-                        if progresscb:
-                            progresscb.update(long(i * 1024L * 1024L))
+                        progresscb.update(long(i * 1024L * 1024L))
             except OSError, e:
                 raise RuntimeError(_("Error creating diskimage %s: %s") %
                                    (self.path, str(e)))
         finally:
             if fd is not None:
                 os.close(fd)
-            if progresscb:
-                progresscb.end(size_bytes)
+            progresscb.end(size_bytes)
         # FIXME: set selinux context?
 
     def get_xml_config(self, disknode=None):

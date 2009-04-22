@@ -36,6 +36,7 @@ import os
 import libxml2
 import logging
 import subprocess
+import urlgrabber.progress as progress
 import _util
 import libvirt
 import Guest
@@ -481,6 +482,9 @@ def start_duplicate(design, meter=None):
 
     logging.debug("Starting duplicate.")
 
+    if not meter:
+        meter = progress.BaseMeter()
+
     dom = None
     try:
         # Define domain first so we can catch any xml errors before duplicating
@@ -568,9 +572,8 @@ def _do_duplicate(design, meter):
             logging.debug("Source and destination are the same. Skipping.")
             continue
 
-        if meter:
-            meter.start(size=dst_siz,
-                        text=_("Cloning %(srcfile)s") % {'srcfile' : src_path})
+        meter.start(size=dst_siz,
+                    text=_("Cloning %(srcfile)s") % {'srcfile' : src_path})
 
         if clone_type == IS_LOCAL:
             _local_clone(src_path, dst_path, dst_siz, design, meter)
@@ -578,11 +581,10 @@ def _do_duplicate(design, meter):
         elif clone_type == IS_VDISK:
             if not _vdisk_clone(src_path, dst_path):
                 raise RuntimeError, _("failed to clone disk")
-            if meter:
-                meter.end(dst_siz)
+            meter.end(dst_siz)
 
 
-def _local_clone(src_dev, dst_dev, dst_siz, design, meter=None):
+def _local_clone(src_dev, dst_dev, dst_siz, design, meter):
 
     # if a destination file exists and sparse flg is True,
     # this priority takes a existing file.
@@ -612,8 +614,7 @@ def _local_clone(src_dev, dst_dev, dst_siz, design, meter=None):
             l = os.read(src_fd, clone_block_size)
             s = len(l)
             if s == 0:
-                if meter:
-                    meter.end(dst_siz)
+                meter.end(dst_siz)
                 break
             # check sequence of zeros
             if sparse and zeros == l:
@@ -621,13 +622,11 @@ def _local_clone(src_dev, dst_dev, dst_siz, design, meter=None):
             else:
                 b = os.write(dst_fd, l)
                 if s != b:
-                    if meter:
-                        meter.end(i)
+                    meter.end(i)
                     break
             i += s
             if i < dst_siz:
-                if meter:
-                    meter.update(i)
+                meter.update(i)
 
     finally:
         if src_fd is not None:
