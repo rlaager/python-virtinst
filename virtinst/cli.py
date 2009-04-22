@@ -111,6 +111,9 @@ def fail(msg):
     tb = "".join(traceback.format_exc()).strip()
     if tb != "None":
         logging.debug(tb)
+    _fail_exit()
+
+def _fail_exit():
     sys.exit(1)
 
 def nice_exit():
@@ -142,11 +145,15 @@ def set_prompt(prompt=True):
 def is_prompt():
     return doprompt
 
-def prompt_for_input(noprompt_err, prompt = "", val = None):
+def prompt_for_input(noprompt_err, prompt = "", val = None, failed=False):
     if val is not None:
         return val
 
     if force or not is_prompt():
+        if failed:
+            # We already failed validation in a previous function, just exit
+            _fail_exit()
+
         msg = noprompt_err
         if not force and not msg.count("--prompt"):
             # msg wasn't already appended to from yes_or_no
@@ -187,8 +194,10 @@ def prompt_for_yes_or_no(warning, question):
 # message, and then re prompt.
 def prompt_loop(prompt_txt, noprompt_err, passed_val, obj, param_name,
                 err_txt="%s", func=None):
+    failed = False
     while True:
-        passed_val = prompt_for_input(noprompt_err, prompt_txt, passed_val)
+        passed_val = prompt_for_input(noprompt_err, prompt_txt, passed_val,
+                                      failed)
         try:
             if func:
                 return func(passed_val)
@@ -197,6 +206,7 @@ def prompt_loop(prompt_txt, noprompt_err, passed_val, obj, param_name,
         except (ValueError, RuntimeError), e:
             logging.error(err_txt % e)
             passed_val = None
+            failed = True
 
 # Specific function for disk prompting. Returns a validated VirtualDisk
 # device.
