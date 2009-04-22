@@ -601,6 +601,30 @@ class VirtualDisk(VirtualDevice):
             logging.warn(ret[1])
 
 
+    def _create_local_file(self, progresscb, size_bytes):
+        """
+        Helper function which attempts to build self.path
+        """
+        fd = None
+
+        try:
+            try:
+                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+                if self.sparse:
+                    os.ftruncate(fd, size_bytes)
+                    progresscb.update(self.size)
+                else:
+                    buf = '\x00' * 1024 * 1024 # 1 meg of nulls
+                    for i in range(0, long(self.size * 1024L)):
+                        os.write(fd, buf)
+                        progresscb.update(long(i * 1024L * 1024L))
+            except OSError, e:
+                raise RuntimeError(_("Error creating diskimage %s: %s") %
+                                   (self.path, str(e)))
+        finally:
+            if fd is not None:
+                os.close(fd)
+            progresscb.end(size_bytes)
 
     def setup(self, progresscb=None):
         """
@@ -620,7 +644,6 @@ class VirtualDisk(VirtualDevice):
                                  validate=False)
             return
 
-
         size_bytes = long(self.size * 1024L * 1024L * 1024L)
 
         if not progresscb:
@@ -635,28 +658,11 @@ class VirtualDisk(VirtualDevice):
                 raise RuntimeError, _("Error creating vdisk %s" % self.path)
             self._driverName = self.DRIVER_TAP
             self._driverType = self.DRIVER_TAP_VDISK
-            progresscb.end(self.size)
-            return
 
-        fd = None
-        try:
-            try:
-                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
-                if self.sparse:
-                    os.ftruncate(fd, size_bytes)
-                    progresscb.update(self.size)
-                else:
-                    buf = '\x00' * 1024 * 1024 # 1 meg of nulls
-                    for i in range(0, long(self.size * 1024L)):
-                        os.write(fd, buf)
-                        progresscb.update(long(i * 1024L * 1024L))
-            except OSError, e:
-                raise RuntimeError(_("Error creating diskimage %s: %s") %
-                                   (self.path, str(e)))
-        finally:
-            if fd is not None:
-                os.close(fd)
-            progresscb.end(size_bytes)
+            progresscb.end(self.size)
+        else:
+            self._create_local_file(progresscb, size_bytes)
+
         # FIXME: set selinux context?
 
     def get_xml_config(self, disknode=None):
