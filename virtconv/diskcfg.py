@@ -18,7 +18,7 @@
 # MA 02110-1301 USA.
 #
 
-import popen2
+import subprocess
 import shutil
 import errno
 import sys
@@ -78,10 +78,11 @@ def run_cmd(cmd):
     """
     Return the exit status and output to stdout and stderr.
     """
-    proc = popen2.Popen3(cmd, capturestderr=True)
-    proc.tochild.close()
+    proc = subprocess.Popen(cmd, stderr=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            close_fds=True)
     ret = proc.wait()
-    return ret, proc.fromchild.readlines(), proc.childerr.readlines()
+    return ret, proc.stdout.readlines(), proc.stderr.readlines()
 
 def run_vdiskadm(args):
     """Run vdiskadm, returning the output."""
