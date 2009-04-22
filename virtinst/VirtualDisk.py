@@ -310,12 +310,12 @@ class VirtualDisk(VirtualDevice):
                 setattr(self, varname, orig)
                 raise
 
-    def __set_size(self, creating_storage):
+    def __set_size(self):
         """
         Fill in 'size' attribute for existing storage.
         """
 
-        if creating_storage:
+        if self.__creating_storage():
             return
 
         if self.__storage_specified() and self.vol_object:
@@ -394,6 +394,26 @@ class VirtualDisk(VirtualDevice):
         been explicitly specified or filled in
         """
         return (self.vol_object != None or self.vol_install != None)
+
+    def __creating_storage(self):
+        """
+        Return True if the user requested us to create a device
+        """
+        return not (self.__no_storage() or
+                    (self.__storage_specified() and self.vol_object) or
+                    (self.path and os.path.exists(self.path)))
+
+    def __no_storage(self):
+        """
+        Return True if no path or storage was specified
+        """
+        no_storage = (not self.__storage_specified() and not self.path)
+        if no_storage:
+            if (self.device != self.DEVICE_FLOPPY and
+                self.device != self.DEVICE_CDROM):
+                raise ValueError(_("Device type '%s' requires a path") %
+                                 self.device)
+        return no_storage
 
     def __check_if_path_managed(self):
         """
@@ -497,53 +517,43 @@ class VirtualDisk(VirtualDevice):
             logging.debug("Setting vol_install allocation to 0 (sparse).")
             self.vol_install.allocation = 0
 
+
     def __validate_params(self):
         """
         function to validate all the complex interaction between the various
         disk parameters.
         """
 
-        # if storage capable, try to lookup path
-        # if no obj: if remote, error
-        storage_capable = False
-        if self.conn:
-            storage_capable = _util.is_storage_capable(self.conn)
-
-        if not storage_capable and self._is_remote():
-            raise ValueError, _("Connection doesn't support remote storage.")
-
-        # If the user didn't pass storage parameters, try to determine them
-        # from the passed path
-        if storage_capable and self.path is not None \
-           and not self.__storage_specified():
-            self.__check_if_path_managed()
-
-        # Sync parameters between VirtualDisk and potentially passed
-        # storage objects.
-        self.__sync_params()
-
-        # One small caveat: if self.path isn't set at this point, we are
-        # basically done.
-        if self.path is None:
-            if self.device != self.DEVICE_FLOPPY and \
-               self.device != self.DEVICE_CDROM:
-                raise ValueError, _("Device type '%s' requires a path") % \
-                                  self.device
+        if self.__no_storage():
+            # No storage specified for a removable device type (CDROM, floppy)
             return True
 
+        storage_capable = bool(self.conn and
+                               _util.is_storage_capable(self.conn))
+
+        if storage_capable and not self.__storage_specified():
+            # Try to lookup self.path storage objects
+            self.__check_if_path_managed()
+
+        if self._is_remote():
+            if not storage_capable:
+                raise ValueError, _("Connection doesn't support remote "
+                                    "storage.")
+            if self.__storage_specified():
+                raise ValueError, _("Must specify libvirt managed storage "
+                                    "if on a remote connection")
+
+        # Sync parameters between VirtualDisk and  storage objects.
+        self.__sync_params()
 
         # The main distinctions from this point forward:
-        # Are we doing storage API operations or local media checks?
-        managed_storage = self.__storage_specified() or self.path is None
-        # Do we need to create the storage?
-        create_media = not ((managed_storage and self.vol_object) or \
-                            (self.path and os.path.exists(self.path)))
+        # - Are we doing storage API operations or local media checks?
+        # - Do we need to create the storage?
 
-        self.__set_size(create_media)
+        managed_storage = self.__storage_specified()
+        create_media = self.__creating_storage()
 
-        if self._is_remote() and not managed_storage:
-            raise ValueError, _("Must specify libvirt managed storage if on "
-                                "a remote connection")
+        self.__set_size()
 
         # If not creating the storage, our job is easy
         if not create_media:
@@ -601,52 +611,52 @@ class VirtualDisk(VirtualDevice):
         @param progresscb: progress meter
         @type progresscb: instanceof urlgrabber.BaseMeter
         """
-        if self.vol_object:
+        if not self.__creating_storage():
             return
-        elif self.vol_install:
+
+        if self.vol_install:
             self._set_vol_object(self.vol_install.install(meter=progresscb),
                                  validate=False)
             return
-        elif (self.type == VirtualDisk.TYPE_FILE and self.path is not None
-             and not os.path.exists(self.path)):
-            size_bytes = long(self.size * 1024L * 1024L * 1024L)
 
-            if progresscb:
-                progresscb.start(filename=self.path,size=long(size_bytes), \
-                                 text=_("Creating storage file..."))
 
-            if _util.is_vdisk(self.path):
-                progresscb.update(1024)
-                if (not _vdisk_create(self.path, size_bytes, "vmdk",
-                    self.sparse)):
-                    raise RuntimeError, _("Error creating vdisk %s" % self.path)
-                self._driverName = self.DRIVER_TAP
-                self._driverType = self.DRIVER_TAP_VDISK
-                progresscb.end(self.size)
-                return
+        size_bytes = long(self.size * 1024L * 1024L * 1024L)
 
-            fd = None
+        if progresscb:
+            progresscb.start(filename=self.path, size=long(size_bytes),
+                             text=_("Creating storage file..."))
+
+        if _util.is_vdisk(self.path):
+            progresscb.update(1024)
+            if not _vdisk_create(self.path, size_bytes, "vmdk", self.sparse):
+                raise RuntimeError, _("Error creating vdisk %s" % self.path)
+            self._driverName = self.DRIVER_TAP
+            self._driverType = self.DRIVER_TAP_VDISK
+            progresscb.end(self.size)
+            return
+
+        fd = None
+        try:
             try:
-                try:
-                    fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
-                    if self.sparse:
-                        os.ftruncate(fd, size_bytes)
+                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+                if self.sparse:
+                    os.ftruncate(fd, size_bytes)
+                    if progresscb:
+                        progresscb.update(self.size)
+                else:
+                    buf = '\x00' * 1024 * 1024 # 1 meg of nulls
+                    for i in range(0, long(self.size * 1024L)):
+                        os.write(fd, buf)
                         if progresscb:
-                            progresscb.update(self.size)
-                    else:
-                        buf = '\x00' * 1024 * 1024 # 1 meg of nulls
-                        for i in range(0, long(self.size * 1024L)):
-                            os.write(fd, buf)
-                            if progresscb:
-                                progresscb.update(long(i * 1024L * 1024L))
-                except OSError, e:
-                    raise RuntimeError, _("Error creating diskimage %s: %s" % \
-                                        (self.path, str(e)))
-            finally:
-                if fd is not None:
-                    os.close(fd)
-                if progresscb:
-                    progresscb.end(size_bytes)
+                            progresscb.update(long(i * 1024L * 1024L))
+            except OSError, e:
+                raise RuntimeError(_("Error creating diskimage %s: %s") %
+                                   (self.path, str(e)))
+        finally:
+            if fd is not None:
+                os.close(fd)
+            if progresscb:
+                progresscb.end(size_bytes)
         # FIXME: set selinux context?
 
     def get_xml_config(self, disknode=None):
@@ -723,8 +733,7 @@ class VirtualDisk(VirtualDevice):
         if self.vol_install:
             return self.vol_install.is_size_conflict()
 
-        if self.vol_object or self.size is None or not self.path \
-           or os.path.exists(self.path) or self.type != self.TYPE_FILE:
+        if not self.__creating_storage():
             return (False, None)
 
         ret = False
