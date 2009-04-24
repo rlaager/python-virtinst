@@ -1047,7 +1047,7 @@ class OpenSolarisDistro(SunDistro):
 
         args = ''
         if kopts:
-            args += '-' + kopts
+            args += ' -' + kopts
         if kbargs:
             args += ' -B ' + kbargs
 
