@@ -205,9 +205,10 @@ class VirtualHostDevicePCI(VirtualHostDevice):
         try:
             # Do this as a sanity check, so that we don't fail at domain
             # start time. This is independent of the 'managed' state, since
-            # this should regardless.
-            self._nodedev.dettach()
-            self._nodedev.reset()
+            # this should work regardless.
+            node = conn.nodeDeviceLookupByName(self._nodedev.name)
+            node.dettach()
+            node.reset()
         except Exception, e:
             raise RuntimeError(_("Could not detach PCI device: %s" % str(e)))
 
