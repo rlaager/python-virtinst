@@ -397,7 +397,7 @@ class CloneDesign(object):
             try:
                 if not _util.disk_exists(self._hyper_conn, path):
                     raise ValueError(_("Disk '%s' does not exist.") %
-                                     d.path)
+                                     path)
 
                 d = VirtualDisk(path, conn=self._hyper_conn)
             except Exception, e:
