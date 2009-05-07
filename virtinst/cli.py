@@ -208,6 +208,24 @@ def prompt_loop(prompt_txt, noprompt_err, passed_val, obj, param_name,
             passed_val = None
             failed = True
 
+# Register vnc + sdl options for virt-install and virt-image
+def graphics_option_group(parser):
+    from optparse import OptionGroup
+
+    vncg = OptionGroup(parser, _("Graphics Configuration"))
+    vncg.add_option("", "--vnc", action="store_true", dest="vnc",
+                    help=_("Use VNC for graphics support"))
+    vncg.add_option("", "--vncport", type="int", dest="vncport",
+                    help=_("Port to use for VNC"))
+    vncg.add_option("-k", "--keymap", type="string", dest="keymap",
+                    action="callback", callback=check_before_store,
+                    help=_("set up keymap for the VNC console"))
+    vncg.add_option("", "--sdl", action="store_true", dest="sdl",
+                    help=_("Use SDL for graphics support"))
+    vncg.add_option("", "--nographics", action="store_true",
+                    help=_("Don't set up a graphical console for the guest."))
+    return vncg
+
 # Specific function for disk prompting. Returns a validated VirtualDisk
 # device.
 #

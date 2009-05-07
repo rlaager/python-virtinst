@@ -140,20 +140,8 @@ def parse_args():
                            "RANDOM is given a random address will be used"))
     parser.add_option_group(netg)
 
-    vncg = OptionGroup(parser, _("Graphics Configuration"))
-    vncg.add_option("", "--vnc", action="store_true", dest="vnc",
-                    help=_("Use VNC for graphics support"))
-    vncg.add_option("", "--vncport", type="int", dest="vncport",
-                    help=_("Port to use for VNC"))
-    vncg.add_option("", "--sdl", action="store_true", dest="sdl",
-                    help=_("Use SDL for graphics support"))
-    vncg.add_option("", "--nographics", action="store_true",
-                    help=_("Don't set up a graphical console for the guest."))
-    vncg.add_option("-k", "--keymap", type="string", dest="keymap",
-                    action="callback", callback=cli.check_before_store,
-                    help=_("set up keymap for a graphical console"))
+    vncg = cli.graphics_option_group(parser)
     parser.add_option_group(vncg)
-
 
     misc = OptionGroup(parser, _("Miscellaneous Options"))
     misc.add_option("-p", "--print", action="store_true", dest="print_only",
