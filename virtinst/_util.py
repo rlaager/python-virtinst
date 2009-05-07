@@ -28,6 +28,7 @@ import os
 import re
 import commands
 import logging
+import traceback
 
 import libvirt
 
@@ -197,6 +198,22 @@ def disk_exists(conn, path):
         return False
 
     return True
+
+def log_exception(msg=""):
+    """
+    Log the most recent backtrace at the DEBUG level, rather than the
+    ERROR level (which goes to stderr when used with the cli tools)
+
+    @param msg: Option message to log before the backtrace
+    """
+    tb = "".join(traceback.format_exc()).strip()
+    if tb != "None":
+        if msg:
+            msg += "\n"
+        msg += tb
+
+    if msg:
+        logging.debug(msg)
 
 # Selinux helpers
 

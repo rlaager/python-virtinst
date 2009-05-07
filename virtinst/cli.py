@@ -107,10 +107,7 @@ def setupLogging(appname, debug=False):
 def fail(msg):
     """Convenience function when failing in cli app"""
     logging.error(msg)
-    import traceback
-    tb = "".join(traceback.format_exc()).strip()
-    if tb != "None":
-        logging.debug(tb)
+    _util.log_exception()
     _fail_exit()
 
 def _fail_exit():
