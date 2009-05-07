@@ -104,6 +104,9 @@ def setupLogging(appname, debug=False):
         sys.__excepthook__(type, val, tb)
     sys.excepthook = exception_log
 
+    # Log the app command string
+    logging.debug("Launched with command line:\n%s" % " ".join(sys.argv))
+
 def fail(msg):
     """Convenience function when failing in cli app"""
     logging.error(msg)
