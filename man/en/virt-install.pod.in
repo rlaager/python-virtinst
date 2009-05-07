@@ -467,8 +467,10 @@ choose to run on this port causing a clash.
 
 =item --vnclisten=VNCLISTEN
 
-Address to listen on for VNC connections. Defaults to 127.0.0.1 (localhost
-only). Use 0.0.0.0 to allow access from other machines.
+Address to listen on for VNC connections. Default is typically 127.0.0.1
+(localhost only), but some hypervisors allow changing this globally (for
+example, the qemu driver default can be changed in /etc/libvirt/qemu.conf).
+Use 0.0.0.0 to allow access from other machines.
 
 =item  -k KEYMAP, --keymap=KEYMAP
 

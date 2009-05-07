@@ -140,8 +140,7 @@ console. See L<virt-install(1)> for details
 
 =item --vnclisten=VNCLISTEN
 
-Address to listen on for VNC connections. Defaults to 127.0.0.1 (localhost
-only). Use 0.0.0.0 to allow access from other machines.
+Address to listen on for VNC connections. See L<virt-install(1)> for details.
 
 =item -k KEYMAP, --keymap=KEYMAP
 
