@@ -108,6 +108,11 @@ urls = {
         'x86_64': FEDORA_BASEURL % ("10", "x86_64"),
         'distro': ("linux", "fedora10")
     },
+    "fedora11test" : {
+        'i386'  : FEDORA_BASEURL % ("test/11-Preview", "i386"),
+        'x86_64': FEDORA_BASEURL % ("test/11-Preview", "x86_64"),
+        'distro': ("linux", "fedora11")
+    },
     "fedora-rawhide" : {
         'i386'  : FEDORA_RAWHIDE_BASEURL % ("i386"),
         'x86_64': FEDORA_RAWHIDE_BASEURL % ("x86_64"),

@@ -429,7 +429,7 @@ class FedoraDistro(RedHatDistro):
                 if ver == "development":
                     self.os_variant = self._latestFedoraVariant()
                 elif ver:
-                    self.os_variant = "fedora" + str(ver)
+                    self.os_variant = "fedora" + (str(ver).split("-"))[0]
 
             return ret
         else:
