@@ -58,13 +58,33 @@ class TestCommand(TestBaseCommand):
         '''
         testfiles = []
         for t in glob(pjoin(self._dir, 'tests', '*.py')):
-            if not t.endswith('__init__.py') and \
-               not t.endswith("urltest.py"):
+            if (not t.endswith('__init__.py') and
+                not t.endswith("urltest.py") and
+                not t.endswith("clitest.py")):
                 testfiles.append('.'.join(
                     ['tests', splitext(basename(t))[0]])
                 )
         self._testfiles = testfiles
         TestBaseCommand.run(self)
+
+class TestCLI(TestBaseCommand):
+
+    description = "Test various CLI invocations"
+
+    user_options = (TestBaseCommand.user_options +
+                    [("prompt", None, "Run interactive CLI invocations.")])
+
+    def initialize_options(self):
+        TestBaseCommand.initialize_options(self)
+        self.prompt = 0
+
+    def run(self):
+        cmd = "python tests/clitest.py"
+        if self.debug:
+            cmd += " debug"
+        if self.prompt:
+            cmd += " prompt"
+        os.system(cmd)
 
 class TestURLFetch(TestBaseCommand):
 
@@ -281,6 +301,7 @@ setup(name='virtinst',
       packages=pkgs,
       data_files = datafiles,
       cmdclass = { 'test': TestCommand, 'test_urls' : TestURLFetch,
+                   'test_cli' : TestCLI,
                     'check': CheckPylint,
                     'rpm' : custom_rpm,
                     'sdist': sdist, 'build': build,

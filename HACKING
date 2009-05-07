@@ -16,10 +16,11 @@ The following commands will be useful for anyone writing patches:
     python setup.py test      : Run local unit test suite
     python setup.py check     : Run a pylint script against the codebase
     python setup.py test_urls : Test our install media fetching infrastructure
+    python setup.py test_cli  : Test various CLI invocations
 
 Any patches shouldn't change the output of 'test' or 'check'. Our pylint
 script uses a blacklist rather than a whitelist approach, so it could
-throw some false positives or useless messages. If you think you're patch
+throw some false positives or useless messages. If you think your patch
 exposes one of these, bring it up on the mailing list
 (et-mgmt-tools@redhat.com).
 
@@ -28,4 +29,4 @@ code (virtinst/OSDistro.py). This stuff is notoriously fragile, so running
 'test_urls' is a must. If you are debugging a certain url failure, you can
 use the --match option to specify specific distros to test.
 
-'test' and 'test_urls' have a --debug option if you are hitting problems.
+'test*' have a --debug option if you are hitting problems.
