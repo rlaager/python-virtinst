@@ -28,6 +28,7 @@ import socket
 import ConfigParser
 
 import virtinst
+from virtinst.Guest import Guest
 from virtinst import _util
 from virtinst import _virtinst as _
 
@@ -118,8 +119,9 @@ def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
         if iskernel is True:
             # FIXME: We should probably do this for both kernel and boot
             # disk?
+            os_type, os_variant = store.get_osdict_info()
             return (store.acquireKernel(guest, fetcher, progresscb),
-                    store.os_type, store.os_variant)
+                    os_type, os_variant)
         elif iskernel is False:
             return store.acquireBootDisk(fetcher, progresscb)
         else:
@@ -145,7 +147,7 @@ def detectMediaDistro(location, arch):
     import urlgrabber
     progress = urlgrabber.progress.BaseMeter()
     store = _acquireMedia(None, None, location, progress, arch, "/var/tmp")
-    return (store.os_type, store.os_variant)
+    return store.get_osdict_info()
 
 
 def distroFromTreeinfo(fetcher, progresscb, uri, arch, vmtype=None,
@@ -245,6 +247,28 @@ class Distro:
                     return fetcher.acquireFile(path, progresscb)
             raise RuntimeError(_("Could not find boot.iso in %s tree." % \
                                self.name))
+
+    def get_osdict_info(self):
+        """
+        Return (distro, variant) tuple, checking to make sure they are valid
+        osdict entries
+        """
+        if not self.os_type:
+            return (None, None)
+
+        if self.os_type not in Guest.list_os_types():
+            logging.debug("%s set os_type to %s, which is not in osdict." %
+                          (self, self.os_type))
+            return (None, None)
+
+        if (self.os_variant and
+            self.os_variant not in Guest.list_os_variants(self.os_type)):
+            logging.debug("%s set os_variant to %s, which is not in osdict"
+                          " for distro %s." %
+                          (self, self.os_variant, self.os_type))
+            return (self.os_type, None)
+
+        return (self.os_type, self.os_variant)
 
     def _hasTreeinfo(self, fetcher, progresscb):
         # all Red Hat based distros should have .treeinfo, perhaps others
