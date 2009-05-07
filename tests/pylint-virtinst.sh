@@ -109,7 +109,7 @@ AWK=awk
 pylint --ignore=coverage.py, $FILES \
   --reports=n \
   --output-format=colorized \
-  --dummy-variables-rgx="dummy|ignore*" \
+  --dummy-variables-rgx="dummy|ignore*|.*ignore" \
   --disable-msg=${DMSG} \
   --disable-checker=${DCHECKERS} | \
   egrep -ve "$EXCEPTHOOK" \
