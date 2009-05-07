@@ -679,8 +679,8 @@ def main():
                  options.nonetworks, guest)
 
     # set up graphics information
-    cli.get_graphics(options.vnc, options.vncport, options.nographics,
-                     options.sdl, options.keymap, guest)
+    cli.get_graphics(options.vnc, options.vncport, options.vnclisten,
+                     options.nographics, options.sdl, options.keymap, guest)
 
     # Set host device info
     cli.get_hostdevs(options.hostdevs, guest)

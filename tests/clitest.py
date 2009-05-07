@@ -145,12 +145,12 @@ args_dict = {
         # SDL
         "--sdl",
         # VNC w/ lots of options
-        "--vnc --keymap ja --vncport 5950",
+        "--vnc --keymap ja --vncport 5950 --vnclisten 1.2.3.4",
       ],
 
       "invalid": [
         # Invalid keymap
-        #"--vnc --keymap ZZZ",
+        "--vnc --keymap ZZZ",
         # Invalid port
         "--vnc --vncport -50",
       ],
@@ -239,6 +239,19 @@ args_dict = {
         "--boot 10",
       ],
      }, # category 'general'
+
+    "graphics" : {
+      "graphics_args" : "--name test-image --boot 0",
+
+      "valid": [
+        # SDL
+        "--sdl",
+        # VNC w/ lots of options
+        "--vnc --keymap ja --vncport 5950 --vnclisten 1.2.3.4",
+      ],
+
+      "invalid": [],
+    },
 
     "misc": {
      "misc_args" : "",

@@ -465,6 +465,16 @@ Request a permanent, statically assigned port number for the guest VNC
 console. Use of this option is discouraged as other guests may automatically
 choose to run on this port causing a clash.
 
+=item --vnclisten=VNCLISTEN
+
+Address to listen on for VNC connections. Defaults to 127.0.0.1 (localhost
+only). Use 0.0.0.0 to allow access from other machines.
+
+=item  -k KEYMAP, --keymap=KEYMAP
+
+Request that the virtual VNC console be configured to run with a non-English
+keyboard layout.
+
 =item  --sdl
 
 Setup a virtual console in the guest and display an SDL window in the
@@ -485,11 +495,6 @@ Don't automatically try to connect to the guest console. The default behaviour
 is to launch a VNC client to display the graphical console, or to run the
 C<virsh> C<console> command to display the text console. Use of this parameter
 will disable this behaviour.
-
-=item  -k KEYMAP, --keymap=KEYMAP
-
-Request that the virtual VNC console be configured to run with a non-English
-keyboard layout.
 
 =back
 

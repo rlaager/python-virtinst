@@ -138,6 +138,16 @@ the host. See L<virt-install(1)> for details
 Request a permanent, statically assigned port number for the guest VNC
 console. See L<virt-install(1)> for details
 
+=item --vnclisten=VNCLISTEN
+
+Address to listen on for VNC connections. Defaults to 127.0.0.1 (localhost
+only). Use 0.0.0.0 to allow access from other machines.
+
+=item -k KEYMAP, --keymap=KEYMAP
+
+Request that the virtual VNC console be configured to run with a non-English
+keyboard layout.
+
 =item --sdl
 
 Setup a virtual console in the guest and display an SDL window in the
@@ -147,11 +157,6 @@ host to render the output. See L<virt-install(1)> for details
 
 Do not attach a graphical device to the guest. See
 L<virt-install(1)> for details
-
-=item -k KEYMAP, --keymap=KEYMAP
-
-Request that the virtual console be configured to run with a non-English
-keyboard layout.
 
 =back
 

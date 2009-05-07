@@ -69,14 +69,16 @@ def get_networks(domain, macs, bridges, networks, guest):
 
     map(lambda m, n: cli.get_network(m, n, guest), macs, networks)
 
-def get_graphics(domain, vnc, vncport, nographics, sdl, keymap, guest):
+def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
+                 guest):
     if not domain.graphics:
         guest.graphics_dev = None
         return
     else:
         if not vnc and not sdl:
             vnc = True
-        cli.get_graphics(vnc, vncport, nographics, sdl, keymap, guest)
+        cli.get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
+                         guest)
 
 ### Option parsing
 def parse_args():
@@ -218,7 +220,7 @@ def main():
     get_networks(image.domain, options.mac, options.bridge,
                  options.network, guest)
 
-    get_graphics(image.domain, options.vnc, options.vncport,
+    get_graphics(image.domain, options.vnc, options.vncport, options.vnclisten,
                  options.nographics, options.sdl, options.keymap, guest)
 
     if options.distro_type:

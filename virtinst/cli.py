@@ -217,6 +217,8 @@ def graphics_option_group(parser):
                     help=_("Use VNC for graphics support"))
     vncg.add_option("", "--vncport", type="int", dest="vncport",
                     help=_("Port to use for VNC"))
+    vncg.add_option("", "--vnclisten", type="string", dest="vnclisten",
+                    help=_("Address to listen on for VNC connections."))
     vncg.add_option("-k", "--keymap", type="string", dest="keymap",
                     action="callback", callback=check_before_store,
                     help=_("set up keymap for the VNC console"))
@@ -419,7 +421,7 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
 
     if bridges:
         networks = map(lambda b: "bridge:" + b, bridges)
-    
+
     # With just one mac, create a default network if one is not
     # specified.
     if len(macs) == 1 and len(networks) == 0:
@@ -430,15 +432,15 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
             networks.append("user")
 
     # ensure we have less macs then networks. Auto fill in the remaining
-    # macs       
+    # macs
     if len(macs) > len(networks):
         fail(_("Need to pass equal numbers of networks & mac addresses"))
     else:
         for dummy in range (len(macs),len(networks)):
             macs.append(None)
-            
-    
-    # Create extra networks up to the number of nics requested 
+
+
+    # Create extra networks up to the number of nics requested
     if len(macs) < nics:
         for dummy in range(len(macs),nics):
             if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
@@ -447,10 +449,10 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
             else:
                 networks.append("user")
             macs.append(None)
-            
+
     return (macs, networks)
 
-def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
+def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, guest):
     if (vnc and nographics) or \
        (vnc and sdl) or \
        (sdl and nographics):
@@ -473,8 +475,10 @@ def get_graphics(vnc, vncport, nographics, sdl, keymap, guest):
         return
     if vnc is not None:
         guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
-    if vncport:
-        guest.graphics_dev.port = vncport
+        if vncport:
+            guest.graphics_dev.port = vncport
+        if vnclisten:
+            guest.graphics_dev.listen = vnclisten
     if keymap:
         checked_keymap = _util.check_keytable(keymap)
         if checked_keymap:
