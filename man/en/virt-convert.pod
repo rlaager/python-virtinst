@@ -145,9 +145,7 @@ See the AUTHORS file in the source distribution for the complete list of credits
 
 =head1 BUGS
 
-Report bugs to the mailing list C<http://www.redhat.com/mailman/listinfo/et-mgmt-tools>
-or directly to BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the
-C<Fedora> product, and the C<python-virtinst> component.
+Please see http://virt-manager.org/page/BugReporting
 
 =head1 COPYRIGHT
 
@@ -158,8 +156,7 @@ permitted by law.
 
 =head1 SEE ALSO
 
-L<virt-pack(1)>, L<virt-image(5)>, the project website
-C<http://virt-manager.org>
+L<virt-image(5)>, the project website C<http://virt-manager.org>
 
 =cut
 
