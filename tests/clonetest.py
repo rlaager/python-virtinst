@@ -112,7 +112,7 @@ class TestClone(unittest.TestCase):
 
             vm = None
             try:
-                conn.defineXML(tests.read_file(infile))
+                vm = conn.defineXML(tests.read_file(infile))
 
                 cloneobj = CloneDesign(connection=conn)
                 cloneobj.original_guest = ORIG_NAME
