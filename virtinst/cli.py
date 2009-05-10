@@ -238,6 +238,9 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True):
     passed_path = arg_dict.get("path")
     size = arg_dict.get("size")
 
+    no_path_needed = (bool(arg_dict.get("volInstall")) or
+                      bool(arg_dict.get("volName")))
+
     while 1:
         if not retry_path:
             passed_path = None
@@ -251,11 +254,15 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True):
             if not size is None:
                 msg = _("Please enter the path to the file you would like to "
                         "use for storage. It will have size %sGB.") %(size,)
-        path = prompt_for_input(patherr, prompt_txt or msg, passed_path)
+
+        if not no_path_needed:
+            path = prompt_for_input(patherr, prompt_txt or msg, passed_path)
+        else:
+            path = None
         arg_dict["path"] = path
 
         sizeerr = _("A size must be specified for non-existent disks.")
-        if not size and prompt_size:
+        if path and not size and prompt_size:
             size_prompt = _("How large would you like the disk (%s) to "
                             "be (in gigabytes)?") % path
 

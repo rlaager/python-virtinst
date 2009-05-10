@@ -104,6 +104,8 @@ args_dict = {
         "--disk path=%(EXISTIMG1)s,device=floppy",
         # Existing disk, no extra options
         "--disk path=%(EXISTIMG1)s",
+        # Create volume in a pool
+        "--disk pool=default-pool,size=.0001",
       ],
 
       "invalid": [
@@ -115,6 +117,12 @@ args_dict = {
         "--file %(NEWIMG1)s",
         # Size, no file
         "--file-size .0001",
+        # Specify a nonexistent pool
+        "--disk pool=foopool,size=.0001",
+        # Specify a nonexistent volume
+        "--disk vol=default-pool/foovol",
+        # Specify a pool with no size
+        "--disk pool=default-pool",
       ]
      }, # category "storage"
 
