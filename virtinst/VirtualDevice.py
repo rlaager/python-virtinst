@@ -60,7 +60,12 @@ class VirtualDevice(object):
     conn = property(get_conn, set_conn)
 
     def _is_remote(self):
-        return self.__remote
+        return bool(self.__remote)
+
+    def _get_uri(self):
+        if self.conn:
+            return self.conn.getURI()
+        return None
 
     def _check_bool(self, val, name):
         if val not in [True, False]:
