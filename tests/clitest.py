@@ -90,20 +90,20 @@ args_dict = {
 
       "valid"  : [
         # Existing file, other opts
-        "--file virt-convert --nonsparse --file-size 4",
+        "--file %(EXISTIMG1)s --nonsparse --file-size 4",
         # Existing file, no opts
-        "--file virt-convert",
+        "--file %(EXISTIMG1)s",
         # Multiple existing files
-        "--file virt-convert --file virt-image --file virt-clone",
+        "--file %(EXISTIMG1)s --file virt-image --file virt-clone",
         # Nonexistent file
         "--file %(NEWIMG1)s --file-size .00001 --nonsparse",
 
         # Existing disk, lots of opts
-        "--disk path=virt-convert,perms=ro,size=.0001,cache=writethrough",
+        "--disk path=%(EXISTIMG1)s,perms=ro,size=.0001,cache=writethrough",
         # Existing floppy
-        #"--disk path=virt-convert,device=floppy",
+        "--disk path=%(EXISTIMG1)s,device=floppy",
         # Existing disk, no extra options
-        "--disk path=virt-convert",
+        "--disk path=%(EXISTIMG1)s",
       ],
 
       "invalid": [
@@ -123,9 +123,9 @@ args_dict = {
 
       "valid" : [
         # Simple cdrom install
-        "--hvm --cdrom virt-convert",
+        "--hvm --cdrom %(EXISTIMG1)s",
         # Windows (2 stage) install
-        "--hvm --wait 0 --os-variant winxp --cdrom virt-convert",
+        "--hvm --wait 0 --os-variant winxp --cdrom %(EXISTIMG1)s",
       ],
 
       "invalid": [
@@ -192,7 +192,7 @@ args_dict = {
         # XML File with 2 disks
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s",
         # XML w/ disks, overwriting existing files with --preserve
-        "--original-xml %(CLONE_DISK_XML)s --file virt-install --file virt-convert --preserve",
+        "--original-xml %(CLONE_DISK_XML)s --file virt-install --file %(EXISTIMG1)s --preserve",
         # XML w/ disks, force copy a readonly target
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s --file %(NEWIMG3)s --force-copy=hdc",
         # XML w/ disks, force copy a target with no media
@@ -207,7 +207,7 @@ args_dict = {
         # XML file with several disks, but non specified
         "--original-xml %(CLONE_DISK_XML)s",
         # XML w/ disks, overwriting existing files with no --preserve
-        "--original-xml %(CLONE_DISK_XML)s --file virt-install --file virt-convert",
+        "--original-xml %(CLONE_DISK_XML)s --file virt-install --file %(EXISTIMG1)s",
         # XML w/ disks, force copy but not enough disks passed
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s --force-copy=hdc",
       ]
