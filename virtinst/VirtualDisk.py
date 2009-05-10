@@ -78,7 +78,11 @@ class VirtualDisk(VirtualDevice):
     DRIVER_FILE = "file"
     DRIVER_PHY = "phy"
     DRIVER_TAP = "tap"
-    driver_names = [DRIVER_FILE, DRIVER_PHY, DRIVER_TAP]
+    DRIVER_QEMU = "qemu"
+    driver_names = [DRIVER_FILE, DRIVER_PHY, DRIVER_TAP, DRIVER_QEMU]
+
+    DRIVER_QEMU_RAW = "raw"
+    # No list here, since there are many other valid values
 
     DRIVER_TAP_RAW = "aio"
     DRIVER_TAP_QCOW = "qcow"
@@ -381,14 +385,58 @@ class VirtualDisk(VirtualDevice):
                 dtype = self.TYPE_FILE
             else:
                 dtype = self.TYPE_BLOCK
-            if _util.is_vdisk(self.path):
-                self._driverName = self.DRIVER_TAP
-                self._driverType = self.DRIVER_TAP_VDISK
 
         if self.type and dtype != self.type:
             raise ValueError(_("Passed type '%s' does not match detected "
                                "storage type '%s'" % (self.type, dtype)))
         self.set_type(dtype, validate=False)
+
+    def __set_driver(self):
+        """
+        Set driverName and driverType from passed parameters
+
+        Where possible, we want to force driverName = "raw" if installing
+        a QEMU VM. Without telling QEMU to expect a raw file, the emulator
+        is forced to autodetect, which has security implications:
+
+        http://lists.gnu.org/archive/html/qemu-devel/2008-04/msg00675.html
+        """
+        drvname = None
+        drvtype = None
+
+        if self.conn:
+            driver = _util.get_uri_driver(self._get_uri())
+            if driver.lower() == "qemu":
+                drvname = self.DRIVER_QEMU
+
+        if self.vol_object:
+            drvtype = _util.get_xml_path(self.vol_object.XMLDesc(0),
+                                         "/volume/target/format")
+
+        elif self.vol_install:
+            if drvname == self.DRIVER_QEMU:
+                if isinstance(self.vol_install, Storage.FileVolume):
+                    drvname = self.vol_install.format
+                else:
+                    drvname = self.DRIVER_QEMU_RAW
+
+        elif self.__creating_storage():
+            if drvname == self.DRIVER_QEMU:
+                drvtype = self.DRIVER_QEMU_RAW
+
+        elif self.path and os.path.exists(self.path):
+            if _util.is_vdisk(self.path):
+                drvname = self.DRIVER_TAP
+                drvtype = self.DRIVER_TAP_VDISK
+
+        if self._driverName and self._driverName != drvname:
+            # User already set driverName to a different value, respect that
+            return
+
+        logging.debug("Setting driver name,type to %s, %s." % (drvname,
+                                                               drvtype))
+        self._driverName = drvname
+        self._driverType = drvtype
 
     def __lookup_vol_name(self, name_tuple):
         """
@@ -612,6 +660,9 @@ class VirtualDisk(VirtualDevice):
 
             self._selinux_label = context or ""
 
+        # Set driverName + driverType
+        self.__set_driver()
+
         # If not creating the storage, our job is easy
         if not create_media:
             # Make sure we have access to the local path
@@ -646,6 +697,7 @@ class VirtualDisk(VirtualDevice):
                 raise ValueError, _("No write access to directory '%s'") % \
                                     os.path.dirname(self.path)
         else:
+            # Set dev type from existing storage
             self.__set_dev_type()
 
         # Applicable for managed or local storage
@@ -710,8 +762,6 @@ class VirtualDisk(VirtualDevice):
                 if not _vdisk_create(self.path, size_bytes, "vmdk",
                                      self.sparse):
                     raise RuntimeError, _("Error creating vdisk %s" % self.path)
-                self._driverName = self.DRIVER_TAP
-                self._driverType = self.DRIVER_TAP_VDISK
 
                 progresscb.end(self.size)
             else:

@@ -24,8 +24,9 @@ import virtinst
 from virtinst import VirtualDisk
 import tests
 
+conn = libvirt.open("test:///default")
+
 def get_basic_paravirt_guest():
-    conn = libvirt.open("test:///default")
     g = virtinst.ParaVirtGuest(connection=conn, type="xen")
     g.name = "TestGuest"
     g.memory = int(200)
@@ -36,8 +37,8 @@ def get_basic_paravirt_guest():
     g.vcpus = 5
     return g
 
+conn = libvirt.open("test:///default")
 def get_basic_fullyvirt_guest():
-    conn = libvirt.open("test:///default")
     g = virtinst.FullVirtGuest(connection=conn, type="xen",
                                emulator="/usr/lib/xen/bin/qemu-dm",
                                arch="i686")
@@ -54,10 +55,10 @@ def get_basic_fullyvirt_guest():
     return g
 
 def get_filedisk(path="/tmp/test.img"):
-    return VirtualDisk(path, size=.0001)
+    return VirtualDisk(path, size=.0001, conn=conn)
 
 def get_blkdisk():
-    return VirtualDisk("/dev/loop0")
+    return VirtualDisk("/dev/loop0", conn=conn)
 
 class TestXMLConfig(unittest.TestCase):
 
@@ -255,6 +256,26 @@ class TestXMLConfig(unittest.TestCase):
         g.installer = virtinst.ImportInstaller(type="xen", os_type="xen",
                                                conn=g.conn)
         self._compare(g, "install-paravirt-import", False)
+
+    def testQEMUDriverName(self):
+        # Swap out _util.get_uri_driver for a fake method that always
+        # returns a qemu driver, to trick VirtualDisk into giving us what we
+        # want
+        def new_get_uri(ignore):
+            return "qemu:///system"
+
+        oldgetdriver = VirtualDisk._get_uri
+        try:
+            VirtualDisk._get_uri = new_get_uri
+            g = get_basic_fullyvirt_guest()
+            g.disks.append(get_blkdisk())
+            self._compare(g, "misc-qemu-driver-name", True)
+
+            g = get_basic_fullyvirt_guest()
+            g.disks.append(get_filedisk())
+            self._compare(g, "misc-qemu-driver-type", True)
+        finally:
+            VirtualDisk._get_uri = oldgetdriver
 
     def testXMLEscaping(self):
         g = get_basic_fullyvirt_guest()
