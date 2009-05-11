@@ -82,6 +82,7 @@ Format:
 """
 args_dict = {
 
+
   "virt-install" : {
     "global_args" : " --connect test:///default -d --name foobar --ram 64",
 
@@ -177,7 +178,10 @@ args_dict = {
         "--paravirt --import --disk path=virt-install",
       ],
 
-      "invalid": [],
+      "invalid": [
+        # pxe and nonetworks
+        "--nodisks --pxe --nonetworks",
+      ],
      }, # category "misc"
 
      "network": {
@@ -186,13 +190,22 @@ args_dict = {
       "valid": [
         # user networking
         "--network=user",
+        # VirtualNetwork with a random macaddr
+        "--network network:default --mac RANDOM",
+        # VirtualNetwork with a random macaddr
+        "--network network:default --mac 00:11:22:33:44:55",
         # with NIC model
         "--network=user,model=e1000",
         # several networks
         "--network=network:default,model=e1000 --network=user,model=virtio",
       ],
       "invalid": [
+        # Nonexistent network
         "--network=FOO",
+        # Invalid mac
+        "--network=network:default --mac 1234",
+        # More mac addrs than nics
+        "--network user --mac 00:11:22:33:44:55 --mac 00:11:22:33:44:66",
       ],
 
      }, # category "network"
@@ -200,6 +213,8 @@ args_dict = {
 
     "prompt" : [ " --connect test:///default --debug --prompt" ]
   },
+
+
 
 
   "virt-clone": {
@@ -241,6 +256,9 @@ args_dict = {
     "prompt" : [ " --connect test:///default --debug --prompt",
                  " --connect test:///default --debug --original-xml %(CLONE_DISK_XML)s --prompt" ]
   }, # app 'virt-clone'
+
+
+
 
   'virt-image': {
     "global_args" : " --connect test:///default -d %(IMAGE_XML)s",
@@ -289,6 +307,31 @@ args_dict = {
 
      }, # category 'misc'
 
+     "network": {
+      "network_args": "--name test-image --boot 0 --nographics",
+
+      "valid": [
+        # user networking
+        "--network=user",
+        # VirtualNetwork with a random macaddr
+        "--network network:default --mac RANDOM",
+        # VirtualNetwork with a random macaddr
+        "--network network:default --mac 00:11:22:33:44:55",
+        # with NIC model
+        "--network=user,model=e1000",
+        # several networks
+        "--network=network:default,model=e1000 --network=user,model=virtio",
+        # no networks
+        #"--nonetworks",
+      ],
+      "invalid": [
+        # Nonexistent network
+        "--network=FOO",
+        # Invalid mac
+        "--network=network:default --mac 1234",
+      ],
+
+     }, # category "network"
     "prompt" : [ " --connect test:///default %(IMAGE_XML)s --debug --prompt" ],
 
   } # app 'virt-image'
