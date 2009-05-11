@@ -388,7 +388,7 @@ running 'Live CD' images or installing to network storage (iSCSI or NFS root).
 
 =over 2
 
-=item -w NETWORK, --network=NETWORK
+=item -w NETWORK, --network=NETWORK,opt1=val1,opt2=val2
 
 Connect the guest to the host network. The value for C<NETWORK> can take
 one of 3 formats:
@@ -423,6 +423,17 @@ there is a bridge device in the host with a physical interface enslaved,
 that will be used for connectivity. Failing that, the virtual network
 called C<default> will be used. This option can be specified multiple
 times to setup more than one NIC.
+
+Available options are:
+
+=over 4
+
+=item model
+
+Network device model as seen by the guest. Value can be any nic model supported
+by the hypervisor, e.g.: 'e1000', 'rtl8139' or 'virtio'.
+
+=back
 
 =item -b BRIDGE, --bridge=BRIDGE
 

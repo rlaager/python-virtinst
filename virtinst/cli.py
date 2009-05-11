@@ -395,20 +395,45 @@ def get_cpuset(cpuset, mem, guest, conn):
         guest.cpuset = cpustr
     return
 
-def get_network(mac, network, guest):
+def get_network(mac, network, guest, model=None):
     if mac == "RANDOM":
         mac = None
     if network == "user":
-        n = VirtualNetworkInterface(mac, type="user", conn=guest.conn)
+        n = VirtualNetworkInterface(mac, type="user",
+                                    conn=guest.conn, model=model)
     elif network[0:6] == "bridge":
         n = VirtualNetworkInterface(mac, type="bridge", bridge=network[7:],
-                                    conn=guest.conn)
+                                    conn=guest.conn, model=model)
     elif network[0:7] == "network":
         n = VirtualNetworkInterface(mac, type="network", network=network[8:],
-                                    conn=guest.conn)
+                                    conn=guest.conn, model=model)
     else:
         fail(_("Unknown network type ") + network)
     guest.nics.append(n)
+
+def parse_network_opts(networks):
+    nets = []
+    models = []
+
+    for network in networks:
+        opts = { 'model': None }
+        args = network.split(",")
+        nets.append(args[0])
+
+        for opt in args[1:]:
+            opt_type = None
+            opt_val = None
+            if opt.count("="):
+                opt_type, opt_val = opt.split("=", 1)
+                opts[opt_type.lower()] = opt_val.lower()
+
+        for opt_type in opts:
+            if opt_type == "model":
+                models.append(opts[opt_type])
+            else:
+                fail(_("Unknown '%s' value '%s'") % (opt_type, opt_val))
+
+    return (nets, models)
 
 def digest_networks(conn, macs, bridges, networks, nics = 0):
     def listify(l):
@@ -428,6 +453,8 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
 
     if bridges:
         networks = map(lambda b: "bridge:" + b, bridges)
+
+    (networks, models) = parse_network_opts(networks)
 
     # With just one mac, create a default network if one is not
     # specified.
@@ -457,7 +484,7 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
                 networks.append("user")
             macs.append(None)
 
-    return (macs, networks)
+    return (macs, networks, models)
 
 def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, guest):
     if (vnc and nographics) or \

@@ -180,6 +180,23 @@ args_dict = {
       "invalid": [],
      }, # category "misc"
 
+     "network": {
+      "network_args": "--pxe --nographics --noautoconsole --nodisks",
+
+      "valid": [
+        # user networking
+        "--network=user",
+        # with NIC model
+        "--network=user,model=e1000",
+        # several networks
+        "--network=network:default,model=e1000 --network=user,model=virtio",
+      ],
+      "invalid": [
+        "--network=FOO",
+      ],
+
+     }, # category "network"
+
 
     "prompt" : [ " --connect test:///default --debug --prompt" ]
   },
