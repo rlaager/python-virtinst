@@ -315,12 +315,15 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True):
 # Ask for attributes
 #
 
-def get_name(name, guest):
+def get_name(name, guest, image_name=None):
     prompt_txt = _("What is the name of your virtual machine?")
     err_txt = _("A name is required for the virtual machine.")
+
+    if name is None:
+        name = image_name
     prompt_loop(prompt_txt, err_txt, name, guest, "name")
 
-def get_memory(memory, guest):
+def get_memory(memory, guest, image_memory=None):
     prompt_txt = _("How much RAM should be allocated (in megabytes)?")
     err_txt = _("Memory amount is required for the virtual machine.")
     def check_memory(mem):
@@ -329,6 +332,9 @@ def get_memory(memory, guest):
             raise ValueError(_("Installs currently require %d megs "
                                "of RAM.") % MIN_RAM)
         guest.memory = mem
+
+    if memory is None and image_memory is not None:
+        memory = int(image_memory)/1024
     prompt_loop(prompt_txt, err_txt, memory, guest, "memory",
                 func=check_memory)
 
@@ -339,8 +345,7 @@ def get_uuid(uuid, guest):
         except ValueError, e:
             fail(e)
 
-def get_vcpus(vcpus, check_cpu, guest, conn):
-
+def get_vcpus(vcpus, check_cpu, guest, conn, image_vcpus=None):
     if check_cpu:
         hostinfo = conn.getInfo()
         cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
@@ -353,6 +358,8 @@ def get_vcpus(vcpus, check_cpu, guest, conn):
             if not prompt_for_yes_or_no(msg, askmsg):
                 nice_exit()
 
+    if vcpus is None and image_vcpus is not None:
+        vcpus = int(image_vcpus)
     if vcpus is not None:
         try:
             guest.vcpus = vcpus

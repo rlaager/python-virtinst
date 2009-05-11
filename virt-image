@@ -40,21 +40,6 @@ gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
 ### General input gathering functions
 
-def get_name(name, image_name, guest):
-    if name is None:
-        name = image_name
-    cli.get_name(name, guest)
-
-def get_memory(memory, image_memory, guest):
-    if memory is None and image_memory is not None:
-        memory = int(image_memory)/1024
-    cli.get_memory(memory, guest)
-
-def get_vcpus(vcpus, image_vcpus, check_cpu, guest, conn):
-    if vcpus is None:
-        vcpus = int(image_vcpus)
-    cli.get_vcpus(vcpus, check_cpu, guest, conn)
-
 def get_networks(domain, macs, bridges, networks, guest):
     nnics = domain.interface
     (macs, networks, models_ignore) = cli.digest_networks(guest.conn, macs,
@@ -62,11 +47,13 @@ def get_networks(domain, macs, bridges, networks, guest):
                                                           nnics)
 
     if len(networks) > nnics:
-        print >> sys.stderr, (_("Warning: more networks were provided [%i] then nics required [%i]. All extras are ignored") % (len(networks),  nnics))
+        logging.warn(_("Warning: more networks were provided [%i] then nics "
+                       "required [%i]. All extras are ignored.") %
+                       (len(networks), nnics))
         networks = networks[0:nnics]
         macs = macs [0:nnics]
     elif nnics > len(networks):
-        fail(_("The image requires %i network interface") % nnics)
+        fail(_("The image requires %i network interface.") % nnics)
 
     map(lambda m, n: cli.get_network(m, n, guest), macs, networks)
 
@@ -212,11 +199,11 @@ def main():
 
 
     # now let's get some of the common questions out of the way
-    get_name(options.name, image.name, guest)
-    get_memory(options.memory, image.domain.memory, guest)
+    cli.get_name(options.name, guest, image.name)
+    cli.get_memory(options.memory, guest, image.domain.memory)
     cli.get_uuid(options.uuid, guest)
-    get_vcpus(options.vcpus, image.domain.vcpu, options.check_cpu,
-              guest, conn)
+    cli.get_vcpus(options.vcpus, options.check_cpu,
+                  guest, conn, image.domain.vcpu)
     # For now, we only allow one NIC
     get_networks(image.domain, options.mac, options.bridge,
                  options.network, guest)
