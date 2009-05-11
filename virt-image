@@ -75,11 +75,11 @@ def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
     if not domain.graphics:
         guest.graphics_dev = None
         return
-    else:
-        if not vnc and not sdl:
-            vnc = True
-        cli.get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
-                         guest)
+
+    if not (vnc or sdl or nographics):
+        vnc = True
+    cli.get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
+                     guest)
 
 ### Option parsing
 def parse_args():
