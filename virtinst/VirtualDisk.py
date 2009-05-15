@@ -532,10 +532,7 @@ class VirtualDisk(VirtualDevice):
                 if self.sparse:
                     alloc = 0
                 else:
-                    #alloc = cap
-                    # XXX: disable setting managed storage as nonsparse
-                    # XXX: since it hoses libvirtd (for now)
-                    alloc = 0
+                    alloc = cap
                 vol = volclass(name=os.path.basename(self.path),
                                capacity=cap, allocation=alloc, pool=pool)
                 self._set_vol_install(vol, validate=False)
@@ -581,12 +578,6 @@ class VirtualDisk(VirtualDevice):
                 logging.debug("Overwriting 'size' with value from "
                               "StorageVolume object")
                 self._set_size(newsize, validate=False)
-
-        # XXX Remove this piece when storage volume creation is async
-        if self.sparse and self.vol_install and \
-           self.vol_install.allocation != 0:
-            logging.debug("Setting vol_install allocation to 0 (sparse).")
-            self.vol_install.allocation = 0
 
     def _storage_security_label(self):
         """
