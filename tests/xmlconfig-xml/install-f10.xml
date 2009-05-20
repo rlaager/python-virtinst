@@ -17,7 +17,6 @@
   <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
-    <console type='pty'/>
     <disk type='file' device='disk'>
       <source file='/tmp/test.img'/>
       <target dev='vda' bus='virtio'/>
@@ -33,5 +32,6 @@
     </interface>
     <input type='mouse' bus='ps2'/>
     <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
+    <console type='pty'/>
   </devices>
 </domain>

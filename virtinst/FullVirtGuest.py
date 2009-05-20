@@ -25,6 +25,7 @@ import DistroInstaller
 from Guest import Guest
 from VirtualDevice import VirtualDevice
 from VirtualInputDevice import VirtualInputDevice
+from VirtualCharDevice import VirtualCharDevice
 
 class FullVirtGuest(Guest):
 
@@ -110,9 +111,7 @@ class FullVirtGuest(Guest):
         if self.emulator is not None:
             emu_xml = "    <emulator>%s</emulator>\n" % self.emulator
 
-        return (emu_xml +
-                """    <console type='pty'/>\n""" +
-                Guest._get_device_xml(self, install))
+        return (emu_xml + Guest._get_device_xml(self, install))
 
     def _set_defaults(self):
         disk_bus  = self._lookup_device_param("disk", "bus")
@@ -125,6 +124,15 @@ class FullVirtGuest(Guest):
         for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
             if disk_bus and not disk.bus:
                 disk.bus = disk_bus
+
+        # If no serial devices were attached to the guest, stick the default
+        # console device in.
+        if (not self._get_install_devs(VirtualDevice.VIRTUAL_DEV_SERIAL) and
+            not self._get_install_devs(VirtualDevice.VIRTUAL_DEV_CONSOLE)):
+            dev = VirtualCharDevice.get_dev_instance(self.conn,
+                                                     VirtualCharDevice.DEV_CONSOLE,
+                                                     VirtualCharDevice.CHAR_PTY)
+            self._add_install_dev(dev)
 
         # Run this last, so we get first crack at disk attributes
         Guest._set_defaults(self)

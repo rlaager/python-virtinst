@@ -18,7 +18,6 @@
   <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
-    <console type='pty'/>
     <disk type='block' device='disk'>
       <source dev='/dev/loop0'/>
       <target dev='hda' bus='ide'/>
@@ -29,5 +28,6 @@
     </disk>
     <input type='mouse' bus='ps2'/>
     <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
+    <console type='pty'/>
   </devices>
 </domain>

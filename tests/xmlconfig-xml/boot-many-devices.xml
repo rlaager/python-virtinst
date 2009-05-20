@@ -18,7 +18,6 @@
   <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
-    <console type='pty'/>
     <disk type='block' device='floppy'>
       <source dev='/dev/loop0'/>
       <target dev='fda' bus='fdc'/>
@@ -37,6 +36,7 @@
     </interface>
     <input type='mouse' bus='ps2'/>
     <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
+    <console type='pty'/>
     <sound model='sb16'/>
     <sound model='es1370'/>
     <hostdev mode='subsystem' type='usb' managed='yes'>
