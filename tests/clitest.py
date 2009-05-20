@@ -203,11 +203,11 @@ args_dict = {
         # VirtualNetwork with a random macaddr
         "--network network:default --mac 00:11:22:33:44:55",
         # Using '=' as the net type delimiter
-        "--network network=default",
+        "--network network=default,mac=11:00:11:00:11:00",
         # with NIC model
         "--network=user,model=e1000",
         # several networks
-        "--network=network:default,model=e1000 --network=user,model=virtio",
+        "--network=network:default,model=e1000 --network=user,model=virtio,mac=11:22:33:44:55:66",
       ],
       "invalid": [
         # Nonexistent network

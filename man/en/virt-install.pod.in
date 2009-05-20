@@ -428,10 +428,18 @@ Available options are:
 
 =over 4
 
-=item model
+=item B<model>
 
 Network device model as seen by the guest. Value can be any nic model supported
 by the hypervisor, e.g.: 'e1000', 'rtl8139' or 'virtio'.
+
+=item B<mac>
+
+Fixed MAC address for the guest; If this parameter is omitted, or the value
+C<RANDOM> is specified a suitable address will be randomly generated. For
+Xen virtual machines it is required that the first 3 pairs in the MAC address
+be the sequence '00:16:3e', while for QEMU or KVM virtual machines it must
+be '54:52:00'.
 
 =back
 

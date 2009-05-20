@@ -413,7 +413,7 @@ def parse_network_opts(conn, mac, network):
     bridge_name = None
     model = None
 
-    opts = { 'model': None }
+    opts = {}
     args = network.split(",")
 
     # Determine net type and bridge vs. network
@@ -446,6 +446,8 @@ def parse_network_opts(conn, mac, network):
 
         if opt_type == "model":
             model = opt_val
+        elif opt_type == "mac":
+            mac = opt_val
         else:
             fail(_("Unknown network option '%s'") % opt_type)
 
