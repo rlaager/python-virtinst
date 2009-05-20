@@ -28,6 +28,7 @@ import libvirt
 import CapabilitiesParser
 import VirtualGraphics
 from VirtualDevice import VirtualDevice
+from VirtualDisk import VirtualDisk
 
 import osdict
 from virtinst import _virtinst as _
@@ -94,6 +95,9 @@ class Guest(object):
 
         # Default disk target prefix ('hd' or 'xvd'). Set in subclass
         self.disknode = None
+
+        # Default bus for disks (set in subclass)
+        self._diskbus = None
 
         self.conn = connection
         if self.conn == None:
@@ -486,57 +490,35 @@ class Guest(object):
 
     # Private xml building methods
 
-    def _get_disk_xml(self, install=True):
-        """Return xml for disk devices (Must be implemented in subclass)"""
-        raise NotImplementedError
-
-    def _get_network_xml(self):
-        """Get the network config in the libvirt XML format"""
-        xml = ""
-        for n in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_NET):
-            xml = _util.xml_append(xml, n.get_xml_config())
-        return xml
-
-    def _get_graphics_xml(self):
-        """Get the graphics config in the libvirt XML format."""
-        if self._graphics_dev is None:
-            return ""
-        return self._graphics_dev.get_xml_config()
-
     def _get_input_device(self):
         """ Return a tuple of the form (devtype, bus) for the desired
             input device. (Must be implemented in subclass) """
         raise NotImplementedError
 
-    def _get_input_xml(self):
-        """Get the input device config in libvirt XML format."""
-        xml = ""
-        for dev in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_INPUT):
-            xml = _util.xml_append(xml, dev.get_xml_config())
-        return xml
-
-    def _get_sound_xml(self):
-        """Get the sound device configuration in libvirt XML format."""
-        xml = ""
-        for sound_dev in self.sound_devs:
-            xml = _util.xml_append(xml, sound_dev.get_xml_config())
-        return xml
-
-    def _get_hostdev_xml(self):
-        xml = ""
-        for hostdev in self.hostdevs:
-            xml = _util.xml_append(xml, hostdev.get_xml_config())
-        return xml
-
     def _get_device_xml(self, install=True):
-        xml = ""
+        change_disks = []
+        for d in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
+            if (d.device == VirtualDisk.DEVICE_CDROM
+                and d.transient
+                and not install):
+                # Keep cdrom around, but with no media attached,
+                # But only if we are a distro that doesn't have a multi
+                # stage install (aka not Windows)
+                if not self.get_continue_inst():
+                    change_disks.append((d, d.path))
+                    d.path = None
 
-        xml = _util.xml_append(xml, self._get_disk_xml(install))
-        xml = _util.xml_append(xml, self._get_network_xml())
-        xml = _util.xml_append(xml, self._get_input_xml())
-        xml = _util.xml_append(xml, self._get_graphics_xml())
-        xml = _util.xml_append(xml, self._get_sound_xml())
-        xml = _util.xml_append(xml, self._get_hostdev_xml())
+        xml = ""
+        try:
+            for dev in self._get_all_install_devs():
+                xml = _util.xml_append(xml, dev.get_xml_config())
+        finally:
+            try:
+                for disk, path in change_disks:
+                    disk.path = path
+            except:
+                pass
+
         return xml
 
     def _get_features_xml(self):
@@ -690,12 +672,15 @@ class Guest(object):
 
     def _prepare_install(self, meter):
         self._init_install_devs()
-        self._set_defaults()
 
         self._installer.prepare(guest = self,
                                 meter = meter)
         if self._installer.install_disk is not None:
             self._add_install_dev(self._installer.install_disk)
+
+        # Run 'set_defaults' after install prep, since some installers
+        # (ImageInstaller) alter the device list.
+        self._set_defaults()
 
         # Only set up an input device if there isn't already preset
         if not self._get_install_devs(VirtualDevice.VIRTUAL_DEV_INPUT):
@@ -802,6 +787,15 @@ class Guest(object):
             raise RuntimeError, _("Domain has already been started!")
 
     def _set_defaults(self):
+        used_targets = []
+        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
+            if not disk.bus:
+                if disk.device == disk.DEVICE_FLOPPY:
+                    disk.bus = "fdc"
+                else:
+                    disk.bus = self._diskbus
+            used_targets.append(disk.generate_target(used_targets))
+
         if self.uuid is None:
             while 1:
                 self.uuid = _util.uuidToString(_util.randomUUID())

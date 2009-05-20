@@ -23,7 +23,6 @@ import _util
 import DistroInstaller
 
 from Guest import Guest
-from VirtualDisk import VirtualDisk
 from VirtualDevice import VirtualDevice
 from VirtualInputDevice import VirtualInputDevice
 
@@ -36,7 +35,10 @@ class FullVirtGuest(Guest):
                                                         os_type = "hvm",
                                                         conn=connection)
         Guest.__init__(self, type, connection, hypervisorURI, installer)
+
         self.disknode = "hd"
+        self._diskbus = "ide"
+
         self.features = { "acpi": None, "pae":
             _util.is_pae_capable(self.conn), "apic": None }
 
@@ -112,40 +114,7 @@ class FullVirtGuest(Guest):
                 """    <console type='pty'/>\n""" +
                 Guest._get_device_xml(self, install))
 
-    def _get_disk_xml(self, install = True):
-        """Get the disk config in the libvirt XML format"""
-        ret = ""
-        used_targets = []
-        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
-            if not disk.bus:
-                if disk.device == disk.DEVICE_FLOPPY:
-                    disk.bus = "fdc"
-                else:
-                    disk.bus = "ide"
-            used_targets.append(disk.generate_target(used_targets))
-
-        for d in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
-            saved_path = None
-            if d.device == VirtualDisk.DEVICE_CDROM \
-               and d.transient and not install:
-                # Keep cdrom around, but with no media attached
-                # But only if we are a distro that doesn't have a multi
-                # stage install (aka not Windows)
-                saved_path = d.path
-                if not self.get_continue_inst():
-                    d.path = None
-
-            if ret:
-                ret += "\n"
-            ret += d.get_xml_config(d.target)
-            if saved_path != None:
-                d.path = saved_path
-
-        return ret
-
     def _set_defaults(self):
-        Guest._set_defaults(self)
-
         disk_bus  = self._lookup_device_param("disk", "bus")
         net_model = self._lookup_device_param("net", "model")
 
@@ -156,3 +125,6 @@ class FullVirtGuest(Guest):
         for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
             if disk_bus and not disk.bus:
                 disk.bus = disk_bus
+
+        # Run this last, so we get first crack at disk attributes
+        Guest._set_defaults(self)

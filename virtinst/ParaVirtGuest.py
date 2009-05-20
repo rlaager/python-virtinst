@@ -21,7 +21,6 @@
 
 from Guest import Guest
 from DistroInstaller import DistroInstaller
-from VirtualDevice import VirtualDevice
 from VirtualInputDevice import VirtualInputDevice
 
 class ParaVirtGuest(Guest):
@@ -32,27 +31,10 @@ class ParaVirtGuest(Guest):
                                         conn=connection)
         Guest.__init__(self, type, connection, hypervisorURI, installer)
         self.disknode = "xvd"
+        self._diskbus = "xen"
 
     def _get_input_device(self):
         dev = VirtualInputDevice(self.conn)
         dev.type = "mouse"
         dev.bus = "xen"
         return dev
-
-    def _get_disk_xml(self, install = True):
-        """Get the disk config in the libvirt XML format"""
-        ret = ""
-        used_targets = []
-        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
-            if not disk.bus:
-                disk.bus = "xen"
-            used_targets.append(disk.generate_target(used_targets))
-
-        for d in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
-            if d.transient and not install:
-                continue
-
-            if ret:
-                ret += "\n"
-            ret += d.get_xml_config(d.target)
-        return ret
