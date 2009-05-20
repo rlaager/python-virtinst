@@ -30,6 +30,21 @@ class VirtualDevice(object):
     Base class for all domain xml device objects.
     """
 
+    VIRTUAL_DEV_DISK = "disk"
+    VIRTUAL_DEV_NET  = "interface"
+    VIRTUAL_DEV_GRAPHICS = "graphics"
+    VIRTUAL_DEV_AUDIO = "sound"
+    VIRTUAL_DEV_HOSTDEV = "hostdev"
+
+    # Ordering in this list is important: it will be the order the
+    # Guest class outputs XML. So changing this may upset the test suite
+    virtual_device_types = [VIRTUAL_DEV_DISK, VIRTUAL_DEV_NET,
+                            VIRTUAL_DEV_GRAPHICS, VIRTUAL_DEV_AUDIO,
+                            VIRTUAL_DEV_HOSTDEV ]
+
+    # General device type (disk, interface, etc.)
+    _virtual_device_type = None
+
     def __init__(self, conn=None):
         """
         Initialize device state
@@ -37,6 +52,12 @@ class VirtualDevice(object):
         @param conn: libvirt connection to validate device against
         @type conn: virConnect
         """
+        if not self._virtual_device_type:
+            raise ValueError(_("Virtual device type must be set in subclass."))
+
+        if self._virtual_device_type not in self.virtual_device_types:
+            raise ValueError(_("Unknown virtual device type '%s'.") %
+                             self._virtual_device_type)
 
         if conn:
             if not isinstance(conn, libvirt.virConnect):
@@ -58,6 +79,10 @@ class VirtualDevice(object):
             raise ValueError(_("'conn' must be a virConnect instance."))
         self._conn = val
     conn = property(get_conn, set_conn)
+
+    def get_virtual_device_type(self):
+        return self._virtual_device_type
+    virtual_device_type = property(get_virtual_device_type)
 
     def _is_remote(self):
         return bool(self.__remote)

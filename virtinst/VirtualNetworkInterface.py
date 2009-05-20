@@ -28,6 +28,8 @@ from virtinst import _virtinst as _
 
 class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
+    _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_NET
+
     TYPE_BRIDGE  = "bridge"
     TYPE_VIRTUAL = "network"
     TYPE_USER    = "user"

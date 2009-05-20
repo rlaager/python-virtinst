@@ -22,6 +22,8 @@ from virtinst import _virtinst as _
 
 class VirtualAudio(VirtualDevice.VirtualDevice):
 
+    _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_AUDIO
+
     MODELS = [ "es1370", "sb16", "pcspk" ]
 
     def __init__(self, model, conn=None):

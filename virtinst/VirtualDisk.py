@@ -75,6 +75,8 @@ class VirtualDisk(VirtualDevice):
     and will throw ValueError's if problems are found.
     """
 
+    _virtual_device_type = VirtualDevice.VIRTUAL_DEV_DISK
+
     DRIVER_FILE = "file"
     DRIVER_PHY = "phy"
     DRIVER_TAP = "tap"

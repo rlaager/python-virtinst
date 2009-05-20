@@ -26,6 +26,8 @@ from virtinst import _virtinst as _
 
 class VirtualGraphics(VirtualDevice.VirtualDevice):
 
+    _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_GRAPHICS
+
     TYPE_SDL = "sdl"
     TYPE_VNC = "vnc"
 

@@ -26,6 +26,8 @@ from virtinst import _virtinst as _
 
 class VirtualHostDevice(VirtualDevice.VirtualDevice):
 
+    _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_HOSTDEV
+
     def device_from_node(conn, name=None, nodedev=None):
         """
         Convert the passed libvirt node device name to a VirtualHostDevice
