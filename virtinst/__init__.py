@@ -34,6 +34,7 @@ from VirtualAudio import VirtualAudio
 from VirtualDisk import VirtualDisk, XenDisk
 from VirtualHostDevice import (VirtualHostDevice, VirtualHostDeviceUSB,
                                VirtualHostDevicePCI)
+from VirtualCharDevice import VirtualCharDevice
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
 from DistroInstaller import DistroInstaller
@@ -51,4 +52,5 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "VirtualDisk", "XenDisk", "FullVirtGuest", "ParaVirtGuest",
            "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
            "ImportInstaller", "ImageInstaller", "CloneDesign", "Storage",
-           "User", "util"]
+           "User", "util", "VirtualHostDevice", "VirtualHostDeviceUSB",
+           "VirtualHostDevicePCI", "VirtualCharDevice"]

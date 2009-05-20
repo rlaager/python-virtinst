@@ -233,10 +233,36 @@ args = {
                     'valid'   : ['12345678123456781234567812345678']},
     'clone_mac' : { 'invalid' : ['badformat'],
                     'valid'   : ['AA:BB:CC:DD:EE:FF']},
-    'clone_bs'  : { 'invalid' : [], 'valid'   : ['valid']}
+    'clone_bs'  : { 'invalid' : [], 'valid'   : ['valid']},
 },
 
+'chardev' : {
+    'init_conns' : [ testconn ],
+    'source_path': {
+        'invalid'   : [],
+        'valid'     : [ "/some/path" ]},
+    'source_mode': {
+        'invalid'   : [ None ],
+        'valid'     : virtinst.VirtualCharDevice.char_modes },
+    'source_host': {
+        'invalid'   : [],
+        'valid'     : [ "some.source.host" ]},
+    'source_port': {
+        'invalid'   : [ "foobar"],
+        'valid'     : [ 1234 ]},
+    'connect_host': {
+        'invalid'   : [],
+        'valid'     : [ "some.connect.com" ]},
+    'connect_port': {
+        'invalid'   : [ "foobar"],
+        'valid'     : [ 1234 ]},
+    'wire_mode': {
+        'invalid'   : [ None ],
+        'valid'     : virtinst.VirtualCharDevice.char_wire_modes },
+}
+
 } # End of validation dict
+
 
 class TestValidation(unittest.TestCase):
 
@@ -296,12 +322,15 @@ class TestValidation(unittest.TestCase):
                    (name, paramname, paramvalue))
             raise AssertionError, msg
 
-    def _testArgs(self, obj, testclass, name, exception_check=None):
+    def _testArgs(self, obj, testclass, name, exception_check=None,
+                  manual_dict=None):
         """@obj Object to test parameters against
            @testclass Full class to test initialization against
            @name String name indexing args"""
         logging.debug("Testing '%s'" % name)
         testdict = args[name]
+        if manual_dict != None:
+            testdict = manual_dict
 
         for paramname in testdict.keys():
             if paramname == "init_conns":
@@ -406,6 +435,23 @@ class TestValidation(unittest.TestCase):
             cman = virtinst.CloneManager.CloneDesign(conn)
             self._testArgs(cman, virtinst.CloneManager.CloneDesign, label)
 
+    def testCharDev(self):
+        label = 'chardev'
+        paramdict = args[label]
+        devs = []
+
+        for conn in self._getInitConns(label):
+            for dev in virtinst.VirtualCharDevice.dev_types:
+                for char in virtinst.VirtualCharDevice.char_types:
+                    devs.append(virtinst.VirtualCharDevice.get_dev_instance(conn, dev, char))
+
+        for dev in devs:
+            custom_dict = {}
+            for key in paramdict.keys():
+                if hasattr(dev, key):
+                    custom_dict[key] = paramdict[key]
+            self._testArgs(dev, virtinst.VirtualCharDevice, label,
+                           manual_dict=custom_dict)
 
 if __name__ == "__main__":
     unittest.main()

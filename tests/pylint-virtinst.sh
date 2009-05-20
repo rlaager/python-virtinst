@@ -55,6 +55,8 @@ UNUSED_ARGS="(SuseDistro|SolarisDistro|NetWareDistro).isValidStore.*Unused argum
 # tests.storage also invokes false positives using hasattr
 OUTSIDE_INIT="(.*Test.*|.*createPool.*)outside __init__"
 
+# pylint complains about some of the subclass funkiness in chardev classes
+CHAR_SUBCLASS=".*VirtualCharDevice' has no '(source_mode|source_path)' member.*|.*Method '_char_xml' is abstract in class 'VirtualCharDevice'.*"
 
 # FIXME: Everything skipped below are all bugs
 
@@ -128,6 +130,7 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$UNUSED_ARGS" \
         -ve "$TEST_HACKS" \
         -ve "$PROT_MEM_BUGS" \
+        -ve "$CHAR_SUBCLASS" \
         -ve "$OUTSIDE_INIT" | \
   $AWK '\
 # Strip out any "*** Module name" lines if we dont list any errors for them
