@@ -154,7 +154,7 @@ class ImageInstaller(Installer.Installer):
                 d.driver_name = VirtualDisk.DRIVER_TAP
             d.target = m.target
 
-            guest._install_disks.append(d)
+            guest._add_install_dev(d)
 
     def _abspath(self, p):
         return self.image.abspath(p)

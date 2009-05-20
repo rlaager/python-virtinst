@@ -253,6 +253,17 @@ class TestXMLConfig(unittest.TestCase):
                                                location="/dev/loop0")
         self._compare(g, "install-fullyvirt-livecd", False)
 
+    def testDoubleInstall(self):
+        # Make sure that installing twice generates the same XML, to ensure
+        # we aren't polluting the device list during the install process
+        g = get_basic_fullyvirt_guest()
+        g.installer = virtinst.LiveCDInstaller(type="xen", os_type="hvm",
+                                               conn=g.conn,
+                                               location="/dev/loop0")
+        self._compare(g, "install-fullyvirt-livecd", False)
+        self._compare(g, "install-fullyvirt-livecd", False)
+
+
     def testInstallFVImport(self):
         g = get_basic_fullyvirt_guest()
         g.disks.append(get_filedisk())

@@ -85,10 +85,6 @@ class Guest(object):
         # General device list. Only access through API calls (even internally)
         self._devices = []
 
-        # Device lists to use/alter during install process
-        self._install_disks = []
-        self._install_nics = []
-
         # Device list to use/alter during install process. Don't access
         # directly, use internal APIs
         self._install_devices = []
@@ -497,7 +493,7 @@ class Guest(object):
     def _get_network_xml(self):
         """Get the network config in the libvirt XML format"""
         xml = ""
-        for n in self._install_nics:
+        for n in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_NET):
             xml = _util.xml_append(xml, n.get_xml_config())
         return xml
 
@@ -691,22 +687,21 @@ class Guest(object):
 
 
     def _prepare_install(self, meter):
-        self._install_disks = self.disks[:]
-        self._install_nics = self.nics[:]
+        self._init_install_devs()
         self._set_defaults()
 
         self._installer.prepare(guest = self,
                                 meter = meter)
         if self._installer.install_disk is not None:
-            self._install_disks.append(self._installer.install_disk)
+            self._add_install_dev(self._installer.install_disk)
 
     def _create_devices(self, progresscb):
         """Ensure that devices are setup"""
-        for disk in self._install_disks:
+        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
             disk.setup(progresscb)
-        for nic in self._install_nics:
+        for nic in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_NET):
             nic.setup(self.conn)
-        for hostdev in self.hostdevs:
+        for hostdev in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_HOSTDEV):
             hostdev.setup()
 
     def _do_install(self, consolecb, meter, removeOld=False, wait=True):

@@ -24,6 +24,7 @@ import DistroInstaller
 
 from Guest import Guest
 from VirtualDisk import VirtualDisk
+from VirtualDevice import VirtualDevice
 
 class FullVirtGuest(Guest):
 
@@ -111,7 +112,7 @@ class FullVirtGuest(Guest):
         """Get the disk config in the libvirt XML format"""
         ret = ""
         used_targets = []
-        for disk in self._install_disks:
+        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
             if not disk.bus:
                 if disk.device == disk.DEVICE_FLOPPY:
                     disk.bus = "fdc"
@@ -119,7 +120,7 @@ class FullVirtGuest(Guest):
                     disk.bus = "ide"
             used_targets.append(disk.generate_target(used_targets))
 
-        for d in self._install_disks:
+        for d in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
             saved_path = None
             if d.device == VirtualDisk.DEVICE_CDROM \
                and d.transient and not install:
@@ -145,9 +146,9 @@ class FullVirtGuest(Guest):
         net_model = self._lookup_device_param("net", "model")
 
         # Only overwrite params if they weren't already specified
-        for net in self._install_nics:
+        for net in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_NET):
             if net_model and not net.model:
                 net.model = net_model
-        for disk in self._install_disks:
+        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
             if disk_bus and not disk.bus:
                 disk.bus = disk_bus

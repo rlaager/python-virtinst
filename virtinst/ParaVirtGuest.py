@@ -21,6 +21,7 @@
 
 from Guest import Guest
 from DistroInstaller import DistroInstaller
+from VirtualDevice import VirtualDevice
 
 class ParaVirtGuest(Guest):
     def __init__(self, type=None, connection=None, hypervisorURI=None,
@@ -38,12 +39,12 @@ class ParaVirtGuest(Guest):
         """Get the disk config in the libvirt XML format"""
         ret = ""
         used_targets = []
-        for disk in self._install_disks:
+        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
             if not disk.bus:
                 disk.bus = "xen"
             used_targets.append(disk.generate_target(used_targets))
 
-        for d in self._install_disks:
+        for d in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
             if d.transient and not install:
                 continue
 
