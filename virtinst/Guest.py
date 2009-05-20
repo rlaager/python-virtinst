@@ -510,8 +510,10 @@ class Guest(object):
 
     def _get_input_xml(self):
         """Get the input device config in libvirt XML format."""
-        (devtype, bus) = self._get_input_device()
-        return "    <input type='%s' bus='%s'/>" % (devtype, bus)
+        xml = ""
+        for dev in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_INPUT):
+            xml = _util.xml_append(xml, dev.get_xml_config())
+        return xml
 
     def _get_sound_xml(self):
         """Get the sound device configuration in libvirt XML format."""
@@ -694,6 +696,10 @@ class Guest(object):
                                 meter = meter)
         if self._installer.install_disk is not None:
             self._add_install_dev(self._installer.install_disk)
+
+        # Only set up an input device if there isn't already preset
+        if not self._get_install_devs(VirtualDevice.VIRTUAL_DEV_INPUT):
+            self._add_install_dev(self._get_input_device())
 
     def _create_devices(self, progresscb):
         """Ensure that devices are setup"""

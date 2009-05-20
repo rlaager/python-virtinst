@@ -22,6 +22,7 @@
 from Guest import Guest
 from DistroInstaller import DistroInstaller
 from VirtualDevice import VirtualDevice
+from VirtualInputDevice import VirtualInputDevice
 
 class ParaVirtGuest(Guest):
     def __init__(self, type=None, connection=None, hypervisorURI=None,
@@ -33,7 +34,10 @@ class ParaVirtGuest(Guest):
         self.disknode = "xvd"
 
     def _get_input_device(self):
-        return ("mouse", "xen")
+        dev = VirtualInputDevice(self.conn)
+        dev.type = "mouse"
+        dev.bus = "xen"
+        return dev
 
     def _get_disk_xml(self, install = True):
         """Get the disk config in the libvirt XML format"""

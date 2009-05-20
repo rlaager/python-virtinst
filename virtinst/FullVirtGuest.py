@@ -25,6 +25,7 @@ import DistroInstaller
 from Guest import Guest
 from VirtualDisk import VirtualDisk
 from VirtualDevice import VirtualDevice
+from VirtualInputDevice import VirtualInputDevice
 
 class FullVirtGuest(Guest):
 
@@ -81,7 +82,10 @@ class FullVirtGuest(Guest):
     def _get_input_device(self):
         typ = self._lookup_device_param("input", "type")
         bus = self._lookup_device_param("input", "bus")
-        return (typ, bus)
+        dev = VirtualInputDevice(self.conn)
+        dev.type = typ
+        dev.bus = bus
+        return dev
 
     def _get_features_xml(self):
         ret = "  <features>\n"
