@@ -51,9 +51,10 @@ def read_file(filename):
 
     return out
 
-def diff_compare(actual_out, filename):
+def diff_compare(actual_out, filename, expect_out=None):
     """Compare passed string output to contents of filename"""
-    expect_out = read_file(filename)
+    if not expect_out:
+        expect_out = read_file(filename)
 
     diff = "".join(difflib.unified_diff(expect_out.splitlines(1),
                                         actual_out.splitlines(1),

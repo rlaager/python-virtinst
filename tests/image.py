@@ -80,8 +80,12 @@ class TestImageParser(unittest.TestCase):
                 g = xmlconfig.get_basic_paravirt_guest()
 
             g.installer = inst
+            g._prepare_install(None)
+
+            expect_out = tests.read_file(image2guestdir + fname)
+            expect_out = expect_out.replace("REPLACEME", os.getcwd())
             tests.diff_compare(g.get_config_xml(install=True),
-                               image2guestdir + fname)
+                               image2guestdir + fname, expect_out=expect_out)
 
 if __name__ == "__main__":
     unittest.main()

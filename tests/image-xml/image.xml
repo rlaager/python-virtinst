@@ -41,8 +41,8 @@
       <partition file="boot.img"/>
       <partition file="root.img"/>
     </disk>
-    <disk file="root.raw" format="raw" size="4096" use="system"/>
-    <disk file="data.raw" format="raw" size='2048' use="data"/>
+    <disk file="root.raw" format="raw" size="4096" use="scratch"/>
+    <disk file="data.raw" format="raw" size='2048' use="scratch"/>
     <disk file="scratch.raw" format="raw" size='100' use='scratch'/>
   </storage>
 </image>

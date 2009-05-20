@@ -9,7 +9,7 @@
     <boot dev='hd'/>
   </os>
   <features>
-    <acpi/><apic/>
+    <acpi/><apic/><pae/>
   </features>
   <clock offset="utc"/>
   <on_poweroff>destroy</on_poweroff>
@@ -19,6 +19,18 @@
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <console type='pty'/>
+    <disk type='file' device='disk'>
+      <source file='REPLACEME/tests/image-xml/root.raw'/>
+      <target dev='hda' bus='ide'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <source file='REPLACEME/tests/image-xml/data.raw'/>
+      <target dev='hdb' bus='ide'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <source file='REPLACEME/tests/image-xml/scratch.raw'/>
+      <target dev='hdd' bus='ide'/>
+    </disk>
     <input type='mouse' bus='ps2'/>
     <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
   </devices>
