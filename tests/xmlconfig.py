@@ -22,6 +22,9 @@ import logging
 
 import virtinst
 from virtinst import VirtualDisk
+from virtinst import VirtualAudio
+from virtinst import VirtualNetworkInterface
+from virtinst import VirtualHostDeviceUSB, VirtualHostDevicePCI
 import tests
 
 conn = libvirt.open("test:///default")
@@ -38,8 +41,8 @@ def get_basic_paravirt_guest():
     return g
 
 conn = libvirt.open("test:///default")
-def get_basic_fullyvirt_guest():
-    g = virtinst.FullVirtGuest(connection=conn, type="xen",
+def get_basic_fullyvirt_guest(typ="xen"):
+    g = virtinst.FullVirtGuest(connection=conn, type=typ,
                                emulator="/usr/lib/xen/bin/qemu-dm",
                                arch="i686")
     g.name = "TestGuest"
@@ -59,6 +62,13 @@ def get_filedisk(path="/tmp/test.img"):
 
 def get_blkdisk():
     return VirtualDisk("/dev/loop0", conn=conn)
+
+def get_virtual_network():
+    dev = virtinst.VirtualNetworkInterface()
+    dev.macaddr = "11:22:33:44:55:66"
+    dev.type = virtinst.VirtualNetworkInterface.TYPE_VIRTUAL
+    dev.network = "default"
+    return dev
 
 class TestXMLConfig(unittest.TestCase):
 
@@ -282,6 +292,140 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk("/tmp/ISO&'&s"))
         self._compare(g, "misc-xml-escaping", True)
 
+    # OS Type/Version configurations
+    def testF10(self):
+        g = get_basic_fullyvirt_guest("kvm")
+        g.os_type = "linux"
+        g.os_variant = "fedora10"
+        g.installer = virtinst.PXEInstaller(type="kvm", os_type="hvm",
+                                            conn=g.conn)
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+        self._compare(g, "install-f10", True)
+
+    def testF11(self):
+        g = get_basic_fullyvirt_guest("kvm")
+        g.os_type = "linux"
+        g.os_variant = "fedora11"
+        g.installer = virtinst.PXEInstaller(type="kvm", os_type="hvm",
+                                            conn=g.conn)
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+        self._compare(g, "install-f11", False)
+
+    def testBootWindows(self):
+        g = get_basic_fullyvirt_guest("kvm")
+        g.os_type = "windows"
+        g.os_variant = "winxp"
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+        self._compare(g, "boot-windowsxp", False)
+
+    def testInstallWindows(self):
+        g = get_basic_fullyvirt_guest("kvm")
+        g.os_type = "windows"
+        g.os_variant = "winxp"
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+        self._compare(g, "install-windowsxp", True)
+
+
+    # Device heavy configurations
+    def testManyDisks2(self):
+        g = get_basic_fullyvirt_guest()
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
+                                   device=VirtualDisk.DEVICE_CDROM))
+        g.disks.append(VirtualDisk(conn=g.conn, path=None,
+                                   device=VirtualDisk.DEVICE_CDROM,
+                                   bus="scsi"))
+        g.disks.append(VirtualDisk(conn=g.conn, path=None,
+                                   device=VirtualDisk.DEVICE_FLOPPY))
+        g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
+                                   device=VirtualDisk.DEVICE_FLOPPY))
+        g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
+                                   bus="virtio"))
+
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
+        self._compare(g, "boot-many-disks2", False)
+
+    def testManyNICs(self):
+        g = get_basic_fullyvirt_guest()
+        net1 = VirtualNetworkInterface(type="user",
+                                       macaddr="11:11:11:11:11:11")
+        net2 = get_virtual_network()
+        net3 = get_virtual_network()
+        net3.model = "e1000"
+        net4 = VirtualNetworkInterface(bridge="foobr0",
+                                       macaddr="22:22:22:22:22:22")
+
+        g.nics.append(net1)
+        g.nics.append(net2)
+        g.nics.append(net3)
+        g.nics.append(net4)
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
+        self._compare(g, "boot-many-nics", False)
+
+    def testManyHostdevs(self):
+        g = get_basic_fullyvirt_guest()
+        dev1 = VirtualHostDeviceUSB(g.conn)
+        dev1.product = "0x1234"
+        dev1.vendor = "0x4321"
+
+        dev2 = VirtualHostDevicePCI(g.conn)
+        dev2.bus = "0x11"
+        dev2.slot = "0x22"
+        dev2.function = "0x33"
+
+        g.hostdevs.append(dev1)
+        g.hostdevs.append(dev2)
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
+        self._compare(g, "boot-many-hostdevs", False)
+
+    def testManySounds(self):
+        g = get_basic_fullyvirt_guest()
+        g.sound_devs.append(VirtualAudio("sb16", conn=g.conn))
+        g.sound_devs.append(VirtualAudio("es1370", conn=g.conn))
+        g.sound_devs.append(VirtualAudio("pcspk", conn=g.conn))
+
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
+        self._compare(g, "boot-many-sounds", False)
+
+    def testManyDevices(self):
+        g = get_basic_fullyvirt_guest()
+
+        dev1 = VirtualHostDeviceUSB(g.conn)
+        dev1.product = "0x1234"
+        dev1.vendor = "0x4321"
+        g.hostdevs.append(dev1)
+
+        g.sound_devs.append(VirtualAudio("sb16", conn=g.conn))
+        g.sound_devs.append(VirtualAudio("es1370", conn=g.conn))
+
+        g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
+                                   device=VirtualDisk.DEVICE_FLOPPY))
+        g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
+                                   bus="scsi"))
+
+        net1 = get_virtual_network()
+        net1.model = "e1000"
+        net2 = VirtualNetworkInterface(type="user",
+                                       macaddr="11:11:11:11:11:11")
+        g.nics.append(net1)
+        g.nics.append(net2)
+
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
+        self._compare(g, "boot-many-devices", False)
 
 if __name__ == "__main__":
     unittest.main()
