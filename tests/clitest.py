@@ -188,8 +188,16 @@ args_dict = {
       "network_args": "--pxe --nographics --noautoconsole --nodisks",
 
       "valid": [
+        # Just a macaddr
+        "--mac 11:22:33:44:55:66",
         # user networking
         "--network=user",
+        # Old bridge option
+        "--bridge mybr0",
+        # Old bridge w/ mac
+        "--bridge mybr0 --mac 11:22:33:44:55:66",
+        # --network bridge:
+        "--network bridge:mybr0,model=e1000",
         # VirtualNetwork with a random macaddr
         "--network network:default --mac RANDOM",
         # VirtualNetwork with a random macaddr
@@ -206,6 +214,8 @@ args_dict = {
         "--network=network:default --mac 1234",
         # More mac addrs than nics
         "--network user --mac 00:11:22:33:44:55 --mac 00:11:22:33:44:66",
+        # Mixing bridge and network
+        "--network user --bridge foo0",
       ],
 
      }, # category "network"

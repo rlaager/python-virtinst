@@ -33,36 +33,48 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     TYPE_BRIDGE  = "bridge"
     TYPE_VIRTUAL = "network"
     TYPE_USER    = "user"
+    network_types = [TYPE_BRIDGE, TYPE_VIRTUAL, TYPE_USER]
 
     def __init__(self, macaddr=None, type=TYPE_BRIDGE, bridge=None,
                  network=None, model=None, conn=None):
         VirtualDevice.VirtualDevice.__init__(self, conn)
 
-        if (macaddr is not None and __builtin__.type(macaddr) is not str):
-            raise ValueError, _("MAC address must be a string.")
-
-        if macaddr is not None:
-            form = re.match("^([0-9a-fA-F]{1,2}:){5}[0-9a-fA-F]{1,2}$",macaddr)
-            if form is None:
-                raise ValueError, \
-                    _("MAC address must be of the format AA:BB:CC:DD:EE:FF")
-
         self._network = None
+        self._macaddr = None
+        self._type = type
 
         self.macaddr = macaddr
-        self.type = type
         self.bridge = bridge
         self.network = network
         self.model = model
+
+        if self.type not in self.network_types:
+            raise ValueError, _("Unknown network type %s") % self.type
+
         if self.type == self.TYPE_VIRTUAL:
             if network is None:
                 raise ValueError, _("A network name was not provided")
-        elif self.type == self.TYPE_BRIDGE:
-            pass
-        elif self.type == self.TYPE_USER:
-            pass
-        else:
-            raise ValueError, _("Unknown network type %s") % (type,)
+
+    def get_type(self):
+        return self._type
+    type = property(get_type)
+
+    def get_macaddr(self):
+        return self._macaddr
+    def set_macaddr(self, val):
+        if val is None:
+            self._macaddr = None
+            return
+
+        if __builtin__.type(val) is not str:
+            raise ValueError, _("MAC address must be a string.")
+
+        form = re.match("^([0-9a-fA-F]{1,2}:){5}[0-9a-fA-F]{1,2}$", val)
+        if form is None:
+            raise ValueError(_("MAC address must be of the format "
+                               "AA:BB:CC:DD:EE:FF"))
+        self._macaddr = val
+    macaddr = property(get_macaddr, set_macaddr)
 
     def get_network(self):
         return self._network
