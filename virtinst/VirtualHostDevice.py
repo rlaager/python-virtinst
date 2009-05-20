@@ -99,7 +99,7 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
         xml += "      <source>\n"
         xml += self._get_source_xml()
         xml += "      </source>\n"
-        xml += "    </hostdev>\n"
+        xml += "    </hostdev>"
         return xml
 
 

@@ -41,7 +41,7 @@ class TestNodeDev(unittest.TestCase):
             nodedev = self._nodeDevFromFile(nodefile)
 
         dev = VirtualHostDevice.device_from_node(conn, nodedev=nodedev)
-        tests.diff_compare(dev.get_xml_config(), devfile)
+        tests.diff_compare(dev.get_xml_config() + "\n", devfile)
 
     def testSystemDevice(self):
         filename = "system.xml"
