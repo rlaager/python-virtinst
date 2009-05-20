@@ -254,9 +254,9 @@ def get_networks(macs, bridges, networks, nonetworks, guest):
         if networks:
             fail(_("Cannot use --network with --nonetworks"))
         return
-    (macs, networks, models) = cli.digest_networks(guest.conn, macs, bridges,
-                                                   networks, nics=1)
-    map(lambda m, n, o: cli.get_network(m, n, guest, o), macs, networks, models)
+    net_kwargs = cli.digest_networks(guest.conn, macs, bridges, networks,
+                                     nics=1)
+    map(lambda kwargs: cli.get_network(kwargs, guest), net_kwargs)
 
 def prompt_virt(caps, arch, req_virt_type, req_accel):
 

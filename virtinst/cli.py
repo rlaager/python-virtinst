@@ -402,45 +402,59 @@ def get_cpuset(cpuset, mem, guest, conn):
         guest.cpuset = cpustr
     return
 
-def get_network(mac, network, guest, model=None):
-    if mac == "RANDOM":
-        mac = None
-    if network == "user":
-        n = VirtualNetworkInterface(mac, type="user",
-                                    conn=guest.conn, model=model)
-    elif network[0:6] == "bridge":
-        n = VirtualNetworkInterface(mac, type="bridge", bridge=network[7:],
-                                    conn=guest.conn, model=model)
-    elif network[0:7] == "network":
-        n = VirtualNetworkInterface(mac, type="network", network=network[8:],
-                                    conn=guest.conn, model=model)
-    else:
-        fail(_("Unknown network type ") + network)
+def get_network(net_kwargs, guest):
+    print net_kwargs
+    n = VirtualNetworkInterface(**net_kwargs)
     guest.nics.append(n)
 
-def parse_network_opts(networks):
-    nets = []
-    models = []
+def parse_network_opts(conn, mac, network):
+    net_type = None
+    network_name = None
+    bridge_name = None
+    model = None
 
-    for network in networks:
-        opts = { 'model': None }
-        args = network.split(",")
-        nets.append(args[0])
+    opts = { 'model': None }
+    args = network.split(",")
 
-        for opt in args[1:]:
-            opt_type = None
-            opt_val = None
-            if opt.count("="):
-                opt_type, opt_val = opt.split("=", 1)
-                opts[opt_type.lower()] = opt_val.lower()
+    # Determine net type and bridge vs. network
+    netdata = None
+    typestr = args[0]
+    del(args[0])
 
-        for opt_type in opts:
-            if opt_type == "model":
-                models.append(opts[opt_type])
-            else:
-                fail(_("Unknown '%s' value '%s'") % (opt_type, opt_val))
+    if typestr.count(":"):
+        net_type, netdata = typestr.split(":", 1)
+    elif typestr.count("="):
+        net_type, netdata = typestr.split("=", 1)
+    else:
+        net_type = typestr
 
-    return (nets, models)
+    if net_type == VirtualNetworkInterface.TYPE_VIRTUAL:
+        network_name = netdata
+    elif net_type == VirtualNetworkInterface.TYPE_BRIDGE:
+        bridge_name = netdata
+
+    # Pass the remaining arg=value pairs
+    for opt in args:
+        opt_type = None
+        opt_val = None
+        if opt.count("="):
+            opt_type, opt_val = opt.split("=", 1)
+            opts[opt_type.lower()] = opt_val.lower()
+
+    for opt_type in opts.keys():
+        opt_val = opts[opt_type]
+
+        if opt_type == "model":
+            model = opt_val
+        else:
+            fail(_("Unknown network option '%s'") % opt_type)
+
+    # The keys here correspond to parameter names for VirtualNetworkInterface
+    # __init__
+    if mac == "RANDOM":
+        mac = None
+    return { "conn" : conn, "type" : net_type, "bridge": bridge_name,
+             "network" : network_name, "model" : model , "macaddr" : mac }
 
 def digest_networks(conn, macs, bridges, networks, nics = 0):
     def listify(l):
@@ -461,10 +475,7 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
     if bridges:
         networks = map(lambda b: "bridge:" + b, bridges)
 
-    (networks, models) = parse_network_opts(networks)
-
-    # With just one mac, create a default network if one is not
-    # specified.
+    # With just one mac, create a default network if one is not specified.
     if len(macs) == 1 and len(networks) == 0:
         if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
             net = _util.default_network(conn)
@@ -472,14 +483,12 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
         else:
             networks.append("user")
 
-    # ensure we have less macs then networks. Auto fill in the remaining
-    # macs
+    # ensure we have less macs then networks, otherwise autofill the mac list
     if len(macs) > len(networks):
-        fail(_("Need to pass equal numbers of networks & mac addresses"))
+        fail(_("Cannot pass more mac addresses than networks."))
     else:
         for dummy in range (len(macs),len(networks)):
             macs.append(None)
-
 
     # Create extra networks up to the number of nics requested
     if len(macs) < nics:
@@ -491,7 +500,13 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
                 networks.append("user")
             macs.append(None)
 
-    return (macs, networks, models)
+    net_init_dicts = []
+    for i in range(0, len(networks)):
+        mac = macs[i]
+        netstr = networks[i]
+        net_init_dicts.append(parse_network_opts(conn, mac, netstr))
+
+    return net_init_dicts
 
 def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, guest):
     if (vnc and nographics) or \

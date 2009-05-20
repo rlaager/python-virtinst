@@ -202,6 +202,8 @@ args_dict = {
         "--network network:default --mac RANDOM",
         # VirtualNetwork with a random macaddr
         "--network network:default --mac 00:11:22:33:44:55",
+        # Using '=' as the net type delimiter
+        "--network network=default",
         # with NIC model
         "--network=user,model=e1000",
         # several networks

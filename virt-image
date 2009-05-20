@@ -42,20 +42,18 @@ gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
 def get_networks(domain, macs, bridges, networks, guest):
     nnics = domain.interface
-    (macs, networks, models_ignore) = cli.digest_networks(guest.conn, macs,
-                                                          bridges, networks,
-                                                          nnics)
+    net_kwargs = cli.digest_networks(guest.conn, macs, bridges, networks,
+                                     nnics)
 
-    if len(networks) > nnics:
+    if len(net_kwargs) > nnics:
         logging.warn(_("Warning: more networks were provided [%i] then nics "
                        "required [%i]. All extras are ignored.") %
-                       (len(networks), nnics))
-        networks = networks[0:nnics]
-        macs = macs [0:nnics]
-    elif nnics > len(networks):
+                       (len(net_kwargs), nnics))
+        net_kwargs = net_kwargs[0:nnics]
+    elif nnics > len(net_kwargs):
         fail(_("The image requires %i network interface.") % nnics)
 
-    map(lambda m, n: cli.get_network(m, n, guest), macs, networks)
+    map(lambda kwargs: cli.get_network(kwargs, guest), net_kwargs)
 
 def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
                  guest):
