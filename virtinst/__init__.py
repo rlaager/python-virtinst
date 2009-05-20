@@ -31,6 +31,7 @@ from VirtualNetworkInterface import VirtualNetworkInterface, \
                                     XenNetworkInterface
 from VirtualGraphics import VirtualGraphics
 from VirtualAudio import VirtualAudio
+from VirtualInputDevice import VirtualInputDevice
 from VirtualDisk import VirtualDisk, XenDisk
 from VirtualHostDevice import (VirtualHostDevice, VirtualHostDeviceUSB,
                                VirtualHostDevicePCI)
@@ -53,4 +54,4 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
            "ImportInstaller", "ImageInstaller", "CloneDesign", "Storage",
            "User", "util", "VirtualHostDevice", "VirtualHostDeviceUSB",
-           "VirtualHostDevicePCI", "VirtualCharDevice"]
+           "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice"]

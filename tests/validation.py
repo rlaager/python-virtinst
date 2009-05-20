@@ -236,6 +236,16 @@ args = {
     'clone_bs'  : { 'invalid' : [], 'valid'   : ['valid']},
 },
 
+'inputdev' : {
+    'init_conns' : [ testconn ],
+    'type' : {
+        'valid'   : [ "mouse", "tablet"],
+        'invalid' : [ "foobar", 1234]},
+    'bus' : {
+        'valid'   : [ "ps2", "xen", "usb"],
+        'invalid' : [ "foobar", 1234]},
+},
+
 'chardev' : {
     'init_conns' : [ testconn ],
     'source_path': {
@@ -434,6 +444,12 @@ class TestValidation(unittest.TestCase):
         for conn in self._getInitConns(label):
             cman = virtinst.CloneManager.CloneDesign(conn)
             self._testArgs(cman, virtinst.CloneManager.CloneDesign, label)
+
+    def testInputDev(self):
+        label = 'inputdev'
+        for conn in self._getInitConns(label):
+            cman = virtinst.VirtualInputDevice(conn)
+            self._testArgs(cman, virtinst.VirtualInputDevice, label)
 
     def testCharDev(self):
         label = 'chardev'
