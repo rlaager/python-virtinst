@@ -27,6 +27,7 @@ import _util
 import libvirt
 import CapabilitiesParser
 import VirtualGraphics
+from VirtualDevice import VirtualDevice
 
 import osdict
 from virtinst import _virtinst as _
@@ -75,15 +76,22 @@ class Guest(object):
         self._os_type = None
         self._os_variant = None
 
-        # Public device lists unaltered by install process
+        # DEPRECATED: Public device lists unaltered by install process
         self.disks = []
         self.nics = []
         self.sound_devs = []
         self.hostdevs = []
 
+        # General device list. Only access through API calls (even internally)
+        self._devices = []
+
         # Device lists to use/alter during install process
         self._install_disks = []
         self._install_nics = []
+
+        # Device list to use/alter during install process. Don't access
+        # directly, use internal APIs
+        self._install_devices = []
 
         # The libvirt virDomain object we 'Create'
         self.domain = None
@@ -382,6 +390,103 @@ class Guest(object):
     cdrom = property(get_cdrom, set_cdrom)
     # END DEPRECATED PROPERTIES
 
+
+    # Device Add/Remove Public API methods
+
+    def _dev_build_list(self, devtype, devlist=None):
+        if not devlist:
+            devlist = self._devices
+
+        newlist = []
+        for i in devlist:
+            if i.virtual_device_type == devtype:
+                newlist.append(i)
+        return newlist
+
+    def add_device(self, dev):
+        """
+        Add the passed device to the guest's device list.
+
+        @param dev: VirtualDevice instance to attach to guest
+        """
+        if not isinstance(dev, VirtualDevice):
+            raise ValueError(_("Must pass a VirtualDevice instance."))
+        devtype = dev.virtual_device_type
+
+        if   devtype == VirtualDevice.VIRTUAL_DEV_DISK:
+            self.disks.append(dev)
+        elif devtype == VirtualDevice.VIRTUAL_DEV_NET:
+            self.nics.append(dev)
+        elif devtype == VirtualDevice.VIRTUAL_DEV_AUDIO:
+            self.sound_devs.append(dev)
+        elif devtype == VirtualDevice.VIRTUAL_DEV_GRAPHICS:
+            self._graphics_dev = dev
+        elif devtype == VirtualDevice.VIRTUAL_DEV_HOSTDEV:
+            self.hostdevs.append(dev)
+        else:
+            self._devices.append(dev)
+
+    def get_devices(self, devtype):
+        """
+        Return a list of devices of type 'devtype' that will installed on
+        the guest.
+
+        @param devtype: Device type to search for (one of
+                        VirtualDevice.virtual_device_types)
+        """
+        if   devtype == VirtualDevice.VIRTUAL_DEV_DISK:
+            return self.disks[:]
+        elif devtype == VirtualDevice.VIRTUAL_DEV_NET:
+            return self.nics[:]
+        elif devtype == VirtualDevice.VIRTUAL_DEV_AUDIO:
+            return self.sound_devs[:]
+        elif devtype == VirtualDevice.VIRTUAL_DEV_GRAPHICS:
+            return self._graphics_dev and [self._graphics_dev] or []
+        elif devtype == VirtualDevice.VIRTUAL_DEV_HOSTDEV:
+            return self.hostdevs[:]
+        else:
+            return self._dev_build_list(devtype)
+
+    def get_all_devices(self):
+        """
+        Return a list of all devices being installed with the guest
+        """
+        retlist = []
+        for devtype in VirtualDevice.virtual_device_types:
+            retlist.extend(self.get_devices(devtype))
+        return retlist
+
+    def remove_device(self, dev):
+        """
+        Remove the passed device from the guest's device list
+
+        @param dev: VirtualDevice instance
+        """
+        if dev == self._graphics_dev:
+            self._graphics_dev = None
+
+        for devlist in [self.disks, self.nics, self.sound_devs, self.hostdevs,
+                        self._devices]:
+            if dev in devlist:
+                devlist.remove(dev)
+
+    # Device fetching functions used internally during the install process.
+    # These allow us to change dev defaults, add install media, etc. during
+    # the install, but revert to a clean state if the install fails
+    def _init_install_devs(self):
+        self._install_devices = self.get_all_devices()[:]
+
+    def _get_install_devs(self, devtype):
+        return self._dev_build_list(devtype, self._install_devices)
+
+    def _add_install_dev(self, dev):
+        self._install_devices.append(dev)
+
+    def _get_all_install_devs(self):
+        retlist = []
+        for devtype in VirtualDevice.virtual_device_types:
+            retlist.extend(self._get_install_devs(devtype))
+        return retlist
 
     # Private xml building methods
 
