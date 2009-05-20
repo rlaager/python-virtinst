@@ -25,6 +25,7 @@ from virtinst import VirtualDisk
 from virtinst import VirtualAudio
 from virtinst import VirtualNetworkInterface
 from virtinst import VirtualHostDeviceUSB, VirtualHostDevicePCI
+from virtinst import VirtualCharDevice
 import tests
 
 conn = libvirt.open("test:///default")
@@ -411,28 +412,74 @@ class TestXMLConfig(unittest.TestCase):
                                             conn=g.conn)
         self._compare(g, "boot-many-sounds", False)
 
+    def testManyChars(self):
+        g = get_basic_fullyvirt_guest()
+        dev1 = VirtualCharDevice.get_dev_instance(g.conn,
+                                                  VirtualCharDevice.DEV_SERIAL,
+                                                  VirtualCharDevice.CHAR_NULL)
+        dev2 = VirtualCharDevice.get_dev_instance(g.conn,
+                                                  VirtualCharDevice.DEV_PARALLEL,
+                                                  VirtualCharDevice.CHAR_UNIX)
+        dev2.source_path = "/tmp/foobar"
+        dev3 = VirtualCharDevice.get_dev_instance(g.conn,
+                                                  VirtualCharDevice.DEV_SERIAL,
+                                                  VirtualCharDevice.CHAR_TCP)
+        dev3.wire_mode = "telnet"
+        dev3.source_host = "my.source.host"
+        dev3.source_port = "1234"
+        dev4 = VirtualCharDevice.get_dev_instance(g.conn,
+                                                  VirtualCharDevice.DEV_PARALLEL,
+                                                  VirtualCharDevice.CHAR_UDP)
+        dev4.connect_host = "my.connect.host"
+        dev4.connect_port = "1111"
+        dev4.source_host = "my.source.host"
+        dev4.source_port = "2222"
+
+        g.add_device(dev1)
+        g.add_device(dev2)
+        g.add_device(dev3)
+        g.add_device(dev4)
+        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
+                                            conn=g.conn)
+        self._compare(g, "boot-many-chars", False)
+
     def testManyDevices(self):
         g = get_basic_fullyvirt_guest()
 
+        # Hostdevs
         dev1 = VirtualHostDeviceUSB(g.conn)
         dev1.product = "0x1234"
         dev1.vendor = "0x4321"
         g.hostdevs.append(dev1)
 
+        # Sound devices
         g.sound_devs.append(VirtualAudio("sb16", conn=g.conn))
         g.sound_devs.append(VirtualAudio("es1370", conn=g.conn))
 
+        # Disk devices
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
                                    device=VirtualDisk.DEVICE_FLOPPY))
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
                                    bus="scsi"))
 
+        # Network devices
         net1 = get_virtual_network()
         net1.model = "e1000"
         net2 = VirtualNetworkInterface(type="user",
                                        macaddr="11:11:11:11:11:11")
         g.nics.append(net1)
         g.nics.append(net2)
+
+        # Character devices
+        cdev1 = VirtualCharDevice.get_dev_instance(g.conn,
+                                                   VirtualCharDevice.DEV_SERIAL,
+                                                   VirtualCharDevice.CHAR_NULL)
+        cdev2 = VirtualCharDevice.get_dev_instance(g.conn,
+                                                   VirtualCharDevice.DEV_PARALLEL,
+                                                   VirtualCharDevice.CHAR_UNIX)
+        cdev2.source_path = "/tmp/foobar"
+        g.add_device(cdev1)
+        g.add_device(cdev2)
 
         g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
                                             conn=g.conn)

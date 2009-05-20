@@ -6,7 +6,7 @@
   <os>
     <type arch='i686'>hvm</type>
     <loader>/usr/lib/xen/boot/hvmloader</loader>
-    <boot dev='hd'/>
+    <boot dev='network'/>
   </os>
   <features>
     <acpi/><apic/>
@@ -18,35 +18,19 @@
   <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
-    <disk type='block' device='floppy'>
-      <source dev='/dev/loop0'/>
-      <target dev='fda' bus='fdc'/>
-    </disk>
-    <disk type='block' device='disk'>
-      <source dev='/dev/loop0'/>
-      <target dev='sda' bus='scsi'/>
-    </disk>
-    <interface type='network'>
-      <source network='default'/>
-      <mac address='11:22:33:44:55:66'/>
-      <model type='e1000'/>
-    </interface>
-    <interface type='user'>
-      <mac address='11:11:11:11:11:11'/>
-    </interface>
     <input type='mouse' bus='ps2'/>
     <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
     <serial type='null'/>
+    <serial type='tcp'>
+      <source mode='bind' host='my.source.host' service='1234'/>
+      <wire type='telnet'/>
+    </serial>
     <parallel type='unix'>
       <source mode='bind' path='/tmp/foobar'/>
     </parallel>
-    <sound model='sb16'/>
-    <sound model='es1370'/>
-    <hostdev mode='subsystem' type='usb' managed='yes'>
-      <source>
-        <vendor id='0x4321'/>
-        <product id='0x1234'/>
-      </source>
-    </hostdev>
+    <parallel type='udp'>
+      <source mode='bind' host='my.source.host' service='2222'/>
+      <source mode='connect' host='my.connect.host' service='1111'/>
+    </parallel>
   </devices>
 </domain>
