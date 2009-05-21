@@ -795,7 +795,6 @@ class StorageVolume(StorageObject):
         return pool_object
     lookup_pool_by_name = staticmethod(lookup_pool_by_name)
 
-
     # Properties used by all volumes
     def get_file_type(self):
         return self._file_type
@@ -1080,3 +1079,38 @@ class LogicalVolume(StorageVolume):
 
     def _get_source_xml(self):
         return ""
+
+class CloneVolume(StorageVolume):
+    """
+    Build and install a volume that is a clone of an existing volume
+    """
+
+    format = property(StorageVolume.get_format, StorageVolume.set_format)
+
+    def __init__(self, name, input_vol):
+        if not isinstance(input_vol, libvirt.virStorageVol):
+            raise ValueError(_("input_vol must be a virStorageVol"))
+
+        self.input_vol = input_vol
+        pool = self.input_vol.storagePoolLookupByVolume()
+        vol_class = StorageVolume.get_volume_for_pool(pool_object=pool)
+
+        # Populate some basic info
+        xml  = input_vol.XMLDesc(0)
+        typ  = input_vol.info()[0]
+        cap  = int(_util.get_xml_path(xml, "/volume/capacity"))
+        all  = int(_util.get_xml_path(xml, "/volume/allocation"))
+        fmt  = _util.get_xml_path(xml, "/volume/target/format/@type")
+
+        StorageVolume.__init__(self, name=name, pool=pool,
+                               pool_name=pool.name(),
+                               allocation=all, capacity=cap)
+
+        self.input_vol = input_vol
+        self._file_type = typ
+        self._format = fmt
+
+    def get_xml_config(self):
+        xml  = self.input_vol.XMLDesc(0)
+        newxml = _util.set_xml_path(xml, "/volume/name", self.name)
+        return newxml

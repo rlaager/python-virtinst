@@ -50,7 +50,7 @@ def createPool(conn, ptype, poolname=None, fmt=None, tpath=None,
 
     return pool_inst.install(build=True, meter=None, create=start)
 
-def createVol(poolobj, volname=None, input_vol=None):
+def createVol(poolobj, volname=None, input_vol=None, clone_vol=None):
     volclass = StorageVolume.get_volume_for_pool(pool_object=poolobj)
 
     if volname == None:
@@ -60,10 +60,14 @@ def createVol(poolobj, volname=None, input_vol=None):
     cap = 10 * 1024 * 1024 * 1024
     vol_inst = volclass(name=volname, capacity=cap, allocation=alloc,
                         pool=poolobj)
-    if input_vol:
+    if input_vol or clone_vol:
         if not virtinst.Storage.is_create_vol_from_supported():
             return
+
+    if input_vol:
         vol_inst.input_vol = input_vol
+    elif clone_vol:
+        vol_inst = virtinst.Storage.CloneVolume(volname, clone_vol)
 
     return vol_inst.install(meter=False)
 
@@ -75,22 +79,26 @@ class TestStorage(unittest.TestCase):
     def testDirPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_DIR)
         invol = createVol(poolobj)
-        createVol(poolobj, volname=invol.name() + "clone", input_vol=invol)
+        createVol(poolobj, volname=invol.name() + "input", input_vol=invol)
+        createVol(poolobj, volname=invol.name() + "clone", clone_vol=invol)
 
     def testFSPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_FS)
         invol = createVol(poolobj)
-        createVol(poolobj, volname=invol.name() + "clone", input_vol=invol)
+        createVol(poolobj, volname=invol.name() + "input", input_vol=invol)
+        createVol(poolobj, volname=invol.name() + "clone", clone_vol=invol)
 
     def testNetFSPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_NETFS)
         invol = createVol(poolobj)
-        createVol(poolobj, volname=invol.name() + "clone", input_vol=invol)
+        createVol(poolobj, volname=invol.name() + "input", input_vol=invol)
+        createVol(poolobj, volname=invol.name() + "clone", clone_vol=invol)
 
     def testLVPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_LOGICAL)
         invol = createVol(poolobj)
-        createVol(poolobj, volname=invol.name() + "clone", input_vol=invol)
+        createVol(poolobj, volname=invol.name() + "input", input_vol=invol)
+        createVol(poolobj, volname=invol.name() + "clone", clone_vol=invol)
 
     def testDiskPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_DISK, fmt="dos")

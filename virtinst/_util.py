@@ -30,6 +30,7 @@ import commands
 import logging
 import traceback
 
+import libxml2
 import libvirt
 
 import virtinst
@@ -215,8 +216,35 @@ def log_exception(msg=""):
     if msg:
         logging.debug(msg)
 
-# Selinux helpers
+def set_xml_path(xml, path, newval):
+    """
+    Set the passed xml xpath to the new value
+    """
+    doc = None
+    ctx = None
+    result = None
 
+    try:
+        doc = libxml2.parseDoc(xml)
+        ctx = doc.xpathNewContext()
+
+        ret = ctx.xpathEval(path)
+        if ret != None:
+            if type(ret) == list:
+                if len(ret) == 1:
+                    ret[0].setContent(newval)
+            else:
+                ret.setContent(newval)
+
+        result = doc.serialize()
+    finally:
+        if doc:
+            doc.freeDoc()
+        if ctx:
+            ctx.xpathFreeContext()
+    return result
+
+# Selinux helpers
 def have_selinux():
     return bool(selinux) and bool(selinux.is_selinux_enabled())
 
