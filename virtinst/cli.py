@@ -23,6 +23,7 @@ import os, sys
 import logging
 import logging.handlers
 import locale
+import optparse
 from optparse import OptionValueError, OptionParser
 
 import libvirt
@@ -51,6 +52,30 @@ class VirtOptionParser(OptionParser):
         encoding = self._get_encoding(file)
         file.write(self.format_help().encode(encoding, "replace"))
 
+class VirtHelpFormatter(optparse.IndentedHelpFormatter):
+    """
+    Subclass the default help formatter to allow printing newline characters
+    in --help output. The way we do this is a huge hack :(
+    """
+    oldwrap = None
+
+    def format_option(self, option):
+        self.oldwrap = optparse.textwrap.wrap
+        ret = []
+        try:
+            optparse.textwrap.wrap = self._textwrap_wrapper
+            ret = optparse.IndentedHelpFormatter.format_option(self, option)
+        finally:
+            optparse.textwrap.wrap = self.oldwrap
+        return ret
+
+    def _textwrap_wrapper(self, text, width):
+        ret = []
+        for line in text.split("\n"):
+            ret.extend(self.oldwrap(line, width))
+        if ret:
+            print "\n".join(ret)
+        return ret
 #
 # Setup helpers
 #

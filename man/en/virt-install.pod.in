@@ -362,25 +362,22 @@ read and write caching.
 See the examples section for some uses. This option deprecates C<--file>,
 C<--file-size>, and C<--nonsparse>.
 
-=item -f DISKFILE, --file=DISKFILE
-
-Path to the file, disk partition, or logical volume to use as the backing store
-for the guest's virtual disk. This option is deprecated in favor of C<--disk>.
-
-=item -s DISKSIZE, --file-size=DISKSIZE
-
-Size of the file to create for the guest virtual disk. This is deprecated in
-favor of C<--disk>.
-
-=item --nonsparse
-
-Fully allocate the storage when creating. This is deprecated in favort of
-C<--disk>
-
 =item --nodisks
 
 Request a virtual machine without any local disk storage, typically used for
 running 'Live CD' images or installing to network storage (iSCSI or NFS root).
+
+=item -f DISKFILE, --file=DISKFILE
+
+This option is deprecated in favor of C<--disk path=DISKFILE>.
+
+=item -s DISKSIZE, --file-size=DISKSIZE
+
+This option is deprecated in favor of C<--disk ...,size=DISKSIZE,...>
+
+=item --nonsparse
+
+This option is deprecated in favor of C<--disk ...,sparse=false,...>
 
 =back
 
@@ -395,14 +392,14 @@ one of 3 formats:
 
 =over 4
 
-=item bridge:BRIDGE
+=item bridge=BRIDGE
 
 Connect to a bridge device in the host called C<BRIDGE>. Use this option if
 the host has static networking config & the guest requires full outbound
 and inbound connectivity  to/from the LAN. Also use this if live migration
 will be used with this guest.
 
-=item network:NAME
+=item network=NAME
 
 Connect to a virtual network in the host called C<NAME>. Virtual networks
 can be listed, created, deleted using the C<virsh> command line tool. In
@@ -424,14 +421,14 @@ that will be used for connectivity. Failing that, the virtual network
 called C<default> will be used. This option can be specified multiple
 times to setup more than one NIC.
 
-Available options are:
+Other available options are:
 
 =over 4
 
 =item B<model>
 
 Network device model as seen by the guest. Value can be any nic model supported
-by the hypervisor, e.g.: 'e1000', 'rtl8139' or 'virtio'.
+by the hypervisor, e.g.: 'e1000', 'rtl8139', 'virtio', ...
 
 =item B<mac>
 
@@ -443,22 +440,18 @@ be '54:52:00'.
 
 =back
 
-=item -b BRIDGE, --bridge=BRIDGE
-
-Bridge device to connect the guest NIC to. This parameter is deprecated in
-favour of the C<--network> parameter.
-
-=item -m MAC, --mac=MAC
-
-Fixed MAC address for the guest; If this parameter is omitted, or the value
-C<RANDOM> is specified a suitable address will be randomly generated. For
-Xen virtual machines it is required that the first 3 pairs in the MAC address
-be the sequence '00:16:3e', while for QEMU or KVM virtual machines it must
-be '54:52:00'.
-
 =item --nonetworks
 
 Request a virtual machine without any network interfaces.
+
+=item -b BRIDGE, --bridge=BRIDGE
+
+This parameter is deprecated in favour of
+C<--network bridge=bridge_name>.
+
+=item -m MAC, --mac=MAC
+
+This parameter is deprecated in favour of C<--network NETWORK,mac=12:34...>
 
 =back
 
@@ -558,15 +551,15 @@ is off (as of virtinst 0.400.0)
 
 =head1 EXAMPLES
 
-Install a KVM guest, creating a new storage file, virtual networking,
-booting from the host CDROM, using VNC server/viewer
+Install a KVM guest, creating a new storage file, virtual networking using
+virtio, booting from the host CDROM, using VNC server/viewer
 
   # virt-install \
        --connect qemu:///system \
        --name demo \
        --ram 500 \
        --disk path=/var/lib/libvirt/images/demo.img,size=5 \
-       --network network:default \
+       --network network=default,model=virtio \
        --accelerate \
        --vnc \
        --cdrom /dev/cdrom
@@ -580,7 +573,7 @@ booting from PXE, using VNC server/viewer
        --name demo \
        --ram 500 \
        --disk path=/dev/HostVG/DemoVM \
-       --network network:default \
+       --network network=default \
        --accelerate \
        --vnc \
        --os-variant fedora9
@@ -593,7 +586,7 @@ using SDL graphics, using a remote kernel and initrd pair:
        --name demo \
        --ram 500 \
        --disk path=/dev/hdc \
-       --network bridge:eth1 \
+       --network bridge=eth1 \
        --arch ppc64 \
        --sdl \
        --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/

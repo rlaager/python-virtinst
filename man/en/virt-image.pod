@@ -108,12 +108,11 @@ Disables ACPI for fully virtualized guest (overrides value in XML descriptor)
 
 =item -m MAC, --mac=MAC
 
-Fixed MAC address for the guest. See L<virt-install(1)> for details
+This is deprecated in favor of C<--network ...,mac=MAC,...>
 
 =item -b BRIDGE, --bridge=BRIDGE
 
-Bridge device to connect the guest NIC to. This is deprecated in favor of
-C<--network>
+This is deprecated in favor of C<--network bridge=BRIDGE>
 
 =item -w NETWORK, --network=NETWORK
 

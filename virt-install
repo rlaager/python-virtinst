@@ -24,6 +24,7 @@
 import os, sys
 import time
 import errno
+import optparse
 from optparse import OptionGroup
 import logging
 import urlgrabber.progress as progress
@@ -438,7 +439,8 @@ def validate_install_media(guest, location, cdpath, cdinstall=False):
 ### Option parsing
 def parse_args():
     usage = "%prog --name NAME --ram RAM STORAGE INSTALL [options]"
-    parser = cli.VirtOptionParser(usage=usage)
+    parser = cli.VirtOptionParser(usage=usage,
+                                  formatter=cli.VirtHelpFormatter())
 
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=cli.check_before_store,
@@ -526,38 +528,43 @@ def parse_args():
     stog = OptionGroup(parser, _("Storage Configuration"))
     stog.add_option("", "--disk", type="string", dest="diskopts",
                     action="callback", callback=cli.check_before_append,
-                    help=_("Specify storage to use as a disk with various "
-                           "options."))
-    stog.add_option("-f", "--file", type="string", dest="file_path",
-                    action="callback", callback=cli.check_before_append,
-                    help=_("File to use as the disk image"))
-    stog.add_option("-s", "--file-size", type="float",
-                    action="append", dest="disksize",
-                    help=_("Size of the disk image (if it doesn't exist) in "
-                           "gigabytes"))
-    stog.add_option("", "--nonsparse", action="store_false",
-                    default=True, dest="sparse",
-                    help=_("Don't use sparse files for disks.  Note that this "
-                           "will be significantly slower for guest creation"))
+        help=_("Specify storage with various options. Ex.\n"
+               "--disk path=/my/existing/disk\n"
+               "--disk path=/my/new/disk,size=5 (in gigabytes)\n"
+               "--disk vol=poolname:volname,device=cdrom,bus=scsi,..."))
     stog.add_option("", "--nodisks", action="store_true",
                     help=_("Don't set up any disks for the guest."))
+
+    # Deprecated storage options
+    stog.add_option("-f", "--file", type="string", dest="file_path",
+                    action="callback", callback=cli.check_before_append,
+                    help=optparse.SUPPRESS_HELP)
+    stog.add_option("-s", "--file-size", type="float",
+                    action="append", dest="disksize",
+                    help=optparse.SUPPRESS_HELP)
+    stog.add_option("", "--nonsparse", action="store_false",
+                    default=True, dest="sparse",
+                    help=optparse.SUPPRESS_HELP)
     parser.add_option_group(stog)
 
     netg = OptionGroup(parser, _("Networking Configuration"))
-    netg.add_option("-b", "--bridge", type="string", dest="bridge",
-                    action="callback", callback=cli.check_before_append,
-                    help=_("Bridge to connect guest NIC to; if none given, "
-                           "will try to determine the default"))
     netg.add_option("-w", "--network", type="string", dest="network",
                     action="callback", callback=cli.check_before_append,
-                    help=_("Connect the guest to a virtual network, "
-                           "forwarding to the physical network with NAT"))
-    netg.add_option("-m", "--mac", type="string", dest="mac",
-                    action="callback", callback=cli.check_before_append,
-                    help=_("Fixed MAC address for the guest; if none or "
-                           "RANDOM is given a random address will be used"))
+      help=_("Specify a network interface. Ex:\n"
+             "--network bridge=mybr0\n"
+             "--network network=my_libvirt_virtual_net\n"
+             "--network network=mynet,model=virtio,mac=00:11..."))
     netg.add_option("", "--nonetworks", action="store_true",
                     help=_("Don't create network interfaces for the guest."))
+
+    # Deprecated net options
+    netg.add_option("-b", "--bridge", type="string", dest="bridge",
+                    action="callback", callback=cli.check_before_append,
+                    help=optparse.SUPPRESS_HELP)
+    netg.add_option("-m", "--mac", type="string", dest="mac",
+                    action="callback", callback=cli.check_before_append,
+                    help=optparse.SUPPRESS_HELP)
+
     parser.add_option_group(netg)
 
     vncg = cli.graphics_option_group(parser)

@@ -30,6 +30,7 @@ import virtinst.CapabilitiesParser
 import virtinst.cli as cli
 from virtinst.cli import fail
 
+import optparse
 from optparse import OptionGroup
 import gettext
 import locale
@@ -68,8 +69,9 @@ def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
 
 ### Option parsing
 def parse_args():
-    parser = cli.VirtOptionParser()
-    parser.set_usage("%prog [options] image.xml")
+    usage = "%prog [options] image.xml"
+    parser = cli.VirtOptionParser(usage=usage,
+                                  formatter=cli.VirtHelpFormatter())
 
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=cli.check_before_store,
@@ -114,18 +116,20 @@ def parse_args():
     parser.add_option_group(fulg)
 
     netg = OptionGroup(parser, _("Networking Configuration"))
-    netg.add_option("-b", "--bridge", type="string", dest="bridge",
-                    action="callback", callback=cli.check_before_append,
-                    help=_("Bridge to connect guest NIC to; if none given, "
-                           "will try to determine the default"))
     netg.add_option("-w", "--network", type="string", dest="network",
                     action="callback", callback=cli.check_before_append,
-                    help=_("Connect the guest to a virtual network, "
-                           "forwarding to the physical network with NAT"))
+      help=_("Specify a network interface. Ex:\n"
+             "--network bridge=mybr0\n"
+             "--network network=libvirt_network_name\n"
+             "--network network=mynet,model=e1000,mac=00:11..."))
+
+    # Deprecated net options
+    netg.add_option("-b", "--bridge", type="string", dest="bridge",
+                    action="callback", callback=cli.check_before_append,
+                    help=optparse.SUPPRESS_HELP)
     netg.add_option("-m", "--mac", type="string", dest="mac",
                     action="callback", callback=cli.check_before_append,
-                    help=_("Fixed MAC address for the guest; if none or "
-                           "RANDOM is given a random address will be used"))
+                    help=optparse.SUPPRESS_HELP)
     parser.add_option_group(netg)
 
     vncg = cli.graphics_option_group(parser)
