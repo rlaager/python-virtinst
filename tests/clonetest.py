@@ -20,6 +20,9 @@ import logging
 import tests
 import libvirt
 
+from storage import createPool, createVol
+
+import virtinst
 from virtinst import CloneManager
 CloneDesign = CloneManager.CloneDesign
 
@@ -29,6 +32,16 @@ CLONE_NAME = "clone-new"
 # Create some files to use as test images
 FILE1 = "/tmp/virtinst-test1.img"
 FILE2 = "/tmp/virtinst-test2.img"
+P1_VOL1  = "/default-pool/testvol1.img"
+P1_VOL2  = "/default-pool/testvol2.img"
+P2_VOL1  = "/newpool/testvol1.img"
+P2_VOL2  = "/newpool/testvol2.img"
+P3_VOL1  = "/tmp/tmpvol1.img"
+P3_VOL2  = "/tmp/tmpvol2.img"
+
+POOL1 = "/default-pool"
+POOL2 = "/newpool"
+#POOL3 = "/tmp"
 
 for f in [ FILE1, FILE2 ]:
     os.system("touch %s" % f)
@@ -37,12 +50,27 @@ clonexml_dir = os.path.join(os.getcwd(), "tests/clone-xml")
 clone_files = []
 
 for f in os.listdir(clonexml_dir):
+    black_list = [ "managed-storage", "cross-pool" ]
     if f.endswith("-out.xml"):
         f = f[0:(len(f) - len("-out.xml"))]
-        if f not in clone_files:
+        if f not in clone_files and f not in black_list:
             clone_files.append(f)
 
 conn = libvirt.open("test:///default")
+
+p1 = conn.storagePoolLookupByName("default-pool")
+createVol(p1, os.path.basename(P1_VOL1))
+createVol(p1, os.path.basename(P1_VOL2))
+
+p2 = createPool(conn, virtinst.Storage.StoragePool.TYPE_DIR,
+                tpath=POOL2, start=True)
+createVol(p2, os.path.basename(P2_VOL1))
+createVol(p2, os.path.basename(P2_VOL2))
+
+#p3 = createPool(conn, virtinst.Storage.StoragePool.TYPE_DIR,
+#                tpath=POOL3, start=True)
+#createVol(p3, os.path.basename(P3_VOL1))
+#createVol(p3, os.path.basename(P3_VOL2))
 
 def fake_is_uri_remote(ignore):
     return True
@@ -162,4 +190,28 @@ class TestClone(unittest.TestCase):
                     logging.debug("Received expected exception: %s" % str(e))
         finally:
             CloneManager._util.is_uri_remote = oldfunc
+
+    def testCloneStorage(self):
+        base = "managed-storage"
+        self._clone_helper(base, ["/default-pool/new1.img",
+                                  "/default-pool/new2.img"])
+
+    def testCloneStorageCrossPool(self):
+        base = "cross-pool"
+        self._clone_helper(base, ["/newpool/new1.img", "/newpool/new2.img"])
+
+    def testCloneManagedToUnmanaged(self):
+        base = "managed-storage"
+
+        # We are trying to clone from a pool (/default-pool) to unmanaged
+        # storage. For this case, the cloning needs to fail back to manual
+        # operation (no libvirt calls), but since /default-pool doesn't exist,
+        # this should fail.
+        try:
+            self._clone_helper(base, ["/tmp/new1.img", "/tmp/new2.img"])
+
+            raise AssertionError("Managed to unmanaged succeeded, expected "
+                                 "failure.")
+        except (ValueError, RuntimeError), e:
+            logging.debug("Received expected exception: %s" % str(e))
 

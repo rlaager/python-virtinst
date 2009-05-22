@@ -1093,18 +1093,17 @@ class CloneVolume(StorageVolume):
 
         self.input_vol = input_vol
         pool = self.input_vol.storagePoolLookupByVolume()
-        vol_class = StorageVolume.get_volume_for_pool(pool_object=pool)
 
         # Populate some basic info
         xml  = input_vol.XMLDesc(0)
         typ  = input_vol.info()[0]
         cap  = int(_util.get_xml_path(xml, "/volume/capacity"))
-        all  = int(_util.get_xml_path(xml, "/volume/allocation"))
+        alc  = int(_util.get_xml_path(xml, "/volume/allocation"))
         fmt  = _util.get_xml_path(xml, "/volume/target/format/@type")
 
         StorageVolume.__init__(self, name=name, pool=pool,
                                pool_name=pool.name(),
-                               allocation=all, capacity=cap)
+                               allocation=alc, capacity=cap)
 
         self.input_vol = input_vol
         self._file_type = typ

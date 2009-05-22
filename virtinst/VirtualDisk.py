@@ -44,6 +44,17 @@ def _vdisk_create(path, size, kind, sparse = True):
     except OSError:
         return False
 
+def _vdisk_clone(path, clone):
+    logging.debug("Using vdisk clone.")
+
+    path = os.path.expanduser(path)
+    clone = os.path.expanduser(clone)
+    try:
+        rc = subprocess.call([ '/usr/sbin/vdiskadm', 'clone', path, clone ])
+        return rc == 0
+    except OSError:
+        return False
+
 class VirtualDisk(VirtualDevice):
     """
     Builds a libvirt domain disk xml description
@@ -165,6 +176,7 @@ class VirtualDisk(VirtualDevice):
         self._shareable = None
         self._driver_cache = None
         self._selinux_label = None
+        self._clone_path = None
 
         # XXX: No property methods for these
         self.transient = transient
@@ -207,6 +219,26 @@ class VirtualDisk(VirtualDevice):
             val = os.path.abspath(val)
         self.__validate_wrapper("_path", val, validate)
     path = property(_get_path, _set_path)
+
+    def _get_clone_path(self):
+        return self._clone_path
+    def _set_clone_path(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "path")
+            val = os.path.abspath(val)
+
+            # Pass the path to a VirtualDisk, which should provide validation
+            # for us
+            try:
+                # If this disk isn't managed, don't pass 'conn' to this
+                # validation disk, to ensure we have permissions for manual
+                # cloning
+                conn = self.__storage_specified() and self.conn or None
+                VirtualDisk(conn=conn, path=val)
+            except Exception, e:
+                raise ValueError(_("Error validating clone path: %s") % e)
+        self.__validate_wrapper("_clone_path", val, validate)
+    clone_path = property(_get_clone_path, _set_clone_path)
 
     def _get_size(self):
         return self._size
@@ -676,7 +708,8 @@ class VirtualDisk(VirtualDevice):
 
         if not managed_storage:
             if self.type is self.TYPE_BLOCK:
-                raise ValueError, _("Local block device path must exist.")
+                raise ValueError, _("Local block device path '%s' must "
+                                    "exist.") % self.path
             self.set_type(self.TYPE_FILE, validate=False)
 
             # Path doesn't exist: make sure we have write access to dir
@@ -700,6 +733,54 @@ class VirtualDisk(VirtualDevice):
         elif ret[1]:
             logging.warn(ret[1])
 
+    # Storage creation routines
+    def _do_create_storage(self, progresscb):
+        # If a clone_path is specified, but not vol_install.input_vol,
+        # that means we are cloning unmanaged -> managed, so skip this
+        if (self.vol_install and
+            (not self.clone_path or self.vol_install.input_vol)):
+            self._set_vol_object(self.vol_install.install(meter=progresscb),
+                                 validate=False)
+            # Then just leave: vol_install should handle any selinux stuff
+            return
+
+        if self.clone_path:
+            text = (_("Cloning %(srcfile)s") %
+                    {'srcfile' : os.path.basename(self.clone_path)})
+        else:
+            text=_("Creating storage file %s") % os.path.basename(self.path)
+
+        size_bytes = long(self.size * 1024L * 1024L * 1024L)
+        progresscb.start(filename=self.path, size=long(size_bytes),
+                         text=text)
+
+        if self.clone_path:
+            # VDisk clone
+            if (_util.is_vdisk(self.clone_path) or
+                (os.path.exists(self.path) and _util.is_vdisk(self.path))):
+
+                if (not _util.is_vdisk(self.clone_path) or
+                    os.path.exists(self.path)):
+                    raise RuntimeError, _("copying to an existing vdisk is not"
+                                          " supported")
+                if not _vdisk_clone(self.clone_path, self.path):
+                    raise RuntimeError, _("failed to clone disk")
+                progresscb.end(size_bytes)
+
+            else:
+                # Plain file clone
+                self._clone_local(progresscb, size_bytes)
+
+        elif _util.is_vdisk(self.path):
+            # Create vdisk
+            progresscb.update(1024)
+            if not _vdisk_create(self.path, size_bytes, "vmdk", self.sparse):
+                raise RuntimeError, _("Error creating vdisk %s" % self.path)
+
+            progresscb.end(self.size)
+        else:
+            # Plain file creation
+            self._create_local_file(progresscb, size_bytes)
 
     def _create_local_file(self, progresscb, size_bytes):
         """
@@ -726,6 +807,56 @@ class VirtualDisk(VirtualDevice):
                 os.close(fd)
             progresscb.end(size_bytes)
 
+    def _clone_local(self, meter, size_bytes):
+
+        # if a destination file exists and sparse flg is True,
+        # this priority takes a existing file.
+        if (os.path.exists(self.path) == False and self.sparse == True):
+            clone_block_size = 4096
+            sparse = True
+            try:
+                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+                os.ftruncate(fd, size_bytes)
+            finally:
+                os.close(fd)
+        else:
+            clone_block_size = 1024*1024*10
+            sparse = False
+
+        logging.debug("Local Cloning %s to %s, sparse=%s, block_size=%s" %
+                      (self.clone_path, self.path, sparse, clone_block_size))
+
+        zeros = '\0' * 4096
+
+        try:
+            src_fd = os.open(self.clone_path, os.O_RDONLY)
+            dst_fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+
+            i=0
+            while 1:
+                l = os.read(src_fd, clone_block_size)
+                s = len(l)
+                if s == 0:
+                    meter.end(size_bytes)
+                    break
+                # check sequence of zeros
+                if sparse and zeros == l:
+                    os.lseek(dst_fd, s, 1)
+                else:
+                    b = os.write(dst_fd, l)
+                    if s != b:
+                        meter.end(i)
+                        break
+                i += s
+                if i < size_bytes:
+                    meter.update(i)
+
+        finally:
+            if src_fd is not None:
+                os.close(src_fd)
+            if dst_fd is not None:
+                os.close(dst_fd)
+
     def setup(self, progresscb=None):
         """
         Build storage (if required)
@@ -739,29 +870,10 @@ class VirtualDisk(VirtualDevice):
         if not progresscb:
             progresscb = progress.BaseMeter()
 
-        if self.__creating_storage():
-            if self.vol_install:
-                self._set_vol_object(self.vol_install.install(meter=progresscb),
-                                     validate=False)
-                # Then just leave: vol_install should handle any selinux stuff
-                return
-
-            size_bytes = long(self.size * 1024L * 1024L * 1024L)
-            progresscb.start(filename=self.path, size=long(size_bytes),
-                             text=_("Creating storage file..."))
-
-            if _util.is_vdisk(self.path):
-                progresscb.update(1024)
-                if not _vdisk_create(self.path, size_bytes, "vmdk",
-                                     self.sparse):
-                    raise RuntimeError, _("Error creating vdisk %s" % self.path)
-
-                progresscb.end(self.size)
-            else:
-                self._create_local_file(progresscb, size_bytes)
+        if self.__creating_storage() or self.clone_path:
+            self._do_create_storage(progresscb)
 
         # Relabel storage if it was requested
-
         storage_label = self._storage_security_label()
         if storage_label and storage_label != self.selinux_label:
             if not self._support_selinux():

@@ -32,16 +32,15 @@ General workflow for cloning:
     - Run 'CloneManager.start_duplicate', passing the CloneDesign instance
 """
 
-import os
 import libxml2
 import logging
-import subprocess
 import urlgrabber.progress as progress
 import _util
 import libvirt
 import Guest
 from VirtualNetworkInterface import VirtualNetworkInterface
 from VirtualDisk import VirtualDisk
+from virtinst import Storage
 from virtinst import _virtinst as _
 
 #
@@ -325,24 +324,42 @@ class CloneDesign(object):
                         break
                 node[0].setContent(mac)
 
-        # Change xml disk type values if original and clone disk types
-        # (block/file) don't match
         for i in range(0, len(self._original_devices_idx)):
-            orig_type = (self._original_virtual_disks[i].type ==
-                         VirtualDisk.TYPE_FILE)
-            clone_type = (self._clone_virtual_disks[i].type ==
-                          VirtualDisk.TYPE_FILE)
+            orig_disk = self._original_virtual_disks[i]
+            clone_disk = self._clone_virtual_disks[i]
 
+            orig_type = (orig_disk.type == VirtualDisk.TYPE_FILE)
+            clone_type = (clone_disk.type == VirtualDisk.TYPE_FILE)
+
+            # Change xml disk type values if original and clone disk types
+            # (block/file) don't match
             self._change_disk_type(orig_type, clone_type,
                                    self._original_devices_idx[i],
                                    ctx)
+
+            # Sync 'size' between the two
+            clone_disk.size = orig_disk.size
+
+            # Setup proper cloning inputs for the new virtual disks
+            if orig_disk.vol_object and clone_disk.vol_install:
+                # Source and dest are managed. If they share the same pool,
+                # replace vol_install with a CloneVolume instance, otherwise
+                # simply set input_vol on the dest vol_install
+                if (clone_disk.vol_install.pool.name() ==
+                    orig_disk.vol_object.storagePoolLookupByVolume().name()):
+                    newname = clone_disk.vol_install.name
+                    clone_disk.vol_install = Storage.CloneVolume(newname, orig_disk.vol_object)
+                else:
+                    clone_disk.vol_install.input_vol = orig_disk.vol_object
+
+            else:
+                clone_disk.clone_path = orig_disk.path
 
         # Save altered clone xml
         self._clone_xml = str(doc)
 
         ctx.xpathFreeContext()
         doc.freeDoc()
-
 
     def setup(self):
         """
@@ -365,8 +382,8 @@ class CloneDesign(object):
 
     # Parse disk paths that need to be cloned from the original guest's xml
     # Return a tuple of lists:
-    # ([list of paths to clone], [size of those paths],
-    #  [file/block type of those paths], [indices of disks to be cloned])
+    # ([list of VirtualDisk instances of the source paths to clone]
+    #  [indices in the original xml of those disks])
     def _get_original_devices_info(self, xml):
 
         disks   = []
@@ -502,134 +519,20 @@ def start_duplicate(design, meter=None):
 
     logging.debug("Duplicating finished.")
 
-def _vdisk_clone(path, clone):
-    logging.debug("Using vdisk clone.")
-
-    path = os.path.expanduser(path)
-    clone = os.path.expanduser(clone)
-    try:
-        rc = subprocess.call([ '/usr/sbin/vdiskadm', 'clone', path, clone ])
-        return rc == 0
-    except OSError:
-        return False
-
 # Iterate over the list of disks, and clone them using the appropriate
 # clone method
 def _do_duplicate(design, meter):
 
-    IS_UNKNOWN = 0
-    IS_LOCAL = 1
-    IS_VDISK = 2
-
-    dst_dev_iter = iter(design.clone_virtual_disks)
-
-    clone_type_dict = {}
-
-    # First loop over the devices, validate we can clone them, and
-    # determine what clone operation to use
-    for src_dev in design.original_virtual_disks:
-        dst_dev = dst_dev_iter.next()
-        src_path = src_dev.path
-        dst_path = dst_dev.path
-
-        clone_type = IS_UNKNOWN
-
-        if (_util.is_vdisk(src_path) or
-            (os.path.exists(dst_path) and _util.is_vdisk(dst_path))):
-
-            if (not _util.is_vdisk(src_path) or
-                os.path.exists(dst_path)):
-                raise RuntimeError, _("copying to an existing vdisk is not"
-                                      " supported")
-            clone_type = IS_VDISK
-
-        else:
-            clone_type = IS_LOCAL
-
-        if clone_type == IS_UNKNOWN:
-            raise RuntimeError(_("Could not determine storage type for '%s'")
-                               % src_path)
-        clone_type_dict[src_path] = clone_type
-
-
-    dst_dev_iter = iter(design.clone_virtual_disks)
-    dst_siz_iter = iter(design.original_devices_size)
-
     # Now actually do the cloning
-    for src_dev in design.original_virtual_disks:
-        src_path = src_dev.path
-        dst_dev = dst_dev_iter.next()
-        dst_path = dst_dev.path
-        dst_siz = int(dst_siz_iter.next() * 1024 * 1024 * 1024)
-
-        clone_type = clone_type_dict[src_path]
-
-        if src_path == "/dev/null":
+    for dst_dev in design.clone_virtual_disks:
+        if dst_dev.clone_path == "/dev/null":
             # Not really sure why this check was here, but keeping for compat
             logging.debug("Source dev was /dev/null. Skipping")
             continue
-        elif src_path == dst_path:
+        elif dst_dev.clone_path == dst_dev.path:
             logging.debug("Source and destination are the same. Skipping.")
             continue
 
-        meter.start(size=dst_siz,
-                    text=_("Cloning %(srcfile)s") % {'srcfile' : src_path})
+        # VirtualDisk.setup handles everything
+        dst_dev.setup(meter)
 
-        if clone_type == IS_LOCAL:
-            _local_clone(src_path, dst_path, dst_siz, design, meter)
-
-        elif clone_type == IS_VDISK:
-            if not _vdisk_clone(src_path, dst_path):
-                raise RuntimeError, _("failed to clone disk")
-            meter.end(dst_siz)
-
-
-def _local_clone(src_dev, dst_dev, dst_siz, design, meter):
-
-    # if a destination file exists and sparse flg is True,
-    # this priority takes a existing file.
-    if (os.path.exists(dst_dev) == False and design.clone_sparse == True):
-        clone_block_size = 4096
-        sparse = True
-        try:
-            fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
-            os.ftruncate(fd, dst_siz)
-        finally:
-            os.close(fd)
-    else:
-        clone_block_size = 1024*1024*10
-        sparse = False
-
-    logging.debug("Local Cloning %s to %s, sparse=%s, block_size=%s" %
-                  (src_dev, dst_dev, sparse, clone_block_size))
-
-    zeros = '\0' * 4096
-
-    try:
-        src_fd = os.open(src_dev, os.O_RDONLY)
-        dst_fd = os.open(dst_dev, os.O_WRONLY | os.O_CREAT)
-
-        i=0
-        while 1:
-            l = os.read(src_fd, clone_block_size)
-            s = len(l)
-            if s == 0:
-                meter.end(dst_siz)
-                break
-            # check sequence of zeros
-            if sparse and zeros == l:
-                os.lseek(dst_fd, s, 1)
-            else:
-                b = os.write(dst_fd, l)
-                if s != b:
-                    meter.end(i)
-                    break
-            i += s
-            if i < dst_siz:
-                meter.update(i)
-
-    finally:
-        if src_fd is not None:
-            os.close(src_fd)
-        if dst_fd is not None:
-            os.close(dst_fd)
