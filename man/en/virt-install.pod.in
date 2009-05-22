@@ -534,7 +534,7 @@ Without this option, virt-install will wait for the console to close (not
 neccessarily indicating the guest has shutdown), or in the case of
 --noautoconsole, simply kick off the install and exit. Any negative
 value will make virt-install wait indefinitely, a value of 0 triggers the
-same results as noautoconsole. If the time limit is succeeded, virt-install
+same results as noautoconsole. If the time limit is exceeded, virt-install
 simply exits, leaving the virtual machine in its current state.
 
 =item --force

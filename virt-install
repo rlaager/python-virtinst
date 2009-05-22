@@ -728,7 +728,7 @@ def main():
     # Interactive: If this is a continue_inst domain, we default to
     # waiting.  Otherwise, we can exit before the domain has finished
     # installing. Passing --wait will give the above semantics.
-    # 
+    #
     wait = continue_inst
     wait_time = -1
     autoconsole = options.autoconsole
@@ -821,13 +821,13 @@ def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
         return dom
 
     # Domain seems to be running
-    if wait and wait_time > 0:
+    if wait and wait_time != 0:
         timestr = ""
         if wait_time > 0:
             timestr = _("%d minutes ") % (int(wait_time) / 60)
 
         print _("Domain installation still in progress. Waiting %s"
-                 "for domain to complete installation.") % timestr
+                "for installation to complete.") % timestr
 
         # Wait loop
         while True:
@@ -850,6 +850,8 @@ def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
                         "Exiting application.")
                 sys.exit(1)
     else:
+        # User specified --wait 0, which means --noautoconsole, which
+        # means just exit.
         print _("Domain installation still in progress. You can reconnect"
                 " to \nthe console to complete the installation process.")
         sys.exit(0)
