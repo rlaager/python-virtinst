@@ -322,6 +322,7 @@ def get_virt_type(conn, options):
     capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
 
     req_accel = options.accelerate
+    req_hv_type = options.hv_type and options.hv_type.lower() or None
     if options.fullvirt:
         req_virt_type = "hvm"
     elif options.paravirt:
@@ -336,15 +337,15 @@ def get_virt_type(conn, options):
         req_virt_type, req_accel = prompt_virt(capabilities, options.arch,
                                                req_virt_type, req_accel)
 
-    logging.debug("Requesting virt method '%s'" % (req_virt_type and
-                                                   req_virt_type or
-                                                   _("default")))
+    logging.debug("Requesting virt method '%s', hv type '%s'." %
+                  ((req_virt_type and req_virt_type or _("default")),
+                   (req_hv_type and req_hv_type or _("default"))))
 
     try:
         (capsguest,
          capsdomain) = virtinst.CapabilitiesParser.guest_lookup(conn=conn,
                         caps=capabilities, os_type=req_virt_type,
-                        arch=options.arch, type=None,
+                        arch=options.arch, type=req_hv_type,
                         accelerated=req_accel)
     except Exception, e:
         fail(e)
@@ -499,6 +500,9 @@ def parse_args():
                       help=_("This guest should be a fully virtualized guest"))
     virg.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
                     help=_("This guest should be a paravirtualized guest"))
+    virg.add_option("", "--virt-type", type="string", dest="hv_type",
+                    default="",
+                    help=_("Hypervisor name to use (kvm, qemu, xen, ...)"))
     virg.add_option("", "--accelerate", action="store_true",
                     dest="accelerate", default=False,
                     help=_("Use kernel acceleration capabilities "

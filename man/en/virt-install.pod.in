@@ -183,6 +183,11 @@ This guest should be a paravirtualized guest. If the host supports both
 para & full virtualization, and neither this parameter nor the C<--hvm>
 are specified, this will be assumed.
 
+=item --virt-type
+
+The hypervisor to install on. Example choices are kvm, qemu, xen, or kqemu.
+Availabile options are listed via 'virsh capabilities' in the <domain> tags.
+
 =item  --accelerate
 
 When installing a QEMU guest, make use of the KVM or KQEMU kernel acceleration

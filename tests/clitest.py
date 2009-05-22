@@ -136,9 +136,19 @@ args_dict = {
         "--hvm --cdrom %(EXISTIMG1)s",
         # Windows (2 stage) install
         "--hvm --wait 0 --os-variant winxp --cdrom %(EXISTIMG1)s",
+        # Explicit virt-type
+        "--hvm --pxe --virt-type test",
+        # Explicity fullvirt + arch
+        "--arch i686 --pxe",
+        # Convert i*86 -> i686
+        #"--arch i486 --pxe",
       ],
 
       "invalid": [
+        # Bogus virt-type
+        "--hvm --pxe --virt-type bogus",
+        # Bogus arch
+        "--hvm --pxe --arch bogus",
         # PXE w/ paravirt
         "--paravirt --pxe",
         # Import with no disks
