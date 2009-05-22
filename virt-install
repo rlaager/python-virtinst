@@ -160,7 +160,7 @@ def parse_disk_option(guest, path, size):
     elif path_type == "vol=":
         if not path.count("/"):
             raise ValueError(_("Storage volume must be specified as "
-                               "pool=poolname/volname"))
+                               "vol=poolname/volname"))
         vollist = path.split("/")
         voltuple = (vollist[0], vollist[1])
         logging.debug("Parsed volume: as pool='%s' vol='%s'" % \
