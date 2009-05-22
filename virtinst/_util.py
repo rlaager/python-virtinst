@@ -105,10 +105,18 @@ def vm_uuid_collision(conn, uuid):
     Check if passed UUID string is in use by another guest of the connection
     Returns true/false
     """
+    return libvirt_collision(conn.lookupByUUIDString, uuid)
+
+def libvirt_collision(collision_cb, val):
+    """
+    Run the passed collision function with val as the only argument:
+    If libvirtError is raised, return False
+    If no libvirtError raised, return True
+    """
     check = False
-    if uuid is not None:
+    if val is not None:
         try:
-            if conn.lookupByUUIDString(uuid) is not None:
+            if collision_cb(val) is not None:
                 check = True
         except libvirt.libvirtError:
             pass
@@ -243,6 +251,35 @@ def set_xml_path(xml, path, newval):
         if ctx:
             ctx.xpathFreeContext()
     return result
+
+
+def generate_name(base, collision_cb, suffix="", lib_collision=True):
+    """
+    Generate a new name from the passed base string, verifying it doesn't
+    collide with the collision callback.
+
+    This can be used to generate disk path names from the parent VM or pool
+    name. Names generated look like 'base-#suffix', ex:
+
+    If foobar, and foobar-1.img already exist, and:
+    base   = "foobar"
+    suffix = ".img"
+
+    output = "foobar-2.img"
+    """
+
+    for i in range(0, 100000):
+        tryname = base
+        if i != 0:
+            tryname += ("-%d" % i)
+        tryname += suffix
+        if lib_collision:
+            if not libvirt_collision(collision_cb, tryname):
+                return tryname
+        else:
+            if not collision_cb(tryname):
+                return tryname
+    raise ValueError(_("Name generation range exceeded."))
 
 # Selinux helpers
 def have_selinux():

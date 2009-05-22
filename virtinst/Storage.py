@@ -755,17 +755,8 @@ class StorageVolume(StorageObject):
                                                         pool_name=pool_name,
                                                         conn=conn)
         pool_object.refresh(0)
-
-        for i in range(0, 100000):
-            tryname = name
-            if i != 0:
-                tryname += ("-%d" % i)
-            tryname += suffix
-            try:
-                pool_object.storageVolLookupByName(tryname)
-            except libvirt.libvirtError:
-                return tryname
-        raise ValueError(_("Default volume target path range exceeded."))
+        return _util.generate_name(name, pool_object.storageVolLookupByName,
+                                   suffix)
     find_free_name = staticmethod(find_free_name)
 
     def lookup_pool_by_name(pool_object=None, pool_name=None, conn=None):
