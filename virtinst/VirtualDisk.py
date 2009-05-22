@@ -435,8 +435,9 @@ class VirtualDisk(VirtualDevice):
             # User already set driverName to a different value, respect that
             return
 
-        logging.debug("Setting driver name,type to %s, %s." % (drvname,
-                                                               drvtype))
+        if drvname or drvtype:
+            logging.debug("Setting driver name,type to %s, %s." % (drvname,
+                                                                   drvtype))
         self._driverName = drvname
         self._driverType = drvtype
 
