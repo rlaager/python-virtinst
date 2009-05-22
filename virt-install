@@ -701,14 +701,13 @@ def main():
     # and now for the full-virt vs paravirt specific questions
     get_install_media(options.location, options.cdrom, options.pxe,
                       options.livecd, options.import_install, guest, ishvm)
-    if not ishvm: # paravirt
-        continue_inst = False
-    else:
+
+    continue_inst = guest.get_continue_inst()
+    if ishvm:
         if options.noacpi:
             guest.features["acpi"] = False
         if options.noapic:
             guest.features["apic"] = False
-        continue_inst = guest.get_continue_inst()
 
     def show_console(dom):
         if guest.graphics_dev:
