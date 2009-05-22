@@ -5,8 +5,8 @@
 # Script to set up an cloning guest configuration and kick off an cloning
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by 
-# the Free  Software Foundation; either version 2 of the License, or 
+# it under the terms of the GNU General Public License as published by
+# the Free  Software Foundation; either version 2 of the License, or
 # (at your option)  any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -30,6 +30,7 @@ from optparse import OptionGroup
 import gettext
 import locale
 import virtinst.cli as cli
+from virtinst import _util
 from virtinst.cli import fail
 from virtinst.User import User
 
@@ -38,7 +39,13 @@ gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
 gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
 ### General input gathering functions
-def get_clone_name(new_name, design):
+def get_clone_name(new_name, auto_clone, design):
+    if not new_name and auto_clone:
+        # Generate a name to use
+        new_name = _util.generate_name(design.original_guest + "-clone",
+                                       design.original_conn.lookupByName)
+        logging.debug("Auto-generated clone name '%s'." % new_name)
+
     prompt_txt = _("What is the name for the cloned virtual machine?")
     err_txt = _("A name is required for the new virtual machine.")
     cli.prompt_loop(prompt_txt, err_txt, new_name, design, "clone_name")
@@ -75,7 +82,8 @@ def get_clone_uuid(new_uuid, design):
     if new_uuid is not None:
         design.set_clone_uuid(new_uuid)
 
-def get_clone_diskfile(new_diskfiles, design, conn, preserve=False):
+def get_clone_diskfile(new_diskfiles, design, conn, preserve=False,
+                       auto_clone=False):
     if new_diskfiles is None:
         new_diskfiles = [None]
 
@@ -89,9 +97,31 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False):
             new_diskfiles.append(None)
         disk = new_diskfiles[newidx]
 
+        if disk is None and auto_clone:
+            disk = _generate_disk_path(origdev, design)
+
         dev = _check_disk(conn, disk, origdev, preserve)
         design.clone_devices = dev.path
         newidx += 1
+
+def _generate_disk_path(origpath, design):
+    basename = origpath
+    suffix = ""
+
+    # Try to split the suffix off the existing disk name. Ex.
+    # foobar.img -> foobar-clone.img
+    #
+    # If the suffix is greater than 7 characters, assume it isn't
+    # a file extension and is part of the disk name, at which point
+    # just stick '-clone' on the end.
+    if basename.count(".") and len(basename.rsplit(".", 1)[1]) <= 7:
+        basename, suffix = basename.rsplit(".", 1)
+        suffix = "." + suffix
+
+    return _util.generate_name(basename + "-clone",
+                               lambda p: _util.disk_exists(design.original_conn, p),
+                               suffix,
+                               lib_collision=False)
 
 def _check_disk(conn, clone_path, orig_path, preserve):
 
@@ -109,11 +139,8 @@ def get_preserve(preserve, design):
 
 
 def get_force_target(target, design):
-    if target is None:
-        pass
-    else:
-        for i in target:
-            design.set_force_target(i)
+    for i in target or []:
+        design.set_force_target(i)
 
 def parse_args():
     parser = cli.VirtOptionParser()
@@ -132,6 +159,9 @@ def parse_args():
                     dest="original_xml", action="callback",
                     callback=cli.check_before_store,
                     help=_("XML file to use as the original guest."))
+    geng.add_option("", "--auto-clone", dest="auto_clone", action="store_true",
+                    help=_("Auto generate clone name and storage paths from"
+                           " the original guest configuration."))
     geng.add_option("-n", "--name", type="string", dest="new_name",
                     action="callback", callback=cli.check_before_store,
                     help=_("Name for the new guest"))
@@ -201,11 +231,11 @@ def main():
     design = clmgr.CloneDesign(connection=conn)
 
     try:
-        get_clone_diskfile(options.new_diskfile, design, not options.preserve)
-        get_clone_macaddr(options.new_mac, design)
         get_original_guest(options.original_guest, options.original_xml,
                            design)
-        get_clone_name(options.new_name, design)
+        get_clone_name(options.new_name, options.auto_clone, design)
+
+        get_clone_macaddr(options.new_mac, design)
         get_clone_uuid(options.new_uuid, design)
         get_clone_sparse(options.sparse, design)
         get_force_target(options.target, design)
@@ -216,7 +246,7 @@ def main():
         design.setup_original()
 
         get_clone_diskfile(options.new_diskfile, design, conn,
-                           not options.preserve)
+                           not options.preserve, options.auto_clone)
 
         # setup design object
         design.setup()

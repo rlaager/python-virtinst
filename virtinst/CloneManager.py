@@ -101,6 +101,8 @@ class CloneDesign(object):
         if type(val) is not str:
             raise ValueError(_("Original xml must be a string."))
         self._original_xml = val
+        self._original_guest = _util.get_xml_path(self.original_xml,
+                                                  "/domain/name")
     def get_original_xml(self):
         return self._original_xml
     original_xml = property(get_original_xml, set_original_xml)
@@ -234,7 +236,7 @@ class CloneDesign(object):
         if self.original_guest == None and self.original_xml == None:
             raise RuntimeError(_("Original guest name or xml is required."))
 
-        if self.original_guest != None:
+        if self.original_guest != None and not self.original_xml:
             self._original_dom = self._lookup_vm(self.original_guest)
             self.original_xml = self._original_dom.XMLDesc(0)
 

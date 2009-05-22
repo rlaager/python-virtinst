@@ -22,7 +22,8 @@ xmldir = "tests/cli-test-xml"
 
 # Images that will be created by virt-install/virt-clone, and removed before
 # each run
-new_images =    [ "cli_new1.img", "cli_new2.img", "cli_new3.img" ]
+new_images =    [ "cli_new1.img", "cli_new2.img", "cli_new3.img",
+                  "cli_exist1-clone.img", "cli_exist2-clone.img"]
 
 # Images that are expected to exist before a command is run
 exist_images =  [ "cli_exist1.img", "cli_exist2.img" ]
@@ -254,6 +255,8 @@ args_dict = {
       "invalid": [
         # Non-existent vm name
         "-o idontexist",
+        # Non-existent vm name with auto flag,
+        "-o idontexist --auto-clone",
         # Colliding new name
         "-o test -n test",
         # XML file with several disks, but non specified
@@ -264,6 +267,22 @@ args_dict = {
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s --force-copy=hdc",
       ]
      }, # category "general"
+
+    "misc" : {
+      "misc_args": "",
+
+      "valid" : [
+        # Auto flag, no storage
+        "-o test --auto-clone",
+        # Auto flag w/ storage,
+        "--original-xml %(CLONE_DISK_XML)s --auto-clone",
+      ],
+
+      "invalid" : [
+        # Just the auto flag
+        "--auto-clone"
+      ]
+    }, # category "misc"
 
     "prompt" : [ " --connect test:///default --debug --prompt",
                  " --connect test:///default --debug --original-xml %(CLONE_DISK_XML)s --prompt" ]
@@ -352,9 +371,12 @@ args_dict = {
 def runcomm(comm):
     for i in new_files:
         os.system("rm %s > /dev/null 2>&1" % i)
+
+    if debug:
+        print comm % test_files
+
     ret = commands.getstatusoutput(comm % test_files)
     if debug:
-        print comm
         print ret[1]
         print "\n"
 

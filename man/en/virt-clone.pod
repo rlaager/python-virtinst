@@ -17,9 +17,10 @@ with an identical virtual hardware configuration. Elements which require
 uniqueness will be updated to avoid a clash between old and new guests.
 
 By default, virt-clone will show an error if the necessary information to
-clone the guest is not provided. An interactive mode is available
-with the --prompt option, but this will only ask for the minimum required
-options.
+clone the guest is not provided. The --auto-clone option will generate
+all needed input, aside from the source guest to clone. An interactive mode
+is available with the --prompt option, but this will only ask for the
+minimum required options.
 
 =head1 OPTIONS
 
@@ -55,6 +56,21 @@ since it is not possible to safely clone active guests at this time.
 Libvirt guest xml file to use as the original guest. The guest does not need to
 be defined on the libvirt connection. This takes the place of the
 C<--original> parameter.
+
+=item --auto-clone
+
+Generate a new guest name, and paths for new storage.
+
+An example or possible generated output:
+
+  Original name        : MyVM
+  Generated clone name : MyVM-clone
+
+  Original disk path   : /home/user/foobar.img
+  Generated disk path  : /home/user/foobar-clone.img
+
+If generated names collide with existing VMs or storage, a number is appended,
+such as foobar-clone-1.img, or MyVM-clone-3.
 
 =item -n NAME, --name=NAME
 
@@ -135,6 +151,13 @@ is off.
 =back
 
 =head1 EXAMPLES
+
+Clone the guest called C<demo> on the default connection, auto generating
+a new name and disk clone path.
+
+  # virt-clone \
+       --original demo \
+       --auto-clone
 
 Clone the guest called C<demo> which has a single disk to copy
 
