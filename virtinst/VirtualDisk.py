@@ -377,10 +377,9 @@ class VirtualDisk(VirtualDevice):
             else:
                 raise ValueError, _("Unknown storage volume type.")
         elif self.vol_install:
-            if isinstance(self.vol_install, Storage.FileVolume):
+            if self.vol_install.file_type == libvirt.VIR_STORAGE_VOL_FILE:
                 dtype = self.TYPE_FILE
             else:
-                # All others should be using TYPE_BLOCK (hopefully)
                 dtype = self.TYPE_BLOCK
         elif self.path:
             if _util.stat_disk(self.path)[0]:
@@ -417,7 +416,7 @@ class VirtualDisk(VirtualDevice):
 
         elif self.vol_install:
             if drvname == self.DRIVER_QEMU:
-                if isinstance(self.vol_install, Storage.FileVolume):
+                if self.vol_install.file_type == libvirt.VIR_STORAGE_VOL_FILE:
                     drvname = self.vol_install.format
                 else:
                     drvname = self.DRIVER_QEMU_RAW

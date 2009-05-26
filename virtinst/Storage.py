@@ -683,6 +683,9 @@ class StorageVolume(StorageObject):
 
     formats = []
 
+    # File vs. Block for the Volume class
+    _file_type = None
+
     def __init__(self, name, capacity, conn=None, pool_name=None, pool=None,
                  allocation=0):
         """
@@ -794,6 +797,10 @@ class StorageVolume(StorageObject):
 
 
     # Properties used by all volumes
+    def get_file_type(self):
+        return self._file_type
+    file_type = property(get_file_type)
+
     def get_capacity(self):
         return self._capacity
     def set_capacity(self, val):
@@ -1008,6 +1015,7 @@ class FileVolume(StorageVolume):
     """
     Build and install xml for use on pools which use file based storage
     """
+    _file_type = libvirt.VIR_STORAGE_VOL_FILE
 
     formats = ["raw", "bochs", "cloop", "cow", "dmg", "iso", "qcow",\
                "qcow2", "vmdk", "vpc"]
@@ -1036,6 +1044,8 @@ class FileVolume(StorageVolume):
 #    """
 #    Build and install xml for use on disk device pools
 #    """
+#    _file_type = libvirt.VIR_STORAGE_VOL_FILE
+#
 #    def __init__(self, *args, **kwargs):
 #        raise NotImplementedError
 
@@ -1043,6 +1053,8 @@ class FileVolume(StorageVolume):
 #    """
 #    Build and install xml for use on iSCSI device pools
 #    """
+#    _file_type = libvirt.VIR_STORAGE_VOL_FILE
+#
 #    def __init__(self, *args, **kwargs):
 #        raise NotImplementedError
 
@@ -1050,6 +1062,7 @@ class LogicalVolume(StorageVolume):
     """
     Build and install logical volumes for lvm pools
     """
+    _file_type = libvirt.VIR_STORAGE_VOL_BLOCK
 
     # Register applicable property methods from parent class
     perms = property(StorageObject.get_perms, StorageObject.set_perms)
