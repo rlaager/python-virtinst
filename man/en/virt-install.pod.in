@@ -89,9 +89,7 @@ away from the host operating system to satisfy this allocation.
 =item  --arch=ARCH
 
 Request a non-native CPU architecture for the guest virtual machine.
-The option is only currently available with QEMU guests, and will not
-enable use of acceleration. If omitted, the host CPU architecture will
-be used in the guest.
+If omitted, the host CPU architecture will be used in the guest.
 
 =item -u UUID, --uuid=UUID
 
@@ -190,10 +188,9 @@ Availabile options are listed via 'virsh capabilities' in the <domain> tags.
 
 =item  --accelerate
 
-When installing a QEMU guest, make use of the KVM or KQEMU kernel acceleration
-capabilities if available. Use of this option is recommended unless a guest
-OS is known to be incompatible with the accelerators. The KVM accelerator is
-preferred over KQEMU if both are available.
+Prefer KVM or KQEMU (in that order) if installing a QEMU guest. This behavior
+is now the default, and this option is deprecated. To install a plain QEMU
+guest, use '--virt-type qemu'
 
 =back
 
@@ -556,8 +553,9 @@ is off (as of virtinst 0.400.0)
 
 =head1 EXAMPLES
 
-Install a KVM guest, creating a new storage file, virtual networking using
-virtio, booting from the host CDROM, using VNC server/viewer
+Install a KVM guest (assuming proper host support), creating a new
++storage file, virtual networking, booting from the host CDROM, using
++VNC server/viewer.
 
   # virt-install \
        --connect qemu:///system \
@@ -565,12 +563,10 @@ virtio, booting from the host CDROM, using VNC server/viewer
        --ram 500 \
        --disk path=/var/lib/libvirt/images/demo.img,size=5 \
        --network network=default,model=virtio \
-       --accelerate \
        --vnc \
        --cdrom /dev/cdrom
 
-
-Install a Fedora 9 KVM guest, using LVM partition, virtual networking,
+Install a Fedora 9 plain QEMU guest, using LVM partition, virtual networking,
 booting from PXE, using VNC server/viewer
 
   # virt-install \
@@ -579,12 +575,13 @@ booting from PXE, using VNC server/viewer
        --ram 500 \
        --disk path=/dev/HostVG/DemoVM \
        --network network=default \
-       --accelerate \
+       --virt-type qemu
        --vnc \
        --os-variant fedora9
 
-Install a QEMU guest, with a real partition, for a different architecture
-using SDL graphics, using a remote kernel and initrd pair:
+Install a guest with a real partition, with the default QEMU hypervisor for
+a different architecture using SDL graphics, using a remote kernel and initrd
+pair:
 
   # virt-install \
        --connect qemu:///system \

@@ -321,7 +321,8 @@ def get_virt_type(conn, options):
 
     capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
 
-    req_accel = options.accelerate
+    # Accelerate request is now the default
+    req_accel = True
     req_hv_type = options.hv_type and options.hv_type.lower() or None
     if options.fullvirt:
         req_virt_type = "hvm"
@@ -505,8 +506,7 @@ def parse_args():
                     help=_("Hypervisor name to use (kvm, qemu, xen, ...)"))
     virg.add_option("", "--accelerate", action="store_true",
                     dest="accelerate", default=False,
-                    help=_("Use kernel acceleration capabilities "
-                           "(kvm, kqemu, ...)"))
+                    help=optparse.SUPPRESS_HELP)
     parser.add_option_group(virg)
 
     insg = OptionGroup(parser, _("Installation Method Options"))
