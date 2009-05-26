@@ -45,8 +45,9 @@ General workflow for the different storage objects:
 @see: U{http://libvirt.org/storage.html}
 """
 
-
 import libvirt
+import threading
+import time
 
 import logging
 from xml.sax.saxutils import escape
@@ -710,6 +711,10 @@ class StorageVolume(StorageObject):
         self.allocation = allocation
         self.capacity = capacity
 
+        # Indicate that the volume installation has finished. Used to
+        # definitively tell the storage progress thread to stop polling.
+        self._install_finished = True
+
     def get_volume_for_pool(pool_object=None, pool_name=None, conn=None):
         """
         Returns volume class associated with passed pool_object/name
@@ -892,22 +897,62 @@ class StorageVolume(StorageObject):
         xml = self.get_xml_config()
         logging.debug("Creating storage volume '%s' with xml:\n%s" % \
                       (self.name, xml))
-        if meter:
-            #meter.start(size=self.capacity,
-            #            text=_("Creating storage volume..."))
-            # XXX: We don't have any meaningful way to update the meter
-            # XXX: throughout the operation, so just skip it
-            pass
+
+        t = threading.Thread(target=self._progress_thread,
+                             name="Checking storage allocation",
+                             args=(meter,))
+        t.setDaemon(True)
+
         try:
-            vol = self.pool.createXML(xml, 0)
-        except Exception, e:
-            raise RuntimeError("Couldn't create storage volume '%s': '%s'" %
-                               (self.name, str(e)))
-        if meter:
-            #meter.end(0)
-            pass
-        logging.debug("Storage volume '%s' install complete." % self.name)
-        return vol
+            try:
+                self._install_finished = False
+                t.start()
+                if meter:
+                    meter.start(size=self.capacity,
+                                text=_("Allocating '%s'") % self.name)
+
+                vol = self.pool.createXML(xml, 0)
+
+                if meter:
+                    meter.end(self.capacity)
+                logging.debug("Storage volume '%s' install complete." %
+                              self.name)
+                return vol
+            except Exception, e:
+                raise RuntimeError("Couldn't create storage volume "
+                                   "'%s': '%s'" % (self.name, str(e)))
+        finally:
+            self._install_finished = True
+
+    def _progress_thread(self, meter):
+        lookup_attempts = 10
+        vol = None
+
+        if not meter:
+            return
+
+        while lookup_attempts > 0:
+            try:
+                vol = self.pool.storageVolLookupByName(self.name)
+                break
+            except:
+                lookup_attempts -= 1
+                time.sleep(.2)
+                if self._install_finished:
+                    break
+                else:
+                    continue
+            break
+
+        if vol == None:
+            logging.debug("Couldn't lookup storage volume in prog thread.")
+            return
+
+        while not self._install_finished:
+            time.sleep(1)
+            ignore, ignore, alloc = vol.info()
+            meter.update(alloc)
+
 
     def is_size_conflict(self):
         """
