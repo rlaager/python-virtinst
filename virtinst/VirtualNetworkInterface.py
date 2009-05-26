@@ -41,15 +41,13 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
         self._network = None
         self._macaddr = None
-        self._type = type
+        self._type = None
 
+        self.type = type
         self.macaddr = macaddr
         self.bridge = bridge
         self.network = network
         self.model = model
-
-        if self.type not in self.network_types:
-            raise ValueError, _("Unknown network type %s") % self.type
 
         if self.type == self.TYPE_VIRTUAL:
             if network is None:
@@ -57,7 +55,11 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
     def get_type(self):
         return self._type
-    type = property(get_type)
+    def set_type(self, val):
+        if val not in self.network_types:
+            raise ValueError, _("Unknown network type %s") % val
+        self._type = val
+    type = property(get_type, set_type)
 
     def get_macaddr(self):
         return self._macaddr
