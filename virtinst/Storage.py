@@ -60,13 +60,8 @@ DEFAULT_LVM_TARGET_BASE = "/dev/"
 DEFAULT_DIR_TARGET_BASE = "/var/lib/libvirt/images/"
 DEFAULT_ISCSI_TARGET = "/dev/disk/by-path"
 
-# Pools:
-#   DirectoryPool         : A flat filesystem directory
-#   FilesystemPool        : A formatted partition
-#   NetworkFilesystemPool : NFS
-#   LogicalPool           : LVM Volume Group
-#   DiskPool              : Raw disk
-#   iSCSIPool             : iSCSI
+def is_create_vol_from_supported():
+    return bool(dir(libvirt.virStoragePool).count("createXMLFrom"))
 
 class StorageObject(object):
     """
@@ -690,6 +685,14 @@ class StorageVolume(StorageObject):
 
     def __init__(self, name, capacity, conn=None, pool_name=None, pool=None,
                  allocation=0):
+        """
+        @param name: Name for the new storage volume
+        @param capacity: Total size of the new volume (in bytes)
+        @param conn: optional virConnect instance to lookup pool_name on
+        @param pool_name: optional pool_name to install on
+        @param pool: virStoragePool object to install on
+        @param allocation: amount of storage to actually allocate (default 0)
+        """
         if pool is None:
             if pool_name is None:
                 raise ValueError(_("One of pool or pool_name must be "
@@ -707,6 +710,7 @@ class StorageVolume(StorageObject):
         self._allocation = None
         self._capacity = None
         self._format = None
+        self._input_vol = None
 
         self.allocation = allocation
         self.capacity = capacity
@@ -841,6 +845,23 @@ class StorageVolume(StorageObject):
         self._pool = newpool
     pool = property(get_pool, set_pool)
 
+    def get_input_vol(self):
+        return self._input_vol
+    def set_input_vol(self, vol):
+        if vol is None:
+            self._input_vol = None
+            return
+
+        if not isinstance(vol, libvirt.virStorageVol):
+            raise ValueError(_("input_vol must be a virStorageVol"))
+        if not is_create_vol_from_supported():
+            raise ValueError(_("Creating storage from an existing volume is"
+                               " not supported by this libvirt version."))
+        self._input_vol = vol
+    input_vol = property(get_input_vol, set_input_vol,
+                         doc=_("virStorageVolume pointer to clone/use as "
+                               "input."))
+
     # Property functions used by more than one child class
     def get_format(self):
         return self._format
@@ -911,7 +932,10 @@ class StorageVolume(StorageObject):
                     meter.start(size=self.capacity,
                                 text=_("Allocating '%s'") % self.name)
 
-                vol = self.pool.createXML(xml, 0)
+                if self.input_vol:
+                    vol = self.pool.createXMLFrom(xml, self.input_vol, 0)
+                else:
+                    vol = self.pool.createXML(xml, 0)
 
                 if meter:
                     meter.end(self.capacity)

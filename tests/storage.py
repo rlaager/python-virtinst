@@ -15,6 +15,7 @@
 # MA 02110-1301 USA.
 
 import unittest
+import virtinst.Storage
 from virtinst.Storage import StoragePool, StorageVolume
 import libvirt
 
@@ -49,7 +50,7 @@ def createPool(conn, ptype, poolname=None, fmt=None, tpath=None,
 
     return pool_inst.install(build=True, meter=None, create=start)
 
-def createVol(poolobj, volname=None):
+def createVol(poolobj, volname=None, input_vol=None):
     volclass = StorageVolume.get_volume_for_pool(pool_object=poolobj)
 
     if volname == None:
@@ -59,6 +60,10 @@ def createVol(poolobj, volname=None):
     cap = 10 * 1024 * 1024 * 1024
     vol_inst = volclass(name=volname, capacity=cap, allocation=alloc,
                         pool=poolobj)
+    if input_vol:
+        if not virtinst.Storage.is_create_vol_from_supported():
+            return
+        vol_inst.input_vol = input_vol
 
     return vol_inst.install(meter=False)
 
@@ -69,19 +74,23 @@ class TestStorage(unittest.TestCase):
 
     def testDirPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_DIR)
-        createVol(poolobj)
+        invol = createVol(poolobj)
+        createVol(poolobj, volname=invol.name() + "clone", input_vol=invol)
 
     def testFSPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_FS)
-        createVol(poolobj)
+        invol = createVol(poolobj)
+        createVol(poolobj, volname=invol.name() + "clone", input_vol=invol)
 
     def testNetFSPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_NETFS)
-        createVol(poolobj)
+        invol = createVol(poolobj)
+        createVol(poolobj, volname=invol.name() + "clone", input_vol=invol)
 
     def testLVPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_LOGICAL)
-        createVol(poolobj)
+        invol = createVol(poolobj)
+        createVol(poolobj, volname=invol.name() + "clone", input_vol=invol)
 
     def testDiskPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_DISK, fmt="dos")
