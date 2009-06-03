@@ -527,7 +527,6 @@ def get_cpuset(cpuset, mem, guest, conn):
     return
 
 def get_network(net_kwargs, guest):
-    print net_kwargs
     n = VirtualNetworkInterface(**net_kwargs)
     guest.nics.append(n)
 
