@@ -18,6 +18,11 @@ import libvirt
 import difflib
 import logging
 import os, sys
+import virtinst
+
+# Force is_blktap_capable to return a consistent value, so test suite
+# won't change based on the system
+virtinst._util.is_blktap_capable = lambda: False
 
 # Setup logging
 rootLogger = logging.getLogger()

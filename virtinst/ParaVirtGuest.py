@@ -22,6 +22,9 @@
 from Guest import Guest
 from DistroInstaller import DistroInstaller
 from VirtualInputDevice import VirtualInputDevice
+from VirtualDevice import VirtualDevice
+from VirtualDisk import VirtualDisk
+import _util
 
 class ParaVirtGuest(Guest):
     def __init__(self, type=None, connection=None, hypervisorURI=None,
@@ -38,3 +41,13 @@ class ParaVirtGuest(Guest):
         dev.type = "mouse"
         dev.bus = "xen"
         return dev
+
+    def _set_defaults(self):
+        # Default file backed PV guests to tap driver
+        for d in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
+            if (d.type == VirtualDisk.TYPE_FILE
+                and _util.is_blktap_capable()
+                and d.driver_name == None):
+                d.driver_name = VirtualDisk.DRIVER_TAP
+
+        Guest._set_defaults(self)

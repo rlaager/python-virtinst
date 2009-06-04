@@ -103,6 +103,16 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         self._compare(g, "boot-paravirt-disk-file", False)
 
+    def testBootParavirtDiskFileBlktapCapable(self):
+        oldblktap = virtinst._util.is_blktap_capable
+        try:
+            virtinst._util.is_blktap_capable = lambda: True
+            g = get_basic_paravirt_guest()
+            g.disks.append(get_filedisk())
+            self._compare(g, "boot-paravirt-disk-drv-tap", False)
+        finally:
+            virtinst._util.is_blktap_capable = oldblktap
+
     def testBootParavirtDiskBlock(self):
         g = get_basic_paravirt_guest()
         g.disks.append(get_blkdisk())

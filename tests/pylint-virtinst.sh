@@ -46,7 +46,7 @@ VD_MISMATCHED_ARGS="VirtualDisk.get_xml_config.*Arguments number differs"
 URLTEST_ACCESS="TestURLFetch.*Access to a protected member"
 
 # We use some hacks in the test driver to simulate remote libvirt URIs
-TEST_HACKS="TestClone.*protected member _util|testQEMUDriverName.*protected member _get_uri"
+TEST_HACKS="TestClone.*protected member _util|testQEMUDriverName.*protected member _get_uri|Access to a protected member _util"
 
 # Scattered examples of legitimately unused arguments
 UNUSED_ARGS="(SuseDistro|SolarisDistro|NetWareDistro).isValidStore.*Unused argument 'progresscb'|.*Installer.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"
