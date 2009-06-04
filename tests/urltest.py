@@ -309,7 +309,11 @@ class TestURLFetch(unittest.TestCase):
                 self.fail()
 
         # Make sure the stores are reporting correct distro name/variant
-        self._checkDistroReporting([hvmstore, xenstore], distro_info)
+        try:
+            self._checkDistroReporting([hvmstore, xenstore], distro_info)
+        except:
+            logging.exception("Distro detection failed.")
+            self.fail()
 
         def fakeAcquireFile(filename, meter):
             if not isinstance(meter, urlgrabber.progress.BaseMeter):
