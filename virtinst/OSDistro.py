@@ -240,7 +240,8 @@ class Distro:
 
     def acquireBootDisk(self, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
-            return fetcher.acquireFile(self._getTreeinfoMedia("boot.iso"))
+            return fetcher.acquireFile(self._getTreeinfoMedia("boot.iso"),
+                                       progresscb)
         else:
             for path in self._boot_iso_paths:
                 if fetcher.hasFile(path):

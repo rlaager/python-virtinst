@@ -226,7 +226,7 @@ class TestURLFetch(unittest.TestCase):
 
 
     def setUp(self):
-        self.meter = None
+        self.meter = urlgrabber.progress.BaseMeter()
         if tests.debug:
             self.meter = urlgrabber.progress.TextMeter()
 
@@ -311,7 +311,10 @@ class TestURLFetch(unittest.TestCase):
         # Make sure the stores are reporting correct distro name/variant
         self._checkDistroReporting([hvmstore, xenstore], distro_info)
 
-        def fakeAcquireFile(filename, ignore=None):
+        def fakeAcquireFile(filename, meter):
+            if not isinstance(meter, urlgrabber.progress.BaseMeter):
+                raise ValueError("passed meter is '%s' not an"
+                                 " actual meter." % meter)
             logging.debug("Fake acquiring %s" % filename)
             return fetcher.hasFile(filename)
 
