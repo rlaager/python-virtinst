@@ -43,6 +43,7 @@ from User import User
 
 KEYBOARD_DIR = "/etc/sysconfig/keyboard"
 XORG_CONF = "/etc/X11/xorg.conf"
+CONSOLE_SETUP_CONF = "/etc/default/console-setup"
 
 def default_route(nic = None):
     if platform.system() == 'SunOS':
@@ -354,6 +355,27 @@ def _xorg_keymap():
         f.close()
     return kt
 
+def _console_setup_keymap():
+    """Look in /etc/default/console-setup for the host machine's keymap, and attempt to
+       map it to a keymap supported by qemu"""
+
+    kt = None
+    try:
+        f = open(CONSOLE_SETUP_CONF, "r")
+    except IOError, e:
+        logging.debug('Could not open "%s": %s ' % (CONSOLE_SETUP_CONF, str(e)))
+    else:
+        keymap_re = re.compile(r'\s*XKBLAYOUT="(?P<kt>[a-z-]+)"')
+        for line in f:
+            m = keymap_re.match(line)
+            if m:
+                kt = m.group('kt')
+                break
+        else:
+            logging.debug("Didn't find keymap in '%s'!" % XORG_CONF)
+        f.close()
+    return kt
+
 def default_keymap():
     """Look in /etc/sysconfig for the host machine's keymap, and attempt to
        map it to a keymap supported by qemu"""
@@ -368,6 +390,8 @@ def default_keymap():
     except IOError, e:
         logging.debug('Could not open "/etc/sysconfig/keyboard" ' + str(e))
         kt = _xorg_keymap()
+        if not kt:
+            kt = _console_setup_keymap()
     else:
         while 1:
             s = f.readline()
