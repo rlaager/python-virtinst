@@ -152,12 +152,17 @@ class disk(object):
         Use qemu-img to convert the given disk.  Note that at least some
         version of qemu-img cannot handle multi-file VMDKs, so this can
         easily go wrong.
+        Gentoo, Debian, and Ubuntu (potentially others) install kvm-img
+        with kvm and qemu-img with qemu. Both would work.
         """
 
         self.clean += [ absout ]
 
         ret, ignore, stderr = run_cmd(["qemu-img", "convert", "-O",
             qemu_formats[out_format], absin, absout])
+        if ret = 127:
+            ret, ignore, stderr = run_cmd(["kvm-img", "convert", "-O",
+                qemu_formats[out_format], absin, absout])
         if ret != 0:
             raise RuntimeError("Disk conversion failed with "
                 "exit status %d: %s" % (ret, "".join(stderr)))
