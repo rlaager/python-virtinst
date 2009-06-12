@@ -115,6 +115,13 @@ OS_TYPES = {\
                         "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
                         "net"  : { "model" : [ (["kvm"], "virtio") ] }
                       }},
+        "debiansqueeze": { "label": "Debian Squeeze", "distro": "debian",
+                      "devices" : {
+                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
+                        "net"  : { "model" : [ (["kvm"], "virtio") ] },
+                        "input" : { "type" : [ (["all"], "tablet") ],
+                                    "bus"  : [ (["all"], "usb"), ] },
+                     }},
         "ubuntuhardy": { "label": "Ubuntu 8.04 LTS (Hardy Heron)",
                          "distro": "ubuntu",
                          "devices" : {
