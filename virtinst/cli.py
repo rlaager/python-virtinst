@@ -147,13 +147,16 @@ def nice_exit():
 
 # Connection opening helper functions
 def getConnection(connect):
-    if not User.current().has_priv(User.PRIV_CREATE_DOMAIN, connect):
+    if (connect and
+        not User.current().has_priv(User.PRIV_CREATE_DOMAIN, connect)):
         fail(_("Must be root to create Xen guests"))
-    if connect is None:
-        fail(_("Could not find usable default libvirt connection."))
 
-    logging.debug("Using libvirt URI '%s'" % connect)
-    return open_connection(connect)
+    logging.debug("Requesting libvirt URI %s" % (connect or "default"))
+    conn = open_connection(connect)
+    logging.debug("Received libvirt URI %s" % conn.getURI())
+
+    return conn
+
 
 def open_connection(uri):
     open_flags = 0

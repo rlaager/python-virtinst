@@ -442,7 +442,7 @@ def parse_args():
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=cli.check_before_store,
                       help=_("Connect to hypervisor with URI"),
-                      default=virtinst.util.default_connection())
+                      default=None)
 
     geng = OptionGroup(parser, _("General Options"))
     geng.add_option("-n", "--name", type="string", dest="name",
