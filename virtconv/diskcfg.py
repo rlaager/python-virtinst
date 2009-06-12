@@ -160,7 +160,7 @@ class disk(object):
 
         ret, ignore, stderr = run_cmd(["qemu-img", "convert", "-O",
             qemu_formats[out_format], absin, absout])
-        if ret = 127:
+        if ret == 127:
             ret, ignore, stderr = run_cmd(["kvm-img", "convert", "-O",
                 qemu_formats[out_format], absin, absout])
         if ret != 0:
