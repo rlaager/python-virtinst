@@ -29,12 +29,14 @@ import re
 import commands
 import logging
 import traceback
+import platform
+import subprocess
 
 import libxml2
 import libvirt
 
 import virtinst
-from virtinst import util
+import virtinst.util as util
 from virtinst import _virtinst as _
 
 try:
@@ -333,6 +335,52 @@ def selinux_readonly_label():
         # The RW label is newer than the RO one, so see if that exists
         con = selinux_rw_label()
     return con
+
+def default_nic():
+    """
+    Return the default NIC to use, if one is specified.
+    """
+
+    dev = ''
+
+    if platform.system() != 'SunOS':
+        return dev
+
+    # XXX: fails without PRIV_XVM_CONTROL
+    proc = subprocess.Popen(['/usr/lib/xen/bin/xenstore-read',
+        'device-misc/vif/default-nic'], stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    out = proc.stdout.readlines()
+    if len(out) > 0:
+        dev = out[0].rstrip()
+
+    return dev
+
+def default_bridge2(conn = None):
+    if platform.system() == 'SunOS':
+        return ["bridge", default_nic()]
+
+    dev = util.default_route()
+
+    if (dev is not None and
+        (not conn or not is_uri_remote(conn.getURI()))):
+        # New style peth0 == phys dev, eth0 == bridge, eth0 == default route
+        if os.path.exists("/sys/class/net/%s/bridge" % dev):
+            return ["bridge", dev]
+
+        # Old style, peth0 == phys dev, eth0 == netloop, xenbr0 == bridge,
+        # vif0.0 == netloop enslaved, eth0 == default route
+        try:
+            defn = int(dev[-1])
+        except:
+            defn = -1
+
+        if (defn >= 0 and
+            os.path.exists("/sys/class/net/peth%d/brport" % defn) and
+            os.path.exists("/sys/class/net/xenbr%d/bridge" % defn)):
+            return ["bridge", "xenbr%d" % defn]
+
+    return None
 
 #
 # These functions accidentally ended up in the API under virtinst.util

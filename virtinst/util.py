@@ -38,6 +38,7 @@ from sys import stderr
 
 import libvirt
 from virtinst import _virtinst as _
+import virtinst
 import CapabilitiesParser
 from User import User
 
@@ -76,59 +77,24 @@ def default_route(nic = None):
             continue
     return None
 
-def _default_nic():
-    """Return the default NIC to use, if one is specified.
-       This is NOT part of the API and may change at will."""
-
-    dev = ''
-
-    if platform.system() != 'SunOS':
-        return dev
-
-    # XXX: fails without PRIV_XVM_CONTROL
-    proc = subprocess.Popen(['/usr/lib/xen/bin/xenstore-read',
-        'device-misc/vif/default-nic'], stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-    out = proc.stdout.readlines()
-    if len(out) > 0:
-        dev = out[0].rstrip()
-
-    return dev
 
 def default_bridge():
-    if platform.system() == 'SunOS':
-        return _default_nic()
-
-    rt = default_route()
-    if rt is None:
-        defn = None
+    ret = virtinst._util.default_bridge2(None)
+    if not ret:
+        # Maintain this behavior for back compat
+        ret = "xenbr0"
     else:
-        defn = int(rt[-1])
+        ret = ret[1]
 
-    if defn is None:
-        return "xenbr0"
-    else:
-        return "xenbr%d"%(defn)
+    return ret
 
 def default_network(conn):
-    if platform.system() == 'SunOS':
-        return ["bridge", _default_nic()]
+    ret = virtinst._util.default_bridge2(conn)
+    if not ret:
+        # FIXME: Check that this exists
+        ret = ["network", "default"]
 
-    dev = default_route()
-
-    if dev is not None and not is_uri_remote(conn.getURI()):
-        # New style peth0 == phys dev, eth0 == bridge, eth0 == default route
-        if os.path.exists("/sys/class/net/%s/bridge" % dev):
-            return ["bridge", dev]
-
-        # Old style, peth0 == phys dev, eth0 == netloop, xenbr0 == bridge,
-        # vif0.0 == netloop enslaved, eth0 == default route
-        defn = int(dev[-1])
-        if os.path.exists("/sys/class/net/peth%d/brport" % defn) and \
-           os.path.exists("/sys/class/net/xenbr%d/bridge" % defn):
-            return ["bridge", "xenbr%d" % defn]
-
-    return ["network", "default"]
+    return ret
 
 def default_connection():
     if os.path.exists('/var/lib/xend'):

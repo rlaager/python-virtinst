@@ -143,7 +143,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                     raise RuntimeError(msg)
 
         if not self.bridge and self.type == "bridge":
-            self.bridge = _util.default_bridge()
+            self.bridge = _util.default_bridge2(self.conn)
 
     def get_xml_config(self):
         src_xml = ""
