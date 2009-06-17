@@ -24,7 +24,7 @@ class VirtualAudio(VirtualDevice.VirtualDevice):
 
     _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_AUDIO
 
-    MODELS = [ "es1370", "sb16", "pcspk" ]
+    MODELS = [ "es1370", "sb16", "pcspk", "ac97" ]
 
     def __init__(self, model, conn=None):
         VirtualDevice.VirtualDevice.__init__(self, conn)
