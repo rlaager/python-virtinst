@@ -28,12 +28,18 @@ import OSDistro
 
 from virtinst import _virtinst as _
 
-def _is_url(url):
+def _is_url(url, is_local):
     """
     Check if passed string is a (psuedo) valid http, ftp, or nfs url.
     """
-    return (url.startswith("http://") or url.startswith("ftp://") or \
-            url.startswith("nfs:")) and not os.path.exists(url)
+    if is_local and os.path.exists(url):
+        if os.path.isdir(url):
+            return True
+        else:
+            return False
+
+    return (url.startswith("http://") or url.startswith("ftp://") or
+            url.startswith("nfs:"))
 
 def _sanitize_url(url):
     """
@@ -87,6 +93,8 @@ class DistroInstaller(Installer.Installer):
         is_tuple = False
         validated = True
         self._location_is_path = True
+        is_local = (not self.conn or
+                    not _util.is_uri_remote(self.conn.getURI()))
 
         # Basic validation
         if type(val) is not str and (type(val) is not tuple and len(val) != 2):
@@ -100,13 +108,12 @@ class DistroInstaller(Installer.Installer):
                                    " a storage tuple."))
             is_tuple = True
 
-        elif _is_url(val):
+        elif _is_url(val, is_local):
             val = _sanitize_url(val)
             self._location_is_path = False
             logging.debug("DistroInstaller location is a network source.")
 
-        elif os.path.exists(os.path.abspath(val)) \
-             and (not self.conn or not _util.is_uri_remote(self.conn.getURI())):
+        elif os.path.exists(os.path.abspath(val)) and is_local:
             val = os.path.abspath(val)
             logging.debug("DistroInstaller location is a local "
                           "file/path: %s" % val)
@@ -115,20 +122,23 @@ class DistroInstaller(Installer.Installer):
             # Didn't determine anything about the location
             validated = False
 
-
-        if is_tuple or (validated == False and self.conn and
-                        _util.is_storage_capable(self.conn)):
+        if self._location_is_path or (validated == False and self.conn and
+                                      _util.is_storage_capable(self.conn)):
             # If user passed a storage tuple, OR
             # We couldn't determine the location type and a storage capable
             #   connection was passed:
             # Pass the parameters off to VirtualDisk to validate, and pull
             # out the path
             stuple = (is_tuple and val) or None
-            path = (not validated and val) or None
+            path = (not is_tuple and val) or None
 
             try:
-                d = VirtualDisk(path=path, device=VirtualDisk.DEVICE_CDROM,
-                                conn=self.conn, volName=stuple)
+                d = VirtualDisk(path=path,
+                                device=VirtualDisk.DEVICE_CDROM,
+                                transient=True,
+                                readOnly=True,
+                                conn=self.conn,
+                                volName=stuple)
                 val = d.path
             except Exception, e:
                 logging.debug(str(e))
@@ -158,8 +168,10 @@ class DistroInstaller(Installer.Installer):
                                              scratchdir = self.scratchdir,
                                              distro = distro)
             self._tmpfiles.append(cdrom)
+        else:
+            cdrom = self.location
 
-        self._install_disk = VirtualDisk(path=self.location,
+        self._install_disk = VirtualDisk(path=cdrom,
                                          conn=guest.conn,
                                          device=VirtualDisk.DEVICE_CDROM,
                                          readOnly=True,

@@ -417,17 +417,8 @@ def media_prompt(guest, ishvm):
         break
 
 def validate_install_media(guest, location, cdpath, cdinstall=False):
-
     if location or cdpath:
         guest.location = (location or cdpath)
-
-    if cdpath:
-        # Build a throwaway disk for validation for local CDs only
-        virtinst.VirtualDisk(path=cdpath,
-                             conn=guest.conn,
-                             transient=True,
-                             device=virtinst.VirtualDisk.DEVICE_CDROM,
-                             readOnly=True)
 
     if cdinstall or cdpath:
         guest.installer.cdrom = True
