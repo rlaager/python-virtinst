@@ -19,6 +19,7 @@ import os, sys
 
 # Location
 xmldir = "tests/cli-test-xml"
+treedir = "tests/cli-test-xml/faketree"
 
 # Images that will be created by virt-install/virt-clone, and removed before
 # each run
@@ -142,6 +143,10 @@ args_dict = {
         "--arch i686 --pxe",
         # Convert i*86 -> i686
         #"--arch i486 --pxe",
+        # Directory tree URL install
+        "--hvm --location %s" % treedir,
+        # Directory tree CDROM install
+        "--hvm --cdrom %s" % treedir,
       ],
 
       "invalid": [
