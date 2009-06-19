@@ -183,7 +183,7 @@ new guest can do a filesystem resize when it boots.
        --connect qemu:///system \
        --name demo \
        --file /dev/HostVG/DemoVM \
-       --mac 54:52:00:34:11:54
+       --mac 52:54:00:34:11:54
 
 =head1 AUTHOR
 

@@ -181,7 +181,7 @@ def randomMAC(type = "xen"):
     """Generate a random MAC address.
 
     00-16-3E allocated to xensource
-    54-52-00 used by qemu/kvm
+    52-54-00 used by qemu/kvm
 
     The OUI list is available at http://standards.ieee.org/regauth/oui/oui.txt.
 
@@ -194,12 +194,12 @@ def randomMAC(type = "xen"):
     True
     >>> randomMAC("xen").startswith("00:16:36")
     True
-    >>> randomMAC("qemu").startswith("54:52:00")
+    >>> randomMAC("qemu").startswith("52:54:00")
     True
 
     @return: MAC address string
     """
-    ouis = { 'xen': [ 0x00, 0x16, 0x36 ], 'qemu': [ 0x54, 0x52, 0x00 ] }
+    ouis = { 'xen': [ 0x00, 0x16, 0x36 ], 'qemu': [ 0x52, 0x54, 0x00 ] }
 
     try:
         oui = ouis[type]
