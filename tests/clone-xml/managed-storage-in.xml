@@ -26,11 +26,11 @@
       <target dev='hdb' bus='ide'/>
     </disk>
     <interface type='network'>
-      <mac address='54:52:00:6c:a0:cb'/>
+      <mac address='52:54:00:6c:a0:cb'/>
       <source network='test1'/>
     </interface>
     <interface type='network'>
-      <mac address='54:52:00:6c:bb:ca'/>
+      <mac address='52:54:00:6c:bb:ca'/>
       <source network='test2'/>
     </interface>
     <input type='mouse' bus='ps2'/>
