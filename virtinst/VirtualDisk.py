@@ -656,7 +656,7 @@ class VirtualDisk(VirtualDevice):
             if not storage_capable:
                 raise ValueError, _("Connection doesn't support remote "
                                     "storage.")
-            if self.__storage_specified():
+            if not self.__storage_specified():
                 raise ValueError, _("Must specify libvirt managed storage "
                                     "if on a remote connection")
 
