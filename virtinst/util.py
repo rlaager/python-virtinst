@@ -526,7 +526,7 @@ def get_xml_path(xml, path=None, func=None):
             ret = ctx.xpathEval(path)
             if ret != None:
                 if type(ret) == list:
-                    if len(ret) == 1:
+                    if len(ret) >= 1:
                         result = ret[0].content
                 else:
                     result = ret
