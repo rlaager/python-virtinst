@@ -1,0 +1,110 @@
+<node>
+
+  <cpu>
+    <nodes>4</nodes>
+    <sockets>4</sockets>
+    <cores>4</cores>
+    <threads>4</threads>
+    <active>4</active>
+    <mhz>4000</mhz>
+    <model>i686</model>
+  </cpu>
+  <memory>10000000</memory>
+
+<domain type='test'>
+  <name>test</name>
+  <uuid>4a64cc71-19c4-2fd0-2323-3050941ea3c3</uuid>
+  <memory>8388608</memory>
+  <currentMemory>2097152</currentMemory>
+  <vcpu>2</vcpu>
+  <os>
+    <type arch='i686'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+  </devices>
+</domain>
+
+<network>
+  <name>default</name>
+  <uuid>715666b7-dbd4-6c78-fa55-94863da09f2d</uuid>
+  <forward mode='nat'/>
+  <bridge name='virbr0' stp='on' forwardDelay='0' />
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254' />
+    </dhcp>
+  </ip>
+</network>
+
+<pool type='dir'>
+  <name>default-pool</name>
+  <uuid>35bb2ad9-388a-cdfe-461a-b8907f6e53fe</uuid>
+  <capacity>107374182400</capacity>
+  <allocation>0</allocation>
+  <available>107374182400</available>
+  <source>
+  </source>
+  <target>
+    <path>/default-pool</path>
+    <permissions>
+      <mode>0700</mode>
+      <owner>10736</owner>
+      <group>10736</group>
+    </permissions>
+  </target>
+
+  <volume>
+    <name>default-vol</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target/>
+  </volume>
+  <volume>
+    <name>testvol1.img</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target/>
+  </volume>
+  <volume>
+    <name>testvol2.img</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target/>
+  </volume>
+</pool>
+
+<pool type='dir'>
+  <name>cross-pool</name>
+  <uuid>35bb2ad9-388a-cdfe-461a-b8907f6e53fe</uuid>
+  <capacity>107374182400</capacity>
+  <allocation>0</allocation>
+  <available>107374182400</available>
+  <source>
+  </source>
+  <target>
+    <path>/cross-pool</path>
+    <permissions>
+      <mode>0700</mode>
+      <owner>10736</owner>
+      <group>10736</group>
+    </permissions>
+  </target>
+  <volume>
+    <name>testvol1.img</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target/>
+  </volume>
+  <volume>
+    <name>testvol2.img</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target/>
+  </volume>
+</pool>
+</node>

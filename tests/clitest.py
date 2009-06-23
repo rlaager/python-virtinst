@@ -17,6 +17,8 @@
 import commands
 import os, sys
 
+testuri = "test:///`pwd`/tests/testdriver.xml"
+
 # Location
 xmldir = "tests/cli-test-xml"
 treedir = "tests/cli-test-xml/faketree"
@@ -40,7 +42,9 @@ new_files   = new_images + virtimage_new
 clean_files = new_images + exist_images + virtimage_exist + virtimage_new
 
 test_files = {
+    'TESTURI'           : testuri,
     'CLONE_DISK_XML'    : "%s/clone-disk.xml" % xmldir,
+    'CLONE_STORAGE_XML' : "%s/clone-disk-managed.xml" % xmldir,
     'IMAGE_XML'         : "%s/image.xml" % xmldir,
     'NEWIMG1'           : new_images[0],
     'NEWIMG2'           : new_images[1],
@@ -86,7 +90,7 @@ args_dict = {
 
 
   "virt-install" : {
-    "global_args" : " --connect test:///default -d --name foobar --ram 64",
+    "global_args" : " --connect %(TESTURI)s -d --name foobar --ram 64",
 
     "storage" : {
       "storage_args": "--pxe --nographics --noautoconsole --hvm",
@@ -109,6 +113,8 @@ args_dict = {
         "--disk path=%(EXISTIMG1)s",
         # Create volume in a pool
         "--disk pool=default-pool,size=.0001",
+        # Existing volume
+        "--disk vol=default-pool/default-vol",
         # 3 IDE and CD
         "--disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s,device=cdrom",
       ],
@@ -141,6 +147,8 @@ args_dict = {
       "valid" : [
         # Simple cdrom install
         "--hvm --cdrom %(EXISTIMG1)s",
+        # Cdrom install with managed storage
+        "--hvm --cdrom /default-pool/default-vol",
         # Windows (2 stage) install
         "--hvm --wait 0 --os-variant winxp --cdrom %(EXISTIMG1)s",
         # Explicit virt-type
@@ -245,14 +253,14 @@ args_dict = {
      }, # category "network"
 
 
-    "prompt" : [ " --connect test:///default --debug --prompt" ]
+    "prompt" : [ " --connect %(TESTURI)s --debug --prompt" ]
   },
 
 
 
 
   "virt-clone": {
-    "global_args" : " --connect test:///default -d",
+    "global_args" : " --connect %(TESTURI)s -d",
 
     "general" : {
       "general_args": "-n clonetest",
@@ -271,6 +279,10 @@ args_dict = {
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s --file %(NEWIMG3)s --force-copy=hdc",
         # XML w/ disks, force copy a target with no media
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s --force-copy=fda",
+        # XML w/ managed storage, specify managed path
+        "--original-xml %(CLONE_STORAGE_XML)s --file /default-pool/clonevol",
+        # XML w/ managed storage, specify managed path across pools
+        #"--original-xml %(CLONE_STORAGE_XML)s --file /cross-pool/clonevol",
       ],
 
       "invalid": [
@@ -286,6 +298,8 @@ args_dict = {
         "--original-xml %(CLONE_DISK_XML)s --file virt-install --file %(EXISTIMG1)s",
         # XML w/ disks, force copy but not enough disks passed
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s --force-copy=hdc",
+        # XML w/ managed storage, specify unmanaged path (should fail)
+        "--original-xml %(CLONE_STORAGE_XML)s --file /tmp/clonevol",
       ]
      }, # category "general"
 
@@ -297,6 +311,8 @@ args_dict = {
         "-o test --auto-clone",
         # Auto flag w/ storage,
         "--original-xml %(CLONE_DISK_XML)s --auto-clone",
+        # Auto flag w/ managed storage,
+        "--original-xml %(CLONE_STORAGE_XML)s --auto-clone",
       ],
 
       "invalid" : [
@@ -305,15 +321,15 @@ args_dict = {
       ]
     }, # category "misc"
 
-    "prompt" : [ " --connect test:///default --debug --prompt",
-                 " --connect test:///default --debug --original-xml %(CLONE_DISK_XML)s --prompt" ]
+    "prompt" : [ " --connect %(TESTURI) --debug --prompt",
+                 " --connect %(TESTURI) --debug --original-xml %(CLONE_DISK_XML)s --prompt" ]
   }, # app 'virt-clone'
 
 
 
 
   'virt-image': {
-    "global_args" : " --connect test:///default -d %(IMAGE_XML)s",
+    "global_args" : " --connect %(TESTURI)s -d %(IMAGE_XML)s",
 
     "general" : {
       "general_args" : "--name test-image",
@@ -384,7 +400,7 @@ args_dict = {
       ],
 
      }, # category "network"
-    "prompt" : [ " --connect test:///default %(IMAGE_XML)s --debug --prompt" ],
+    "prompt" : [ " --connect %(TESTURI) %(IMAGE_XML)s --debug --prompt" ],
 
   } # app 'virt-image'
 }

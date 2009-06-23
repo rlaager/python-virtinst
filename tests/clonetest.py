@@ -20,9 +20,6 @@ import logging
 import tests
 import libvirt
 
-from storage import createPool, createVol
-
-import virtinst
 from virtinst import CloneManager
 CloneDesign = CloneManager.CloneDesign
 
@@ -34,14 +31,11 @@ FILE1 = "/tmp/virtinst-test1.img"
 FILE2 = "/tmp/virtinst-test2.img"
 P1_VOL1  = "/default-pool/testvol1.img"
 P1_VOL2  = "/default-pool/testvol2.img"
-P2_VOL1  = "/newpool/testvol1.img"
-P2_VOL2  = "/newpool/testvol2.img"
-P3_VOL1  = "/tmp/tmpvol1.img"
-P3_VOL2  = "/tmp/tmpvol2.img"
+P2_VOL1  = "/cross-pool/testvol1.img"
+P2_VOL2  = "/cross-pool/testvol2.img"
 
 POOL1 = "/default-pool"
-POOL2 = "/newpool"
-#POOL3 = "/tmp"
+POOL2 = "/cross-pool"
 
 for f in [ FILE1, FILE2 ]:
     os.system("touch %s" % f)
@@ -56,21 +50,7 @@ for f in os.listdir(clonexml_dir):
         if f not in clone_files and f not in black_list:
             clone_files.append(f)
 
-conn = libvirt.open("test:///default")
-
-p1 = conn.storagePoolLookupByName("default-pool")
-createVol(p1, os.path.basename(P1_VOL1))
-createVol(p1, os.path.basename(P1_VOL2))
-
-p2 = createPool(conn, virtinst.Storage.StoragePool.TYPE_DIR,
-                tpath=POOL2, start=True)
-createVol(p2, os.path.basename(P2_VOL1))
-createVol(p2, os.path.basename(P2_VOL2))
-
-#p3 = createPool(conn, virtinst.Storage.StoragePool.TYPE_DIR,
-#                tpath=POOL3, start=True)
-#createVol(p3, os.path.basename(P3_VOL1))
-#createVol(p3, os.path.basename(P3_VOL2))
+conn = libvirt.open("test:///%s/../testdriver.xml" % clonexml_dir)
 
 def fake_is_uri_remote(ignore):
     return True
@@ -179,8 +159,8 @@ class TestClone(unittest.TestCase):
 
             for base in [ "general-cfg" ] :
                 try:
-                    self._clone_helper(base, disks=["/default-pool/1.img",
-                                                    "/default-pool/2.img" ])
+                    self._clone_helper(base, disks=["%s/1.img" % POOL1,
+                                                    "%s/2.img" % POOL1])
 
                     # We shouldn't succeed, so test fails
                     raise AssertionError("Remote clone with storage passed "
@@ -193,12 +173,13 @@ class TestClone(unittest.TestCase):
 
     def testCloneStorage(self):
         base = "managed-storage"
-        self._clone_helper(base, ["/default-pool/new1.img",
-                                  "/default-pool/new2.img"])
+        self._clone_helper(base, ["%s/new1.img" % POOL1,
+                                  "%s/new2.img" % POOL1])
 
     def testCloneStorageCrossPool(self):
         base = "cross-pool"
-        self._clone_helper(base, ["/newpool/new1.img", "/newpool/new2.img"])
+        self._clone_helper(base, ["%s/new1.img" % POOL2,
+                                  "%s/new2.img" % POOL2])
 
     def testCloneManagedToUnmanaged(self):
         base = "managed-storage"

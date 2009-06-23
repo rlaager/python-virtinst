@@ -187,6 +187,7 @@ args = {
                      ("pool-exist", "vol-noexist"),
                     ],
         'valid'   : ['/dev/null', 'http://web', 'ftp://ftp', 'nfs:nfsserv',
+                     '/tmp', # For installing from local dir tree
                      ("pool-exist", "vol-exist"),
                     ]}
 },

@@ -19,11 +19,11 @@
   <devices>
     <emulator>/usr/bin/qemu-kvm</emulator>
     <disk type="file" device="disk">
-      <source file="/newpool/new1.img"/>
+      <source file="/cross-pool/new1.img"/>
       <target dev="hda" bus="ide"/>
     </disk>
     <disk type="block" device="disk">
-      <source dev="/newpool/new2.img"/>
+      <source dev="/cross-pool/new2.img"/>
       <target dev="hdb" bus="ide"/>
     </disk>
     <interface type="network">
