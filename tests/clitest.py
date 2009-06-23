@@ -109,6 +109,8 @@ args_dict = {
         "--disk path=%(EXISTIMG1)s",
         # Create volume in a pool
         "--disk pool=default-pool,size=.0001",
+        # 3 IDE and CD
+        "--disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s,device=cdrom",
       ],
 
       "invalid": [
@@ -118,6 +120,10 @@ args_dict = {
         "--file %(NEWIMG1)s --file-size 100000",
         # Nonexisting file, no size
         "--file %(NEWIMG1)s",
+        # Too many IDE
+        "--file %(EXISTIMG1)s --file %(EXISTIMG1)s --file %(EXISTIMG1)s --file %(EXISTIMG1)s --file %(EXISTIMG1)s",
+        # Two IDE cds
+        "--disk path=%(EXISTIMG1)s,device=cdrom --disk path=%(EXISTIMG1)s,device=cdrom",
         # Size, no file
         "--file-size .0001",
         # Specify a nonexistent pool
