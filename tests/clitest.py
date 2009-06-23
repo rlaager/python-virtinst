@@ -19,6 +19,10 @@ import os, sys
 
 testuri = "test:///`pwd`/tests/testdriver.xml"
 
+# There is a hack in virtinst/cli.py to find this magic string and
+# convince virtinst we are using a remote connection.
+remoteuri = "__virtinst_test_remote__test:///`pwd`/tests/testdriver.xml"
+
 # Location
 xmldir = "tests/cli-test-xml"
 treedir = "tests/cli-test-xml/faketree"
@@ -43,6 +47,7 @@ clean_files = new_images + exist_images + virtimage_exist + virtimage_new
 
 test_files = {
     'TESTURI'           : testuri,
+    'REMOTEURI'         : remoteuri,
     'CLONE_DISK_XML'    : "%s/clone-disk.xml" % xmldir,
     'CLONE_STORAGE_XML' : "%s/clone-disk-managed.xml" % xmldir,
     'IMAGE_XML'         : "%s/image.xml" % xmldir,
@@ -51,6 +56,12 @@ test_files = {
     'NEWIMG3'           : new_images[2],
     'EXISTIMG1'         : exist_images[0],
     'EXISTIMG2'         : exist_images[1],
+    'POOL'              : "default-pool",
+    'VOL'               : "testvol1.img",
+    'MANAGEDEXIST1'     : "/default-pool/testvol1.img",
+    'MANAGEDEXIST2'     : "/default-pool/testvol2.img",
+    'MANAGEDNEW1'       : "/default-pool/clonevol",
+    'MANAGEDNEW2'       : "/default-pool/clonevol",
 }
 
 debug = False
@@ -112,9 +123,9 @@ args_dict = {
         # Existing disk, no extra options
         "--disk path=%(EXISTIMG1)s",
         # Create volume in a pool
-        "--disk pool=default-pool,size=.0001",
+        "--disk pool=%(POOL)s,size=.0001",
         # Existing volume
-        "--disk vol=default-pool/default-vol",
+        "--disk vol=%(POOL)s/%(VOL)s",
         # 3 IDE and CD
         "--disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s,device=cdrom",
       ],
@@ -135,9 +146,9 @@ args_dict = {
         # Specify a nonexistent pool
         "--disk pool=foopool,size=.0001",
         # Specify a nonexistent volume
-        "--disk vol=default-pool/foovol",
+        "--disk vol=%(POOL)s/foovol",
         # Specify a pool with no size
-        "--disk pool=default-pool",
+        "--disk pool=%(POOL)s",
       ]
      }, # category "storage"
 
@@ -148,7 +159,7 @@ args_dict = {
         # Simple cdrom install
         "--hvm --cdrom %(EXISTIMG1)s",
         # Cdrom install with managed storage
-        "--hvm --cdrom /default-pool/default-vol",
+        "--hvm --cdrom %(MANAGEDEXIST1)s",
         # Windows (2 stage) install
         "--hvm --wait 0 --os-variant winxp --cdrom %(EXISTIMG1)s",
         # Explicit virt-type
@@ -252,6 +263,29 @@ args_dict = {
 
      }, # category "network"
 
+     "remote" : {
+      "remote_args": "--connect %(REMOTEURI)s --nographics --noautoconsole",
+
+      "valid" : [
+        # Simple pxe nodisks
+        "--nodisks --pxe",
+        # Managed CDROM install
+        "--nodisks --cdrom %(MANAGEDEXIST1)s",
+        # Using existing managed storage
+        "--pxe --file %(MANAGEDEXIST1)s",
+        # Using existing managed storage 2
+        "--pxe --disk vol=%(POOL)s/%(VOL)s",
+        # Creating storage on managed pool
+        "--pxe --disk pool=%(POOL)s,size=.04",
+      ],
+      "invalid": [
+        # Use of --location
+        "--nodisks --location /tmp",
+        # Trying to use unmanaged storage
+        "--file %(EXISTIMG1)s --pxe",
+      ],
+
+     }, # category "remote"
 
     "prompt" : [ " --connect %(TESTURI)s --debug --prompt" ]
   },
@@ -280,7 +314,7 @@ args_dict = {
         # XML w/ disks, force copy a target with no media
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s --force-copy=fda",
         # XML w/ managed storage, specify managed path
-        "--original-xml %(CLONE_STORAGE_XML)s --file /default-pool/clonevol",
+        "--original-xml %(CLONE_STORAGE_XML)s --file %(MANAGEDNEW1)s",
         # XML w/ managed storage, specify managed path across pools
         #"--original-xml %(CLONE_STORAGE_XML)s --file /cross-pool/clonevol",
       ],
@@ -320,6 +354,21 @@ args_dict = {
         "--auto-clone"
       ]
     }, # category "misc"
+
+     "remote" : {
+      "remote_args": "--connect %(REMOTEURI)s",
+
+      "valid"  : [
+        # Auto flag, no storage
+        "-o test --auto-clone",
+        # Auto flag w/ managed storage,
+        "--original-xml %(CLONE_STORAGE_XML)s --auto-clone",
+      ],
+      "invalid": [
+        # Auto flag w/ storage,
+        "--original-xml %(CLONE_DISK_XML)s --auto-clone",
+      ],
+    }, # categort "remote"
 
     "prompt" : [ " --connect %(TESTURI) --debug --prompt",
                  " --connect %(TESTURI) --debug --original-xml %(CLONE_DISK_XML)s --prompt" ]
@@ -406,18 +455,21 @@ args_dict = {
 }
 
 def runcomm(comm):
-    for i in new_files:
-        os.system("rm %s > /dev/null 2>&1" % i)
+    try:
+        for i in new_files:
+            os.system("rm %s > /dev/null 2>&1" % i)
 
-    if debug:
-        print comm % test_files
+        if debug:
+            print comm % test_files
 
-    ret = commands.getstatusoutput(comm % test_files)
-    if debug:
-        print ret[1]
-        print "\n"
+        ret = commands.getstatusoutput(comm % test_files)
+        if debug:
+            print ret[1]
+            print "\n"
 
-    return ret
+        return ret
+    except Exception, e:
+        return (-1, str(e))
 
 def run_prompt_comm(comm):
     print comm

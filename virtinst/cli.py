@@ -37,6 +37,13 @@ MIN_RAM = 64
 force = False
 doprompt = True
 
+def check_if_test_uri_remote(uri):
+    magic = "__virtinst_test_remote__"
+    if uri and uri.startswith(magic):
+        uri = uri.replace(magic, "")
+        _util.is_uri_remote = lambda uri_: True
+    return uri
+
 class VirtOptionParser(OptionParser):
     '''Subclass to get print_help to work properly with non-ascii text'''
 
@@ -150,6 +157,9 @@ def getConnection(connect):
     if (connect and
         not User.current().has_priv(User.PRIV_CREATE_DOMAIN, connect)):
         fail(_("Must be root to create Xen guests"))
+
+    # Hack to facilitate remote unit testing
+    connect = check_if_test_uri_remote(connect)
 
     logging.debug("Requesting libvirt URI %s" % (connect or "default"))
     conn = open_connection(connect)
