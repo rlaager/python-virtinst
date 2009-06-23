@@ -88,6 +88,7 @@ class CloneDesign(object):
             self.clone_uuid = uuid
             break
 
+
     # Getter/Setter methods
 
     def get_original_guest(self):
@@ -95,7 +96,8 @@ class CloneDesign(object):
     def set_original_guest(self, original_guest):
         if self._lookup_vm(original_guest):
             self._original_guest = original_guest
-    original_guest = property(get_original_guest, set_original_guest)
+    original_guest = property(get_original_guest, set_original_guest,
+                              doc="Original guest name.")
 
     def set_original_xml(self, val):
         if type(val) is not str:
@@ -105,7 +107,8 @@ class CloneDesign(object):
                                                   "/domain/name")
     def get_original_xml(self):
         return self._original_xml
-    original_xml = property(get_original_xml, set_original_xml)
+    original_xml = property(get_original_xml, set_original_xml,
+                            doc="XML of the original guest.")
 
     def get_clone_name(self):
         return self._clone_name
@@ -124,7 +127,8 @@ class CloneDesign(object):
             pass
 
         self._clone_name = name
-    clone_name = property(get_clone_name, set_clone_name)
+    clone_name = property(get_clone_name, set_clone_name,
+                          doc="Name to use for the new guest clone.")
 
     def set_clone_uuid(self, uuid):
         try:
@@ -138,7 +142,8 @@ class CloneDesign(object):
         self._clone_uuid = uuid
     def get_clone_uuid(self):
         return self._clone_uuid
-    clone_uuid = property(get_clone_uuid, set_clone_uuid)
+    clone_uuid = property(get_clone_uuid, set_clone_uuid,
+                          doc="UUID to use for the new guest clone")
 
     def set_clone_devices(self, devpath):
         # Devices here is a string path. Every call to set_clone_devices
@@ -155,75 +160,98 @@ class CloneDesign(object):
         self._clone_devices.append(devpath)
     def get_clone_devices(self):
         return self._clone_devices
-    clone_devices = property(get_clone_devices, set_clone_devices)
+    clone_devices = property(get_clone_devices, set_clone_devices,
+                             doc="Paths to use for the new disk locations.")
 
     def get_clone_virtual_disks(self):
         return self._clone_virtual_disks
-    clone_virtual_disks = property(get_clone_virtual_disks)
+    clone_virtual_disks = property(get_clone_virtual_disks,
+                                   doc="VirtualDisk instances for the new"
+                                       " disk paths")
 
     def set_clone_mac(self, mac):
         VirtualNetworkInterface(mac, conn=self.original_conn)
         self._clone_mac.append(mac)
     def get_clone_mac(self):
         return self._clone_mac
-    clone_mac = property(get_clone_mac, set_clone_mac)
+    clone_mac = property(get_clone_mac, set_clone_mac,
+                         doc="MAC address for the new guest clone.")
 
     def get_clone_bs(self):
         return self._clone_bs
     def set_clone_bs(self, rate):
         self._clone_bs = rate
-    clone_bs = property(get_clone_bs, set_clone_bs)
+    clone_bs = property(get_clone_bs, set_clone_bs,
+                        doc="Block size to use when cloning guest storage.")
 
     def get_original_devices_size(self):
         ret = []
         for disk in self.original_virtual_disks:
             ret.append(disk.size)
         return ret
-    original_devices_size = property(get_original_devices_size)
+    original_devices_size = property(get_original_devices_size,
+                                     doc="Size of the original guest's disks."
+                                         " DEPRECATED: Get this info from"
+                                         " original_virtual_disks")
 
     def get_original_devices(self):
         ret = []
         for disk in self.original_virtual_disks:
             ret.append(disk.path)
         return ret
-    original_devices = property(get_original_devices)
+    original_devices = property(get_original_devices,
+                                doc="Original disk paths that will be cloned. "
+                                    "DEPRECATED: Get this info from "
+                                    "original_virtual_disks")
 
     def get_original_virtual_disks(self):
         return self._original_virtual_disks
-    original_virtual_disks = property(get_original_virtual_disks)
+    original_virtual_disks = property(get_original_virtual_disks,
+                                      doc="VirtualDisk instances of the "
+                                          "original disks being cloned.")
 
     def get_hyper_conn(self):
         return self._hyper_conn
-    original_conn = property(get_hyper_conn)
+    original_conn = property(get_hyper_conn,
+                             doc="Libvirt virConnect instance we are cloning "
+                                 "on")
 
     def get_original_dom(self):
         return self._original_dom
-    original_dom = property(get_original_dom)
+    original_dom = property(get_original_dom,
+                            doc="Libvirt virDomain instance of the original "
+                                 "guest. May not be available if cloning from "
+                                 "XML.")
 
     def get_clone_xml(self):
         return self._clone_xml
     def set_clone_xml(self, clone_xml):
         self._clone_xml = clone_xml
-    clone_xml = property(get_clone_xml, set_clone_xml)
+    clone_xml = property(get_clone_xml, set_clone_xml,
+                         doc="Generated XML for the guest clone.")
 
     def get_clone_sparse(self):
         return self._clone_sparse
     def set_clone_sparse(self, flg):
         self._clone_sparse = flg
-    clone_sparse = property(get_clone_sparse, set_clone_sparse)
+    clone_sparse = property(get_clone_sparse, set_clone_sparse,
+                            doc="Whether to attempt sparse allocation during "
+                                "cloning.")
 
     def get_preserve(self):
         return self._preserve
     def set_preserve(self, flg):
         self._preserve = flg
-    preserve = property(get_preserve, set_preserve)
+    preserve = property(get_preserve, set_preserve,
+                        doc="If true, preserve ALL original disk devices.")
 
     def set_force_target(self, dev):
         self._force_target.append(dev)
     def get_force_target(self):
         return self._force_target
-    force_target = property(set_force_target)
-
+    force_target = property(get_force_target, set_force_target,
+                            doc="List of disk targets that we force cloning "
+                                "despite CloneManager's recommendation.")
 
     # Functional methods
 
@@ -453,7 +481,7 @@ class CloneDesign(object):
         if len(ro) != 0 and force_flg == False:
             return None
         # Skip sharable disks unless forced
-        share = ctx.xpathEval("/domain/devices/disk[%d]/shareable" % i) 
+        share = ctx.xpathEval("/domain/devices/disk[%d]/shareable" % i)
         if len(share) != 0 and force_flg == False:
             return None
 
