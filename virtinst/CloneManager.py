@@ -271,12 +271,6 @@ class CloneDesign(object):
         logging.debug("Original paths: %s" % (self.original_devices))
         logging.debug("Original sizes: %s" % (self.original_devices_size))
 
-        # If there are any devices that need to be cloned and we are on
-        # a remote connection, fail
-        if (self.original_devices and
-            _util.is_uri_remote(self.original_conn.getURI())):
-            raise RuntimeError(_("Cannot clone remote VM storage."))
-
         # If domain has devices to clone, it must be 'off' or 'paused'
         if self._original_dom and len(self.original_devices) != 0:
             status = self._original_dom.info()[0]
