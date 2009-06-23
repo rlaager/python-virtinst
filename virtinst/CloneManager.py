@@ -286,16 +286,6 @@ class CloneDesign(object):
                 raise RuntimeError, _("Domain with devices to clone must be "
                                       "paused or shutoff.")
 
-        # Check mac address is not in use
-        # XXX: Check this at set time?
-        for i in self._clone_mac:
-            ret, msg = self._check_mac(i)
-            if msg is not None:
-                if ret:
-                    raise RuntimeError, msg
-                else:
-                    logging.warning(msg)
-
 
     def setup_clone(self):
         """
