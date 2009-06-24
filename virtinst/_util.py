@@ -255,7 +255,8 @@ def set_xml_path(xml, path, newval):
     return result
 
 
-def generate_name(base, collision_cb, suffix="", lib_collision=True):
+def generate_name(base, collision_cb, suffix="", lib_collision=True,
+                  start_num=0, sep="-"):
     """
     Generate a new name from the passed base string, verifying it doesn't
     collide with the collision callback.
@@ -268,12 +269,21 @@ def generate_name(base, collision_cb, suffix="", lib_collision=True):
     suffix = ".img"
 
     output = "foobar-2.img"
+
+    @param base: The base string to use for the name (e.g. "my-orig-vm-clone")
+    @param collision_cb: A callback function to check for collision,
+                         receives the generated name as its only arg
+    @param lib_collision: If true, the collision_cb is not a boolean function,
+                          and instead throws a libvirt error on failure
+    @start_num: The number to start at for generating non colliding names
+    @sep: The seperator to use between the basename and the generated number
+          (default is "-")
     """
 
-    for i in range(0, 100000):
+    for i in range(start_num, start_num + 100000):
         tryname = base
         if i != 0:
-            tryname += ("-%d" % i)
+            tryname += ("%s%d" % (sep, i))
         tryname += suffix
         if lib_collision:
             if not libvirt_collision(collision_cb, tryname):
