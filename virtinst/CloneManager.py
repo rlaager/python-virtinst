@@ -76,6 +76,7 @@ class CloneDesign(object):
         self._clone_xml          = None
 
         self._force_target       = []
+        self._skip_target        = []
         self._preserve           = True
 
         # Default clone policy for back compat: don't clone readonly,
@@ -264,6 +265,15 @@ class CloneDesign(object):
     force_target = property(get_force_target, set_force_target,
                             doc="List of disk targets that we force cloning "
                                 "despite CloneManager's recommendation.")
+
+    def set_skip_target(self, dev):
+        self._skip_target.append(dev)
+    def get_skip_target(self):
+        return self._skip_target
+    skip_target = property(get_skip_target, set_skip_target,
+                           doc="List of disk targets that we skip cloning "
+                               "despite CloneManager's recommendation. This "
+                               "takes precedence over force_target.")
 
     def set_clone_policy(self, policy_list):
         if type(policy_list) != list:
@@ -457,8 +467,7 @@ class CloneDesign(object):
         count = _util.get_xml_path(xml, "count(/domain/devices/disk)")
         for i in range(1, int(count+1)):
             # Check if the disk needs cloning
-            (path, target) = self._do_we_clone_device(xml, i,
-                                                      self._force_target)
+            (path, target) = self._do_we_clone_device(xml, i)
             if target == None:
                 continue
             lst.append((path, target))
@@ -485,10 +494,10 @@ class CloneDesign(object):
 
         return disks
 
-    # Pull disk #i from the original guest xml, return it's xml
-    # if it should be cloned (skips readonly, empty, or sharable disks
-    # unless its target is in the 'force' list)
-    def _do_we_clone_device(self, xml, i, force_list):
+    # Pull disk #i from the original guest xml, return it's source path
+    # if it should be cloned
+    # Cloning policy based on 'clone_policy', 'force_target' and 'skip_target'
+    def _do_we_clone_device(self, xml, i):
         base_path = "/domain/devices/disk[%d]" % i
         source  = _util.get_xml_path(xml, "%s/source/@dev | %s/source/@file" %
                                      (base_path, base_path))
@@ -499,7 +508,10 @@ class CloneDesign(object):
         if not target:
             raise ValueError("XML has no 'dev' attribute in disk target")
 
-        if target in force_list:
+        if target in self.skip_target:
+            return (None, None)
+
+        if target in self.force_target:
             return (source, target)
 
         # No media path

@@ -45,7 +45,7 @@ clonexml_dir = os.path.join(os.getcwd(), "tests/clone-xml")
 clone_files = []
 
 for f in os.listdir(clonexml_dir):
-    black_list = [ "managed-storage", "cross-pool", "force"]
+    black_list = [ "managed-storage", "cross-pool", "force", "skip"]
     if f.endswith("-out.xml"):
         f = f[0:(len(f) - len("-out.xml"))]
         if f not in clone_files and f not in black_list:
@@ -61,7 +61,8 @@ class TestClone(unittest.TestCase):
     def setUp(self):
         pass
 
-    def _clone_helper(self, filebase, disks=None, force_list=None):
+    def _clone_helper(self, filebase, disks=None, force_list=None,
+                      skip_list=None):
         """Helper for comparing clone input/output from 2 xml files"""
         infile = os.path.join(clonexml_dir, filebase + "-in.xml")
         in_content = tests.read_file(infile)
@@ -70,6 +71,8 @@ class TestClone(unittest.TestCase):
         cloneobj.original_xml = in_content
         for force in force_list or []:
             cloneobj.force_target = force
+        for skip in skip_list or []:
+            cloneobj.skip_target = skip
 
         cloneobj = self._default_clone_values(cloneobj, disks)
         self._clone_compare(cloneobj, filebase)
@@ -190,6 +193,12 @@ class TestClone(unittest.TestCase):
         self._clone_helper(base,
                            disks=["/dev/loop0", None, "/tmp/clone2.img"],
                            force_list=["hda", "fdb", "sdb"])
+
+    def testCloneStorageSkip(self):
+        base = "skip"
+        self._clone_helper(base,
+                           disks=["/dev/loop0", None, "/tmp/clone2.img"],
+                           skip_list=["hda", "fdb"])
 
     def testCloneManagedToUnmanaged(self):
         base = "managed-storage"
