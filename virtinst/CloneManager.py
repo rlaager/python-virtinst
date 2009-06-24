@@ -48,6 +48,11 @@ from virtinst import _virtinst as _
 #
 class CloneDesign(object):
 
+    # Reasons why we don't default to cloning.
+    CLONE_POLICY_NO_READONLY   = 1
+    CLONE_POLICY_NO_SHAREABLE  = 2
+    CLONE_POLICY_NO_EMPTYMEDIA = 3
+
     def __init__(self, connection):
         # hypervisor connection
         if not isinstance(connection, libvirt.virConnect):
@@ -71,8 +76,13 @@ class CloneDesign(object):
         self._clone_xml          = None
 
         self._force_target       = []
-
         self._preserve           = True
+
+        # Default clone policy for back compat: don't clone readonly,
+        # shareable, or empty disks
+        self._clone_policy       = [self.CLONE_POLICY_NO_READONLY,
+                                    self.CLONE_POLICY_NO_SHAREABLE,
+                                    self.CLONE_POLICY_NO_EMPTYMEDIA]
 
         # Throwaway guest to use for easy validation
         self._valid_guest        = Guest.Guest(connection=connection)
@@ -249,6 +259,16 @@ class CloneDesign(object):
     force_target = property(get_force_target, set_force_target,
                             doc="List of disk targets that we force cloning "
                                 "despite CloneManager's recommendation.")
+
+    def set_clone_policy(self, policy_list):
+        if type(policy_list) != list:
+            raise ValueError(_("Cloning policy must be a list of rules."))
+        self._clone_policy = policy_list
+    def get_clone_policy(self):
+        return self._clone_policy
+    clone_policy = property(get_clone_policy, set_clone_policy,
+                            doc="List of policy rules for determining which "
+                                "vm disks to clone. See CLONE_POLICY_*")
 
     # Functional methods
 
@@ -428,9 +448,7 @@ class CloneDesign(object):
     # Pull disk #i from the original guest xml, return it's xml
     # if it should be cloned (skips readonly, empty, or sharable disks
     # unless its target is in the 'force' list)
-    def _do_we_clone_device(self, xml, i, force):
-        force_flg = False
-
+    def _do_we_clone_device(self, xml, i, force_list):
         base_path = "/domain/devices/disk[%d]" % i
         source  = _util.get_xml_path(xml, "%s/source/@dev | %s/source/@file" %
                                      (base_path, base_path))
@@ -438,22 +456,22 @@ class CloneDesign(object):
         ro      = _util.get_xml_path(xml, "count(%s/readonly)" % base_path)
         share   = _util.get_xml_path(xml, "count(%s/shareable)" % base_path)
 
-        # If there is no media path, ignore
-        if not source:
-            return (None, None)
-
         if not target:
             raise ValueError("XML has no 'dev' attribute in disk target")
 
-        for f_target in force:
-            if target == f_target:
-                force_flg = True
-
-        # Skip readonly disks unless forced
-        if ro and force_flg == False:
+        # No media path
+        if not source and self.CLONE_POLICY_NO_EMPTYMEDIA in self.clone_policy:
             return (None, None)
-        # Skip sharable disks unless forced
-        if share and force_flg == False:
+
+        if target in force_list:
+            return (source, target)
+
+        # Readonly disks
+        if ro and self.CLONE_POLICY_NO_READONLY in self.clone_policy:
+            return (None, None)
+
+        # Shareable disks
+        if share and self.CLONE_POLICY_NO_SHAREABLE in self.clone_policy:
             return (None, None)
 
         return (source, target)
