@@ -30,7 +30,6 @@ from optparse import OptionGroup
 import gettext
 import locale
 import virtinst.cli as cli
-from virtinst import _util
 from virtinst.cli import fail
 from virtinst.User import User
 
@@ -42,8 +41,7 @@ gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 def get_clone_name(new_name, auto_clone, design):
     if not new_name and auto_clone:
         # Generate a name to use
-        new_name = _util.generate_name(design.original_guest + "-clone",
-                                       design.original_conn.lookupByName)
+        new_name = clmgr.generate_clone_name(design)
         logging.debug("Auto-generated clone name '%s'." % new_name)
 
     prompt_txt = _("What is the name for the cloned virtual machine?")
@@ -98,7 +96,7 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False,
         disk = new_diskfiles[newidx]
 
         if disk is None and auto_clone:
-            disk = _generate_disk_path(origdev, design)
+            disk = clmgr.generate_clone_disk_path(origdev, design)
 
         if origdev is None:
             devpath = None
@@ -108,25 +106,6 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False,
 
         design.clone_devices = devpath
         newidx += 1
-
-def _generate_disk_path(origpath, design):
-    basename = origpath
-    suffix = ""
-
-    # Try to split the suffix off the existing disk name. Ex.
-    # foobar.img -> foobar-clone.img
-    #
-    # If the suffix is greater than 7 characters, assume it isn't
-    # a file extension and is part of the disk name, at which point
-    # just stick '-clone' on the end.
-    if basename.count(".") and len(basename.rsplit(".", 1)[1]) <= 7:
-        basename, suffix = basename.rsplit(".", 1)
-        suffix = "." + suffix
-
-    return _util.generate_name(basename + "-clone",
-                               lambda p: _util.disk_exists(design.original_conn, p),
-                               suffix,
-                               lib_collision=False)
 
 def _check_disk(conn, clone_path, orig_path, preserve):
 

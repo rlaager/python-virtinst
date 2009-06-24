@@ -32,16 +32,57 @@ General workflow for cloning:
     - Run 'CloneManager.start_duplicate', passing the CloneDesign instance
 """
 
-import libxml2
 import logging
+import re
+
+import libxml2
 import urlgrabber.progress as progress
-import _util
 import libvirt
+
 import Guest
 from VirtualNetworkInterface import VirtualNetworkInterface
 from VirtualDisk import VirtualDisk
 from virtinst import Storage
 from virtinst import _virtinst as _
+import _util
+
+def generate_clone_disk_path(origpath, design):
+    basename = origpath
+    suffix = ""
+
+    # Try to split the suffix off the existing disk name. Ex.
+    # foobar.img -> foobar-clone.img
+    #
+    # If the suffix is greater than 7 characters, assume it isn't
+    # a file extension and is part of the disk name, at which point
+    # just stick '-clone' on the end.
+    if basename.count(".") and len(basename.rsplit(".", 1)[1]) <= 7:
+        basename, suffix = basename.rsplit(".", 1)
+        suffix = "." + suffix
+
+    return _util.generate_name(basename + "-clone",
+                               lambda p: _util.disk_exists(design.original_conn, p),
+                               suffix,
+                               lib_collision=False)
+
+def generate_clone_name(design):
+    # If the orig name is "foo-clone", we don't want the clone to be
+    # "foo-clone-clone", we want "foo-clone1"
+    basename = design.original_guest
+
+    match = re.search("-clone[1-9]*$", basename)
+    start_num = 0
+    if match:
+        num_match = re.search("[1-9]+$", match.group())
+        if num_match:
+            start_num = int(str(num_match.group()))
+        basename = basename.replace(match.group(), "")
+
+    basename = basename + "-clone"
+    return _util.generate_name(basename,
+                               design.original_conn.lookupByName,
+                               sep="", start_num=start_num)
+
 
 #
 # This class is the design paper for a clone virtual machine.
