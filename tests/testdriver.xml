@@ -80,7 +80,7 @@
 
 <pool type='dir'>
   <name>cross-pool</name>
-  <uuid>35bb2ad9-388a-cdfe-461a-b8907f6e53fe</uuid>
+  <uuid>35bb2ad9-388a-cdfe-461a-b8907f6e5abc</uuid>
   <capacity>107374182400</capacity>
   <allocation>0</allocation>
   <available>107374182400</available>
@@ -107,4 +107,30 @@
     <target/>
   </volume>
 </pool>
+
+<pool type='logical'>
+  <name>disk-pool</name>
+  <uuid>35bb2ad9-388a-cdfe-461a-b8907f6e5aaa</uuid>
+  <capacity>107374182400</capacity>
+  <allocation>0</allocation>
+  <available>107374182400</available>
+  <source>
+  </source>
+  <target>
+    <path>/disk-pool</path>
+    <permissions>
+      <mode>0700</mode>
+      <owner>10736</owner>
+      <group>10736</group>
+    </permissions>
+  </target>
+
+  <volume>
+    <name>diskvol1</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target/>
+  </volume>
+</pool>
+
 </node>

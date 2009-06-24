@@ -22,24 +22,16 @@
       <source dev="/dev/loop0"/>
       <target dev="hda" bus="ide"/>
     </disk>
-    <disk type="file" device="disk">
-      <source file="/tmp/virtinst-test1.img"/>
-      <target dev="hdb" bus="ide"/>
+    <disk type="file" device="floppy">
+      <target dev="fdb" bus="fdc"/>
+    </disk>
+    <disk type="block" device="cdrom">
+      <target dev="sda" bus="scsi"/>
       <readonly/>
     </disk>
     <disk type="file" device="disk">
       <source file="/tmp/clone2.img"/>
-      <target dev="sda" bus="scsi"/>
-    </disk>
-    <disk type="block" device="cdrom">
       <target dev="sdb" bus="scsi"/>
-      <readonly/>
-    </disk>
-    <disk type="file" device="cdrom">
-      <source file="/tmp/virtinst-test2.img"/>
-      <target dev="sdc" bus="scsi"/>
-      <readonly/>
-      <shareable/>
     </disk>
     <interface type="network">
       <mac address="01:23:45:67:89:00"/>

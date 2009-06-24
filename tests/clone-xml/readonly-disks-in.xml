@@ -22,7 +22,7 @@
       <target dev='hda' bus='ide'/>
     </disk>
     <disk type='file' device='disk'>
-      <source file='test3.img'/>
+      <source file='/tmp/virtinst-test1.img'/>
       <target dev='hdb' bus='ide'/>
       <readonly/>
     </disk>
@@ -35,7 +35,7 @@
       <readonly/>
     </disk>
     <disk type='file' device='cdrom'>
-      <source file='test3.img'/>
+      <source file='/tmp/virtinst-test2.img'/>
       <target dev='sdc' bus='scsi'/>
       <readonly/>
       <shareable/>

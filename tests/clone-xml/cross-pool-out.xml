@@ -22,8 +22,8 @@
       <source file="/cross-pool/new1.img"/>
       <target dev="hda" bus="ide"/>
     </disk>
-    <disk type="block" device="disk">
-      <source dev="/cross-pool/new2.img"/>
+    <disk type="file" device="disk">
+      <source file="/cross-pool/new2.img"/>
       <target dev="hdb" bus="ide"/>
     </disk>
     <interface type="network">

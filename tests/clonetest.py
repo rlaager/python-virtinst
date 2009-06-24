@@ -36,6 +36,7 @@ P2_VOL2  = "/cross-pool/testvol2.img"
 
 POOL1 = "/default-pool"
 POOL2 = "/cross-pool"
+DISKPOOL = "/disk-pool"
 
 for f in [ FILE1, FILE2 ]:
     os.system("touch %s" % f)
@@ -44,7 +45,7 @@ clonexml_dir = os.path.join(os.getcwd(), "tests/clone-xml")
 clone_files = []
 
 for f in os.listdir(clonexml_dir):
-    black_list = [ "managed-storage", "cross-pool" ]
+    black_list = [ "managed-storage", "cross-pool", "force"]
     if f.endswith("-out.xml"):
         f = f[0:(len(f) - len("-out.xml"))]
         if f not in clone_files and f not in black_list:
@@ -60,13 +61,15 @@ class TestClone(unittest.TestCase):
     def setUp(self):
         pass
 
-    def _clone_helper(self, filebase, disks=None):
+    def _clone_helper(self, filebase, disks=None, force_list=None):
         """Helper for comparing clone input/output from 2 xml files"""
         infile = os.path.join(clonexml_dir, filebase + "-in.xml")
         in_content = tests.read_file(infile)
 
         cloneobj = CloneDesign(connection=conn)
         cloneobj.original_xml = in_content
+        for force in force_list or []:
+            cloneobj.force_target = force
 
         cloneobj = self._default_clone_values(cloneobj, disks)
         self._clone_compare(cloneobj, filebase)
@@ -89,6 +92,7 @@ class TestClone(unittest.TestCase):
             cloneobj.clone_devices = "/tmp/clone3.img"
             cloneobj.clone_devices = "/tmp/clone4.img"
             cloneobj.clone_devices = "/tmp/clone5.img"
+            cloneobj.clone_devices = None
 
         return cloneobj
 
@@ -174,12 +178,18 @@ class TestClone(unittest.TestCase):
     def testCloneStorage(self):
         base = "managed-storage"
         self._clone_helper(base, ["%s/new1.img" % POOL1,
-                                  "%s/new2.img" % POOL1])
+                                  "%s/new2.img" % DISKPOOL])
 
     def testCloneStorageCrossPool(self):
         base = "cross-pool"
         self._clone_helper(base, ["%s/new1.img" % POOL2,
                                   "%s/new2.img" % POOL2])
+
+    def testCloneStorageForce(self):
+        base = "force"
+        self._clone_helper(base,
+                           disks=["/dev/loop0", None, "/tmp/clone2.img"],
+                           force_list=["hda", "fdb", "sdb"])
 
     def testCloneManagedToUnmanaged(self):
         base = "managed-storage"
