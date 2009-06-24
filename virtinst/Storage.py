@@ -60,7 +60,7 @@ DEFAULT_LVM_TARGET_BASE = "/dev/"
 DEFAULT_DIR_TARGET_BASE = "/var/lib/libvirt/images/"
 DEFAULT_ISCSI_TARGET = "/dev/disk/by-path"
 
-def is_create_vol_from_supported():
+def is_create_vol_from_supported(ignore_conn):
     return bool(dir(libvirt.virStoragePool).count("createXMLFrom"))
 
 class StorageObject(object):
@@ -851,7 +851,7 @@ class StorageVolume(StorageObject):
 
         if not isinstance(vol, libvirt.virStorageVol):
             raise ValueError(_("input_vol must be a virStorageVol"))
-        if not is_create_vol_from_supported():
+        if not is_create_vol_from_supported(self.pool._conn):
             raise ValueError(_("Creating storage from an existing volume is"
                                " not supported by this libvirt version."))
         self._input_vol = vol
@@ -1082,8 +1082,7 @@ class CloneVolume(StorageVolume):
         if not isinstance(input_vol, libvirt.virStorageVol):
             raise ValueError(_("input_vol must be a virStorageVol"))
 
-        self.input_vol = input_vol
-        pool = self.input_vol.storagePoolLookupByVolume()
+        pool = input_vol.storagePoolLookupByVolume()
 
         # Populate some basic info
         xml  = input_vol.XMLDesc(0)

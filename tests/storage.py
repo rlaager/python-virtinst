@@ -61,7 +61,7 @@ def createVol(poolobj, volname=None, input_vol=None, clone_vol=None):
     vol_inst = volclass(name=volname, capacity=cap, allocation=alloc,
                         pool=poolobj)
     if input_vol or clone_vol:
-        if not virtinst.Storage.is_create_vol_from_supported():
+        if not virtinst.Storage.is_create_vol_from_supported(poolobj._conn):
             return
 
     if input_vol:
