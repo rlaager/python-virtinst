@@ -100,8 +100,13 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False,
         if disk is None and auto_clone:
             disk = _generate_disk_path(origdev, design)
 
-        dev = _check_disk(conn, disk, origdev, preserve)
-        design.clone_devices = dev.path
+        if origdev is None:
+            devpath = None
+        else:
+            dev = _check_disk(conn, disk, origdev, preserve)
+            devpath = dev.path
+
+        design.clone_devices = devpath
         newidx += 1
 
 def _generate_disk_path(origpath, design):

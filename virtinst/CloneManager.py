@@ -157,8 +157,13 @@ class CloneDesign(object):
         # Adds the path (if valid) to the internal _clone_devices list
 
         # Check path is valid
+        # XXX: What if disk is being preserved, and storage is readonly?
         try:
-            disk = VirtualDisk(devpath, size=.0000001, conn=self._hyper_conn)
+            device = VirtualDisk.DEVICE_DISK
+            if not devpath:
+                device = VirtualDisk.DEVICE_CDROM
+            disk = VirtualDisk(devpath, size=.0000001, conn=self._hyper_conn,
+                               device=device)
         except Exception, e:
             raise ValueError(_("Could not use path '%s' for cloning: %s") %
                              (devpath, str(e)))
@@ -322,17 +327,6 @@ class CloneDesign(object):
         node = ctx.xpathEval("/domain/name")
         node[0].setContent(self._clone_name)
 
-        # Changing storage paths
-        clone_devices = iter(self._clone_devices)
-        for d in self.original_virtual_disks:
-            node = ctx.xpathEval("/domain/devices/disk[target/@dev='%s']/source" % d.target)
-            node = node[0].get_properties()
-            try:
-                node.setContent(clone_devices.next())
-            except Exception:
-                raise ValueError, _("Missing path to use as disk clone "
-                                    "destination for '%s'") % node.getContent()
-
         # We always have a UUID since one is generated at init time
         node = ctx.xpathEval("/domain/uuid")
         node[0].setContent(self._clone_uuid)
@@ -353,21 +347,22 @@ class CloneDesign(object):
                         break
                 node[0].setContent(mac)
 
+        if len(self.clone_virtual_disks) < len(self.original_virtual_disks):
+            raise ValueError(_("More disks to clone that new paths specified. "
+                               "(%(passed)d specified, %(need)d needed") %
+                               (len(self.clone_virtual_disks),
+                                len(self.original_virtual_disks)))
+
+        # Changing storage XML
         for i in range(0, len(self.original_virtual_disks)):
             orig_disk = self._original_virtual_disks[i]
             clone_disk = self._clone_virtual_disks[i]
 
-            orig_type = (orig_disk.type == VirtualDisk.TYPE_FILE)
-            clone_type = (clone_disk.type == VirtualDisk.TYPE_FILE)
-
-            # Change xml disk type values if original and clone disk types
-            # (block/file) don't match
-            self._change_disk_type(orig_type, clone_type,
-                                   self.original_virtual_disks[i].target,
-                                   ctx)
+            self._change_storage_xml(ctx, orig_disk, clone_disk)
 
             # Sync 'size' between the two
-            clone_disk.size = orig_disk.size
+            if orig_disk.size:
+                clone_disk.size = orig_disk.size
 
             # Setup proper cloning inputs for the new virtual disks
             if orig_disk.vol_object and clone_disk.vol_install:
@@ -409,6 +404,47 @@ class CloneDesign(object):
         nic = VirtualNetworkInterface(macaddr=mac, conn=self.original_conn)
         return nic.is_conflict_net(self._hyper_conn)
 
+    def _change_storage_xml(self, ctx, orig_disk, clone_disk):
+        """
+        Swap the original disk path out for the clone disk path in the
+        passed XML context
+        """
+        base_path   = ("/domain/devices/disk[target/@dev='%s']" %
+                       orig_disk.target)
+        disk        = ctx.xpathEval(base_path)[0]
+        driver      = ctx.xpathEval(base_path + "/driver")
+        disk_type   = ctx.xpathEval(base_path + "/@type")
+        source_node = ctx.xpathEval(base_path + "/source")
+        source_node = source_node and source_node[0]
+
+        # If no destination path, our job is easy
+        if not clone_disk.path:
+            if source_node:
+                source_node.unlinkNode()
+                source_node.freeNode()
+            return
+
+        if not source_node:
+            # No original source, but new path specified: create <source> tag
+            source_node = disk.newChild(None, "source", None)
+        else:
+            source_node.get_properties().unlinkNode()
+
+        # Change disk type/driver
+        if clone_disk.type == clone_disk.TYPE_FILE:
+            dtype, prop, drvval = ("file", "file", "file")
+        else:
+            dtype, prop, drvval = ("block", "dev", "phy")
+
+        # Only change these type/driver values if they are in our minimal
+        # known whitelist, to try and avoid future problems
+        if disk_type[0].getContent() in [ "file", "block" ]:
+            disk_type[0].setContent(dtype)
+        if driver and driver[0].prop("name") in [ "file", "block" ]:
+            driver[0].setProp("name", drvval)
+
+        source_node.setProp(prop, clone_disk.path)
+
     # Parse disk paths that need to be cloned from the original guest's xml
     # Return a tuple of lists:
     # ([list of VirtualDisk instances of the source paths to clone]
@@ -425,18 +461,22 @@ class CloneDesign(object):
                                                       self._force_target)
             if target == None:
                 continue
-
             lst.append((path, target))
 
         # Set up virtual disk to encapsulate all relevant path info
         for path, target in lst:
             d = None
             try:
-                if not _util.disk_exists(self._hyper_conn, path):
+                if path and not _util.disk_exists(self._hyper_conn, path):
                     raise ValueError(_("Disk '%s' does not exist.") %
                                      path)
 
-                d = VirtualDisk(path, conn=self._hyper_conn)
+                device = VirtualDisk.DEVICE_DISK
+                if not path:
+                    # Tell VirtualDisk we are a cdrom to allow empty media
+                    device = VirtualDisk.DEVICE_CDROM
+
+                d = VirtualDisk(path, conn=self._hyper_conn, device=device)
                 d.target = target
             except Exception, e:
                 raise ValueError(_("Could not determine original disk "
@@ -459,12 +499,12 @@ class CloneDesign(object):
         if not target:
             raise ValueError("XML has no 'dev' attribute in disk target")
 
+        if target in force_list:
+            return (source, target)
+
         # No media path
         if not source and self.CLONE_POLICY_NO_EMPTYMEDIA in self.clone_policy:
             return (None, None)
-
-        if target in force_list:
-            return (source, target)
 
         # Readonly disks
         if ro and self.CLONE_POLICY_NO_READONLY in self.clone_policy:
@@ -475,32 +515,6 @@ class CloneDesign(object):
             return (None, None)
 
         return (source, target)
-
-    # Check if original disk type (file/block) is different from
-    # requested clones disk type, and alter xml if needed
-    def _change_disk_type(self, org_type, cln_type, target, ctx):
-
-        base_path = "/domain/devices/disk[target/@dev='%s']" % target
-        disk_type = ctx.xpathEval(base_path + "/@type")
-        driv_name = ctx.xpathEval(base_path + "/driver/@name")
-        src = ctx.xpathEval(base_path + "/source")
-        src_chid_txt = src[0].get_properties().getContent()
-
-        # different type
-        if org_type != cln_type:
-            if org_type == True:
-                # changing from file to disk
-                typ, driv, newprop = ("block", "phy", "dev")
-            else:
-                # changing from disk to file
-                typ, driv, newprop = ("file", "file", "file")
-
-            disk_type[0].setContent(typ)
-            if driv_name:
-                driv_name[0].setContent(driv)
-            src[0].get_properties().unlinkNode()
-            src[0].newProp(newprop, src_chid_txt)
-
 
     # Simple wrapper for checking a vm exists and returning the domain
     def _lookup_vm(self, name):
