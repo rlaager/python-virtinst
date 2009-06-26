@@ -164,7 +164,10 @@ def distroFromTreeinfo(fetcher, progresscb, uri, arch, vmtype=None,
     finally:
         os.unlink(tmptreeinfo)
 
-    fam = treeinfo.get("general", "family")
+    try:
+        fam = treeinfo.get("general", "family")
+    except ConfigParser.NoSectionError:
+        return None
 
     if re.match(".*Fedora.*", fam):
         dclass = FedoraDistro
