@@ -544,11 +544,31 @@ class LogicalPool(StoragePool):
                            StoragePool.set_target_path,
                            doc=_("Location of the existing LVM volume group."))
 
-    def __init__(self, conn, name, target_path=None, uuid=None, perms=None):
+    def __init__(self, conn, name, target_path=None, uuid=None, perms=None,
+                 source_path=None):
         StoragePool.__init__(self, name=name, type=StoragePool.TYPE_LOGICAL,
                              target_path=target_path, uuid=uuid, conn=conn)
         if perms:
             self.perms = perms
+        if source_path:
+            self.source_path = source_path
+
+    # Need to overwrite storage path checks, since this optionally be a list
+    # of devices
+    def get_source_path(self):
+        return self._source_path
+    def set_source_path(self, val):
+        if not val:
+            self._source_path = None
+            return
+
+        if type(val) != list:
+            StoragePool.set_source_path(self, val)
+        else:
+            self._source_path = val
+    source_path = property(get_source_path, set_source_path,
+                           doc=_("Optional device(s) to build new LVM volume "
+                                 "on."))
 
     def _get_default_target_path(self):
         return DEFAULT_LVM_TARGET_BASE + self.name
@@ -559,7 +579,21 @@ class LogicalPool(StoragePool):
         return xml
 
     def _get_source_xml(self):
-        return ""
+        sources = self.source_path
+        if type(sources) != list:
+            sources = sources and [sources] or []
+
+        xml = ""
+        for s in sources:
+            xml += "    <device path='%s'/>\n" % s
+        return xml
+
+    def install(self, meter=None, create=False, build=False):
+        if build and not self.source_path:
+            raise ValueError(_("Must explicitly specify source path if "
+                               "building' pool"))
+        return StoragePool.install(self, meter=meter, create=create,
+                                   build=build)
 
 class DiskPool(StoragePool):
     """
