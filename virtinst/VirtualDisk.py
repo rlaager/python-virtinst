@@ -449,9 +449,9 @@ class VirtualDisk(VirtualDevice):
         elif self.vol_install:
             if drvname == self.DRIVER_QEMU:
                 if self.vol_install.file_type == libvirt.VIR_STORAGE_VOL_FILE:
-                    drvname = self.vol_install.format
+                    drvtype = self.vol_install.format
                 else:
-                    drvname = self.DRIVER_QEMU_RAW
+                    drvtype = self.DRIVER_QEMU_RAW
 
         elif self.__creating_storage():
             if drvname == self.DRIVER_QEMU:
