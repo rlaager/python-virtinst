@@ -80,7 +80,7 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         elif char_type == VirtualCharDevice.CHAR_VC:
             c = VirtualCharVcDevice
         elif char_type == VirtualCharDevice.CHAR_DEV:
-            c = VirtualCharVcDevice
+            c = VirtualCharDevDevice
         elif char_type == VirtualCharDevice.CHAR_FILE:
             c = VirtualCharFileDevice
         elif char_type == VirtualCharDevice.CHAR_PIPE:
