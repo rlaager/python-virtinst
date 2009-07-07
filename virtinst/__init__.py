@@ -27,6 +27,7 @@ def _virtinst(msg):
 import util
 import Storage
 from Guest import Guest, XenGuest
+from VirtualDevice import VirtualDevice
 from VirtualNetworkInterface import VirtualNetworkInterface, \
                                     XenNetworkInterface
 from VirtualGraphics import VirtualGraphics
@@ -53,5 +54,6 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "VirtualDisk", "XenDisk", "FullVirtGuest", "ParaVirtGuest",
            "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
            "ImportInstaller", "ImageInstaller", "CloneDesign", "Storage",
-           "User", "util", "VirtualHostDevice", "VirtualHostDeviceUSB",
+           "User", "util", "VirtualDevice",
+           "VirtualHostDevice", "VirtualHostDeviceUSB",
            "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice"]
