@@ -30,15 +30,16 @@ class VirtualDevice(object):
     Base class for all domain xml device objects.
     """
 
-    VIRTUAL_DEV_DISK = "disk"
-    VIRTUAL_DEV_NET  = "interface"
-    VIRTUAL_DEV_INPUT = "input"
-    VIRTUAL_DEV_GRAPHICS = "graphics"
-    VIRTUAL_DEV_AUDIO = "sound"
-    VIRTUAL_DEV_HOSTDEV = "hostdev"
-    VIRTUAL_DEV_SERIAL = "serial"
-    VIRTUAL_DEV_PARALLEL = "parallel"
-    VIRTUAL_DEV_CONSOLE = "console"
+    VIRTUAL_DEV_DISK            = "disk"
+    VIRTUAL_DEV_NET             = "interface"
+    VIRTUAL_DEV_INPUT           = "input"
+    VIRTUAL_DEV_GRAPHICS        = "graphics"
+    VIRTUAL_DEV_AUDIO           = "sound"
+    VIRTUAL_DEV_HOSTDEV         = "hostdev"
+    VIRTUAL_DEV_SERIAL          = "serial"
+    VIRTUAL_DEV_PARALLEL        = "parallel"
+    VIRTUAL_DEV_CONSOLE         = "console"
+    VIRTUAL_DEV_VIDEO           = "video"
 
     # Ordering in this list is important: it will be the order the
     # Guest class outputs XML. So changing this may upset the test suite
@@ -46,7 +47,7 @@ class VirtualDevice(object):
                             VIRTUAL_DEV_INPUT, VIRTUAL_DEV_GRAPHICS,
                             VIRTUAL_DEV_SERIAL, VIRTUAL_DEV_PARALLEL,
                             VIRTUAL_DEV_CONSOLE, VIRTUAL_DEV_AUDIO,
-                            VIRTUAL_DEV_HOSTDEV ]
+                            VIRTUAL_DEV_VIDEO, VIRTUAL_DEV_HOSTDEV ]
 
     # General device type (disk, interface, etc.)
     _virtual_device_type = None

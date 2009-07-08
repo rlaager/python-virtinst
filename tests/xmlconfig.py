@@ -26,6 +26,7 @@ from virtinst import VirtualAudio
 from virtinst import VirtualNetworkInterface
 from virtinst import VirtualHostDeviceUSB, VirtualHostDevicePCI
 from virtinst import VirtualCharDevice
+from virtinst import VirtualVideoDevice
 import tests
 
 conn = libvirt.open("test:///default")
@@ -490,6 +491,17 @@ class TestXMLConfig(unittest.TestCase):
         cdev2.source_path = "/tmp/foobar"
         g.add_device(cdev1)
         g.add_device(cdev2)
+
+        # Video Devices
+        vdev1 = VirtualVideoDevice(g.conn)
+        vdev1.model_type = "foobar"
+
+        vdev2 = VirtualVideoDevice(g.conn)
+        vdev2.model_type = "cirrus"
+        vdev2.vram = 10 * 1024
+        vdev2.heads = 3
+        g.add_device(vdev1)
+        g.add_device(vdev2)
 
         g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
                                             conn=g.conn)

@@ -37,6 +37,7 @@ from VirtualDisk import VirtualDisk, XenDisk
 from VirtualHostDevice import (VirtualHostDevice, VirtualHostDeviceUSB,
                                VirtualHostDevicePCI)
 from VirtualCharDevice import VirtualCharDevice
+from VirtualVideoDevice import VirtualVideoDevice
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
 from DistroInstaller import DistroInstaller
@@ -55,5 +56,5 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
            "ImportInstaller", "ImageInstaller", "CloneDesign", "Storage",
            "User", "util", "VirtualDevice",
-           "VirtualHostDevice", "VirtualHostDeviceUSB",
+           "VirtualHostDevice", "VirtualHostDeviceUSB", "VirtualVideoDevice",
            "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice"]
