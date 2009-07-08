@@ -116,10 +116,10 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         # Init
         self._source_path = None
         self._source_mode = self.CHAR_MODE_BIND
-        self._source_host = None
+        self._source_host = "127.0.0.1"
         self._source_port = None
-        self._connect_host = None
-        self._connect_port = None
+        self._bind_host = None
+        self._bind_port = None
         self._wire_mode = self.CHAR_WIRE_MODE_RAW
 
     # Properties
@@ -151,15 +151,15 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     def set_source_port(self, val):
         self._source_port = int(val)
 
-    def get_connect_host(self):
-        return self._connect_host
-    def set_connect_host(self, val):
-        self._connect_host = val
+    def get_bind_host(self):
+        return self._bind_host
+    def set_bind_host(self, val):
+        self._bind_host = val
 
-    def get_connect_port(self):
-        return self._connect_port
-    def set_connect_port(self, val):
-        self._connect_port = int(val)
+    def get_bind_port(self):
+        return self._bind_port
+    def set_bind_port(self, val):
+        self._bind_port = int(val)
 
     def get_wire_mode(self):
         return self._wire_mode
@@ -287,42 +287,44 @@ class VirtualCharTcpDevice(VirtualCharDevice):
 class VirtualCharUdpDevice(VirtualCharDevice):
     _char_type = VirtualCharDevice.CHAR_UDP
 
+    bind_host = property(VirtualCharDevice.get_bind_host,
+                         VirtualCharDevice.set_bind_host,
+                         doc=_("Host address to bind to."))
+    bind_port = property(VirtualCharDevice.get_bind_port,
+                         VirtualCharDevice.set_bind_port,
+                         doc=_("Host port to bind to."))
     source_host = property(VirtualCharDevice.get_source_host,
                            VirtualCharDevice.set_source_host,
-                           doc=_("Address to connect/listen to."))
+                           doc=_("Host address to send output to."))
     source_port = property(VirtualCharDevice.get_source_port,
                            VirtualCharDevice.set_source_port,
-                           doc=_("Port on target host to connect/listen to."))
-    connect_host = property(VirtualCharDevice.get_connect_host,
-                            VirtualCharDevice.set_connect_host,
-                            doc=_("Host address to send output to."))
-    connect_port = property(VirtualCharDevice.get_connect_port,
-                            VirtualCharDevice.set_connect_port,
-                            doc=_("Host port to send output to."))
+                           doc=_("Host port to send output to."))
 
     # XXX: UDP: Only source _connect_ port required?
     def _char_xml(self):
-        if not self.connect_port:
+        if not self.source_port:
             raise ValueError(_("A connection port must be specified."))
 
         xml = ""
-        source_xml = ""
+        bind_xml = ""
+        bind_host_xml = ""
+        bind_port_xml = ""
         source_host_xml = ""
-        source_port_xml = ""
-        connect_host_xml = ""
 
+        if self.bind_port:
+            bind_port_xml = " service='%s'" % self.bind_port
+            if not self.bind_host:
+                self.bind_host = "127.0.0.1"
+        if self.bind_host:
+            bind_host_xml = " host='%s'" % self.bind_host
         if self.source_host:
             source_host_xml = " host='%s'" % self.source_host
-        if self.source_port:
-            source_port_xml = " service='%s'" % self.source_port
-        if self.connect_host:
-            connect_host_xml = " host='%s'" % self.connect_host
 
-        if self.source_host or self.source_port:
-            source_xml = ("      <source mode='bind'%s%s/>\n" %
-                          (source_host_xml, source_port_xml))
+        if self.bind_host or self.bind_port:
+            bind_xml = ("      <source mode='bind'%s%s/>\n" %
+                        (bind_host_xml, bind_port_xml))
 
-        xml += source_xml
+        xml += bind_xml
         xml += ("      <source mode='connect'%s service='%s'/>\n" %
-                (connect_host_xml, self.connect_port))
+                (source_host_xml, self.source_port))
         return xml

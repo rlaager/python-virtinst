@@ -440,8 +440,8 @@ class TestXMLConfig(unittest.TestCase):
         dev4 = VirtualCharDevice.get_dev_instance(g.conn,
                                                   VirtualCharDevice.DEV_PARALLEL,
                                                   VirtualCharDevice.CHAR_UDP)
-        dev4.connect_host = "my.connect.host"
-        dev4.connect_port = "1111"
+        dev4.bind_host = "my.bind.host"
+        dev4.bind_port = "1111"
         dev4.source_host = "my.source.host"
         dev4.source_port = "2222"
 

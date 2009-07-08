@@ -29,8 +29,8 @@
       <source mode='bind' path='/tmp/foobar'/>
     </parallel>
     <parallel type='udp'>
-      <source mode='bind' host='my.source.host' service='2222'/>
-      <source mode='connect' host='my.connect.host' service='1111'/>
+      <source mode='bind' host='my.bind.host' service='1111'/>
+      <source mode='connect' host='my.source.host' service='2222'/>
     </parallel>
   </devices>
 </domain>
