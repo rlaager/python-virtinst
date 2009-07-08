@@ -76,14 +76,21 @@ def parse_disk_option(guest, path, size):
     abspath = None
     voltuple = None
     volinst = None
-    devtype = None
     ro = False
     shared = False
     sparse = True
-    bus = None
-    cache = None
+    option_whitelist = ["perms", "cache", "bus", "device", "size", "sparse"]
+
+    def partition(string, sep):
+        if string.count(sep):
+            splitres = string.split(sep, 1)
+            ret = (splitres[0], sep, splitres[1])
+        else:
+            ret = (string, None, None)
+        return ret
 
     # Strip media type
+    path, ignore, optstr = partition(path, ",")
     if path.startswith("path="):
         path_type = "path="
     elif path.startswith("vol="):
@@ -95,25 +102,12 @@ def parse_disk_option(guest, path, size):
     path = path[len(path_type):]
 
     # Parse out comma separated options
-    opts = {}
-    while True:
-        if not path.count(","):
-            break
-        path, tmpopts = path.split(",", 1)
-        for opt in tmpopts.split(","):
-            opt_type = None
-            opt_val = None
-            if opt.count("="):
-                opt_type, opt_val = opt.split("=", 1)
-                opts[opt_type.lower()] = opt_val.lower()
+    opts = cli.parse_optstr(optstr)
+    for opt_type, opt_val in opts.items():
+        if opt_type not in option_whitelist:
+            fail(_("Unknown --disk option '%s'.") % opt_type)
 
-    for opt in opts.items():
-        opt_type, opt_val = opt
-        if opt_type == "device":
-            devtype = opt_val
-        elif opt_type == "bus":
-            bus = opt_val
-        elif opt_type == "perms":
+        if opt_type == "perms":
             if opt_val == "ro":
                 ro = True
             elif opt_val == "sh":
@@ -132,10 +126,11 @@ def parse_disk_option(guest, path, size):
                 sparse = False
             else:
                 fail(_("Unknown '%s' value '%s'") % (opt_type, opt_val))
-        elif opt_type == "cache":
-            cache = opt_val
-        else:
-            fail(_("Unknown --disk option '%s'.") % (opt,))
+
+    # Set simple options from dictionary
+    devtype = opts.get("device")
+    bus     = opts.get("bus")
+    cache   = opts.get("cache")
 
     # We return (path, (poolname, volname), volinst, device, bus, readonly,
     #            shared)

@@ -149,6 +149,8 @@ args_dict = {
         "--disk vol=%(POOL)s/foovol",
         # Specify a pool with no size
         "--disk pool=%(POOL)s",
+        # Unknown cache type
+        "--disk path=%(EXISTIMG1)s,perms=ro,size=.0001,cache=FOOBAR",
       ]
      }, # category "storage"
 

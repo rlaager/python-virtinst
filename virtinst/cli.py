@@ -543,13 +543,41 @@ def get_network(net_kwargs, guest):
     n = VirtualNetworkInterface(**net_kwargs)
     guest.nics.append(n)
 
+
+def parse_optstr(optstr, basedict=None):
+    """
+    Helper function for parsing opt strings of the form
+    opt1=val1,opt2=val2,...
+    'basedict' is a starting dictionary, so the caller can easily set
+    default values, etc.
+
+    Returns a dictionary of {'opt1': 'val1', 'opt2': 'val2'}
+    """
+    optstr = str(optstr or "")
+    optdict = basedict or {}
+
+    args = optstr.split(",")
+    for opt in args:
+        if not opt:
+            continue
+
+        opt_type = None
+        opt_val = None
+        if opt.count("="):
+            opt_type, opt_val = opt.split("=", 1)
+            optdict[opt_type.lower()] = opt_val.lower()
+        else:
+            optdict[opt.lower()] = None
+
+    return optdict
+
 def parse_network_opts(conn, mac, network):
     net_type = None
     network_name = None
     bridge_name = None
     model = None
+    option_whitelist = ["model", "mac"]
 
-    opts = {}
     args = network.split(",")
 
     # Determine net type and bridge vs. network
@@ -570,22 +598,13 @@ def parse_network_opts(conn, mac, network):
         bridge_name = netdata
 
     # Pass the remaining arg=value pairs
-    for opt in args:
-        opt_type = None
-        opt_val = None
-        if opt.count("="):
-            opt_type, opt_val = opt.split("=", 1)
-            opts[opt_type.lower()] = opt_val.lower()
-
-    for opt_type in opts.keys():
-        opt_val = opts[opt_type]
-
-        if opt_type == "model":
-            model = opt_val
-        elif opt_type == "mac":
-            mac = opt_val
-        else:
+    opts = parse_optstr(",".join(args))
+    for opt_type, ignore_val in opts.items():
+        if opt_type not in option_whitelist:
             fail(_("Unknown network option '%s'") % opt_type)
+
+    model   = opts.get("model")
+    mac     = opts.get("mac") or mac
 
     # The keys here correspond to parameter names for VirtualNetworkInterface
     # __init__
