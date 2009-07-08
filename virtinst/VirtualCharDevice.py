@@ -46,9 +46,9 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     char_types  = [ CHAR_PTY, CHAR_DEV, CHAR_STDIO, CHAR_FILE, CHAR_VC,
                     CHAR_PIPE, CHAR_NULL, CHAR_TCP, CHAR_UDP, CHAR_UNIX ]
 
-    CHAR_MODE_SERVER = "connect"
+    CHAR_MODE_CONNECT = "connect"
     CHAR_MODE_BIND = "bind"
-    char_modes = [ CHAR_MODE_SERVER, CHAR_MODE_BIND ]
+    char_modes = [ CHAR_MODE_CONNECT, CHAR_MODE_BIND ]
 
     CHAR_WIRE_MODE_RAW = "raw"
     CHAR_WIRE_MODE_TELNET = "telnet"
