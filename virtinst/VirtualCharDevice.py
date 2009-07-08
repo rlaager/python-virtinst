@@ -54,6 +54,50 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     CHAR_WIRE_MODE_TELNET = "telnet"
     char_wire_modes = [ CHAR_WIRE_MODE_RAW, CHAR_WIRE_MODE_TELNET ]
 
+    def get_char_type_desc(char_type):
+        """
+        Return a human readable description of the passed char type
+        """
+        desc = ""
+
+        if char_type == VirtualCharDevice.CHAR_PTY:
+            desc = _("Psuedo TTY")
+        elif char_type == VirtualCharDevice.CHAR_DEV:
+            desc = _("Physical host character device")
+        elif char_type == VirtualCharDevice.CHAR_STDIO:
+            desc = _("Standard input/output")
+        elif char_type == VirtualCharDevice.CHAR_PIPE:
+            desc = _("Named pipe")
+        elif char_type == VirtualCharDevice.CHAR_FILE:
+            desc = _("Output to a file")
+        elif char_type == VirtualCharDevice.CHAR_VC:
+            desc = _("Virtual console")
+        elif char_type == VirtualCharDevice.CHAR_NULL:
+            desc = _("Null device")
+        elif char_type == VirtualCharDevice.CHAR_TCP:
+            desc = _("TCP net console")
+        elif char_type == VirtualCharDevice.CHAR_UDP:
+            desc = _("UDP net console")
+        elif char_type == VirtualCharDevice.CHAR_UNIX:
+            desc = _("Unix socket")
+
+        return desc
+    get_char_type_desc = staticmethod(get_char_type_desc)
+
+    def get_char_mode_desc(char_mode):
+        """
+        Return a human readable description of the passed char type
+        """
+        desc = ""
+
+        if char_mode == VirtualCharDevice.CHAR_MODE_CONNECT:
+            desc = _("Client mode.")
+        elif char_mode == VirtualCharDevice.CHAR_MODE_BIND:
+            desc = _("Server mode.")
+
+        return desc
+    get_char_mode_desc = staticmethod(get_char_mode_desc)
+
     # 'char_type' of class (must be properly set in subclass)
     _char_type = None
 
@@ -125,8 +169,9 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     # Properties
     def get_char_type(self):
         return self._char_type
-    char_type = property(get_char_type)
-
+    char_type = property(get_char_type,
+                         doc=_("Method used to expose character device in "
+                               "the host."))
 
     # Properties functions used by the various subclasses
     def get_source_path(self):
