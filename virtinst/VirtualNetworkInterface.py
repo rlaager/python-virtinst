@@ -35,6 +35,24 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     TYPE_USER    = "user"
     network_types = [TYPE_BRIDGE, TYPE_VIRTUAL, TYPE_USER]
 
+    def get_network_type_desc(net_type):
+        """
+        Return human readable description for passed network type
+        """
+        desc = ""
+
+        if net_type == VirtualNetworkInterface.TYPE_BRIDGE:
+            desc = _("Shared physical device")
+        elif net_type ==  VirtualNetworkInterface.TYPE_VIRTUAL:
+            desc = _("Virtual networking")
+        elif net_type == VirtualNetworkInterface.TYPE_USER:
+            desc = _("Usermode networking")
+        else:
+            raise ValueError(_("Unknown network type '%s'") % net_type)
+
+        return desc
+    get_network_type_desc = staticmethod(get_network_type_desc)
+
     def __init__(self, macaddr=None, type=TYPE_BRIDGE, bridge=None,
                  network=None, model=None, conn=None):
         VirtualDevice.VirtualDevice.__init__(self, conn)
