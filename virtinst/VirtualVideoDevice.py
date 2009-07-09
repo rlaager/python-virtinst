@@ -67,5 +67,5 @@ class VirtualVideoDevice(VirtualDevice.VirtualDevice):
 
         xml = ("    <video>\n" +
                model_xml +
-               "    <video/>")
+               "    </video>")
         return xml
