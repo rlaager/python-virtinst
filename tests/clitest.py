@@ -174,6 +174,8 @@ args_dict = {
         "--hvm --location %s" % treedir,
         # Directory tree CDROM install
         "--hvm --cdrom %s" % treedir,
+        # Paravirt location
+        "--paravirt --location %s" % treedir
       ],
 
       "invalid": [

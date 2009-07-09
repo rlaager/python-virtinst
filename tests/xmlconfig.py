@@ -18,7 +18,6 @@ import unittest
 import os
 import libvirt
 import urlgrabber.progress as progress
-import logging
 
 import virtinst
 from virtinst import VirtualDisk
@@ -80,21 +79,18 @@ class TestXMLConfig(unittest.TestCase):
         try:
             actualXML = xenguest.get_config_xml(install=install)
             tests.diff_compare(actualXML, filename)
+            # Libvirt throws errors since we are defining domain
+            # type='xen', when test driver can only handle type='test'
+            # Sanitize the XML so we can define
+            actualXML = actualXML.replace("<domain type='xen'>",
+                                          "<domain type='test'>")
+            actualXML = actualXML.replace(">linux<", ">xen<")
 
-            try:
-                # Should probably break this out into a separate function
-                dom = xenguest.conn.defineXML(actualXML)
-                dom.create()
-                dom.destroy()
-                dom.undefine()
-            except Exception, e:
-                # Libvirt throws errors since we are defining domain
-                # type='xen', when test driver can only handle type='test'
-                # Would be nice to turn this back on, but it we need a
-                # maintainable solution that still tests the important
-                # virtinst code paths.
-                logging.debug("Defining xmlconfig failed. Error is: %s"
-                              "\nXML is:\n%s" % (str(e), actualXML))
+            # Should probably break this out into a separate function
+            dom = xenguest.conn.defineXML(actualXML)
+            dom.create()
+            dom.destroy()
+            dom.undefine()
         finally:
             xenguest.installer.cleanup()
 
@@ -494,7 +490,7 @@ class TestXMLConfig(unittest.TestCase):
 
         # Video Devices
         vdev1 = VirtualVideoDevice(g.conn)
-        vdev1.model_type = "foobar"
+        vdev1.model_type = "vmvga"
 
         vdev2 = VirtualVideoDevice(g.conn)
         vdev2.model_type = "cirrus"

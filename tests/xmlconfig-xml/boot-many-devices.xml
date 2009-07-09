@@ -43,7 +43,7 @@
     <sound model='sb16'/>
     <sound model='es1370'/>
     <video>
-      <model type='foobar'/>
+      <model type='vmvga'/>
     </video>
     <video>
       <model type='cirrus' vram='10240' heads='3'/>
