@@ -431,7 +431,7 @@ class TestXMLConfig(unittest.TestCase):
         dev3 = VirtualCharDevice.get_dev_instance(g.conn,
                                                   VirtualCharDevice.DEV_SERIAL,
                                                   VirtualCharDevice.CHAR_TCP)
-        dev3.wire_mode = "telnet"
+        dev3.protocol = "telnet"
         dev3.source_host = "my.source.host"
         dev3.source_port = "1234"
         dev4 = VirtualCharDevice.get_dev_instance(g.conn,

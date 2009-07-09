@@ -50,9 +50,9 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     CHAR_MODE_BIND = "bind"
     char_modes = [ CHAR_MODE_CONNECT, CHAR_MODE_BIND ]
 
-    CHAR_WIRE_MODE_RAW = "raw"
-    CHAR_WIRE_MODE_TELNET = "telnet"
-    char_wire_modes = [ CHAR_WIRE_MODE_RAW, CHAR_WIRE_MODE_TELNET ]
+    CHAR_PROTOCOL_RAW = "raw"
+    CHAR_PROTOCOL_TELNET = "telnet"
+    char_protocols = [ CHAR_PROTOCOL_RAW, CHAR_PROTOCOL_TELNET ]
 
     def get_char_type_desc(char_type):
         """
@@ -164,7 +164,7 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         self._source_port = None
         self._bind_host = None
         self._bind_port = None
-        self._wire_mode = self.CHAR_WIRE_MODE_RAW
+        self._protocol = self.CHAR_PROTOCOL_RAW
 
     # Properties
     def get_char_type(self):
@@ -206,12 +206,12 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     def set_bind_port(self, val):
         self._bind_port = int(val)
 
-    def get_wire_mode(self):
-        return self._wire_mode
-    def set_wire_mode(self, val):
-        if val not in self.char_wire_modes:
-            raise ValueError(_("Unknown wire mode '%s'.") % val)
-        self._wire_mode = val
+    def get_protocol(self):
+        return self._protocol
+    def set_protocol(self, val):
+        if val not in self.char_protocols:
+            raise ValueError(_("Unknown protocol '%s'.") % val)
+        self._protocol = val
 
     # XML building helpers
     def _char_empty_xml(self):
@@ -316,8 +316,8 @@ class VirtualCharTcpDevice(VirtualCharDevice):
     source_port = property(VirtualCharDevice.get_source_port,
                            VirtualCharDevice.set_source_port,
                            doc=_("Port on target host to connect/listen to."))
-    wire_mode = property(VirtualCharDevice.get_wire_mode,
-                         VirtualCharDevice.set_wire_mode,
+    protocol = property(VirtualCharDevice.get_protocol,
+                         VirtualCharDevice.set_protocol,
                          doc=_("Format used when sending data."))
 
     def _char_xml(self):
@@ -326,7 +326,7 @@ class VirtualCharTcpDevice(VirtualCharDevice):
 
         xml = ("      <source mode='%s' host='%s' service='%s'/>\n" %
                (self.source_mode, self.source_host, self.source_port))
-        xml += "      <wire type='%s'/>\n" % self.wire_mode
+        xml += "      <protocol type='%s'/>\n" % self.protocol
         return xml
 
 class VirtualCharUdpDevice(VirtualCharDevice):

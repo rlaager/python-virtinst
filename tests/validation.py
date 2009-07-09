@@ -267,9 +267,9 @@ args = {
     'connect_port': {
         'invalid'   : [ "foobar"],
         'valid'     : [ 1234 ]},
-    'wire_mode': {
+    'protocol': {
         'invalid'   : [ None ],
-        'valid'     : virtinst.VirtualCharDevice.char_wire_modes },
+        'valid'     : virtinst.VirtualCharDevice.char_protocols },
 }
 
 } # End of validation dict

@@ -23,7 +23,7 @@
     <serial type='null'/>
     <serial type='tcp'>
       <source mode='bind' host='my.source.host' service='1234'/>
-      <wire type='telnet'/>
+      <protocol type='telnet'/>
     </serial>
     <parallel type='unix'>
       <source mode='bind' path='/tmp/foobar'/>
