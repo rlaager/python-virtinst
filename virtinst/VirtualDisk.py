@@ -419,7 +419,10 @@ class VirtualDisk(VirtualDevice):
             else:
                 dtype = self.TYPE_BLOCK
 
-        if self.type and dtype != self.type:
+        if not dtype:
+            dtype = self.type or self.TYPE_BLOCK
+
+        elif self.type and dtype != self.type:
             raise ValueError(_("Passed type '%s' does not match detected "
                                "storage type '%s'" % (self.type, dtype)))
         self.set_type(dtype, validate=False)
@@ -643,6 +646,7 @@ class VirtualDisk(VirtualDevice):
 
         if self.__no_storage():
             # No storage specified for a removable device type (CDROM, floppy)
+            self._type = self.TYPE_BLOCK
             return True
 
         storage_capable = bool(self.conn and

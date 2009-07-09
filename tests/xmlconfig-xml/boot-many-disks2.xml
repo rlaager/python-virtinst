@@ -31,11 +31,11 @@
       <target dev='hdc' bus='ide'/>
       <readonly/>
     </disk>
-    <disk type='None' device='cdrom'>
+    <disk type='block' device='cdrom'>
       <target dev='sda' bus='scsi'/>
       <readonly/>
     </disk>
-    <disk type='None' device='floppy'>
+    <disk type='block' device='floppy'>
       <target dev='fda' bus='fdc'/>
     </disk>
     <disk type='block' device='floppy'>
