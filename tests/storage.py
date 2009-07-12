@@ -102,9 +102,9 @@ class TestStorage(unittest.TestCase):
 
     def testDiskPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_DISK, fmt="dos")
-        # Not implemented yet
-        #volobj = createVol(poolobj)
-        self.assertRaises(RuntimeError, createVol, poolobj)
+        invol = createVol(poolobj)
+        createVol(poolobj, volname=invol.name() + "input", input_vol=invol)
+        createVol(poolobj, volname=invol.name() + "clone", clone_vol=invol)
 
     def testISCSIPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_ISCSI)

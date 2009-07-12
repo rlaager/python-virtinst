@@ -599,6 +599,9 @@ class DiskPool(StoragePool):
     """
     Create a storage pool from a physical disk
     """
+    def get_volume_class():
+        return DiskVolume
+    get_volume_class = staticmethod(get_volume_class)
 
     # Register applicable property methods from parent class
     source_path = property(StoragePool.get_source_path,
@@ -610,10 +613,6 @@ class DiskPool(StoragePool):
                                  " volumes."))
 
     formats = [ "auto", "bsd", "dos", "dvh", "gpt", "mac", "pc98", "sun" ]
-
-    def get_volume_class():
-        raise NotImplementedError(_("Disk volume creation is not implemented."))
-    get_volume_class = staticmethod(get_volume_class)
 
     def __init__(self, conn, name, source_path=None, target_path=None,
                  format="auto", uuid=None):
@@ -1064,23 +1063,27 @@ class FileVolume(StorageVolume):
     def _get_source_xml(self):
         return ""
 
-#class DiskVolume(StorageVolume):
-#    """
-#    Build and install xml for use on disk device pools
-#    """
-#    _file_type = libvirt.VIR_STORAGE_VOL_FILE
-#
-#    def __init__(self, *args, **kwargs):
-#        raise NotImplementedError
+class DiskVolume(StorageVolume):
+    """
+    Build and install xml volumes for use on physical disk pools
+    """
 
-#class iSCSIVolume(StorageVolume):
-#    """
-#    Build and install xml for use on iSCSI device pools
-#    """
-#    _file_type = libvirt.VIR_STORAGE_VOL_FILE
-#
-#    def __init__(self, *args, **kwargs):
-#        raise NotImplementedError
+    # Register applicable property methods from parent class
+    perms = property(StorageObject.get_perms, StorageObject.set_perms)
+
+    def __init__(self, name, capacity, pool=None, pool_name=None, conn=None,
+                 allocation=None, perms=None):
+        StorageVolume.__init__(self, name=name, pool=pool, pool_name=pool_name,
+                               allocation=allocation, capacity=capacity,
+                               conn=conn)
+        if perms:
+            self.perms = perms
+
+    def _get_target_xml(self):
+        return "%s" % self._get_perms_xml()
+
+    def _get_source_xml(self):
+        return ""
 
 class LogicalVolume(StorageVolume):
     """
@@ -1137,3 +1140,13 @@ class CloneVolume(StorageVolume):
         xml  = self.input_vol.XMLDesc(0)
         newxml = _util.set_xml_path(xml, "/volume/name", self.name)
         return newxml
+
+#class iSCSIVolume(StorageVolume):
+#    """
+#    Build and install xml for use on iSCSI device pools
+#    """
+#    _file_type = libvirt.VIR_STORAGE_VOL_FILE
+#
+#    def __init__(self, *args, **kwargs):
+#        raise NotImplementedError
+
