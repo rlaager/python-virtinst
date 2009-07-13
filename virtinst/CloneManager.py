@@ -198,20 +198,33 @@ class CloneDesign(object):
         # Devices here is a string path. Every call to set_clone_devices
         # Adds the path (if valid) to the internal _clone_devices list
 
+        disklist = []
+        pathlist = []
+        if type(devpath) is list:
+            pathlist = devpath
+
         # Check path is valid
         # XXX: What if disk is being preserved, and storage is readonly?
         try:
-            device = VirtualDisk.DEVICE_DISK
-            if not devpath:
-                device = VirtualDisk.DEVICE_CDROM
-            disk = VirtualDisk(devpath, size=.0000001, conn=self._hyper_conn,
-                               device=device)
+            for path in pathlist or [devpath]:
+                device = VirtualDisk.DEVICE_DISK
+                if not path:
+                    device = VirtualDisk.DEVICE_CDROM
+
+                disk = VirtualDisk(path, size=.0000001,
+                                   conn=self._hyper_conn,
+                                   device=device)
+                disklist.append(disk)
         except Exception, e:
             raise ValueError(_("Could not use path '%s' for cloning: %s") %
                              (devpath, str(e)))
 
-        self._clone_virtual_disks.append(disk)
-        self._clone_devices.append(devpath)
+        if pathlist:
+            self._clone_virtual_disks = []
+            self._clone_devices = []
+
+        self._clone_virtual_disks.extend(disklist)
+        self._clone_devices.extend(pathlist or [devpath])
     def get_clone_devices(self):
         return self._clone_devices
     clone_devices = property(get_clone_devices, set_clone_devices,
@@ -224,8 +237,17 @@ class CloneDesign(object):
                                        " disk paths")
 
     def set_clone_mac(self, mac):
-        VirtualNetworkInterface(mac, conn=self.original_conn)
-        self._clone_mac.append(mac)
+        maclist = []
+        if type(mac) is list:
+            maclist = mac
+
+        for m in maclist or [mac]:
+            VirtualNetworkInterface(m, conn=self.original_conn)
+
+        if maclist:
+            self._clone_mac = []
+
+        self._clone_mac.extend(maclist or [mac])
     def get_clone_mac(self):
         return self._clone_mac
     clone_mac = property(get_clone_mac, set_clone_mac,
@@ -300,7 +322,10 @@ class CloneDesign(object):
                         doc="If true, preserve ALL original disk devices.")
 
     def set_force_target(self, dev):
-        self._force_target.append(dev)
+        if type(dev) is list:
+            self._force_target = dev[:]
+        else:
+            self._force_target.append(dev)
     def get_force_target(self):
         return self._force_target
     force_target = property(get_force_target, set_force_target,
@@ -308,7 +333,10 @@ class CloneDesign(object):
                                 "despite CloneManager's recommendation.")
 
     def set_skip_target(self, dev):
-        self._skip_target.append(dev)
+        if type(dev) is list:
+            self._skip_target = dev[:]
+        else:
+            self._skip_target.append(dev)
     def get_skip_target(self):
         return self._skip_target
     skip_target = property(get_skip_target, set_skip_target,
@@ -401,8 +429,8 @@ class CloneDesign(object):
         if len(self.clone_virtual_disks) < len(self.original_virtual_disks):
             raise ValueError(_("More disks to clone that new paths specified. "
                                "(%(passed)d specified, %(need)d needed") %
-                               (len(self.clone_virtual_disks),
-                                len(self.original_virtual_disks)))
+                               {"passed" : len(self.clone_virtual_disks),
+                                "need"   : len(self.original_virtual_disks) })
 
         # Changing storage XML
         for i in range(0, len(self.original_virtual_disks)):
