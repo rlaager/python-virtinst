@@ -716,6 +716,15 @@ def get_hostdevs(hostdevs, guest):
                                                           name=devname)
         guest.hostdevs.append(dev)
 
+def get_video(video_models, guest):
+    if not video_models:
+        return
+
+    for model in video_models:
+        dev = virtinst.VirtualVideoDevice(guest.conn)
+        dev.model_type = model
+        guest.add_device(dev)
+
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):
     if len(value) == 0:

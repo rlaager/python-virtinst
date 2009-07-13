@@ -627,6 +627,9 @@ def parse_args():
     parser.add_option_group(netg)
 
     vncg = cli.graphics_option_group(parser)
+    vncg.add_option("", "--video", dest="video", type="string",
+                    action="callback", callback=cli.check_before_append,
+                    help=_("Specify video hardware type."))
     vncg.add_option("", "--noautoconsole", action="store_false",
                     dest="autoconsole",
                     help=_("Don't automatically try to connect to the guest "
@@ -738,6 +741,8 @@ def main():
         get_chardevs(VirtualDevice.VIRTUAL_DEV_SERIAL, options.serials, guest)
         get_chardevs(VirtualDevice.VIRTUAL_DEV_PARALLEL, options.parallels,
                      guest)
+
+    cli.get_video(options.video, guest)
 
     # set up disks
     get_disks(options.file_path, options.diskopts, options.disksize,

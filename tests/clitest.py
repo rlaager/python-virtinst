@@ -200,6 +200,8 @@ args_dict = {
         "--sdl",
         # VNC w/ lots of options
         "--vnc --keymap ja --vncport 5950 --vnclisten 1.2.3.4",
+        # --video option
+        "--vnc --video vga",
       ],
 
       "invalid": [
@@ -207,6 +209,8 @@ args_dict = {
         "--vnc --keymap ZZZ",
         # Invalid port
         "--vnc --vncport -50",
+        # Invalid --video
+        "--vnc --video foobar",
       ],
 
      }, # category "graphics"

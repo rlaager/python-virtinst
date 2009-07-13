@@ -573,6 +573,12 @@ Setup a virtual console in the guest and display an SDL window in the
 host to render the output. If the SDL window is closed the guest may
 be unconditionally terminated.
 
+=item --video=VIDEO
+
+Specify what video device model will be attached to the guest. Valid values
+for VIDEO are hypervisor specific, but some options for recent kvm are
+cirrus, vga, or vmvga (vmware).
+
 =item  --nographics
 
 No graphical console will be allocated for the guest. Fully virtualized guests
