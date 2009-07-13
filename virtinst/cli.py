@@ -452,6 +452,14 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True):
 # Ask for attributes
 #
 
+def listify(l):
+    if l is None:
+        return []
+    elif type(l) != list:
+        return [ l ]
+    else:
+        return l
+
 def get_name(name, guest, image_name=None):
     prompt_txt = _("What is the name of your virtual machine?")
     err_txt = _("A name is required for the virtual machine.")
@@ -614,14 +622,6 @@ def parse_network_opts(conn, mac, network):
              "network" : network_name, "model" : model , "macaddr" : mac }
 
 def digest_networks(conn, macs, bridges, networks, nics = 0):
-    def listify(l):
-        if l is None:
-            return []
-        elif type(l) != list:
-            return [ l ]
-        else:
-            return l
-
     macs     = listify(macs)
     bridges  = listify(bridges)
     networks = listify(networks)

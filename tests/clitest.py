@@ -211,6 +211,36 @@ args_dict = {
 
      }, # category "graphics"
 
+    "char" : {
+     "char_args": "--hvm --nographics --noautoconsole --nodisks --pxe",
+
+     "valid": [
+        # Simple devs
+        "--serial pty --parallel null",
+        # Some with options
+        "--serial file,path=/tmp/foo --parallel unix,path=/tmp/foo --parallel null",
+        # UDP
+        "--parallel udp,host=0.0.0.0:1234,bind_host=127.0.0.1:1234",
+        # TCP
+        "--serial tcp,mode=bind,host=0.0.0.0:1234",
+        # Unix
+        "--parallel unix,path=/tmp/foo-socket",
+        # TCP w/ telnet
+        "--serial tcp,host=:1234,protocol=telnet",
+     ],
+     "invalid" : [
+        # Bogus device type
+        "--parallel foobah",
+        # Unix with no path
+        "--serial unix",
+        # Path where it doesn't belong
+        "--serial null,path=/tmp/foo",
+        # Nonexistent argument
+        "--serial udp,host=:1234,frob=baz",
+     ],
+
+     }, # category 'char'
+
      "misc": {
       "misc_args": "--nographics --noautoconsole",
 

@@ -150,6 +150,82 @@ Parameters specific only to fully virtualized guest installs.
 
 Attach a virtual audio device to the guest.
 
+=item --parallel=CHAROPTS
+
+=item --serial=CHAROPTS
+
+Specifies a serial device to attach to the guest, with various options. The
+general format of a serial string is
+
+    --serial type,opt1=val1,opt2=val2,...
+
+--serial and --parallel devices share all the same options, unless otherwise
+noted. Some of the types of character device redirection are:
+
+=over 4
+
+=item B<--serial pty>
+
+Psuedo TTY. The allocated pty will be listed in the running guests XML
+description.
+
+=item B<--serial dev,path=HOSTPATH>
+
+Host device. For serial devices, this could be /dev/ttyS0. For parallel
+devices, this could be /dev/parport0.
+
+=item B<--serial file,path=FILENAME>
+
+Write output to FILENAME.
+
+=item B<--serial pipe,path=PIPEPATH>
+
+Named pipe (see pipe(7))
+
+=item B<--serial tcp,host=HOST:PORT,mode=MODE,protocol=PROTOCOL>
+
+TCP net console. MODE is either 'bind' (wait for connections on HOST:PORT)
+or 'connect' (send output to HOST:PORT), default is 'connect'. HOST defaults
+to '127.0.0.1', but PORT is required. PROTOCOL can be either 'raw' or 'telnet'
+(default 'raw'). If 'telnet', the port acts like a telnet server or client.
+Some examples:
+
+Connect to localhost, port 1234:
+
+--serial tcp,host=:1234
+
+Wait for connections on any address, port 4567:
+
+--serial tcp,host=0.0.0.0:4567,mode=bind
+
+Wait for telnet connection on localhost, port 2222. The user could then
+connect interactively to this console via 'telnet localhost 2222':
+
+--serial tcp,host=:2222,mode=bind,protocol=telnet
+
+=item B<--serial udp,host=CONNECT_HOST:PORT,bind_port=BIND_HOST:BIND_PORT>
+
+UDP net console. HOST:PORT is the destination to send output to (default
+HOST is '127.0.0.1', PORT is required. BIND_HOST:PORT is the optional local
+address to bind to (default BIND_HOST is 127.0.0.1, but is only set if
+BIND_PORT is specified.) Some examples:
+
+Send output to default syslog port (may need to edit /etc/rsyslog.conf
+accordingly):
+
+--serial udp,host=:514
+
+Send output to remote host 192.168.10.20, port 4444 (this output can be
+read on the remote host using 'nc -u -l 4444':
+
+--serial udp,host=192.168.10.20:4444
+
+=item B<--serial unix,path=UNIXPATH,mode=MODE>
+
+Unix socket (see unix(7). MODE has similar behavior and defaults as 'tcp'.
+
+=back
+
 =item  --noapic
 
 Override the OS type / variant to disables the APIC setting for fully
