@@ -816,34 +816,16 @@ class Guest(object):
         Using self.os_type and self.os_variant to find key in OSTYPES
         @returns: dict value, or None if os_type/variant wasn't set
         """
-        typ = self.os_type
-        var = self.os_variant
-        if typ:
-            if var and self._OS_TYPES[typ]["variants"][var].has_key(key):
-                return self._OS_TYPES[typ]["variants"][var][key]
-            elif self._OS_TYPES[typ].has_key(key):
-                return self._OS_TYPES[typ][key]
-        return self._DEFAULTS[key]
+        return osdict.lookup_osdict_key(self.conn, self.type, self.os_type,
+                                        self.os_variant, key)
 
     def _lookup_device_param(self, device_key, param):
         """
         Check the OS dictionary for the prefered device setting for passed
         device type and param (bus, model, etc.)
         """
-        os_devs = self._lookup_osdict_key("devices")
-        default_devs = self._DEFAULTS["devices"]
-        for devs in [os_devs, default_devs]:
-            if not devs.has_key(device_key):
-                continue
-            for ent in devs[device_key][param]:
-                hv_types = ent[0]
-                param_value = ent[1]
-                if self.type in hv_types:
-                    return param_value
-                elif "all" in hv_types:
-                    return param_value
-        raise RuntimeError(_("Invalid dictionary entry for device '%s %s'" % \
-                             (device_key, param)))
+        return osdict.lookup_device_param(self.conn, self.type, self.os_type,
+                                          self.os_variant, device_key, param)
 
     def terminate_console(self):
         if self._consolechild:

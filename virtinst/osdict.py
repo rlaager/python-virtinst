@@ -19,6 +19,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import libvirt
+
+import _util
 
 """
 Default values for OS_TYPES keys. Can be overwritten at os_type or
@@ -63,6 +66,68 @@ def sort_helper(tosort):
         retlist.append(key_mappings[key])
 
     return retlist
+
+def parse_key_entry(conn, hv_type, key_entry):
+    d = _util.get_uri_driver(conn.getURI())
+    libver = libvirt.getVersion()
+    try:
+        drvver = libvirt.getVersion(d)[1]
+    except:
+        drvver = 0
+
+    if type(key_entry) == list:
+        # List of tuples with hv_type, version, etc. mappings
+        for tup in key_entry:
+            exp_hvs = tup[0]
+            if type(exp_hvs) != list:
+                exp_hvs = [exp_hvs]
+            exp_hv_ver = 0
+            exp_lib_ver = 0
+            val = tup[-1]
+
+            if len(tup) > 2:
+                exp_hv_ver = tup[1]
+            if len(tup) > 3:
+                exp_lib_ver = tup[2]
+
+            if hv_type not in exp_hvs and "all" not in exp_hvs:
+                continue
+
+            if exp_hv_ver and drvver > exp_hv_ver:
+                continue
+
+            if exp_lib_ver and libver > exp_lib_ver:
+                continue
+
+            return val
+    else:
+        return key_entry
+
+def lookup_osdict_key(conn, hv_type, os_type, var, key):
+
+    dictval = DEFAULTS[key]
+    if os_type:
+        if var and OS_TYPES[os_type]["variants"][var].has_key(key):
+            dictval = OS_TYPES[os_type]["variants"][var][key]
+        elif OS_TYPES[os_type].has_key(key):
+            dictval = OS_TYPES[os_type][key]
+
+    return parse_key_entry(conn, hv_type, dictval)
+
+
+def lookup_device_param(conn, hv_type, os_type, var, device_key, param):
+
+    os_devs = lookup_osdict_key(conn, hv_type, os_type, var, "devices")
+    default_devs = DEFAULTS["devices"]
+
+    for devs in [os_devs, default_devs]:
+        if not devs.has_key(device_key):
+            continue
+
+        return parse_key_entry(conn, hv_type, devs[device_key][param])
+
+    raise RuntimeError(_("Invalid dictionary entry for device '%s %s'" %
+                       (device_key, param)))
 
 # NOTE: keep variant keys using only lowercase so we can do case
 #       insensitive checks on user passed input
