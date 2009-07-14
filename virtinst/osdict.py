@@ -167,6 +167,7 @@ OS_TYPES = {\
         "win2k3": { "label": "Microsoft Windows 2003" },
         "win2k8": { "label": "Microsoft Windows 2008" },
         "vista": { "label": "Microsoft Windows Vista" },
+        "win7": { "label": "Microsoft Windows 7" }
     },
 },
 
