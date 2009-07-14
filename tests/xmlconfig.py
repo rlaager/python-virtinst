@@ -341,16 +341,45 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self._compare(g, "boot-windowsxp", False)
+        self._compare(g, "boot-windowsxp-kvm", False)
 
-    def testInstallWindows(self):
+    def testInstallWindowsKVM(self):
         g = get_basic_fullyvirt_guest("kvm")
         g.os_type = "windows"
         g.os_variant = "winxp"
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self._compare(g, "install-windowsxp", True)
+        self._compare(g, "install-windowsxp-kvm", True)
+
+    def testInstallWindowsXenNew(self):
+        orig_ver_func = libvirt.getVersion
+        def old_xen_ver(drv=None):
+            libver = orig_ver_func()
+            if drv:
+                return (libver, 3000001)
+            return orig_ver_func(drv)
+
+        def new_xen_ver(drv=None):
+            libver = orig_ver_func()
+            if drv:
+                return (libver, 3100000)
+            return orig_ver_func(drv)
+
+        g = get_basic_fullyvirt_guest("xen")
+        g.os_type = "windows"
+        g.os_variant = "winxp"
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+
+        try:
+            for f, xml in [(old_xen_ver, "install-windowsxp-xenold"),
+                           (new_xen_ver, "install-windowsxp-xennew")]:
+                libvirt.getVersion = f
+                self._compare(g, xml, True)
+        finally:
+            libvirt.getVersion = orig_ver_func
 
 
     # Device heavy configurations
