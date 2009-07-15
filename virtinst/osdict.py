@@ -174,6 +174,13 @@ OS_TYPES = {\
                      }},
         "sles10": { "label": "Suse Linux Enterprise Server",
                     "distro": "suse" },
+        "sles11": { "label": "Suse Linux Enterprise Server 11",
+                    "distro": "suse",
+                      "devices" : {
+                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
+                        "net"  : { "model" : [ (["kvm"], "virtio") ] },
+                    },
+                  },
         "debianetch": { "label": "Debian Etch", "distro": "debian" },
         "debianlenny": { "label": "Debian Lenny", "distro": "debian",
                       "devices" : {
