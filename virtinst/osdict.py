@@ -210,6 +210,12 @@ OS_TYPES = {\
                             "net"  : { "model" : [ (["kvm"], "virtio") ] },
                             "disk" : { "bus"   : [ (["kvm"], "virtio") ] }
                         }},
+        "ubuntukarmic": { "label": "Ubuntu 9.10 (Karmic Koala)",
+                          "distro": "ubuntu",
+                          "devices" : {
+                            "net"  : { "model" : [ (["kvm"], "virtio") ] },
+                            "disk" : { "bus"   : [ (["kvm"], "virtio") ] }
+                        }},
         "generic24": { "label": "Generic 2.4.x kernel" },
         "generic26": { "label": "Generic 2.6.x kernel" },
         "virtio26": { "sortby": "genericvirtio26",
