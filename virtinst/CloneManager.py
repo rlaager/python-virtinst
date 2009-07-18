@@ -46,6 +46,15 @@ from virtinst import Storage
 from virtinst import _virtinst as _
 import _util
 
+def _listify(val):
+    """
+    Return (was_val_a_list, listified_val)
+    """
+    if type(val) is list:
+        return True, val
+    else:
+        return False, [val]
+
 def generate_clone_disk_path(origpath, design):
     basename = origpath
     suffix = ""
@@ -199,14 +208,12 @@ class CloneDesign(object):
         # Adds the path (if valid) to the internal _clone_devices list
 
         disklist = []
-        pathlist = []
-        if type(devpath) is list:
-            pathlist = devpath
+        is_list, pathlist = _listify(devpath)
 
         # Check path is valid
         # XXX: What if disk is being preserved, and storage is readonly?
         try:
-            for path in pathlist or [devpath]:
+            for path in pathlist:
                 device = VirtualDisk.DEVICE_DISK
                 if not path:
                     device = VirtualDisk.DEVICE_CDROM
@@ -219,12 +226,12 @@ class CloneDesign(object):
             raise ValueError(_("Could not use path '%s' for cloning: %s") %
                              (devpath, str(e)))
 
-        if pathlist:
+        if is_list:
             self._clone_virtual_disks = []
             self._clone_devices = []
 
         self._clone_virtual_disks.extend(disklist)
-        self._clone_devices.extend(pathlist or [devpath])
+        self._clone_devices.extend(pathlist)
     def get_clone_devices(self):
         return self._clone_devices
     clone_devices = property(get_clone_devices, set_clone_devices,
@@ -237,17 +244,15 @@ class CloneDesign(object):
                                        " disk paths")
 
     def set_clone_mac(self, mac):
-        maclist = []
-        if type(mac) is list:
-            maclist = mac
+        is_list, maclist = _listify(mac)
 
-        for m in maclist or [mac]:
+        for m in maclist:
             VirtualNetworkInterface(m, conn=self.original_conn)
 
-        if maclist:
+        if is_list:
             self._clone_mac = []
 
-        self._clone_mac.extend(maclist or [mac])
+        self._clone_mac.extend(maclist)
     def get_clone_mac(self):
         return self._clone_mac
     clone_mac = property(get_clone_mac, set_clone_mac,
