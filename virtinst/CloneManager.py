@@ -288,7 +288,9 @@ class CloneDesign(object):
 
     def get_hyper_conn(self):
         return self._hyper_conn
-    original_conn = property(get_hyper_conn,
+    def set_hyper_conn(self, conn):
+        self._hyper_conn = conn
+    original_conn = property(get_hyper_conn, set_hyper_conn,
                              doc="Libvirt virConnect instance we are cloning "
                                  "on")
 
