@@ -838,11 +838,13 @@ class VirtualDisk(VirtualDevice):
         if (os.path.exists(self.path) == False and self.sparse == True):
             clone_block_size = 4096
             sparse = True
+            fd = None
             try:
                 fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
                 os.ftruncate(fd, size_bytes)
             finally:
-                os.close(fd)
+                if fd:
+                    os.close(fd)
         else:
             clone_block_size = 1024*1024*10
             sparse = False
