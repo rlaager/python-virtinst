@@ -70,7 +70,7 @@ def generate_clone_disk_path(origpath, design):
         suffix = "." + suffix
 
     return _util.generate_name(basename + "-clone",
-                               lambda p: _util.disk_exists(design.original_conn, p),
+                               lambda p: VirtualDisk.path_exists(design.original_conn, p),
                                suffix,
                                lib_collision=False)
 
@@ -552,7 +552,8 @@ class CloneDesign(object):
         for path, target in lst:
             d = None
             try:
-                if path and not _util.disk_exists(self._hyper_conn, path):
+                if (path and
+                    not VirtualDisk.path_exists(self._hyper_conn, path)):
                     raise ValueError(_("Disk '%s' does not exist.") %
                                      path)
 

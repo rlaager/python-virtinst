@@ -30,7 +30,7 @@ import libvirt
 import _util
 import virtinst
 from virtinst import CapabilitiesParser, VirtualNetworkInterface, \
-                     VirtualGraphics, VirtualAudio, User
+                     VirtualGraphics, VirtualAudio, VirtualDisk, User
 from virtinst import _virtinst as _
 
 MIN_RAM = 64
@@ -404,7 +404,7 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True):
                             "be (in gigabytes)?") % path
 
             try:
-                if not _util.disk_exists(conn, path):
+                if not VirtualDisk.path_exists(conn, path):
                     size = prompt_loop(size_prompt, sizeerr, size, None, None,
                                        func=float)
             except Exception, e:
@@ -415,7 +415,7 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True):
 
         # Build disk object for validation
         try:
-            dev = virtinst.VirtualDisk(**arg_dict)
+            dev = VirtualDisk(**arg_dict)
         except ValueError, e:
             if is_prompt():
                 logging.error(e)

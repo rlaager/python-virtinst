@@ -119,6 +119,29 @@ class VirtualDisk(VirtualDevice):
     TYPE_BLOCK = "block"
     types = [TYPE_FILE, TYPE_BLOCK]
 
+    @staticmethod
+    def path_exists(conn, path):
+        """
+        Check if path exists. If we can't determine, return False
+        """
+        is_remote = _util.is_uri_remote(conn.getURI())
+        try:
+            vol = None
+            try:
+                vol = conn.storageVolLookupByPath(path)
+            except:
+                pass
+
+            if vol:
+                return True
+
+            if not is_remote:
+                return os.path.exists(path)
+        except:
+            pass
+
+        return False
+
     def __init__(self, path=None, size=None, transient=False, type=None,
                  device=DEVICE_DISK, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
