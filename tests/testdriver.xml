@@ -133,4 +133,58 @@
   </volume>
 </pool>
 
+<pool type='dir'>
+  <name>full-pool</name>
+  <uuid>35bb2ad9-388a-cdfe-461a-b8907f6e5555</uuid>
+  <capacity>1</capacity>
+  <allocation>1</allocation>
+  <available>0</available>
+  <source>
+  </source>
+  <target>
+    <path>/full-pool</path>
+    <permissions>
+      <mode>0700</mode>
+      <owner>10736</owner>
+      <group>10736</group>
+    </permissions>
+  </target>
+  <volume>
+    <name>testvol1.img</name>
+    <capacity>107374182400</capacity>
+    <allocation>107374182400</allocation>
+    <target/>
+  </volume>
+</pool>
+
+<pool type='disk'>
+  <name>halffull-pool</name>
+  <uuid>35bb2ad9-388a-cdfe-461a-b8907f6e5444</uuid>
+  <capacity>1</capacity>
+  <allocation>1</allocation>
+  <available>0</available>
+  <source>
+  </source>
+  <target>
+    <path>/halffull-pool</path>
+    <permissions>
+      <mode>0700</mode>
+      <owner>10736</owner>
+      <group>10736</group>
+    </permissions>
+  </target>
+  <volume>
+    <name>testvol1.img</name>
+    <capacity>30000000000</capacity>
+    <allocation>30000000000</allocation>
+    <target/>
+  </volume>
+  <volume>
+    <name>testvol2.img</name>
+    <capacity>30000000000</capacity>
+    <allocation>30000000000</allocation>
+    <target/>
+  </volume>
+</pool>
+
 </node>

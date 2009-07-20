@@ -43,6 +43,9 @@ else:
 os.environ["HOME"] = "/testdir"
 os.environ["DISPLAY"] = ":3.4"
 
+def open_testdriver():
+    return libvirt.open("test:///%s/tests/testdriver.xml" % os.getcwd())
+
 # Register libvirt handler
 def libvirt_callback(ignore, err):
     logging.warn("libvirt errmsg: %s" % err[2])

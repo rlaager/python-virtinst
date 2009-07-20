@@ -14,11 +14,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import libvirt
 import virtinst
 from virtinst import VirtualDisk
 
 # Test helpers
+import tests
 from storage import createPool, createVol
 
 import unittest
@@ -41,7 +41,7 @@ import os
 # We install several storage pools on the connection to ensure
 # we aren't bumping up against errors in that department.
 logging.debug("\n\nStarting 'validation' storage setup.")
-testconn = libvirt.open("test:///default")
+testconn = tests.open_testdriver()
 testcaps = virtinst.CapabilitiesParser.parse(testconn.getCapabilities())
 
 virtimage = virtinst.ImageParser.parse_file("tests/image-xml/image.xml")
@@ -138,6 +138,8 @@ args = {
     { 'conn' : testconn, 'volName' : ("pool-exist", "vol-noexist")},
     { 'conn' : testconn, 'volName' : ( 1234, "vol-noexist")},
     { 'path' : 'valid', 'size' : 1, 'driverCache' : 'invalid' },
+    { 'conn' : testconn, "path" : "/full-pool/newvol.img", "size" : 1,
+      'sparse' : False },
    ],
 
    'valid' : [
@@ -151,6 +153,8 @@ args = {
     { 'conn' : testconn, 'path' : "/pool-exist/vol-noexist", 'size' : 1 },
     { 'conn' : testconn, 'volInstall': volinst},
     { 'path' : 'nonexist', 'size' : 1, 'driverCache' : 'writethrough' },
+    # Full pool, but we are nonsparse
+    { 'conn' : testconn, "path" : "/full-pool/newvol.img", "size" : 1 },
    ]
   },
 
