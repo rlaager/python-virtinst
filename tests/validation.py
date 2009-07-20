@@ -119,47 +119,45 @@ args = {
 },
 
 'disk' : {
-    'init_conns' : [ testconn, None ],
-    '__init__' : {
-        'invalid' : [{ 'path' : 0},
-                     { 'path' : '/root' },
-                     { 'path' : 'valid', 'size' : None },
-                     { 'path' : "valid", 'size' : 'invalid' },
-                     { 'path' : 'valid', 'size' : -1},
-                     { 'path' : 'notblock', 'type' : VirtualDisk.TYPE_BLOCK},
-                     { 'path' :'/dev/null', 'type' : VirtualDisk.TYPE_BLOCK},
-                     { 'path' : None },
-                     { 'path' : "noexist", 'size' : 900000, 'sparse' : False },
-                     { 'path' : "noexist", 'type' : VirtualDisk.DEVICE_CDROM},
-                     { 'volName' : ("pool-exist", "vol-exist")},
-                     { 'conn' : testconn, 'volName' : ("pool-noexist",
-                                                       "vol-exist")},
-                     { 'conn' : testconn, 'volName' : ("pool-exist",
-                                                       "vol-noexist")},
-                     { 'conn' : testconn, 'volName' : ( 1234,
-                                                       "vol-noexist")},
-                     { 'path' : 'valid', 'size' : 1,
-                       'driverCache' : 'invalid' },
-                    ],
+  'init_conns' : [ testconn, None ],
+  '__init__' : {
 
-        'valid' :   [{ 'path' : '/dev/loop0' },
-                     { 'path' : 'nonexist', 'size' : 1 },
-                     { 'path' :'/dev/null'},
-                     { 'path' : None, 'device' : VirtualDisk.DEVICE_CDROM},
-                     { 'path' : None, 'device' : VirtualDisk.DEVICE_FLOPPY},
-                     { 'conn' : testconn, 'volName' : ("pool-exist",
-                                                       "vol-exist")},
-                     { 'conn' : testconn, 'path' : "/pool-exist/vol-exist" },
-                     { 'conn' : testconn, 'path' : "/pool-exist/vol-noexist",
-                       'size' : 1 },
-                     { 'conn' : testconn, 'volInstall': volinst},
-                     { 'path' : 'nonexist', 'size' : 1,
-                       'driverCache' : 'writethrough' },
-                    ]
-                },
-    'shareable' : {
-        'invalid': [ None, 1234 ],
-        'valid': [ True, False ] },
+   'invalid' : [
+    {'path' : 0},
+    { 'path' : '/root' },
+    { 'path' : 'valid', 'size' : None },
+    { 'path' : "valid", 'size' : 'invalid' },
+    { 'path' : 'valid', 'size' : -1},
+    { 'path' : 'notblock', 'type' : VirtualDisk.TYPE_BLOCK},
+    { 'path' :'/dev/null', 'type' : VirtualDisk.TYPE_BLOCK},
+    { 'path' : None },
+    { 'path' : "noexist", 'size' : 900000, 'sparse' : False },
+    { 'path' : "noexist", 'type' : VirtualDisk.DEVICE_CDROM},
+    { 'volName' : ("pool-exist", "vol-exist")},
+    { 'conn' : testconn, 'volName' : ("pool-noexist", "vol-exist")},
+    { 'conn' : testconn, 'volName' : ("pool-exist", "vol-noexist")},
+    { 'conn' : testconn, 'volName' : ( 1234, "vol-noexist")},
+    { 'path' : 'valid', 'size' : 1, 'driverCache' : 'invalid' },
+   ],
+
+   'valid' : [
+    { 'path' : '/dev/loop0' },
+    { 'path' : 'nonexist', 'size' : 1 },
+    { 'path' :'/dev/null'},
+    { 'path' : None, 'device' : VirtualDisk.DEVICE_CDROM},
+    { 'path' : None, 'device' : VirtualDisk.DEVICE_FLOPPY},
+    { 'conn' : testconn, 'volName' : ("pool-exist", "vol-exist")},
+    { 'conn' : testconn, 'path' : "/pool-exist/vol-exist" },
+    { 'conn' : testconn, 'path' : "/pool-exist/vol-noexist", 'size' : 1 },
+    { 'conn' : testconn, 'volInstall': volinst},
+    { 'path' : 'nonexist', 'size' : 1, 'driverCache' : 'writethrough' },
+   ]
+  },
+
+  'shareable' : {
+    'invalid': [ None, 1234 ],
+    'valid': [ True, False ]
+  },
 },
 
 'installer' : {
