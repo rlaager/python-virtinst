@@ -19,62 +19,79 @@ import virtconv
 import os, os.path, glob
 import tests
 
-vmx2virtimage_dir = "tests/virtconv-files/vmx2virtimage"
-vmx2virtimage_files = [ "test" ]
+BASE = "tests/virtconv-files"
 
-virtimage2vmx_dir = "tests/virtconv-files/virtimage2vmx"
-virtimage2vmx_files = [ "image" ]
+vmx_input  = BASE + "/vmx_input"
+vmx_output = BASE + "/vmx_output"
 
-# For x2x conversion, we want to use already tested output, since ideally
-# we should be able to run a generated config continually through the
-# converter and it will generate the same result
-vmx2vmx_dirs = [ virtimage2vmx_dir ]
-virtimage2virtimage_dirs = [ vmx2virtimage_dir ]
+virtimage_input  = BASE + "/virtimage_input"
+virtimage_output = BASE + "/virtimage_output"
 
 class TestVirtConv(unittest.TestCase):
 
     def setUp(self):
         pass
 
-    def _convert_helper(self, dirname, filebase, input_type, output_type):
-        infile  = os.path.join(dirname, filebase + "." + input_type)
-        outfile = os.path.join(dirname, filebase + "." + output_type)
-
+    def _convert_helper(self, infile, outfile, in_type, out_type):
         inp  = virtconv.formats.find_parser_by_file(infile)
-        outp = virtconv.formats.parser_by_name(output_type)
+        outp = virtconv.formats.parser_by_name(out_type)
 
-        if not inp or inp.name != input_type:
+        if not inp or inp.name != in_type:
             raise AssertionError("find_parser_by_file for '%s' returned "
                                  "wrong parser type.\n"
                                  "Expected: %s\n"
                                  "Received: %s\n" % \
-                                 (infile, input_type,
+                                 (infile, in_type,
                                  str((not inp) and str(inp) or inp.name)))
 
         vmdef = inp.import_file(infile)
         out_expect = outp.export(vmdef)
         tests.diff_compare(out_expect, outfile)
 
-    def testVMX2VirtImage(self):
-        for filename in vmx2virtimage_files:
-            self._convert_helper(vmx2virtimage_dir, filename,
-                                 "vmx", "virt-image")
+    def _build_compare_path(self, base, in_path, out_dir, out_type):
+        out_path = os.path.basename(in_path).rsplit(".", 1)[0]
+        return "%s/%s_%s.%s" % (out_dir, base, out_path, out_type)
 
-    def testVMX2VMX(self):
-        for dirname in vmx2vmx_dirs:
-            for filepath in glob.glob(os.path.join(dirname, "*.vmx")):
-                filename = os.path.splitext(os.path.basename(filepath))[0]
-                self._convert_helper(dirname, filename, "vmx", "vmx")
+    def _compare_files(self, base, in_type, out_type, in_dir, out_dir):
+        for in_path in glob.glob(os.path.join(in_dir, "*." + in_type)):
+            if in_type != out_type:
+                out_path = self._build_compare_path(base, in_path,
+                                                    out_dir, out_type)
+            else:
+                out_path = in_path
+            self._convert_helper(in_path, out_path, in_type, out_type)
+
+    def testVMX2VirtImage(self):
+        base = "vmx2virtimage"
+        in_type = "vmx"
+        out_type = "virt-image"
+        in_dir = vmx_input
+        out_dir = virtimage_output
+
+        self._compare_files(base, in_type, out_type, in_dir, out_dir)
 
     def testVirtImage2VMX(self):
-        for filename in virtimage2vmx_files:
-            self._convert_helper(virtimage2vmx_dir, filename,
-                                 "virt-image", "vmx")
+        base = "virtimage2vmx"
+        in_type = "virt-image"
+        out_type = "vmx"
+        in_dir = virtimage_input
+        out_dir = vmx_output
+
+        self._compare_files(base, in_type, out_type, in_dir, out_dir)
+
+    # For x2x conversion, we want to use already tested output, since ideally
+    # we should be able to run a generated config continually through the
+    # converter and it will generate the same result
+    def testVMX2VMX(self):
+        base = None
+        in_type = out_type = "vmx"
+        in_dir = out_dir = vmx_output
+
+        self._compare_files(base, in_type, out_type, in_dir, out_dir)
 
     def testVirtImage2VirtImage(self):
-        for dirname in virtimage2virtimage_dirs:
-            for filepath in glob.glob(os.path.join(dirname, "*.virt-image")):
-                filename = os.path.splitext(os.path.basename(filepath))[0]
-                self._convert_helper(dirname, filename, "virt-image",
-                                     "virt-image")
+        base = None
+        in_type = out_type = "virt-image"
+        in_dir = out_dir = virtimage_output
 
+        self._compare_files(base, in_type, out_type, in_dir, out_dir)
