@@ -93,6 +93,9 @@ def parse_args():
 
 
     (options, args) = opts.parse_args()
+
+    cli.setupLogging("virt-convert", options.debug)
+
     if len(args) < 1:
         opts.error(_("You need to provide an input VM definition"))
     if len(args) > 2:
@@ -177,7 +180,6 @@ def cleanup(msg, options, vmdef, paths):
 
 def main():
     options = parse_args()
-    cli.setupLogging("virt-convert", options.debug)
 
     inp = formats.parser_by_name(options.input_format)
     outp = formats.parser_by_name(options.output_format)
