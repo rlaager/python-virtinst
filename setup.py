@@ -51,6 +51,16 @@ class TestBaseCommand(Command):
 class TestCommand(TestBaseCommand):
 
     description = "Runs a quick unit test suite"
+    user_options = TestBaseCommand.user_options + \
+                   [("testfile=", None, "Specific test file to run (e.g "
+                                        "validation, storage, ...)"),]
+
+    def initialize_options(self):
+        TestBaseCommand.initialize_options(self)
+        self.testfile = None
+
+    def finalize_options(self):
+        TestBaseCommand.finalize_options(self)
 
     def run(self):
         '''
@@ -61,9 +71,15 @@ class TestCommand(TestBaseCommand):
             if (not t.endswith('__init__.py') and
                 not t.endswith("urltest.py") and
                 not t.endswith("clitest.py")):
-                testfiles.append('.'.join(
-                    ['tests', splitext(basename(t))[0]])
-                )
+
+                if self.testfile:
+                    base = os.path.basename(t)
+                    check = os.path.basename(self.testfile)
+                    if base != check and base != (check + ".py"):
+                        continue
+
+                testfiles.append('.'.join(['tests',
+                                           splitext(basename(t))[0]]))
         self._testfiles = testfiles
         TestBaseCommand.run(self)
 
