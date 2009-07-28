@@ -479,7 +479,7 @@ class NetworkFilesystemPool(StoragePool):
         return FileVolume
     get_volume_class = staticmethod(get_volume_class)
 
-    formats = [ "auto", "nfs" ]
+    formats = [ "auto", "nfs", "glusterfs"]
 
     # Register applicable property methods from parent class
     source_path = property(StoragePool.get_source_path,
