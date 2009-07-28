@@ -557,7 +557,10 @@ class VirtualDisk(VirtualDevice):
 
             try:
                 vol = self.conn.storageVolLookupByPath(self.path)
+                vol.info()
             except Exception, e:
+                vol = None
+
                 try:
                     try:
                         # Pool may need to be refreshed, but if it errors,
@@ -567,7 +570,9 @@ class VirtualDisk(VirtualDevice):
                         pool = None
                         raise
                     vol = self.conn.storageVolLookupByPath(self.path)
+                    vol.info()
                 except Exception, e:
+                    vol = None
                     verr = str(e)
 
         if not vol:
