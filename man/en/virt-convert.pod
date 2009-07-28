@@ -46,7 +46,7 @@ Show the help message and exit
 
 =item  -i format
 
-Input format. Currently, C<vmx>  and C<virt-image> are supported.
+Input format. Currently, C<vmx>, C<virt-image>, and C<ovf> are supported.
 
 =item  -o format
 

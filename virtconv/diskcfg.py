@@ -99,8 +99,8 @@ def run_vdiskadm(args):
 class disk(object):
     """Definition of an individual disk instance."""
 
-    def __init__(self, path = None, format = None, bus = "ide",
-        type = DISK_TYPE_DISK):
+    def __init__(self, path = None, format = DISK_FORMAT_NONE, bus = "ide",
+                 type = DISK_TYPE_DISK):
         self.path = path
         self.format = format
         self.bus = bus
@@ -129,8 +129,11 @@ class disk(object):
 
     def out_file(self, out_format):
         """Return the relative path of the output file."""
+        if not out_format:
+            return self.path
+
         relout = self.path.replace(disk_suffixes[self.format],
-            disk_suffixes[out_format])
+                                   disk_suffixes[out_format])
         return re.sub(r'\s', '_', relout)
 
     def vdisk_convert(self, absin, absout):

@@ -27,6 +27,8 @@ vmx_output = BASE + "/vmx_output"
 virtimage_input  = BASE + "/virtimage_input"
 virtimage_output = BASE + "/virtimage_output"
 
+ovf_input = BASE + "/ovf_input"
+
 class TestVirtConv(unittest.TestCase):
 
     def setUp(self):
@@ -76,6 +78,15 @@ class TestVirtConv(unittest.TestCase):
         out_type = "vmx"
         in_dir = virtimage_input
         out_dir = vmx_output
+
+        self._compare_files(base, in_type, out_type, in_dir, out_dir)
+
+    def testOVF2VirtImage(self):
+        base = "ovf2virtimage"
+        in_type = "ovf"
+        out_type = "virt-image"
+        in_dir = ovf_input
+        out_dir = virtimage_output
 
         self._compare_files(base, in_type, out_type, in_dir, out_dir)
 
