@@ -22,7 +22,7 @@ Any patches shouldn't change the output of 'test' or 'check'. Our pylint
 script uses a blacklist rather than a whitelist approach, so it could
 throw some false positives or useless messages. If you think your patch
 exposes one of these, bring it up on the mailing list
-(et-mgmt-tools@redhat.com).
+(virt-tools-list@redhat.com).
 
 'test_urls' only needs to be run if the patch is against the url fetching
 code (virtinst/OSDistro.py). This stuff is notoriously fragile, so running

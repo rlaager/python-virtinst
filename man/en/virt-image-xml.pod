@@ -213,7 +213,7 @@ you only need the ISO image from the System Rescue CD website.
       </domain>
       <storage>
         <disk file="root.raw" use="scratch" size="100" format="raw"/>
-        <disk id="sysresc" file="isos/systemrescuecd.iso" 
+        <disk id="sysresc" file="isos/systemrescuecd.iso"
               use="system" format="iso"/>
       </storage>
     </image>
@@ -224,21 +224,19 @@ To create a virtual machine, save the above XML in F<image.xml> and run:
 
 =head1 AUTHOR
 
-Written by David Lutterkort. See the AUTHORS file in the source distribution for
-the complete list of credits.
+Written by David Lutterkort. See the AUTHORS file in the source distribution
+for the complete list of credits.
 
 =head1 BUGS
 
-Report bugs to the mailing list C<http://www.redhat.com/mailman/listinfo/et-mgmt-tools>
-or directly to BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the
-C<Fedora> product, and the C<python-virtinst> component.
+Please see C<http://virt-manager.org/page/BugReporting>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2006-2007 Red Hat, Inc, and various contributors. 
-This is free software. You may redistribute copies of it under the terms of the GNU General 
-Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent 
-permitted by law.
+Copyright (C) 2006-2007 Red Hat, Inc, and various contributors.
+This is free software. You may redistribute copies of it under the terms
+of the GNU General Public License C<http://www.gnu.org/licenses/gpl.html>.
+There is NO WARRANTY, to the extent permitted by law.
 
 =head1 SEE ALSO
 
