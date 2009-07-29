@@ -77,6 +77,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-convert
 
 %changelog
+* Tue Jul 28 2009 Cole Robinson <crobinso@redhat.com> - 0.500.0-1
+- New virt-install device options --serial, --parallel, and --video
+- Allow various auth types for libvirt connections (PolicyKit, SASL, ...)
+- New virt-clone option --auto-clone: generates all needed input.
+- Specify network device model via virt-install --network (Guido Gunther)
+
 * Tue Mar  9 2009 Cole Robinson <crobinso@redhat.com> - 0.400.3-1
 - Bug fix release
 - virt-install --file was busted
