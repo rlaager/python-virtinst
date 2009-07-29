@@ -77,6 +77,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-convert
 
 %changelog
+* Tue Mar  9 2009 Cole Robinson <crobinso@redhat.com> - 0.400.3-1
+- Bug fix release
+- virt-install --file was busted
+- virt-install --os-type windows was busted for --cdrom installs
+- virt-install --os-variant values weren't used if installing from a URL
+
 * Tue Mar  3 2009 Cole Robinson <crobinso@redhat.com> - 0.400.2-1
 - virt-install --import option for creating a guest from an existing disk
 - virt-install --host-device option for host device passthrough

@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2009-03-23" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2009-07-28" "perl v5.10.0" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -207,9 +207,7 @@ away from the host operating system to satisfy this allocation.
 .IP "\-\-arch=ARCH" 2
 .IX Item "--arch=ARCH"
 Request a non-native \s-1CPU\s0 architecture for the guest virtual machine.
-The option is only currently available with \s-1QEMU\s0 guests, and will not
-enable use of acceleration. If omitted, the host \s-1CPU\s0 architecture will
-be used in the guest.
+If omitted, the host \s-1CPU\s0 architecture will be used in the guest.
 .IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 2
 .IX Item "-u UUID, --uuid=UUID"
 \&\s-1UUID\s0 for the guest; if none is given a random \s-1UUID\s0 will be generated. If you
@@ -258,6 +256,9 @@ Debian Etch
 .IP "debianlenny" 4
 .IX Item "debianlenny"
 Debian Lenny
+.IP "debiansqueeze" 4
+.IX Item "debiansqueeze"
+Debian Squeeze
 .IP "fedora5" 4
 .IX Item "fedora5"
 Fedora Core 5
@@ -303,6 +304,9 @@ Red Hat Enterprise Linux 5
 .IP "sles10" 4
 .IX Item "sles10"
 Suse Linux Enterprise Server
+.IP "sles11" 4
+.IX Item "sles11"
+Suse Linux Enterprise Server 11
 .IP "ubuntuhardy" 4
 .IX Item "ubuntuhardy"
 Ubuntu 8.04 \s-1LTS\s0 (Hardy Heron)
@@ -312,6 +316,9 @@ Ubuntu 8.10 (Intrepid Ibex)
 .IP "ubuntujaunty" 4
 .IX Item "ubuntujaunty"
 Ubuntu 9.04 (Jaunty Jackalope)
+.IP "ubuntukarmic" 4
+.IX Item "ubuntukarmic"
+Ubuntu 9.10 (Karmic Koala)
 .RE
 .RS 4
 .RE
@@ -389,6 +396,9 @@ Microsoft Windows 2003
 .IP "win2k8" 4
 .IX Item "win2k8"
 Microsoft Windows 2008
+.IP "win7" 4
+.IX Item "win7"
+Microsoft Windows 7
 .IP "winxp" 4
 .IX Item "winxp"
 Microsoft Windows \s-1XP\s0 (x86)
@@ -411,6 +421,78 @@ Parameters specific only to fully virtualized guest installs.
 .IP "\-\-sound" 2
 .IX Item "--sound"
 Attach a virtual audio device to the guest.
+.IP "\-\-parallel=CHAROPTS" 2
+.IX Item "--parallel=CHAROPTS"
+.PD 0
+.IP "\-\-serial=CHAROPTS" 2
+.IX Item "--serial=CHAROPTS"
+.PD
+Specifies a serial device to attach to the guest, with various options. The
+general format of a serial string is
+.Sp
+.Vb 1
+\&    \-\-serial type,opt1=val1,opt2=val2,...
+.Ve
+.Sp
+\&\-\-serial and \-\-parallel devices share all the same options, unless otherwise
+noted. Some of the types of character device redirection are:
+.RS 2
+.IP "\fB\-\-serial pty\fR" 4
+.IX Item "--serial pty"
+Psuedo \s-1TTY\s0. The allocated pty will be listed in the running guests \s-1XML\s0
+description.
+.IP "\fB\-\-serial dev,path=HOSTPATH\fR" 4
+.IX Item "--serial dev,path=HOSTPATH"
+Host device. For serial devices, this could be /dev/ttyS0. For parallel
+devices, this could be /dev/parport0.
+.IP "\fB\-\-serial file,path=FILENAME\fR" 4
+.IX Item "--serial file,path=FILENAME"
+Write output to \s-1FILENAME\s0.
+.IP "\fB\-\-serial pipe,path=PIPEPATH\fR" 4
+.IX Item "--serial pipe,path=PIPEPATH"
+Named pipe (see \fIpipe\fR\|(7))
+.IP "\fB\-\-serial tcp,host=HOST:PORT,mode=MODE,protocol=PROTOCOL\fR" 4
+.IX Item "--serial tcp,host=HOST:PORT,mode=MODE,protocol=PROTOCOL"
+\&\s-1TCP\s0 net console. \s-1MODE\s0 is either 'bind' (wait for connections on \s-1HOST:PORT\s0)
+or 'connect' (send output to \s-1HOST:PORT\s0), default is 'connect'. \s-1HOST\s0 defaults
+to '127.0.0.1', but \s-1PORT\s0 is required. \s-1PROTOCOL\s0 can be either 'raw' or 'telnet'
+(default 'raw'). If 'telnet', the port acts like a telnet server or client.
+Some examples:
+.Sp
+Connect to localhost, port 1234:
+.Sp
+\&\-\-serial tcp,host=:1234
+.Sp
+Wait for connections on any address, port 4567:
+.Sp
+\&\-\-serial tcp,host=0.0.0.0:4567,mode=bind
+.Sp
+Wait for telnet connection on localhost, port 2222. The user could then
+connect interactively to this console via 'telnet localhost 2222':
+.Sp
+\&\-\-serial tcp,host=:2222,mode=bind,protocol=telnet
+.IP "\fB\-\-serial udp,host=CONNECT_HOST:PORT,bind_port=BIND_HOST:BIND_PORT\fR" 4
+.IX Item "--serial udp,host=CONNECT_HOST:PORT,bind_port=BIND_HOST:BIND_PORT"
+\&\s-1UDP\s0 net console. \s-1HOST:PORT\s0 is the destination to send output to (default
+\&\s-1HOST\s0 is '127.0.0.1', \s-1PORT\s0 is required. \s-1BIND_HOST:PORT\s0 is the optional local
+address to bind to (default \s-1BIND_HOST\s0 is 127.0.0.1, but is only set if
+\&\s-1BIND_PORT\s0 is specified.) Some examples:
+.Sp
+Send output to default syslog port (may need to edit /etc/rsyslog.conf
+accordingly):
+.Sp
+\&\-\-serial udp,host=:514
+.Sp
+Send output to remote host 192.168.10.20, port 4444 (this output can be
+read on the remote host using 'nc \-u \-l 4444':
+.Sp
+\&\-\-serial udp,host=192.168.10.20:4444
+.IP "\fB\-\-serial unix,path=UNIXPATH,mode=MODE\fR" 4
+.IX Item "--serial unix,path=UNIXPATH,mode=MODE"
+Unix socket (see \fIunix\fR\|(7). \s-1MODE\s0 has similar behavior and defaults as 'tcp'.
+.RE
+.RS 2
+.RE
 .IP "\-\-noapic" 2
 .IX Item "--noapic"
 Override the \s-1OS\s0 type / variant to disables the \s-1APIC\s0 setting for fully
@@ -433,12 +515,15 @@ parameter is implied if connecting to a \s-1QEMU\s0 based hypervisor.
 This guest should be a paravirtualized guest. If the host supports both
 para & full virtualization, and neither this parameter nor the \f(CW\*(C`\-\-hvm\*(C'\fR
 are specified, this will be assumed.
+.IP "\-\-virt\-type" 2
+.IX Item "--virt-type"
+The hypervisor to install on. Example choices are kvm, qemu, xen, or kqemu.
+Availabile options are listed via 'virsh capabilities' in the <domain> tags.
 .IP "\-\-accelerate" 2
 .IX Item "--accelerate"
-When installing a \s-1QEMU\s0 guest, make use of the \s-1KVM\s0 or \s-1KQEMU\s0 kernel acceleration
-capabilities if available. Use of this option is recommended unless a guest
-\&\s-1OS\s0 is known to be incompatible with the accelerators. The \s-1KVM\s0 accelerator is
-preferred over \s-1KQEMU\s0 if both are available.
+Prefer \s-1KVM\s0 or \s-1KQEMU\s0 (in that order) if installing a \s-1QEMU\s0 guest. This behavior
+is now the default, and this option is deprecated. To install a plain \s-1QEMU\s0
+guest, use '\-\-virt\-type qemu'
 .Sh "Installation Method options"
 .IX Subsection "Installation Method options"
 .IP "\-c \s-1CDROM\s0, \-\-cdrom=CDROM" 2
@@ -577,37 +662,34 @@ read and write caching.
 See the examples section for some uses. This option deprecates \f(CW\*(C`\-\-file\*(C'\fR,
 \&\f(CW\*(C`\-\-file\-size\*(C'\fR, and \f(CW\*(C`\-\-nonsparse\*(C'\fR.
 .RE
-.IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 2
-.IX Item "-f DISKFILE, --file=DISKFILE"
-Path to the file, disk partition, or logical volume to use as the backing store
-for the guest's virtual disk. This option is deprecated in favor of \f(CW\*(C`\-\-disk\*(C'\fR.
-.IP "\-s \s-1DISKSIZE\s0, \-\-file\-size=DISKSIZE" 2
-.IX Item "-s DISKSIZE, --file-size=DISKSIZE"
-Size of the file to create for the guest virtual disk. This is deprecated in
-favor of \f(CW\*(C`\-\-disk\*(C'\fR.
-.IP "\-\-nonsparse" 2
-.IX Item "--nonsparse"
-Fully allocate the storage when creating. This is deprecated in favort of
-\&\f(CW\*(C`\-\-disk\*(C'\fR
 .IP "\-\-nodisks" 2
 .IX Item "--nodisks"
 Request a virtual machine without any local disk storage, typically used for
 running 'Live \s-1CD\s0' images or installing to network storage (iSCSI or \s-1NFS\s0 root).
+.IP "\-f \s-1DISKFILE\s0, \-\-file=DISKFILE" 2
+.IX Item "-f DISKFILE, --file=DISKFILE"
+This option is deprecated in favor of \f(CW\*(C`\-\-disk path=DISKFILE\*(C'\fR.
+.IP "\-s \s-1DISKSIZE\s0, \-\-file\-size=DISKSIZE" 2
+.IX Item "-s DISKSIZE, --file-size=DISKSIZE"
+This option is deprecated in favor of \f(CW\*(C`\-\-disk ...,size=DISKSIZE,...\*(C'\fR
+.IP "\-\-nonsparse" 2
+.IX Item "--nonsparse"
+This option is deprecated in favor of \f(CW\*(C`\-\-disk ...,sparse=false,...\*(C'\fR
 .Sh "Networking Configuration"
 .IX Subsection "Networking Configuration"
-.IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK" 2
-.IX Item "-w NETWORK, --network=NETWORK"
+.IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK,opt1=val1,opt2=val2" 2
+.IX Item "-w NETWORK, --network=NETWORK,opt1=val1,opt2=val2"
 Connect the guest to the host network. The value for \f(CW\*(C`NETWORK\*(C'\fR can take
 one of 3 formats:
 .RS 2
-.IP "bridge:BRIDGE" 4
-.IX Item "bridge:BRIDGE"
+.IP "bridge=BRIDGE" 4
+.IX Item "bridge=BRIDGE"
 Connect to a bridge device in the host called \f(CW\*(C`BRIDGE\*(C'\fR. Use this option if
 the host has static networking config & the guest requires full outbound
 and inbound connectivity  to/from the \s-1LAN\s0. Also use this if live migration
 will be used with this guest.
-.IP "network:NAME" 4
-.IX Item "network:NAME"
+.IP "network=NAME" 4
+.IX Item "network=NAME"
 Connect to a virtual network in the host called \f(CW\*(C`NAME\*(C'\fR. Virtual networks
 can be listed, created, deleted using the \f(CW\*(C`virsh\*(C'\fR command line tool. In
 an unmodified install of \f(CW\*(C`libvirt\*(C'\fR there is usually a virtual network
@@ -626,21 +708,32 @@ there is a bridge device in the host with a physical interface enslaved,
 that will be used for connectivity. Failing that, the virtual network
 called \f(CW\*(C`default\*(C'\fR will be used. This option can be specified multiple
 times to setup more than one \s-1NIC\s0.
-.RE
-.IP "\-b \s-1BRIDGE\s0, \-\-bridge=BRIDGE" 2
-.IX Item "-b BRIDGE, --bridge=BRIDGE"
-Bridge device to connect the guest \s-1NIC\s0 to. This parameter is deprecated in
-favour of the \f(CW\*(C`\-\-network\*(C'\fR parameter.
-.IP "\-m \s-1MAC\s0, \-\-mac=MAC" 2
-.IX Item "-m MAC, --mac=MAC"
+.Sp
+Other available options are:
+.IP "\fBmodel\fR" 4
+.IX Item "model"
+Network device model as seen by the guest. Value can be any nic model supported
+by the hypervisor, e.g.: 'e1000', 'rtl8139', 'virtio', ...
+.IP "\fBmac\fR" 4
+.IX Item "mac"
 Fixed \s-1MAC\s0 address for the guest; If this parameter is omitted, or the value
 \&\f(CW\*(C`RANDOM\*(C'\fR is specified a suitable address will be randomly generated. For
 Xen virtual machines it is required that the first 3 pairs in the \s-1MAC\s0 address
 be the sequence '00:16:3e', while for \s-1QEMU\s0 or \s-1KVM\s0 virtual machines it must
-be '54:52:00'.
+be '52:54:00'.
+.RE
+.RS 2
+.RE
 .IP "\-\-nonetworks" 2
 .IX Item "--nonetworks"
 Request a virtual machine without any network interfaces.
+.IP "\-b \s-1BRIDGE\s0, \-\-bridge=BRIDGE" 2
+.IX Item "-b BRIDGE, --bridge=BRIDGE"
+This parameter is deprecated in favour of
+\&\f(CW\*(C`\-\-network bridge=bridge_name\*(C'\fR.
+.IP "\-m \s-1MAC\s0, \-\-mac=MAC" 2
+.IX Item "-m MAC, --mac=MAC"
+This parameter is deprecated in favour of \f(CW\*(C`\-\-network NETWORK,mac=12:34...\*(C'\fR
 .Sh "Graphics Configuration"
 .IX Subsection "Graphics Configuration"
 If no graphics option is specified, \f(CW\*(C`virt\-install\*(C'\fR will default to \-\-vnc
@@ -658,11 +751,26 @@ detail for the use).
 Request a permanent, statically assigned port number for the guest \s-1VNC\s0
 console. Use of this option is discouraged as other guests may automatically
 choose to run on this port causing a clash.
+.IP "\-\-vnclisten=VNCLISTEN" 2
+.IX Item "--vnclisten=VNCLISTEN"
+Address to listen on for \s-1VNC\s0 connections. Default is typically 127.0.0.1
+(localhost only), but some hypervisors allow changing this globally (for
+example, the qemu driver default can be changed in /etc/libvirt/qemu.conf).
+Use 0.0.0.0 to allow access from other machines.
+.IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 2
+.IX Item "-k KEYMAP, --keymap=KEYMAP"
+Request that the virtual \s-1VNC\s0 console be configured to run with a non-English
+keyboard layout.
 .IP "\-\-sdl" 2
 .IX Item "--sdl"
 Setup a virtual console in the guest and display an \s-1SDL\s0 window in the
 host to render the output. If the \s-1SDL\s0 window is closed the guest may
 be unconditionally terminated.
+.IP "\-\-video=VIDEO" 2
+.IX Item "--video=VIDEO"
+Specify what video device model will be attached to the guest. Valid values
+for \s-1VIDEO\s0 are hypervisor specific, but some options for recent kvm are
+cirrus, vga, or vmvga (vmware).
 .IP "\-\-nographics" 2
 .IX Item "--nographics"
 No graphical console will be allocated for the guest. Fully virtualized guests
@@ -676,10 +784,6 @@ Don't automatically try to connect to the guest console. The default behaviour
 is to launch a \s-1VNC\s0 client to display the graphical console, or to run the
 \&\f(CW\*(C`virsh\*(C'\fR \f(CW\*(C`console\*(C'\fR command to display the text console. Use of this parameter
 will disable this behaviour.
-.IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 2
-.IX Item "-k KEYMAP, --keymap=KEYMAP"
-Request that the virtual \s-1VNC\s0 console be configured to run with a non-English
-keyboard layout.
 .Sh "Miscellaneous Options"
 .IX Subsection "Miscellaneous Options"
 .IP "\-d, \-\-debug" 2
@@ -698,7 +802,7 @@ Without this option, virt-install will wait for the console to close (not
 neccessarily indicating the guest has shutdown), or in the case of
 \&\-\-noautoconsole, simply kick off the install and exit. Any negative
 value will make virt-install wait indefinitely, a value of 0 triggers the
-same results as noautoconsole. If the time limit is succeeded, virt-install
+same results as noautoconsole. If the time limit is exceeded, virt-install
 simply exits, leaving the virtual machine in its current state.
 .IP "\-\-force" 2
 .IX Item "--force"
@@ -710,22 +814,22 @@ Specifically enable prompting for required information. Default prompting
 is off (as of virtinst 0.400.0)
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
-Install a \s-1KVM\s0 guest, creating a new storage file, virtual networking,
-booting from the host \s-1CDROM\s0, using \s-1VNC\s0 server/viewer
+Install a \s-1KVM\s0 guest (assuming proper host support), creating a new
++storage file, virtual networking, booting from the host \s-1CDROM\s0, using
++VNC server/viewer.
 .PP
-.Vb 9
+.Vb 8
 \&  # virt\-install \e
 \&       \-\-connect qemu:///system \e
 \&       \-\-name demo \e
 \&       \-\-ram 500 \e
 \&       \-\-disk path=/var/lib/libvirt/images/demo.img,size=5 \e
-\&       \-\-network network:default \e
-\&       \-\-accelerate \e
+\&       \-\-network network=default,model=virtio \e
 \&       \-\-vnc \e
 \&       \-\-cdrom /dev/cdrom
 .Ve
 .PP
-Install a Fedora 9 \s-1KVM\s0 guest, using \s-1LVM\s0 partition, virtual networking,
+Install a Fedora 9 plain \s-1QEMU\s0 guest, using \s-1LVM\s0 partition, virtual networking,
 booting from \s-1PXE\s0, using \s-1VNC\s0 server/viewer
 .PP
 .Vb 9
@@ -734,14 +838,15 @@ booting from \s-1PXE\s0, using \s-1VNC\s0 server/viewer
 \&       \-\-name demo \e
 \&       \-\-ram 500 \e
 \&       \-\-disk path=/dev/HostVG/DemoVM \e
-\&       \-\-network network:default \e
-\&       \-\-accelerate \e
+\&       \-\-network network=default \e
+\&       \-\-virt\-type qemu
 \&       \-\-vnc \e
 \&       \-\-os\-variant fedora9
 .Ve
 .PP
-Install a \s-1QEMU\s0 guest, with a real partition, for a different architecture
-using \s-1SDL\s0 graphics, using a remote kernel and initrd pair:
+Install a guest with a real partition, with the default \s-1QEMU\s0 hypervisor for
+a different architecture using \s-1SDL\s0 graphics, using a remote kernel and initrd
+pair:
 .PP
 .Vb 9
 \&  # virt\-install \e
@@ -749,7 +854,7 @@ using \s-1SDL\s0 graphics, using a remote kernel and initrd pair:
 \&       \-\-name demo \e
 \&       \-\-ram 500 \e
 \&       \-\-disk path=/dev/hdc \e
-\&       \-\-network bridge:eth1 \e
+\&       \-\-network bridge=eth1 \e
 \&       \-\-arch ppc64 \e
 \&       \-\-sdl \e
 \&       \-\-location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
@@ -800,14 +905,7 @@ team of many other contributors. See the \s-1AUTHORS\s0 file in the source
 distribution for the complete list of credits.
 .SH "BUGS"
 .IX Header "BUGS"
-Report bugs to the mailing list
-\&\f(CW\*(C`http://www.redhat.com/mailman/listinfo/et\-mgmt\-tools\*(C'\fR
-or directly to BugZilla \f(CW\*(C`http://bugzilla.redhat.com/bugzilla/\*(C'\fR against the
-\&\f(CW\*(C`Fedora\*(C'\fR product, and the \f(CW\*(C`python\-virtinst\*(C'\fR component.
-.PP
-When filing a bug, please run the failing command with the \-\-debug command
-line flag and post the output to the bug report, along with
-\&\f(CW$HOME\fR/.virtinst/virt\-install.log
+Please see http://virt\-manager.org/page/BugReporting
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (C) 2006\-2009 Red Hat, Inc, and various contributors.

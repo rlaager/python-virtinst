@@ -4,6 +4,7 @@ include setup.py
 recursive-include virtinst *.py
 recursive-include virtconv *.py
 recursive-include tests *.py *.xml *.vmx *.virt-image *.sh
+recursive-include tests/cli-test-xml *
 include virt-install virt-clone virt-image virt-convert
 include autobuild.sh
 include doc/*

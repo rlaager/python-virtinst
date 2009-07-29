@@ -7,3 +7,4 @@
 .*\.pyc$
 ^python-virtinst\.spec$
 ^\.coverage$
+virt-install.pod

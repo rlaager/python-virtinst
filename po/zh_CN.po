@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: virt-inst.tip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-04-09 10:37-0400\n"
+"POT-Creation-Date: 2009-07-28 20:34-0400\n"
 "PO-Revision-Date: 2009-04-06 12:51+1000\n"
 "Last-Translator: Leah Liu <lliu@redhat.com>\n"
 "Language-Team: Simplified Chinese <zh@li.org>\n"
@@ -48,96 +48,121 @@ msgid ""
 msgstr ""
 "主机不为虚拟化类型 '%(virttype)s' arch '%(arch)s' 支持域类型 '%(domain)s'"
 
-#: virtinst/cli.py:117
+#: virtinst/cli.py:152
 msgid "Exiting at user request."
 msgstr "根据用户要求退出。"
 
-#: virtinst/cli.py:122
+#: virtinst/cli.py:159
 msgid "Must be root to create Xen guests"
 msgstr "必须是根用户才可创建 Xen 客户端"
 
-#: virtinst/cli.py:124
-msgid "Could not find usable default libvirt connection."
-msgstr "无法找到可用默认 libvirt 连接。"
-
-#: virtinst/cli.py:153
+#: virtinst/cli.py:297
 msgid "(use --prompt to run interactively)"
 msgstr ""
 
-#: virtinst/cli.py:173
+#: virtinst/cli.py:317
 msgid " (Use --prompt or --force to override)"
 msgstr ""
 
-#: virtinst/cli.py:218
+#: virtinst/cli.py:352
+msgid "Graphics Configuration"
+msgstr "图形配置"
+
+#: virtinst/cli.py:354
+msgid "Use VNC for graphics support"
+msgstr "用 VNC 进行图形支持"
+
+#: virtinst/cli.py:356
+msgid "Port to use for VNC"
+msgstr "VNC 使用的端口"
+
+#: virtinst/cli.py:358
+msgid "Address to listen on for VNC connections."
+msgstr ""
+
+#: virtinst/cli.py:361
+#, fuzzy
+msgid "set up keymap for the VNC console"
+msgstr "为图形控制台设置 keymap"
+
+#: virtinst/cli.py:363
+msgid "Use SDL for graphics support"
+msgstr "用 SDL 进行图形支持"
+
+#: virtinst/cli.py:365
+msgid "Don't set up a graphical console for the guest."
+msgstr "不要为该客户端设置图形控制台。"
+
+#: virtinst/cli.py:388
 #, fuzzy
 msgid "A disk path must be specified."
 msgstr "必须指定一个磁盘设备。"
 
-#: virtinst/cli.py:220
+#: virtinst/cli.py:390
 #, fuzzy
 msgid "What would you like to use as the disk (file path)?"
 msgstr "作为克隆的磁盘（文件路径）您希望如何使用 '%s'？"
 
-#: virtinst/cli.py:222
+#: virtinst/cli.py:392
 #, python-format
 msgid ""
 "Please enter the path to the file you would like to use for storage. It will "
 "have size %sGB."
 msgstr ""
 
-#: virtinst/cli.py:227
+#: virtinst/cli.py:401
 #, fuzzy
 msgid "A size must be specified for non-existent disks."
 msgstr "必须为非现有卷路径 '%s' 指定大小"
 
-#: virtinst/cli.py:229
+#: virtinst/cli.py:403
 #, python-format
 msgid "How large would you like the disk (%s) to be (in gigabytes)?"
 msgstr ""
 
-#: virtinst/cli.py:250 virt-install:214
+#: virtinst/cli.py:424 virt-install:274
 #, python-format
 msgid "Error with storage parameters: %s"
 msgstr "存储参数错误：%s"
 
-#: virtinst/cli.py:252
+#: virtinst/cli.py:426
 #, fuzzy
 msgid "Do you really want to use this disk (yes or no)"
 msgstr "您确实要使用这个磁盘吗（是或者否）？"
 
-#: virtinst/cli.py:256
+#: virtinst/cli.py:430
 #, python-format
 msgid "This will overwrite the existing path '%s'!\n"
 msgstr "这将会覆盖当前路径 '%s'!\n"
 
-#: virtinst/cli.py:263
+#: virtinst/cli.py:437
 #, python-format
 msgid "Disk %s is already in use by another guest!\n"
 msgstr "磁盘 %s 已经被其它客户端使用！\n"
 
-#: virtinst/cli.py:282
+#: virtinst/cli.py:464
 #, fuzzy
 msgid "What is the name of your virtual machine?"
 msgstr "原始虚拟机的名称是什么？"
 
-#: virtinst/cli.py:283
+#: virtinst/cli.py:465
 msgid "A name is required for the virtual machine."
 msgstr "虚拟机需要一个名称。"
 
-#: virtinst/cli.py:287
+#: virtinst/cli.py:472
 msgid "How much RAM should be allocated (in megabytes)?"
 msgstr ""
 
-#: virtinst/cli.py:288
+#: virtinst/cli.py:473
 msgid "Memory amount is required for the virtual machine."
 msgstr "虚拟机需要内存数。"
 
-#: virtinst/cli.py:292
+#: virtinst/cli.py:477
 #, python-format
 msgid "Installs currently require %d megs of RAM."
 msgstr "安装目前需要 %d MB 内存。"
 
-#: virtinst/cli.py:311
+#: virtinst/cli.py:498
 #, fuzzy, python-format
 msgid ""
 "You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
@@ -146,289 +171,275 @@ msgstr ""
 "您要求的虚拟 CPU 数（%d）已经超过了主机中的物理 CPU（%d）。这样也可以，但性能"
 "会很差。您确定要这样吗？（是或否）"
 
-#: virtinst/cli.py:314
+#: virtinst/cli.py:501
 msgid "Are you sure? (yes or no)"
 msgstr ""
 
-#: virtinst/cli.py:373
-msgid "Unknown network type "
-msgstr "未知物理类型"
+#: virtinst/cli.py:612
+#, fuzzy, python-format
+msgid "Unknown network option '%s'"
+msgstr "未知网络类型 %s"
 
-#: virtinst/cli.py:390
+#: virtinst/cli.py:630
 msgid "Cannot mix both --bridge and --network arguments"
 msgstr "不能混合使用 --bridge 和 --network 参数"
 
-#: virtinst/cli.py:407
-msgid "Need to pass equal numbers of networks & mac addresses"
-msgstr "需要给出等量的网络和 mac 地址"
+#: virtinst/cli.py:645
+#, fuzzy
+msgid "Cannot pass more mac addresses than networks."
+msgstr "不能使用带 --nonetworks 的 --mac"
 
-#: virtinst/cli.py:429
+#: virtinst/cli.py:672
 msgid "Can't specify more than one of VNC, SDL, or --nographics"
 msgstr "无法指定超过一个 VNC、SDL 或者 --nographics"
 
-#: virtinst/cli.py:455
+#: virtinst/cli.py:700
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
 msgstr ""
 
-#: virtinst/cli.py:477 virtinst/cli.py:482
+#: virtinst/cli.py:731 virtinst/cli.py:736
 #, python-format
 msgid "%s option requires an argument"
 msgstr "%s 选项需要参数"
 
-#: virtinst/CloneManager.py:54
+#: virtinst/CloneManager.py:109
 msgid "Connection must be a 'virConnect' instance."
 msgstr "连接必须是一个 'virConnect' 事件。"
 
-#: virtinst/CloneManager.py:102
+#: virtinst/CloneManager.py:162
 msgid "Original xml must be a string."
 msgstr "原始 xml 必须是一个字符串。"
 
-#: virtinst/CloneManager.py:114
+#: virtinst/CloneManager.py:177
 #, python-format
 msgid "Invalid name for new guest: %s"
 msgstr "新客户端的无效名称：%s"
 
-#: virtinst/CloneManager.py:119
+#: virtinst/CloneManager.py:182
 #, python-format
 msgid "Domain name '%s' already in use."
 msgstr "域名 %s 已在使用。"
 
-#: virtinst/CloneManager.py:131
+#: virtinst/CloneManager.py:195
 #, python-format
 msgid "Invalid uuid for new guest: %s"
 msgstr "新客户端的无效 uuid：%s"
 
-#: virtinst/CloneManager.py:134
+#: virtinst/CloneManager.py:198
 #, python-format
 msgid "UUID '%s' is in use by another guest."
 msgstr "UUID '%s' 已经被其它客体使用。"
 
-#: virtinst/CloneManager.py:149
+#: virtinst/CloneManager.py:226
 #, python-format
 msgid "Could not use path '%s' for cloning: %s"
 msgstr "无法使用路径 '%s' 克隆：%s"
 
-#: virtinst/CloneManager.py:235
+#: virtinst/CloneManager.py:356
+msgid "Cloning policy must be a list of rules."
+msgstr ""
+
+#: virtinst/CloneManager.py:373
 msgid "Original guest name or xml is required."
 msgstr "需要原始客体名称或者 xml。"
 
-#: virtinst/CloneManager.py:253
-msgid "Cannot clone remote VM storage."
-msgstr "无法克隆远程 VM 存储。"
-
-#: virtinst/CloneManager.py:261
+#: virtinst/CloneManager.py:391
 msgid "Domain with devices to clone must be paused or shutoff."
 msgstr "必须暂停或者关闭有要克隆设备的域。"
 
-#: virtinst/CloneManager.py:304
+#: virtinst/CloneManager.py:437
 #, python-format
-msgid "Missing path to use as disk clone destination for '%s'"
-msgstr "缺少作为 '%s' 磁盘克隆目的地的路径"
+msgid ""
+"More disks to clone that new paths specified. (%(passed)d specified, %(need)"
+"d needed"
+msgstr ""
 
-#: virtinst/CloneManager.py:398
+#: virtinst/CloneManager.py:557
 #, python-format
 msgid "Disk '%s' does not exist."
 msgstr "系统磁盘 '%s' 不存在"
 
-#: virtinst/CloneManager.py:403
+#: virtinst/CloneManager.py:568
 #, python-format
 msgid "Could not determine original disk information: %s"
 msgstr "无法确定原始磁盘信息：%s"
 
-#: virtinst/CloneManager.py:473
+#: virtinst/CloneManager.py:613
 #, python-format
 msgid "Domain '%s' was not found."
 msgstr "没有找到域 '%s'。"
 
-#: virtinst/CloneManager.py:538
-msgid "copying to an existing vdisk is not supported"
-msgstr "不支持复制到现有虚拟磁盘"
-
-#: virtinst/CloneManager.py:546
-#, python-format
-msgid "Could not determine storage type for '%s'"
-msgstr "无法确定 '%s' 的存储类型"
-
-#: virtinst/CloneManager.py:573
-#, python-format
-msgid "Cloning %(srcfile)s"
-msgstr "正在克隆 %(srcfile)s"
-
-#: virtinst/CloneManager.py:580
-msgid "failed to clone disk"
-msgstr "克隆磁盘失败"
-
-#: virtinst/DistroInstaller.py:51
+#: virtinst/DistroInstaller.py:57
 msgid "Invalid NFS format: No path specified."
 msgstr "无效 NFS 格式：没有指定路径。"
 
-#: virtinst/DistroInstaller.py:93
+#: virtinst/DistroInstaller.py:101
 #, python-format
 msgid "Invalid 'location' type %s."
 msgstr "无效 'location' 类型 %s。"
 
-#: virtinst/DistroInstaller.py:99
+#: virtinst/DistroInstaller.py:107
 msgid "'conn' must be specified if 'location' is a storage tuple."
 msgstr "如果 'location' 是一个存储元组，则必须指定 'conn'。"
 
-#: virtinst/DistroInstaller.py:135
+#: virtinst/DistroInstaller.py:145
 #, python-format
 msgid "Checking installer location failed: Could not find media '%s'."
 msgstr "检查安装程序位置失败：无法找到介质 '%s'。"
 
-#: virtinst/DistroInstaller.py:138
+#: virtinst/DistroInstaller.py:148
 msgid ""
 "Install media location must be an NFS, HTTP or FTP network install source, "
 "or an existing file/device"
 msgstr "安装介质位置必须是 NFS、HTTP 或者 FTP 网络安装源，或者现有文件/设备"
 
-#: virtinst/DistroInstaller.py:145
+#: virtinst/DistroInstaller.py:155
 msgid "Privilege is required for NFS installations"
 msgstr "NFS 安装需要特权。"
 
-#: virtinst/Guest.py:100
+#: virtinst/Guest.py:108
 msgid "Unable to connect to hypervisor, aborting installation!"
 msgstr "无法连接到监控程序，取消安装！"
 
-#: virtinst/Guest.py:118
+#: virtinst/Guest.py:126
 msgid "Guest"
 msgstr "客体"
 
-#: virtinst/Guest.py:125
+#: virtinst/Guest.py:133
 #, python-format
 msgid "Guest name '%s' is already in use."
 msgstr "客体名称 '%s' 已经在使用。"
 
-#: virtinst/Guest.py:133
+#: virtinst/Guest.py:141
 msgid "Memory value must be an integer greater than 0"
 msgstr "内存值必须是大于 0 的整数"
 
-#: virtinst/Guest.py:145
+#: virtinst/Guest.py:153
 msgid "Max Memory value must be an integer greater than 0"
 msgstr "最大内存值必须是大于 0 的整数"
 
-#: virtinst/Guest.py:164
+#: virtinst/Guest.py:172
 msgid "Number of vcpus must be a postive integer."
 msgstr "vcpu 的数目必须是一个正整数。"
 
-#: virtinst/Guest.py:166
+#: virtinst/Guest.py:174
 #, python-format
 msgid "Number of vcpus must be no greater than %d for this vm type."
 msgstr "这种 vm 类型的 vcpu 数目不能超过 %d"
 
-#: virtinst/Guest.py:176
+#: virtinst/Guest.py:184
 msgid "cpuset must be string"
 msgstr "cpuset 必须是字符串"
 
-#: virtinst/Guest.py:178
+#: virtinst/Guest.py:186
 msgid "cpuset can only contain numeric, ',', or '-' characters"
 msgstr "cpuset 只能含有数字、',' 或者 '-' 字符"
 
-#: virtinst/Guest.py:186
+#: virtinst/Guest.py:194
 msgid "cpuset contains invalid format."
 msgstr "cpuset 包含无效格式。"
 
-#: virtinst/Guest.py:188 virtinst/Guest.py:192
+#: virtinst/Guest.py:196 virtinst/Guest.py:202
 msgid "cpuset's pCPU numbers must be less than pCPUs."
 msgstr "cpuset 的 pCPU 数目必须小于 pCPU。"
 
-#: virtinst/Guest.py:212
+#: virtinst/Guest.py:222
 msgid "OS type must be a string."
 msgstr "操作系统类型必须是一个字符串。"
 
-#: virtinst/Guest.py:224
+#: virtinst/Guest.py:234
 #, python-format
 msgid "OS type '%s' does not exist in our dictionary"
 msgstr "操作系统类型 '%s' 在我们的字典中不存在"
 
-#: virtinst/Guest.py:232
+#: virtinst/Guest.py:242
 msgid "OS variant must be a string."
 msgstr "操作系统变体必须是一个字符串。"
 
-#: virtinst/Guest.py:238
+#: virtinst/Guest.py:248
 #, python-format
 msgid ""
 "OS variant '%(var)s; does not exist in our dictionary for OS type '%(ty)s'"
 msgstr "在我们的操作系统类型 '%(ty)s' 库中不存在操作系统参数 '%(var)s;"
 
-#: virtinst/Guest.py:250
+#: virtinst/Guest.py:260
 #, python-format
 msgid "Unknown OS variant '%s'"
 msgstr "未知操作系统变体 '%s'"
 
-#: virtinst/Guest.py:291
+#: virtinst/Guest.py:301
 msgid "Must specify whether graphics are enabled"
 msgstr "必须指定是否启用图形"
 
-#: virtinst/Guest.py:314
+#: virtinst/Guest.py:324
 msgid "Graphics enabled must be True or False"
 msgstr "启用图形必须是 True 或者 False"
 
-#: virtinst/Guest.py:373
+#: virtinst/Guest.py:383
 msgid "You must specify a valid ISO or CD-ROM location for the installation"
 msgstr "您必须为安装指定有效 ISO 或者光驱位置"
 
-#: virtinst/Guest.py:376
+#: virtinst/Guest.py:386
 msgid "The specified media path does not exist."
 msgstr "指定的介质路径不存在。"
 
-#: virtinst/Guest.py:573
+#: virtinst/Guest.py:415
+#, fuzzy
+msgid "Must pass a VirtualDevice instance."
+msgstr "'nodedev' 必须是 USBDevice 事件。"
+
+#: virtinst/Guest.py:660
 msgid "Unable to start domain for guest, aborting installation!"
 msgstr "无法为客户端启动域，取消安装！"
 
-#: virtinst/Guest.py:623
+#: virtinst/Guest.py:716
 #, python-format
 msgid "Could not remove old vm '%s': %s"
 msgstr "无法删除旧的 vm '%s'：%s"
 
-#: virtinst/Guest.py:625
+#: virtinst/Guest.py:718
 #, python-format
 msgid "Domain named %s already exists!"
 msgstr "域名 %s 以存在！"
 
-#: virtinst/Guest.py:632
+#: virtinst/Guest.py:725
 msgid "Creating domain..."
 msgstr "创建域......"
 
-#: virtinst/Guest.py:635
+#: virtinst/Guest.py:728
 msgid "Unable to create domain for the guest, aborting installation!"
 msgstr "无法为客户端创建域，取消安装！"
 
-#: virtinst/Guest.py:643
+#: virtinst/Guest.py:736
 msgid ""
 "It appears that your installation has crashed.  You should be able to find "
 "more information in the logs"
 msgstr "显示您的安装已经失败。您应该可以在日志中找到更多信息。"
 
-#: virtinst/Guest.py:677
+#: virtinst/Guest.py:770
 msgid ""
 "Domain has not existed.  You should be able to find more information in the "
 "logs"
 msgstr "域不存在。您应该可以在日志中找到更多信息。"
 
-#: virtinst/Guest.py:679
+#: virtinst/Guest.py:772
 msgid ""
 "Domain has not run yet.  You should be able to find more information in the "
 "logs"
 msgstr "域没有运行。您应该可以在日志中找到更多信息。"
 
-#: virtinst/Guest.py:696
+#: virtinst/Guest.py:789
 msgid "Domain has already been started!"
 msgstr "域已经启动！"
 
-#: virtinst/Guest.py:707
+#: virtinst/Guest.py:809
 msgid "The UUID you entered is already in use by another guest!"
 msgstr "您输入的 UUID 已经被另一个客户端使用！"
 
-#: virtinst/Guest.py:710
+#: virtinst/Guest.py:812
 msgid "Name and memory must be specified for all guests!"
 msgstr "必须指定的名称和内存！"
-
-#: virtinst/Guest.py:745
-#, python-format
-msgid "Invalid dictionary entry for device '%s %s'"
-msgstr "设备 '%s %s' 的无效 dictionary 条目"
 
 #: virtinst/ImageFetcher.py:86
 #, python-format
@@ -518,24 +529,24 @@ msgstr "Root 元素不是 'image'"
 msgid "A disk device must be specified."
 msgstr "必须指定一个磁盘设备。"
 
-#: virtinst/Installer.py:152
+#: virtinst/Installer.py:156
 msgid "Guest.cdrom must be a boolean type"
 msgstr "Guest.cdrom 必须是布尔类型"
 
-#: virtinst/Installer.py:169 virtinst/Installer.py:174
-#: virtinst/Installer.py:178
+#: virtinst/Installer.py:173 virtinst/Installer.py:178
+#: virtinst/Installer.py:182
 msgid "Must pass both a kernel and initrd"
 msgstr "必须同时使用内核和 initrd "
 
-#: virtinst/Installer.py:181
+#: virtinst/Installer.py:185
 msgid "Kernel and initrd must be specified by a list, dict, or tuple."
 msgstr "必须内核和 initrd "
 
-#: virtinst/Installer.py:336
+#: virtinst/Installer.py:340
 msgid "A connection must be specified."
 msgstr "必须指定一个连接。"
 
-#: virtinst/Installer.py:354
+#: virtinst/Installer.py:358
 #, python-format
 msgid "No 'Guest' class for virtualization type '%s'"
 msgstr "没有虚拟化类型 '%s' 的 'Guest' 分类"
@@ -554,7 +565,7 @@ msgid "Interface %s"
 msgstr "接口 %s"
 
 #: virtinst/NodeDeviceParser.py:378 virtinst/NodeDeviceParser.py:406
-#: virtinst/util.py:511 virtinst/VirtualDevice.py:58
+#: virtinst/util.py:501 virtinst/VirtualDevice.py:86
 msgid "'conn' must be a virConnect instance."
 msgstr "'conn' 必须是一个 virConnect 事件。"
 
@@ -567,294 +578,320 @@ msgstr "连接不支持主机设备计数。"
 msgid "Unknown host device capability '%s'."
 msgstr "未知主机设备功能 '%s'。"
 
-#: virtinst/OSDistro.py:101
+#: virtinst/osdict.py:129
+#, python-format
+msgid "Invalid dictionary entry for device '%s %s'"
+msgstr "设备 '%s %s' 的无效 dictionary 条目"
+
+#: virtinst/OSDistro.py:102
 #, python-format
 msgid "Could not find an installable distribution at '%s'"
 msgstr "在 '%s' 无法找到可安装的发行本"
 
-#: virtinst/OSDistro.py:111
+#: virtinst/OSDistro.py:112
 msgid "Invalid install location: "
 msgstr "无效安装位置："
 
-#: virtinst/OSDistro.py:232
+#: virtinst/OSDistro.py:237
 #, python-format
 msgid "Couldn't find %(type)s kernel for %(distro)s tree."
 msgstr "无法为 %(distro)s 树找到 %(type)s 内核。"
 
-#: virtinst/OSDistro.py:246
+#: virtinst/OSDistro.py:252
 #, python-format
 msgid "Could not find boot.iso in %s tree."
 msgstr "无法在 %s 树中找到 boot.iso。"
 
-#: virtinst/OSDistro.py:385
+#: virtinst/OSDistro.py:413
 #, python-format
 msgid "Could not find a kernel path for virt type '%s'"
 msgstr "无法为 virt 类型 '%s' 找到内核路径"
 
-#: virtinst/OSDistro.py:394
+#: virtinst/OSDistro.py:422
 msgid "Could not find a boot iso path for this tree."
 msgstr "无法为这个树找到引导 iso 路径。"
 
-#: virtinst/OSDistro.py:648
+#: virtinst/OSDistro.py:676
 msgid "Unable to determine kernel RPM path"
 msgstr "无法确定内核 RPM 路径"
 
-#: virtinst/OSDistro.py:650
+#: virtinst/OSDistro.py:678
 msgid "Unable to determine install-initrd RPM path"
 msgstr "无法确定 install-initrd RPM 路径"
 
-#: virtinst/OSDistro.py:661
+#: virtinst/OSDistro.py:689
 msgid "Building initrd"
 msgstr "创建 initrd"
 
-#: virtinst/OSDistro.py:1023
+#: virtinst/OSDistro.py:1051
 #, python-format
 msgid "Solaris miniroot not found at %s"
 msgstr "在 %s 中没有找到 Solaris miniroot"
 
-#: virtinst/OSDistro.py:1061
+#: virtinst/OSDistro.py:1089
 #, python-format
 msgid "OpenSolaris PV kernel not found at %s"
 msgstr "在 %s 中没有找到 OpenSolaris PV 内核"
 
-#: virtinst/Storage.py:85
+#: virtinst/Storage.py:81
 #, python-format
 msgid "Unknown storage object type: %s"
 msgstr "未知存储对象类型：%s"
 
-#: virtinst/Storage.py:108
+#: virtinst/Storage.py:104
 msgid "'conn' must be a libvirt connection object."
 msgstr "'conn' 必须是 libvirt 连接对象。"
 
-#: virtinst/Storage.py:110
+#: virtinst/Storage.py:106
 msgid "Passed connection is not libvirt storage capable"
 msgstr "过去的连接与 libvirt 存储不兼容"
 
-#: virtinst/Storage.py:120
+#: virtinst/Storage.py:116
 msgid "Storage object"
 msgstr "存储目标"
 
-#: virtinst/Storage.py:125
+#: virtinst/Storage.py:121
 msgid "Name for the storage object."
 msgstr "存储目标名称。"
 
-#: virtinst/Storage.py:132
+#: virtinst/Storage.py:128
 msgid "Permissions must be passed as a dict object"
 msgstr "权限必须作为库对象传递"
 
-#: virtinst/Storage.py:135
+#: virtinst/Storage.py:131
 msgid "Permissions must contain 'mode', 'owner', 'group' and 'label' keys."
 msgstr "权限必须包含 'mode'、'owner'、'group' 和 'label' 关键词。"
 
-#: virtinst/Storage.py:142
+#: virtinst/Storage.py:138
 #, python-format
 msgid "'%s' is not an absolute path."
 msgstr "'%s' 不是一个绝对路径。"
 
-#: virtinst/Storage.py:203
+#: virtinst/Storage.py:199
 msgid "Filesystem Directory"
 msgstr "文件系统目录"
 
-#: virtinst/Storage.py:204
+#: virtinst/Storage.py:200
 msgid "Pre-Formatted Block Device"
 msgstr "预先格式化的块设备"
 
-#: virtinst/Storage.py:205
+#: virtinst/Storage.py:201
 msgid "Network Exported Directory"
 msgstr "网络导出的目录"
 
-#: virtinst/Storage.py:206
+#: virtinst/Storage.py:202
 msgid "LVM Volume Group"
 msgstr "LVM 卷组"
 
-#: virtinst/Storage.py:207
+#: virtinst/Storage.py:203
 msgid "Physical Disk Device"
 msgstr "网络磁盘设备"
 
-#: virtinst/Storage.py:208
+#: virtinst/Storage.py:204
 msgid "iSCSI Target"
 msgstr "iSCSI 目标"
 
-#: virtinst/Storage.py:218 virtinst/Storage.py:255
+#: virtinst/Storage.py:214 virtinst/Storage.py:251
 #, python-format
 msgid "Unknown storage pool type: %s"
 msgstr "未知存储池类型：%s"
 
-#: virtinst/Storage.py:277
+#: virtinst/Storage.py:273
 msgid "Storage device type the pool will represent."
 msgstr "池将代表的存储设备类型。"
 
-#: virtinst/Storage.py:296
+#: virtinst/Storage.py:292
 msgid "Host name must be a string"
 msgstr "主机名必须是一个字符串"
 
-#: virtinst/Storage.py:315
+#: virtinst/Storage.py:311
 #, python-format
 msgid "Name '%s' already in use by another pool."
 msgstr "名称 '%s' 已经被另一个池使用。"
 
-#: virtinst/Storage.py:353
+#: virtinst/Storage.py:349
 #, python-format
 msgid "Could not define storage pool: %s"
 msgstr "无法定义存储池：%s"
 
-#: virtinst/Storage.py:363
+#: virtinst/Storage.py:359
 #, python-format
 msgid "Could not build storage pool: %s"
 msgstr "无法构建存储池：%s"
 
-#: virtinst/Storage.py:372
+#: virtinst/Storage.py:368
 #, python-format
 msgid "Could not start storage pool: %s"
 msgstr "无法启动存储池：%s"
 
-#: virtinst/Storage.py:399
+#: virtinst/Storage.py:395
 msgid "Directory to use for the storage pool."
 msgstr "存储池使用的目录。"
 
-#: virtinst/Storage.py:435
+#: virtinst/Storage.py:431
 msgid "The existing device to mount for the pool."
 msgstr "为池挂载的现有设备。"
 
-#: virtinst/Storage.py:438 virtinst/Storage.py:496
+#: virtinst/Storage.py:434 virtinst/Storage.py:492
 msgid "Location to mount the source device."
 msgstr "挂载源设备的位置。"
 
-#: virtinst/Storage.py:456
+#: virtinst/Storage.py:452
 #, python-format
 msgid "Unknown Filesystem format: %s"
 msgstr "未知文件系统格式：%s"
 
-#: virtinst/Storage.py:459
+#: virtinst/Storage.py:455
 msgid "Filesystem type of the source device."
 msgstr "源设备文件系统类型。"
 
-#: virtinst/Storage.py:472
+#: virtinst/Storage.py:468
 msgid "Device path is required"
 msgstr "需要设备路径"
 
-#: virtinst/Storage.py:491 virtinst/Storage.py:665
+#: virtinst/Storage.py:487 virtinst/Storage.py:694
 msgid "Path on the host that is being shared."
 msgstr "主机中要共享的路径。"
 
-#: virtinst/Storage.py:493 virtinst/Storage.py:637
+#: virtinst/Storage.py:489 virtinst/Storage.py:666
 msgid "Name of the host sharing the storage."
 msgstr "共享存储的主机名称。"
 
-#: virtinst/Storage.py:514
+#: virtinst/Storage.py:510
 #, python-format
 msgid "Unknown Network Filesystem format: %s"
 msgstr "未知网络文件系统格式：%s"
 
-#: virtinst/Storage.py:517
+#: virtinst/Storage.py:513
 msgid "Type of network filesystem."
 msgstr "网络文件系统类型。"
 
-#: virtinst/Storage.py:529 virtinst/Storage.py:676
+#: virtinst/Storage.py:525 virtinst/Storage.py:705
 msgid "Hostname is required"
 msgstr "需要主机名"
 
-#: virtinst/Storage.py:531 virtinst/Storage.py:614 virtinst/Storage.py:678
+#: virtinst/Storage.py:527 virtinst/Storage.py:643 virtinst/Storage.py:707
 msgid "Host path is required"
 msgstr "需要主机路径"
 
-#: virtinst/Storage.py:549
+#: virtinst/Storage.py:545
 msgid "Location of the existing LVM volume group."
 msgstr "现有 LVM 卷组位置。"
 
-#: virtinst/Storage.py:576
+#: virtinst/Storage.py:570
+msgid "Optional device(s) to build new LVM volume on."
+msgstr ""
+
+#: virtinst/Storage.py:593
+#, fuzzy
+msgid "Must explicitly specify source path if building' pool"
+msgstr "如果格式化磁盘设备，则必须单独指定磁盘格式。"
+
+#: virtinst/Storage.py:609
 msgid "Path to the existing disk device."
 msgstr "现有磁盘设备路径。"
 
-#: virtinst/Storage.py:579 virtinst/Storage.py:640
+#: virtinst/Storage.py:612 virtinst/Storage.py:669
 msgid "Root location for identifying new storage volumes."
 msgstr "识别新存储卷的根位置。"
 
-#: virtinst/Storage.py:585
-msgid "Disk volume creation is not implemented."
-msgstr "没有使用磁盘卷创建。"
-
-#: virtinst/Storage.py:600
+#: virtinst/Storage.py:629
 #, python-format
 msgid "Unknown Disk format: %s"
 msgstr "未知磁盘格式：%s"
 
-#: virtinst/Storage.py:603
+#: virtinst/Storage.py:632
 msgid "Format of the source device's partition table."
 msgstr "格式化该源设备的分区表。"
 
-#: virtinst/Storage.py:626
+#: virtinst/Storage.py:655
 msgid "Must explicitly specify disk format if formatting disk device."
 msgstr "如果格式化磁盘设备，则必须单独指定磁盘格式。"
 
-#: virtinst/Storage.py:644
+#: virtinst/Storage.py:673
 msgid "iSCSI volume creation is not implemented."
 msgstr "没有使用 iSCSI 卷创建。"
 
-#: virtinst/Storage.py:694
+#: virtinst/Storage.py:734
 msgid "One of pool or pool_name must be specified."
 msgstr "必须指定池或者 pool_name 名称之一。"
 
-#: virtinst/Storage.py:697 virtinst/Storage.py:770
+#: virtinst/Storage.py:737 virtinst/Storage.py:806
 msgid "'conn' must be specified with 'pool_name'"
 msgstr "必须用 'pool_name' 指定 'conn'"
 
-#: virtinst/Storage.py:756
-msgid "Default volume target path range exceeded."
-msgstr "超过默认卷目标路径范围。"
-
-#: virtinst/Storage.py:766
+#: virtinst/Storage.py:802
 msgid "Must specify pool_object or pool_name"
 msgstr "必须指定 pool_object 或 pool_name"
 
-#: virtinst/Storage.py:772
+#: virtinst/Storage.py:808
 msgid "Connection does not support storage management."
 msgstr "连接不支持存储管理。"
 
-#: virtinst/Storage.py:777
+#: virtinst/Storage.py:813
 #, python-format
 msgid "Couldn't find storage pool '%s': %s"
 msgstr "无法找到存储池 '%s'：%s"
 
-#: virtinst/Storage.py:781
+#: virtinst/Storage.py:817
 msgid "pool_object must be a virStoragePool"
 msgstr "pool_object 必须是一个 virStoragePool"
 
-#: virtinst/Storage.py:792
+#: virtinst/Storage.py:831
 msgid "Capacity must be a positive number"
 msgstr "Capacity 必须是一个正数"
 
-#: virtinst/Storage.py:813
+#: virtinst/Storage.py:852
 msgid "Allocation must be a non-negative number"
 msgstr "Allocation 必须是一个非负数"
 
-#: virtinst/Storage.py:833
+#: virtinst/Storage.py:872
 msgid "'pool' must be a virStoragePool instance."
 msgstr "'pool' 必须是一个 virStoragePool 事件。"
 
-#: virtinst/Storage.py:835
+#: virtinst/Storage.py:874
 #, python-format
 msgid "pool '%s' must be active."
 msgstr "池 '%s' 必须活跃。"
 
-#: virtinst/Storage.py:844
+#: virtinst/Storage.py:886 virtinst/Storage.py:1120
+#, fuzzy
+msgid "input_vol must be a virStorageVol"
+msgstr "pool_object 必须是一个 virStoragePool"
+
+#: virtinst/Storage.py:888
+msgid ""
+"Creating storage from an existing volume is not supported by this libvirt "
+"version."
+msgstr ""
+
+#: virtinst/Storage.py:892
+msgid "virStorageVolume pointer to clone/use as input."
+msgstr ""
+
+#: virtinst/Storage.py:900
 #, python-format
 msgid "'%s' is not a valid format."
 msgstr "'%s' 不是有效格式。"
 
-#: virtinst/Storage.py:854
+#: virtinst/Storage.py:910
 #, python-format
 msgid "Name '%s' already in use by another volume."
 msgstr "名称 '%s' 已经被另一个卷使用。"
 
-#: virtinst/Storage.py:924
+#: virtinst/Storage.py:963
+#, python-format
+msgid "Allocating '%s'"
+msgstr ""
+
+#: virtinst/Storage.py:1023
 #, python-format
 msgid ""
 "There is not enough free space on the storage pool to create the volume. (%d "
 "M requested allocation > %d M available)"
 msgstr "存储池中没有足够空间来创建卷。（%d M 需要的空间 > %d M 可用空间）"
 
-#: virtinst/Storage.py:930
+#: virtinst/Storage.py:1029
 #, python-format
 msgid ""
 "The requested volume capacity will exceed the available pool space when the "
@@ -863,11 +900,11 @@ msgstr ""
 "当卷已经被全部分配后，需要的卷容量将超过可用池空间。（%d M 需要的容量 > %d M "
 "可用容量）"
 
-#: virtinst/_util.py:112
+#: virtinst/_util.py:128
 msgid "UUID must be a string."
 msgstr "UUID 必须是一个字符串。"
 
-#: virtinst/_util.py:120
+#: virtinst/_util.py:136
 msgid ""
 "UUID must be a 32-digit hexadecimal number. It may take the form XXXXXXXX-"
 "XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit hyphens altogether."
@@ -875,313 +912,517 @@ msgstr ""
 "UUID 必须是一个 32 位的十六进制数字。格式可以是 XXXXXXXX-XXXX-XXXX-XXXX-"
 "XXXXXXXXXXXX，也可以取消所有连字符。"
 
-#: virtinst/_util.py:131
+#: virtinst/_util.py:147
 #, python-format
 msgid "%s name must be a string between 0 and 50 characters"
 msgstr "%s 名称必须是介于 0 到 50 个字符的字符串"
 
-#: virtinst/_util.py:134
+#: virtinst/_util.py:150
 #, python-format
 msgid "%s name can not be only numeric characters"
 msgstr "%s 名称不能只是数字字符"
 
-#: virtinst/_util.py:137
+#: virtinst/_util.py:153
 #, python-format
 msgid "%s name can only contain alphanumeric, '_', '.', or '-' characters"
 msgstr "%s 名称可以含有：字母数字、'_'、'.'、':'、'+' 或者 '-' 字符"
 
-#: virtinst/util.py:67
+#: virtinst/_util.py:276
+#, fuzzy
+msgid "Name generation range exceeded."
+msgstr "超过默认卷目标路径范围。"
+
+#: virtinst/util.py:69
 #, python-format
 msgid "Invalid line length while parsing %s."
 msgstr "解析 %s 时出现无效行长度。"
 
-#: virtinst/util.py:68
+#: virtinst/util.py:70
 #, python-format
 msgid "Defaulting bridge to xenbr%d"
 msgstr "到 xenbr%d 的默认桥接"
 
-#: virtinst/util.py:548
+#: virtinst/util.py:538 virtconv/parsers/ovf.py:160
 msgid "'path' or 'func' is required."
 msgstr "需要 'path' 或者 'func'"
 
-#: virtinst/VirtualAudio.py:38
+#: virtinst/VirtualAudio.py:40
 #, python-format
 msgid "'model' must be a string,  was '%s'."
 msgstr "'model' 必须是一个字符串，即 '%s'。"
 
-#: virtinst/VirtualAudio.py:41
+#: virtinst/VirtualAudio.py:43
 #, python-format
 msgid "Unsupported sound model '%s'"
 msgstr "不支持的声音模型 '%s'"
 
-#: virtinst/VirtualDevice.py:43
+#: virtinst/VirtualCharDevice.py:64
+msgid "Psuedo TTY"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:66
+#, fuzzy
+msgid "Physical host character device"
+msgstr "网络磁盘设备"
+
+#: virtinst/VirtualCharDevice.py:68
+msgid "Standard input/output"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:70
+msgid "Named pipe"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:72
+msgid "Output to a file"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:74
+msgid "Virtual console"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:76
+msgid "Null device"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:78
+msgid "TCP net console"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:80
+msgid "UDP net console"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:82
+msgid "Unix socket"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:94
+msgid "Client mode."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:96
+msgid "Server mode."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:139
+#, fuzzy, python-format
+msgid "Unknown character device type '%s'."
+msgstr "位置设备类型 '%s'"
+
+#: virtinst/VirtualCharDevice.py:147 virtinst/VirtualCharDevice.py:157
+#, fuzzy, python-format
+msgid "Unknown character device type '%s'"
+msgstr "位置设备类型 '%s'"
+
+#: virtinst/VirtualCharDevice.py:173
+msgid "Method used to expose character device in the host."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:186
+#, fuzzy, python-format
+msgid "Unknown character mode '%s'."
+msgstr "未知缓存模式 '%s'"
+
+#: virtinst/VirtualCharDevice.py:213
+#, fuzzy, python-format
+msgid "Unknown protocol '%s'."
+msgstr "未知 --disk 选项 '%s'。"
+
+#: virtinst/VirtualCharDevice.py:232
+#, python-format
+msgid "A source path is required for character device type '%s'"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:282
+#, fuzzy
+msgid "Host character device to attach to guest."
+msgstr "无法将节点设备类型 '%s' 附加到客体中。"
+
+#: virtinst/VirtualCharDevice.py:288
+msgid "Named pipe to use for input and output."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:294
+msgid "File path to record device output."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:302 virtinst/VirtualCharDevice.py:312
+msgid "Target connect/listen mode."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:305
+msgid "Unix socket path."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:315
+msgid "Address to connect/listen to."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:318
+msgid "Port on target host to connect/listen to."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:321
+msgid "Format used when sending data."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:325
+#, fuzzy
+msgid "A host and port must be specified."
+msgstr "必须指定一个磁盘设备。"
+
+#: virtinst/VirtualCharDevice.py:337
+msgid "Host address to bind to."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:340
+msgid "Host port to bind to."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:343
+msgid "Host address to send output to."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:346
+msgid "Host port to send output to."
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:351
+#, fuzzy
+msgid "A connection port must be specified."
+msgstr "必须指定一个连接。"
+
+#: virtinst/VirtualDevice.py:63
+msgid "Virtual device type must be set in subclass."
+msgstr ""
+
+#: virtinst/VirtualDevice.py:66
+#, fuzzy, python-format
+msgid "Unknown virtual device type '%s'."
+msgstr "位置设备类型 '%s'"
+
+#: virtinst/VirtualDevice.py:71
 msgid "'conn' must be a virConnect instance"
 msgstr "'conn' 必须是一个 virConnect 事件"
 
-#: virtinst/VirtualDevice.py:67
+#: virtinst/VirtualDevice.py:104
 #, python-format
 msgid "'%s' must be True or False"
 msgstr "'%s' 必须是 True 或者 False"
 
-#: virtinst/VirtualDevice.py:71
+#: virtinst/VirtualDevice.py:108
 #, python-format
 msgid "'%s' must be a string, not '%s'."
 msgstr "'%s' 必须是一个字符串，而不是 '%s' 。"
 
-#: virtinst/VirtualDisk.py:205
+#: virtinst/VirtualDisk.py:262
+#, fuzzy, python-format
+msgid "Error validating clone path: %s"
+msgstr "创建光盘失败：%s"
+
+#: virtinst/VirtualDisk.py:271
 msgid "'size' must be a number greater than 0."
 msgstr "'size' 必须是一个大于 0 的数字。"
 
-#: virtinst/VirtualDisk.py:215
+#: virtinst/VirtualDisk.py:281
 #, python-format
 msgid "Unknown storage type '%s'"
 msgstr "位置存储类型 '%s'"
 
-#: virtinst/VirtualDisk.py:224
+#: virtinst/VirtualDisk.py:290
 #, python-format
 msgid "Unknown device type '%s'"
 msgstr "位置设备类型 '%s'"
 
-#: virtinst/VirtualDisk.py:258
+#: virtinst/VirtualDisk.py:324
 msgid "vol_object must be a virStorageVol instance"
 msgstr "vol_object 必须是一个 virStorageVol 事件"
 
-#: virtinst/VirtualDisk.py:266
+#: virtinst/VirtualDisk.py:332
 msgid "vol_install must be a StorageVolume  instance."
 msgstr "vol_install 必须是一个 StorageVolume 事件。"
 
-#: virtinst/VirtualDisk.py:292
+#: virtinst/VirtualDisk.py:358
 #, python-format
 msgid "Unknown cache mode '%s'"
 msgstr "未知缓存模式 '%s'"
 
-#: virtinst/VirtualDisk.py:351
+#: virtinst/VirtualDisk.py:373
+#, fuzzy, python-format
+msgid "SELinux label '%s' is not valid."
+msgstr "'%s' 不是有效格式。"
+
+#: virtinst/VirtualDisk.py:433
 msgid "Unknown storage volume type."
 msgstr "未知存储卷类型。"
 
-#: virtinst/VirtualDisk.py:368
+#: virtinst/VirtualDisk.py:449
 #, python-format
 msgid "Passed type '%s' does not match detected storage type '%s'"
 msgstr "以前的类型 '%s' 与存储类型 '%s' 不匹配"
 
-#: virtinst/VirtualDisk.py:378
+#: virtinst/VirtualDisk.py:504
 msgid "volName must be a tuple of the form ('poolname', 'volname')"
 msgstr "volName 必须是 tuple 格式（'poolname'，'volname'）"
 
-#: virtinst/VirtualDisk.py:381
+#: virtinst/VirtualDisk.py:507
 msgid "'volName' requires a passed connection."
 msgstr "'volName' 需要以前的连接。"
 
-#: virtinst/VirtualDisk.py:383
+#: virtinst/VirtualDisk.py:509
 msgid "Connection does not support storage lookup."
 msgstr "连接不支持存储查找。"
 
-#: virtinst/VirtualDisk.py:389
+#: virtinst/VirtualDisk.py:515
 #, python-format
 msgid "Couldn't lookup volume object: %s"
 msgstr "无法查找卷对象：%s"
 
-#: virtinst/VirtualDisk.py:432
+#: virtinst/VirtualDisk.py:540
+#, python-format
+msgid "Device type '%s' requires a path"
+msgstr "设备类型 '%s' 需要一个路径"
+
+#: virtinst/VirtualDisk.py:583
 #, python-format
 msgid "Size must be specified for non existent volume path '%s'"
 msgstr "必须为非现有卷路径 '%s' 指定大小"
 
-#: virtinst/VirtualDisk.py:455
+#: virtinst/VirtualDisk.py:603
 #, python-format
 msgid ""
 "Cannot use storage '%(path)s': '%(rootdir)s' is not managed on the remote "
 "host."
 msgstr "不能使用存储 '%(path)s'：不是在远程主机中管理 '%(rootdir)s'。"
 
-#: virtinst/VirtualDisk.py:460
+#: virtinst/VirtualDisk.py:608
 #, python-format
 msgid "Cannot use storage %(path)s: %(err)s"
 msgstr "不能使用存储 %(path)s：%(err)s"
 
-#: virtinst/VirtualDisk.py:513
+#: virtinst/VirtualDisk.py:686
 msgid "Connection doesn't support remote storage."
 msgstr "连接不支持远程存储。"
 
-#: virtinst/VirtualDisk.py:530
-#, python-format
-msgid "Device type '%s' requires a path"
-msgstr "设备类型 '%s' 需要一个路径"
-
-#: virtinst/VirtualDisk.py:545
+#: virtinst/VirtualDisk.py:689
 msgid "Must specify libvirt managed storage if on a remote connection"
 msgstr "如果是在远程连接中则必须指定 libvirt 管理的存储"
 
-#: virtinst/VirtualDisk.py:554
+#: virtinst/VirtualDisk.py:726
 #, python-format
 msgid "The path '%s' must be a file or a device, not a directory"
 msgstr "该路径 '%s' 必须是一个文件或者设备，不能是目录。"
 
-#: virtinst/VirtualDisk.py:564
+#: virtinst/VirtualDisk.py:735
 #, python-format
 msgid "Cannot create storage for %s device."
 msgstr "无法为 %s 设备创建存储。"
 
-#: virtinst/VirtualDisk.py:569
-msgid "Local block device path must exist."
+#: virtinst/VirtualDisk.py:740
+#, fuzzy, python-format
+msgid "Local block device path '%s' must exist."
 msgstr "必须存在本地块设备路径。"
 
-#: virtinst/VirtualDisk.py:577
+#: virtinst/VirtualDisk.py:749
 #, python-format
 msgid "size is required for non-existent disk '%s'"
 msgstr "non-existent 磁盘 '%s' 需要大小"
 
-#: virtinst/VirtualDisk.py:580
+#: virtinst/VirtualDisk.py:752
 #, python-format
 msgid "No write access to directory '%s'"
 msgstr "无法对目录 '%s' 进行写入访问"
 
-#: virtinst/VirtualDisk.py:616
-msgid "Creating storage file..."
+#: virtinst/VirtualDisk.py:777
+#, python-format
+msgid "Cloning %(srcfile)s"
+msgstr "正在克隆 %(srcfile)s"
+
+#: virtinst/VirtualDisk.py:780
+#, fuzzy, python-format
+msgid "Creating storage file %s"
 msgstr "创建存储文件......"
 
-#: virtinst/VirtualDisk.py:622
+#: virtinst/VirtualDisk.py:793
+msgid "copying to an existing vdisk is not supported"
+msgstr "不支持复制到现有虚拟磁盘"
+
+#: virtinst/VirtualDisk.py:796
+msgid "failed to clone disk"
+msgstr "克隆磁盘失败"
+
+#: virtinst/VirtualDisk.py:807
 #, python-format
 msgid "Error creating vdisk %s"
 msgstr "创建虚拟磁盘出错：%s"
 
-#: virtinst/VirtualDisk.py:643
+#: virtinst/VirtualDisk.py:832
 #, python-format
 msgid "Error creating diskimage %s: %s"
 msgstr "创建磁盘映像 %s 出错：%s"
 
-#: virtinst/VirtualDisk.py:665
+#: virtinst/VirtualDisk.py:932
 msgid "'disknode' or self.target must be set!"
 msgstr "必须设置 'disknode' 或者 self.target！"
 
-#: virtinst/VirtualDisk.py:737
+#: virtinst/VirtualDisk.py:1003
 msgid ""
 "The filesystem will not have enough free space to fully allocate the sparse "
 "file when the guest is running."
 msgstr "客户端运行时，文件系统将没有足够空间来部署全部稀疏文件。"
 
-#: virtinst/VirtualDisk.py:742
+#: virtinst/VirtualDisk.py:1008
 msgid "There is not enough free space to create the disk."
 msgstr "没有足够的可用空间创建这个磁盘。"
 
-#: virtinst/VirtualDisk.py:746
+#: virtinst/VirtualDisk.py:1012
 #, python-format
 msgid " %d M requested > %d M available"
 msgstr " 要求的 %d M > 可用的 %d M"
 
-#: virtinst/VirtualDisk.py:836
+#: virtinst/VirtualDisk.py:1175
 msgid "Cannot determine device bus/type."
 msgstr "无法确定设备总线/类型。"
 
-#: virtinst/VirtualDisk.py:843
+#: virtinst/VirtualDisk.py:1182
 msgid "IDE CDROM must use 'hdc', but target in use."
 msgstr "IDE CDROM 必须是 'hdc'，但目标已经被使用。 "
 
-#: virtinst/VirtualDisk.py:859
+#: virtinst/VirtualDisk.py:1198
 #, python-format
 msgid "No more space for disks of type '%s'"
 msgstr "没有 '%s' 类型磁盘可用的空间"
 
-#: virtinst/VirtualGraphics.py:38
+#: virtinst/VirtualGraphics.py:40
 msgid "Unknown graphics type"
 msgstr "未知图形类型"
 
-#: virtinst/VirtualGraphics.py:61
+#: virtinst/VirtualGraphics.py:63
 msgid "Keymap must be a string"
 msgstr "Keymap 必须是一个字符串"
 
-#: virtinst/VirtualGraphics.py:63
+#: virtinst/VirtualGraphics.py:65
 msgid "Keymap must be less than 16 characters"
 msgstr "Keymap 必须少于 16 个字符"
 
-#: virtinst/VirtualGraphics.py:65
+#: virtinst/VirtualGraphics.py:67
 msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr "Keyap 只能包含数字字母、'_' 或者 '-' 字符。"
 
-#: virtinst/VirtualGraphics.py:76
+#: virtinst/VirtualGraphics.py:78
 msgid ""
 "VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr "VNC 端口必须是 5900 和 65535 之间的，使用 -l 可自动分配"
 
-#: virtinst/VirtualHostDevice.py:41
+#: virtinst/VirtualHostDevice.py:43
 msgid "'name' or 'nodedev' required."
 msgstr "需要 'name' 或者 'nodedev'。"
 
-#: virtinst/VirtualHostDevice.py:60
+#: virtinst/VirtualHostDevice.py:62
 #, python-format
 msgid "Node device type '%s' cannot be attached to  guest."
 msgstr "无法将节点设备类型 '%s' 附加到客体中。"
 
-#: virtinst/VirtualHostDevice.py:128
+#: virtinst/VirtualHostDevice.py:130
 msgid "'nodedev' must be a USBDevice instance."
 msgstr "'nodedev' 必须是 USBDevice 事件。"
 
-#: virtinst/VirtualHostDevice.py:144
+#: virtinst/VirtualHostDevice.py:146
 msgid "'vendor' and 'product', or 'bus' and  'device' are required."
 msgstr "需要 'vendor' 和 'product'，或者 'bus' 和  'device'。"
 
-#: virtinst/VirtualHostDevice.py:177
+#: virtinst/VirtualHostDevice.py:179
 msgid "'nodedev' must be a PCIDevice instance."
 msgstr "'nodedev' 必须是 PCIDevice 事件。"
 
-#: virtinst/VirtualHostDevice.py:186
+#: virtinst/VirtualHostDevice.py:188
 msgid "'domain', 'bus', 'slot', and 'function' must be specified."
 msgstr "必须指定 'domain'、'bus'、'slot' 和 'function'。"
 
-#: virtinst/VirtualHostDevice.py:212
+#: virtinst/VirtualHostDevice.py:215
 #, python-format
 msgid "Could not detach PCI device: %s"
 msgstr "无法分离 PCI 设备：%s"
 
-#: virtinst/VirtualNetworkInterface.py:40
-msgid "MAC address must be a string."
-msgstr "MAC 地址必须是一个字符串。"
+#: virtinst/VirtualInputDevice.py:46
+#, fuzzy, python-format
+msgid "Unknown input type '%s'."
+msgstr "位置设备类型 '%s'"
 
-#: virtinst/VirtualNetworkInterface.py:46
-msgid "MAC address must be of the format AA:BB:CC:DD:EE:FF"
-msgstr "MAC 地址的格式必须为 AA:BB:CC:DD:EE:FF"
+#: virtinst/VirtualInputDevice.py:54
+#, fuzzy, python-format
+msgid "Unknown input bus '%s'."
+msgstr "未知操作系统变体 '%s'"
 
-#: virtinst/VirtualNetworkInterface.py:57
+#: virtinst/VirtualNetworkInterface.py:45
+#, fuzzy
+msgid "Shared physical device"
+msgstr "网络磁盘设备"
+
+#: virtinst/VirtualNetworkInterface.py:47
+msgid "Virtual networking"
+msgstr ""
+
+#: virtinst/VirtualNetworkInterface.py:49
+msgid "Usermode networking"
+msgstr ""
+
+#: virtinst/VirtualNetworkInterface.py:51
+#, fuzzy, python-format
+msgid "Unknown network type '%s'"
+msgstr "未知网络类型 %s"
+
+#: virtinst/VirtualNetworkInterface.py:72
 msgid "A network name was not provided"
 msgstr "没有提供网络名称"
 
-#: virtinst/VirtualNetworkInterface.py:63
+#: virtinst/VirtualNetworkInterface.py:78
 #, python-format
 msgid "Unknown network type %s"
 msgstr "未知网络类型 %s"
 
-#: virtinst/VirtualNetworkInterface.py:79
+#: virtinst/VirtualNetworkInterface.py:90
+msgid "MAC address must be a string."
+msgstr "MAC 地址必须是一个字符串。"
+
+#: virtinst/VirtualNetworkInterface.py:94
+msgid "MAC address must be of the format AA:BB:CC:DD:EE:FF"
+msgstr "MAC 地址的格式必须为 AA:BB:CC:DD:EE:FF"
+
+#: virtinst/VirtualNetworkInterface.py:113
 #, python-format
 msgid "Virtual network '%s' does not exist: %s"
 msgstr "虚拟网络 '%s' 不存在：%s"
 
-#: virtinst/VirtualNetworkInterface.py:82
+#: virtinst/VirtualNetworkInterface.py:116
 #, python-format
 msgid "Virtual network '%s' has not been started."
 msgstr "还没有启动虚拟网络 '%s'。"
 
-#: virtinst/VirtualNetworkInterface.py:105
+#: virtinst/VirtualNetworkInterface.py:139
 msgid ""
 "The MAC address you entered is already in use by another active virtual "
 "machine."
 msgstr "您输入的 MAC 地址已经被另一个活跃的虚拟机使用。"
 
-#: virtinst/VirtualNetworkInterface.py:108
+#: virtinst/VirtualNetworkInterface.py:142
 msgid ""
 "The MAC address you entered conflicts with a device on the physical host."
 msgstr "您输入的 MAC 地址与物理主机中的设备冲突。"
 
-#: virtinst/VirtualNetworkInterface.py:110
+#: virtinst/VirtualNetworkInterface.py:144
 msgid ""
 "The MAC address you entered is already in use by another inactive virtual "
 "machine."
 msgstr "您输入的 MAC 地址已经被另一个不活跃的虚拟机使用。"
 
-#: virtconv/diskcfg.py:242
+#: virtconv/diskcfg.py:251
 #, python-format
 msgid "Cannot convert to disk format %s"
 msgstr "无法转换成磁盘格式 %s"
 
-#: virtconv/diskcfg.py:255
+#: virtconv/diskcfg.py:264
 #, python-format
 msgid "Cannot convert disk with absolute path %s"
 msgstr "无法转换出带绝对路径 %s 的磁盘"
@@ -1206,6 +1447,28 @@ msgstr "没有设置 VM 构架"
 #, python-format
 msgid "Disk %s:%s storage does not exist"
 msgstr "磁盘 %s：%s 存储不存在"
+
+#: virtconv/parsers/ovf.py:212
+#, python-format
+msgid "Didn't find parent bus for disk '%s'"
+msgstr ""
+
+#: virtconv/parsers/ovf.py:226 virtconv/parsers/ovf.py:242
+#, fuzzy, python-format
+msgid "Unknown reference id '%s' for path %s."
+msgstr "未知磁盘格式：%s"
+
+#: virtconv/parsers/ovf.py:235
+#, fuzzy, python-format
+msgid "Unknown storage path type %s."
+msgstr "未知存储池类型：%s"
+
+#: virtconv/parsers/ovf.py:396
+#, python-format
+msgid ""
+"OVF section '%s' is listed as required, but parser doesn't know how to "
+"handle it."
+msgstr ""
 
 #: virtconv/parsers/virtimage.py:212
 #, python-format
@@ -1235,110 +1498,116 @@ msgstr "在行 %d 中有语法错误：%s"
 msgid "No displayName defined in \"%s\""
 msgstr "在 \"%s\" 中没有定义 displayName"
 
-#: virt-clone:42
+#: virt-clone:47
 msgid "What is the name for the cloned virtual machine?"
 msgstr "克隆虚拟机的名称是什么？"
 
-#: virt-clone:43
+#: virt-clone:48
 #, fuzzy
 msgid "A name is required for the new virtual machine."
 msgstr "虚拟机需要一个名称。"
 
-#: virt-clone:60
+#: virt-clone:65
 msgid "What is the name of the original virtual machine?"
 msgstr "原始虚拟机的名称是什么？"
 
-#: virt-clone:61
+#: virt-clone:66
 #, fuzzy
 msgid "An original machine name or xml file is required."
 msgstr "需要原始客体名称或者 xml。"
 
-#: virt-clone:98
+#: virt-clone:112
 #, python-format
 msgid "What would you like to use as the cloned disk (file path) for '%s'?"
 msgstr "作为克隆的磁盘（文件路径）您希望如何使用 '%s'？"
 
-#: virt-clone:123 virt-image:88 virt-install:445
+#: virt-clone:134 virt-image:78 virt-install:499
 msgid "Connect to hypervisor with URI"
 msgstr "使用 URI 连接到监控程序"
 
-#: virt-clone:126 virt-image:91 virt-install:448
+#: virt-clone:137 virt-image:81 virt-install:502
 msgid "General Options"
 msgstr "通用选项"
 
-#: virt-clone:129
+#: virt-clone:140
 msgid "Name of the original guest; The status must be shut off or paused."
 msgstr "原始客体的名称；必须为关闭或者暂停状态。"
 
-#: virt-clone:134
+#: virt-clone:145
 msgid "XML file to use as the original guest."
 msgstr "将 XML 文件作为原始客体使用。"
 
-#: virt-clone:137
+#: virt-clone:147
+msgid ""
+"Auto generate clone name and storage paths from the original guest "
+"configuration."
+msgstr ""
+
+#: virt-clone:151
 msgid "Name for the new guest"
 msgstr "新客户端的名称"
 
-#: virt-clone:141
+#: virt-clone:155
 msgid "New UUID for the clone guest; Default is a randomly generated UUID"
 msgstr "克隆客户端的新 UUID；默认为随机生成 UUID"
 
-#: virt-clone:145 virt-install:526
+#: virt-clone:159 virt-install:588
 msgid "Storage Configuration"
 msgstr "存储配置"
 
-#: virt-clone:149
+#: virt-clone:163
 msgid "New file to use as the disk image for the new guest"
 msgstr "作为新客户端磁盘映像的新文件"
 
-#: virt-clone:154
+#: virt-clone:168
 msgid ""
 "Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-"
 "copy=hdc)"
 msgstr ""
 "强制复制设备（例如：如果 'hdc' 是随机光驱设备，则使用 --force-copy=hdc）"
 
-#: virt-clone:158
+#: virt-clone:172
 msgid "Do not use a sparse file for the clone's disk image"
 msgstr "不要用稀疏文件作为克隆的磁盘映像"
 
-#: virt-clone:162
+#: virt-clone:176
 msgid "Preserve a new file to use as the disk image for the new guest"
 msgstr "保留新文件作为新客户端的磁盘映像使用"
 
-#: virt-clone:166 virt-image:128 virt-install:546
+#: virt-clone:180 virt-image:118 virt-install:610
 msgid "Networking Configuration"
 msgstr "联网配置"
 
-#: virt-clone:170
+#: virt-clone:184
 msgid ""
 "New fixed MAC address for the clone guest. Default is a randomly generated "
 "MAC"
 msgstr "克隆客户端的新固定 MAC 地址。默认为随机生成 MAC。"
 
-#: virt-clone:174 virt-image:158 virt-install:581
+#: virt-clone:188 virt-image:138 virt-install:639
 msgid "Miscellaneous Options"
 msgstr "其它选项"
 
-#: virt-clone:176 virt-convert:91 virt-image:172 virt-install:583
+#: virt-clone:190 virt-convert:91 virt-image:152 virt-install:641
 msgid "Print debugging information"
 msgstr "输入故障排除信息"
 
-#: virt-clone:178 virt-image:174 virt-install:594
+#: virt-clone:192 virt-image:154 virt-install:652
 #, fuzzy
 msgid "Request user input for ambiguous situations or required options."
 msgstr "在模糊状态请求用户输入。默认为 false，如果出现提示符则会终止。"
 
-#: virt-clone:181 virt-image:177
+#: virt-clone:195 virt-image:157
 msgid ""
 "Do not prompt for input. Answers yes where applicable, terminates for all "
 "other prompts"
 msgstr "不要提示输入。在需要的地方回答 yes，终止所有其它提示。"
 
-#: virt-clone:198
+#: virt-clone:212
 msgid "Must be privileged to clone Xen guests"
 msgstr "必须有特权才能克隆 Xen 客体"
 
-#: virt-clone:228
+#: virt-clone:242
 #, python-format
 msgid ""
 "\n"
@@ -1347,7 +1616,7 @@ msgstr ""
 "\n"
 "克隆 '%s' 成功。"
 
-#: virt-clone:243 virt-image:287 virt-install:869
+#: virt-clone:257 virt-image:267 virt-install:933
 msgid "Installation aborted at user request"
 msgstr "根据用户要求取消安装"
 
@@ -1363,11 +1632,11 @@ msgstr "输出格式，例如：'virt-image'"
 msgid "Output disk format"
 msgstr "删除磁盘格式"
 
-#: virt-convert:60 virt-install:497
+#: virt-convert:60 virt-install:557
 msgid "This guest should be a fully virtualized guest"
 msgstr "客户端应该是一个全虚拟客户端"
 
-#: virt-convert:62 virt-install:499
+#: virt-convert:62 virt-install:559
 msgid "This guest should be a paravirtualized guest"
 msgstr "这个客户端一个是一个半虚拟客户端"
 
@@ -1375,7 +1644,7 @@ msgstr "这个客户端一个是一个半虚拟客户端"
 msgid "Machine Architecture Type (i686/x86_64/ppc)"
 msgstr "机器构架类型（i686/x86_64/ppc）"
 
-#: virt-convert:71 virt-install:471
+#: virt-convert:71 virt-install:525
 msgid ""
 "The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
 msgstr "全虚拟客户端的操作系统类型，例如：'linux'、'unix'、'windows'"
@@ -1388,13 +1657,13 @@ msgstr ""
 "全虚拟客体的操作系统变体，例"
 "如：'fedora6'、'rhel5'、'solaris10'、'win2k'、'vista'"
 
-#: virt-convert:78 virt-install:487
+#: virt-convert:78 virt-install:547
 msgid ""
 "Disables APIC for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
 msgstr "为全虚拟客户端禁用 APIC（在 os-type/os-variant db 中覆盖数值）"
 
-#: virt-convert:82 virt-install:491
+#: virt-convert:82 virt-install:551
 msgid ""
 "Disables ACPI for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
@@ -1404,212 +1673,178 @@ msgstr "为全虚拟客户端禁用 ACPI（在 os-type/os-variant db 中覆盖�
 msgid "Don't be verbose"
 msgstr "不要详细结果"
 
-#: virt-convert:97
+#: virt-convert:100
 msgid "You need to provide an input VM definition"
 msgstr "您需要提供输入 VM 定义"
 
-#: virt-convert:99
+#: virt-convert:102
 msgid "Too many arguments provided"
 msgstr "提供参数过多"
 
-#: virt-convert:103
+#: virt-convert:106
 #, python-format
 msgid "Unknown output disk format \"%s\""
 msgstr "未知输出磁盘格式：\"%s\""
 
-#: virt-convert:118
+#: virt-convert:121
 #, python-format
 msgid "Unknown output format \"%s\")"
 msgstr "未知输出格式：\"%s\""
 
-#: virt-convert:120
+#: virt-convert:123
 #, python-format
 msgid "No output handler for format \"%s\")"
 msgstr "没有格式 \"%s\" 的输出处理器）"
 
-#: virt-convert:124
+#: virt-convert:127
 #, python-format
 msgid "Couldn't access input argument \"%s\"\n"
 msgstr "无法访问输入参数 \"%s\"\n"
 
-#: virt-convert:131
+#: virt-convert:134
 #, python-format
 msgid "Couldn't determine input format for \"%s\": %s"
 msgstr "无法为 \"%s\" 决定输入格式：%s"
 
-#: virt-convert:136
+#: virt-convert:139
 #, python-format
 msgid "Unknown input format \"%s\")"
 msgstr "未知输入格式：\"%s\"）"
 
-#: virt-convert:138
+#: virt-convert:141
 #, python-format
 msgid "No input handler for format \"%s\""
 msgstr "没有格式 \"%s\" 的输入处理器）"
 
-#: virt-convert:173
+#: virt-convert:176
 #, python-format
 msgid "Couldn't clean up output directory \"%s\": %s"
 msgstr "无法清除输出目录 \"%s\": %s"
 
-#: virt-convert:190 virt-convert:193
+#: virt-convert:192 virt-convert:195
 #, python-format
 msgid "Couldn't import file \"%s\": %s"
 msgstr "无法导入文件 \"%s\": %s"
 
-#: virt-convert:230
+#: virt-convert:232
 #, python-format
 msgid "Generating output in '%(format)s' format to %(dir)s/"
 msgstr "在 %(dir)s/ 中以 '%(format)s' 格式生成输出"
 
-#: virt-convert:249
+#: virt-convert:251
 #, python-format
 msgid "Converting disk '%(path)s' to type %(format)s..."
 msgstr "正在将磁盘 '%(path)s' 转换为类型 %(format)s......"
 
-#: virt-convert:256 virt-convert:259
+#: virt-convert:258 virt-convert:261
 #, python-format
 msgid "Couldn't convert disks: %s"
 msgstr "无法转换磁盘：%s"
 
-#: virt-convert:265
+#: virt-convert:267
 #, python-format
 msgid "Couldn't export to file \"%s\": %s"
 msgstr "无法导出到文件 \"%s\": %s"
 
-#: virt-convert:277
+#: virt-convert:279
 msgid "Aborted at user request"
 msgstr "根据用户要求丢弃"
 
-#: virt-image:64
-#, python-format
+#: virt-image:50
+#, fuzzy, python-format
 msgid ""
 "Warning: more networks were provided [%i] then nics required [%i]. All "
-"extras are ignored"
+"extras are ignored."
 msgstr "警告：更多网络提供 [%i] 则 nics 需要的 [%i]。所有额外的 nic 都被忽略"
 
-#: virt-image:68
-#, python-format
-msgid "The image requires %i network interface"
+#: virt-image:55
+#, fuzzy, python-format
+msgid "The image requires %i network interface."
 msgstr "映像需要 %i 网络接口"
 
-#: virt-image:94 virt-install:451
+#: virt-image:84 virt-install:505
 msgid "Name of the guest instance"
 msgstr "客户端事件名称"
 
-#: virt-image:96 virt-install:453
+#: virt-image:86 virt-install:507
 msgid "Memory to allocate for guest instance in megabytes"
 msgstr "以 MB 为单位为客户端事件分配的内存"
 
-#: virt-image:100 virt-install:460
+#: virt-image:90 virt-install:514
 msgid "UUID for the guest."
 msgstr "客户端 UUID。"
 
-#: virt-image:102 virt-install:462
+#: virt-image:92 virt-install:516
 msgid "Number of vcpus to configure for your guest"
 msgstr "配置您的客户端的 vcpu 数目"
 
-#: virt-image:104 virt-install:464
+#: virt-image:94 virt-install:518
 msgid "Check that vcpus do not exceed physical CPUs and warn if they do."
 msgstr "检查确定 vcpu 没有超过物理 CPU 数目，如果超过则发出警告。"
 
-#: virt-image:108 virt-install:468
+#: virt-image:98 virt-install:522
 msgid "Set which physical CPUs Domain can use."
 msgstr "设定可以使用的物理 CPU。"
 
-#: virt-image:111
+#: virt-image:101
 msgid "The OS type being installed, e.g. 'linux', 'unix', 'windows'"
 msgstr "要安装的操作系统类型，例如：'linux'、'unix'、'windows'"
 
-#: virt-image:115
+#: virt-image:105
 msgid ""
 "The OS variant being installed, e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k'"
 msgstr "要安装的操作系统变体，例如：'fedora6'、'rhel5'、'solaris10'、'win2k'"
 
-#: virt-image:119 virt-install:482
+#: virt-image:109 virt-install:542
 msgid "Full Virtualization specific options"
 msgstr "全虚拟化特定选项"
 
-#: virt-image:122
+#: virt-image:112
 msgid "Disables APIC for fully virtualized guest"
 msgstr "为全虚拟客体禁用 APIC"
 
-#: virt-image:125
+#: virt-image:115
 msgid "Disables ACPI for fully virtualized guest"
 msgstr "为全虚拟客体禁用 ACPI"
 
-#: virt-image:131 virt-install:549
+#: virt-image:121
 msgid ""
-"Bridge to connect guest NIC to; if none given, will try to determine the "
-"default"
-msgstr "连接客户端 NIC 的桥接；如果没有给定，则将尝试确定默认桥接"
+"Specify a network interface. Ex:\n"
+"--network bridge=mybr0\n"
+"--network network=libvirt_network_name\n"
+"--network network=mynet,model=e1000,mac=00:11..."
+msgstr ""
 
-#: virt-image:135 virt-install:553
-msgid ""
-"Connect the guest to a virtual network, forwarding to the physical network "
-"with NAT"
-msgstr "将客户端连接到虚拟网络，使用 NAT 转发到物理网络"
-
-#: virt-image:139 virt-install:557
-msgid ""
-"Fixed MAC address for the guest; if none or RANDOM is given a random address "
-"will be used"
-msgstr "客户端的固定 MAC 地址；如果没有则使用随机给定的地址。"
-
-#: virt-image:143 virt-install:563
-msgid "Graphics Configuration"
-msgstr "图形配置"
-
-#: virt-image:145 virt-install:565
-msgid "Use VNC for graphics support"
-msgstr "用 VNC 进行图形支持"
-
-#: virt-image:147 virt-install:567
-msgid "Port to use for VNC"
-msgstr "VNC 使用的端口"
-
-#: virt-image:149 virt-install:569
-msgid "Use SDL for graphics support"
-msgstr "用 SDL 进行图形支持"
-
-#: virt-image:151 virt-install:571
-msgid "Don't set up a graphical console for the guest."
-msgstr "不要为该客户端设置图形控制台。"
-
-#: virt-image:154 virt-install:578
-msgid "set up keymap for a graphical console"
-msgstr "为图形控制台设置 keymap"
-
-#: virt-image:160
+#: virt-image:140
 msgid "Print the libvirt XML, but do not start the domain"
 msgstr "输出 libvirt XML，但不启动该域"
 
-#: virt-image:163
+#: virt-image:143
 msgid "The zero-based index of the boot record to use"
 msgstr "要使用从零开始的引导记录索引"
 
-#: virt-image:165
+#: virt-image:145
 msgid "Overwrite, or destroy, an existing image with the same name"
 msgstr "使用同样的名称覆盖或者销毁当前映像"
 
-#: virt-image:170
+#: virt-image:150
 msgid "Skip disk checksum verification process"
 msgstr "跳过磁盘 checksum 验证过程"
 
-#: virt-image:185
+#: virt-image:165
 msgid "You need to provide an image XML descriptor"
 msgstr "您需要提供映像 XML 描述符"
 
-#: virt-image:204
+#: virt-image:184
 msgid "Cannot parse"
 msgstr "无法解析"
 
-#: virt-image:209
+#: virt-image:189
 #, python-format
 msgid "The index for --boot must be between 0 and %d"
 msgstr "--boot 的索引必须在 0 和 %d 之间"
 
-#: virt-image:265
+#: virt-image:245
 #, python-format
 msgid ""
 "\n"
@@ -1620,11 +1855,11 @@ msgstr ""
 "\n"
 "创建客户端 %s......"
 
-#: virt-image:269
+#: virt-image:249
 msgid "Guest creation failed"
 msgstr "客户端创建失败"
 
-#: virt-image:275
+#: virt-image:255
 #, python-format
 msgid ""
 "Domain creation may not have been\n"
@@ -1637,44 +1872,60 @@ msgstr ""
 "重启域，否则请\n"
 "重新开始您的安装。"
 
-#: virt-install:70
+#: virt-install:84
 #, python-format
 msgid "Couldn't create default storage pool '%s': %s"
 msgstr "无法创建默认存储池 '%s'：%s"
 
-#: virt-install:93
+#: virt-install:107
+#, python-format
+msgid "%(chartype)s type %(devtype)s does not support '%(optname)s' option."
+msgstr ""
+
+#: virt-install:133
+#, fuzzy, python-format
+msgid "Unknown option(s) %s"
+msgstr "未知 --disk 选项 '%s'。"
+
+#: virt-install:147
+#, fuzzy, python-format
+msgid "Error in %(chartype)s device parameters: %(err)s"
+msgstr "存储参数错误：%s"
+
+#: virt-install:170
 msgid "--disk path must start with path=, pool=, or vol=."
 msgstr "--disk 路径必须以 path=、pool= 或者 vol= 开始。"
 
-#: virt-install:121 virt-install:133
-#, python-format
-msgid "Unknown '%s' value '%s'"
-msgstr "未知 '%s' 值 '%s'"
-
-#: virt-install:126
-#, python-format
-msgid "Improper value for 'size': %s"
-msgstr "'size' 数值不正确：%s"
-
-#: virt-install:137
+#: virt-install:177
 #, python-format
 msgid "Unknown --disk option '%s'."
 msgstr "未知 --disk 选项 '%s'。"
 
-#: virt-install:147
+#: virt-install:185 virt-install:197
+#, python-format
+msgid "Unknown '%s' value '%s'"
+msgstr "未知 '%s' 值 '%s'"
+
+#: virt-install:190
+#, python-format
+msgid "Improper value for 'size': %s"
+msgstr "'size' 数值不正确：%s"
+
+#: virt-install:212
 msgid "Size must be specified with all 'pool='"
 msgstr "必须使用所有 'pool=' 指定大小"
 
-#: virt-install:161
-msgid "Storage volume must be specified as pool=poolname/volname"
+#: virt-install:226
+#, fuzzy
+msgid "Storage volume must be specified as vol=poolname/volname"
 msgstr "存储卷必须指定为 pool=poolname/volname"
 
-#: virt-install:222
+#: virt-install:282
 #, fuzzy
 msgid "Cannot use --file, --file-size, or --disk with --nodisks"
 msgstr "--nodisks 无法 --file、--size 或者 --disk 共用"
 
-#: virt-install:225
+#: virt-install:285
 msgid ""
 "Cannot mix --file, --nonsparse, or --file-size with --disk options. Please "
 "see the manual for --disk syntax."
@@ -1682,190 +1933,201 @@ msgstr ""
 "--disk 选项不能与 --file、--nonsparse 或者 --file-size 混用。请查看手册中的 "
 "--disk 语法。"
 
-#: virt-install:228
+#: virt-install:288
 msgid "A disk must be specified (use --nodisks to override)"
 msgstr "必须指定一个磁盘（请使用 --nodisks 覆盖）"
 
-#: virt-install:236
+#: virt-install:296
 msgid "Need to pass size for each disk"
 msgstr "需要给出每张磁盘的大小"
 
-#: virt-install:251
+#: virt-install:311
 msgid "Cannot use --mac with --nonetworks"
 msgstr "不能使用带 --nonetworks 的 --mac"
 
-#: virt-install:253
+#: virt-install:313
 msgid "Cannot use --bridges with --nonetworks"
 msgstr "不能使用带 --nonetworks 的 --bridge"
 
-#: virt-install:255
+#: virt-install:315
 msgid "Cannot use --network with --nonetworks"
 msgstr "不能使用带 --nonetworks 的 --network"
 
-#: virt-install:282
+#: virt-install:342
 msgid ""
 "Would you like a fully virtualized guest (yes or no)? This will allow you to "
 "run unmodified operating systems."
 msgstr ""
 
-#: virt-install:307
+#: virt-install:367
 #, fuzzy, python-format
 msgid "Would you like to use %s acceleration? (yes or no)"
 msgstr "您确实要使用这个磁盘吗（是或者否）？"
 
-#: virt-install:319
+#: virt-install:379
 msgid "Can't do both --hvm and --paravirt"
 msgstr "无法同时进行 --hvm 和 --paravirt 操作"
 
-#: virt-install:340
+#: virt-install:401 virt-install:402
 msgid "default"
 msgstr "默认"
 
-#: virt-install:361
+#: virt-install:423
 #, python-format
 msgid "Only one install method (%s) can be used"
 msgstr "只能使用一种安装方法（%s）"
 
-#: virt-install:367
+#: virt-install:429
 msgid "Network PXE boot is not supported for paravirtualized guests"
 msgstr "在半虚拟客户端中还不支持网络 PXE 引导"
 
-#: virt-install:370
+#: virt-install:432
 msgid "Paravirtualized guests cannot install off cdrom media."
 msgstr "半虚拟客户端无法在没有光盘介质情况下安装"
 
-#: virt-install:373
+#: virt-install:435
 msgid "--location can not be specified for remote connections."
 msgstr "无法为远程连接指定 --location。"
 
-#: virt-install:382
+#: virt-install:444
 #, python-format
 msgid "One of %s, or cdrom media must be specified."
 msgstr "必须指定 %s 之一或者 cdrom 介质。"
 
-#: virt-install:395
+#: virt-install:457
 #, python-format
 msgid "Error creating cdrom disk: %s"
 msgstr "创建光盘失败：%s"
 
-#: virt-install:400
+#: virt-install:462
 msgid "What is the install CD-ROM/ISO or URL?"
 msgstr ""
 
-#: virt-install:402
+#: virt-install:464
 msgid "What is the install URL?"
 msgstr ""
 
-#: virt-install:457
+#: virt-install:511
 msgid "The CPU architecture to simulate"
 msgstr "模拟的 CPU 构架"
 
-#: virt-install:475
+#: virt-install:529
 msgid ""
 "The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
 "'solaris10', 'win2k'"
 msgstr ""
 "全虚拟客户端的操作系统变体，例如：'fedora6'、'rhel5'、'solaris10'、'win2k'"
 
-#: virt-install:479
+#: virt-install:533
+#, fuzzy
+msgid "Add a serial device to the domain."
+msgstr "要附加到域中的物理主机设备。"
+
+#: virt-install:536
+msgid "Add a parallel device to the domain."
+msgstr ""
+
+#: virt-install:539
 msgid "Physical host device to attach to the domain."
 msgstr "要附加到域中的物理主机设备。"
 
-#: virt-install:484
+#: virt-install:544
 msgid "Use sound device emulation"
 msgstr "使用仿真声音设备"
 
-#: virt-install:495
+#: virt-install:555
 msgid "Virtualization Type Options"
 msgstr "虚拟化类型选项"
 
-#: virt-install:502
-msgid "Use kernel acceleration capabilities (kvm, kqemu, ...)"
-msgstr "使用内核加速功能（kvm、kqemu......）"
+#: virt-install:562
+msgid "Hypervisor name to use (kvm, qemu, xen, ...)"
+msgstr ""
 
-#: virt-install:506
+#: virt-install:568
 msgid "Installation Method Options"
 msgstr "安装方法选项"
 
-#: virt-install:509
+#: virt-install:571
 msgid "CD-ROM installation media"
 msgstr "光驱安装介质"
 
-#: virt-install:512
+#: virt-install:574
 msgid ""
 "Installation source (eg, nfs:host:/path, http://host/path, ftp://host/path)"
 msgstr "安装源（例如：nfs:host:/path、http://host/path、ftp://host/path）"
 
-#: virt-install:515
+#: virt-install:577
 msgid "Boot from the network using the PXE protocol"
 msgstr "使用 PXE 协议从网络引导"
 
-#: virt-install:517
+#: virt-install:579
 msgid "Build guest around an existing disk image"
 msgstr "在磁盘映像中构建客体"
 
-#: virt-install:519
+#: virt-install:581
 msgid "Treat the CD-ROM media as a Live CD"
 msgstr "将光驱介质视为 Live CD"
 
-#: virt-install:522
+#: virt-install:584
 msgid "Additional arguments to pass to the kernel booted from --location"
 msgstr "附加到使用 --location 引导的内核的参数"
 
-#: virt-install:529
-msgid "Specify storage to use as a disk with various options."
-msgstr "使用不同选项指定作为磁盘使用的存储。"
-
-#: virt-install:533
-msgid "File to use as the disk image"
-msgstr "作为磁盘映像使用的文件"
-
-#: virt-install:536
-msgid "Size of the disk image (if it doesn't exist) in gigabytes"
-msgstr "磁盘映像大小（如果它不存在的话），以 GB 为单位"
-
-#: virt-install:540
+#: virt-install:591
 msgid ""
-"Don't use sparse files for disks.  Note that this will be significantly "
-"slower for guest creation"
-msgstr "不要为磁盘使用稀疏文件。请注意这会使得客户端创建变得及其缓慢"
+"Specify storage with various options. Ex.\n"
+"--disk path=/my/existing/disk\n"
+"--disk path=/my/new/disk,size=5 (in gigabytes)\n"
+"--disk vol=poolname:volname,device=cdrom,bus=scsi,..."
+msgstr ""
 
-#: virt-install:543
+#: virt-install:596
 msgid "Don't set up any disks for the guest."
 msgstr "不要为该客户端设置任何磁盘。"
 
-#: virt-install:560
+#: virt-install:613
+msgid ""
+"Specify a network interface. Ex:\n"
+"--network bridge=mybr0\n"
+"--network network=my_libvirt_virtual_net\n"
+"--network network=mynet,model=virtio,mac=00:11..."
+msgstr ""
+
+#: virt-install:618
 msgid "Don't create network interfaces for the guest."
 msgstr "不要为该客体创建网络接口。"
 
-#: virt-install:574
+#: virt-install:632
+msgid "Specify video hardware type."
+msgstr ""
+
+#: virt-install:635
 msgid "Don't automatically try to connect to the guest console"
 msgstr "不要自动尝试连接到客户端控制台"
 
-#: virt-install:585
+#: virt-install:643
 msgid "Disables the automatic rebooting when the installation is complete."
 msgstr "安装完成时请禁用自动重启。"
 
-#: virt-install:588
+#: virt-install:646
 msgid "Time to wait (in minutes)"
 msgstr "要等待的时间（以分钟为单位）"
 
-#: virt-install:590
+#: virt-install:648
 msgid "Forces 'yes' for any applicable prompts, terminates for all others"
 msgstr "对任意应用程序提示强制回答‘yes’，终止左右其它提示"
 
-#: virt-install:613
+#: virt-install:671
 msgid ""
 "Unable to connect to graphical console: virt-viewer not installed. Please "
 "install the 'virt-viewer' package."
 msgstr ""
 "无法连接到图形控制台：没有安装 virt-viewer。请安装 'virt-viewer' 软件包。"
 
-#: virt-install:655
+#: virt-install:713
 msgid "Can't use --pxe with --nonetworks"
 msgstr "不能使用带 --nonetworks 的 --pxe"
 
-#: virt-install:756
+#: virt-install:818
 msgid ""
 "\n"
 "\n"
@@ -1875,7 +2137,7 @@ msgstr ""
 "\n"
 "开始安装......"
 
-#: virt-install:767
+#: virt-install:829
 #, python-format
 msgid ""
 "Domain installation does not appear to have been\n"
@@ -1888,7 +2150,7 @@ msgstr ""
 "重启您的域，否则请重\n"
 "新开始安装。"
 
-#: virt-install:778
+#: virt-install:840
 #, python-format
 msgid ""
 "Guest installation complete... you can restart your domain\n"
@@ -1897,15 +2159,15 @@ msgstr ""
 "客户端安装完成......您可以运行\n"
 " 'virsh start %s' 重启您的域"
 
-#: virt-install:782
+#: virt-install:844
 msgid "Guest installation complete... restarting guest."
 msgstr "客户端安装完成......重启客户端"
 
-#: virt-install:788
+#: virt-install:850
 msgid "Guest install interrupted."
 msgstr "客体安装中断。"
 
-#: virt-install:795
+#: virt-install:857
 #, python-format
 msgid ""
 "Domain installation may not have been\n"
@@ -1918,42 +2180,95 @@ msgstr ""
 "重启您的域，否则请重\n"
 "新开始安装。"
 
-#: virt-install:821
+#: virt-install:883
 msgid "Guest installation failed."
 msgstr "客体安装失败。"
 
-#: virt-install:831
+#: virt-install:893
 #, python-format
 msgid "%d minutes "
 msgstr "%d 分钟"
 
-#: virt-install:833
-#, python-format
+#: virt-install:895
+#, fuzzy, python-format
 msgid ""
-"Domain installation still in progress. Waiting %sfor domain to complete "
-"installation."
+"Domain installation still in progress. Waiting %sfor installation to "
+"complete."
 msgstr "域安装仍在进行。请等待 %s 完成域安装。"
 
-#: virt-install:839
+#: virt-install:901
 msgid "Domain has shutdown. Continuing."
 msgstr "域已经关闭。请继续......"
 
-#: virt-install:846
+#: virt-install:908
 #, python-format
 msgid "Could not lookup domain after install: %s"
 msgstr "安装后无法查找域：%s"
 
-#: virt-install:853
+#: virt-install:915
 msgid "Installation has exceeded specified time limit. Exiting application."
 msgstr "安装已经超过指定的时间限制。退出程序。"
 
-#: virt-install:857
+#: virt-install:921
 msgid ""
 "Domain installation still in progress. You can reconnect to \n"
 "the console to complete the installation process."
 msgstr ""
 "域安装仍在进行。您可以重新连接\n"
 "到控制台以便完成安装进程。"
+
+#~ msgid "Could not find usable default libvirt connection."
+#~ msgstr "无法找到可用默认 libvirt 连接。"
+
+#~ msgid "Unknown network type "
+#~ msgstr "未知物理类型"
+
+#~ msgid "Need to pass equal numbers of networks & mac addresses"
+#~ msgstr "需要给出等量的网络和 mac 地址"
+
+#~ msgid "Cannot clone remote VM storage."
+#~ msgstr "无法克隆远程 VM 存储。"
+
+#~ msgid "Missing path to use as disk clone destination for '%s'"
+#~ msgstr "缺少作为 '%s' 磁盘克隆目的地的路径"
+
+#~ msgid "Could not determine storage type for '%s'"
+#~ msgstr "无法确定 '%s' 的存储类型"
+
+#~ msgid "Disk volume creation is not implemented."
+#~ msgstr "没有使用磁盘卷创建。"
+
+#~ msgid ""
+#~ "Bridge to connect guest NIC to; if none given, will try to determine the "
+#~ "default"
+#~ msgstr "连接客户端 NIC 的桥接；如果没有给定，则将尝试确定默认桥接"
+
+#~ msgid ""
+#~ "Connect the guest to a virtual network, forwarding to the physical "
+#~ "network with NAT"
+#~ msgstr "将客户端连接到虚拟网络，使用 NAT 转发到物理网络"
+
+#~ msgid ""
+#~ "Fixed MAC address for the guest; if none or RANDOM is given a random "
+#~ "address will be used"
+#~ msgstr "客户端的固定 MAC 地址；如果没有则使用随机给定的地址。"
+
+#~ msgid "Use kernel acceleration capabilities (kvm, kqemu, ...)"
+#~ msgstr "使用内核加速功能（kvm、kqemu......）"
+
+#~ msgid "Specify storage to use as a disk with various options."
+#~ msgstr "使用不同选项指定作为磁盘使用的存储。"
+
+#~ msgid "File to use as the disk image"
+#~ msgstr "作为磁盘映像使用的文件"
+
+#~ msgid "Size of the disk image (if it doesn't exist) in gigabytes"
+#~ msgstr "磁盘映像大小（如果它不存在的话），以 GB 为单位"
+
+#~ msgid ""
+#~ "Don't use sparse files for disks.  Note that this will be significantly "
+#~ "slower for guest creation"
+#~ msgstr "不要为磁盘使用稀疏文件。请注意这会使得客户端创建变得及其缓慢"
 
 #~ msgid "Force flag is set but input was required. Prompt was: %s"
 #~ msgstr "设置了 Force 标签参需要输入。提示为：%s"
