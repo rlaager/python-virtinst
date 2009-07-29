@@ -1,5 +1,21 @@
-   Virt Install News
+   Virtinst News
    =================
+
+Release 0.500.0 (July 28, 2009)
+-------------------------------
+
+This release includes:
+
+ - New virt-install device options --serial, --parallel, and --video
+ - Allow various auth types for libvirt connections (PolicyKit, SASL, ...)
+ - New virt-clone option --auto-clone: generates all needed input.
+ - Option to specify network device model via virt-install --network
+     (Guido Gunther)
+ - New virt-install option --virt-type for specifying hypervisor type
+     (kvm, qemu). --accelerate is now the default behavior: To provision a
+     plain qemu VM on a KVM enabled host, use '--virt-type qemu'
+ - OVF input support for virt-convert
+ - Many bug fixes and improvements
 
 Release 0.400.3 (March 9, 2009)
 -------------------------------

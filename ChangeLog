@@ -1,9 +1,1166 @@
+2009-07-28  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/urltest.py:
+	Update url test suite with newer fedora links.
+	[fca47128bbd8] [tip]
+
+	* virtinst/osdict.py:
+	osdict: Add Fedora 12.
+	[e668af73cd4f]
+
+	* .hgignore, MANIFEST.in, man/en/virt-install.1, po/es.po, po/fr.po,
+	po/it.po, po/ja.po, po/pl.po, po/pt_BR.po, po/sr.po, po/sr@latin.po,
+	po/virtinst.pot, po/zh_CN.po, python-virtinst.spec.in:
+	Refresh man pages, translations, MANIFEST.
+	[c61ce97b6ed0]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: make sure we can actually read volume file.
+
+	If user deletes the file behind libvirt's back, we would end up
+	throwing a confusing error.
+	[eee6f60003fb]
+
+	* virtinst/Storage.py:
+	storage: Add 'glusterfs' format option for net pools
+	[e21b110a0642]
+
+	* AUTHORS:
+	Add Michal to AUTHORS.
+	[0d328d5631c9]
+
+	* HACKING, man/en/virt-image-xml.pod:
+	Replace et-mgmt-tools references with virt-tools-list.
+	[face828924df]
+
+2009-07-27  Michal Novotny  <minovotn@redhat.com>
+
+	* virtinst/Guest.py:
+	Fix CPU Pinning check for pinning string ending with comma
+
+	When you provided CPU pinning string that was ending with comma an
+	uncaught exception occured of ValueError about invalid literal for
+	int() with base 10 because of empty string passed to int() function.
+	This patch fixes the lines ending with comma, lines like "1," and
+	corrects this to correct CPU pinning string, ie. "1".
+	[3aa9c601c112]
+
+2009-07-27  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-convert.pod, tests/virtconv-files/ovf_input/test1.ovf,
+	tests/virtconv-files/ovf_input/test2.ovf, tests/virtconv-
+	files/virtimage_output/ovf2virtimage_test1.virt-image, tests
+	/virtconv-files/virtimage_output/ovf2virtimage_test2.virt-image,
+	tests/virtconv-test.py, virtconv/diskcfg.py,
+	virtconv/parsers/ovf.py:
+	virtconv: Add OVF input support.
+	[70cd7dfe1f1f]
+
+	* tests/virtconv-files/virtimage2vmx/image.virt-image, tests/virtconv-
+	files/virtimage2vmx/image.vmx, tests/virtconv-
+	files/virtimage_input/test1.virt-image, tests/virtconv-
+	files/virtimage_output/vmx2virtimage_test1.virt-image, tests
+	/virtconv-files/vmx2virtimage/test.virt-image, tests/virtconv-
+	files/vmx2virtimage/test.vmx, tests/virtconv-
+	files/vmx_input/test1.vmx, tests/virtconv-
+	files/vmx_output/virtimage2vmx_test1.vmx, tests/virtconv-test.py:
+	tests: Rearrange virtconv test files.
+
+	Split everything into input or output dirs. Don't maintain file
+	lists in the test code: every input file should at least not crash
+	if converted to a valid output format.
+	[b7a131ae79ad]
+
+	* virt-convert:
+	virt-convert: Move logging earlier to catch option errors
+	[8ab4127b4b07]
+
+	* tests/virtconv-files/virtimage2vmx/image.vmx,
+	virtconv/parsers/vmx.py:
+	Change virt-manager URL in generated VMX output.
+	[7a76c54a1274]
+
+	* setup.py:
+	test: Add --testfile option to setup.py test, allow running a single
+	file.
+	[a7a34ebb127b]
+
+2009-07-20  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/__init__.py, tests/testdriver.xml, tests/validation.py:
+	tests: Add some pool capacity checks to disk validation suite.
+	[a4baddfadf5c]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Fix error message referencing variable before assign.
+	[da6435f91f2e]
+
+	* tests/validation.py:
+	tests: Cleanup indentation for VirtualDisk validation tests.
+	[36722ed865db]
+
+	* virtinst/CloneManager.py, virtinst/VirtualDisk.py,
+	virtinst/_util.py, virtinst/cli.py:
+	VirtualDisk: Add static method 'path_exists'
+
+	Allows API users to verify the passed path exists on the connection
+	host. This is useful for use in virt-manager, and can replace the
+	hack method we currently use in virtinst.
+	[0fcc9a5a9af7]
+
+2009-07-18  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py:
+	clone: Fix up setting list parameters in CloneDesign
+	[20efa2c49f1a]
+
+	* virtinst/CloneManager.py:
+	clone: Allow changing libvirt connection on CloneDesign object
+	[c546d23bcb51]
+
+2009-07-16  Christophe Sauthier  <christophe.sauthier@objectif-libre.com>
+
+	* AUTHORS, virtinst/osdict.py:
+	osdict: Add Ubuntu Karmic.
+	[05e3723da0e7]
+
+2009-07-14  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/osdict.py:
+	osdict: Add SLES 11 (supports virtio)
+	[dbda3bfc28f8]
+
+	* tests/xmlconfig-xml/boot-windowsxp-kvm.xml, tests/xmlconfig-xml
+	/boot-windowsxp.xml, tests/xmlconfig-xml/install-windowsxp-kvm.xml,
+	tests/xmlconfig-xml/install-windowsxp-xennew.xml, tests/xmlconfig-
+	xml/install-windowsxp-xenold.xml, tests/xmlconfig-xml/install-
+	windowsxp.xml, tests/xmlconfig.py, virtinst/osdict.py:
+	Turn on ACPI/APIC for windows, except for Xen < 3.1.0.
+
+	See discussion at:
+
+	https://www.redhat.com/archives/et-mgmt-
+	tools/2009-July/msg00000.html
+	[3c68ba7758a6]
+
+	* virtinst/Guest.py, virtinst/osdict.py:
+	Refactor osdict lookup routines.
+
+	Allow specifying minimally supported libvirt and hypervisor version
+	for various parameters. Move most of this code out of Guest and into
+	osdict.
+	[8b5d60a01fe3]
+
+2009-07-14  Laurent Léonard  <laurent@open-minds.org>
+
+	* AUTHORS, virtinst/osdict.py:
+	Add windows 7 to the osdict.
+	[020c0a312e7f]
+
+2009-07-13  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-install,
+	virtinst/cli.py:
+	virt-install: Add --video option.
+
+	Takes the video model (cirrus, vga, etc) as the only argument. Can
+	easily be expanded in the future if needed.
+	[dbaa46d3ae83]
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-install,
+	virtinst/cli.py:
+	virt-install: Add --serial and --parallel options.
+
+	Options take the same form of OPT1=VAL1,OPT2=VAL2,... similar to the
+	--disk option. The docs describe the rest.
+	[e27511d0dbfd]
+
+	* virtinst/CloneManager.py:
+	CloneManager: support setting properties as lists.
+
+	Many properties (skip_target, force_target, clone_devices,
+	clone_mac) can currently only be appended to, since behind the
+	scenes they are lists. Allow passing a list value to overwrite the
+	stored list.
+
+	Also fix an improper error message.
+	[ca5246fe1546]
+
+	* virtinst/VirtualDisk.py:
+	Remove more noisy debugging.
+	[b7668b77cd72]
+
+2009-07-12  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/storage.py, virtinst/Storage.py:
+	storage: Implement 'disk' volume creation.
+	[389052a6eb36]
+
+2009-07-08  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualNetworkInterface.py:
+	Add VirtualNetworkInterface function for returning network type
+	descriptions.
+	[77b5e67be942]
+
+	* tests/validation.py, tests/xmlconfig-xml/boot-many-chars.xml,
+	tests/xmlconfig.py, virtinst/VirtualCharDevice.py:
+	Properly generate 'protocol' XML for TCP char devices.
+
+	Libvirt docs were incorrect, and I never checked that it actually
+	worked :(
+	[ce5bd38b3a2b]
+
+	* tests/cli-test-xml/faketree/images/xen/initrd.img, tests/cli-test-
+	xml/faketree/images/xen/vmlinuz, tests/clitest.py, tests/xmlconfig-
+	xml/boot-many-devices.xml, tests/xmlconfig.py:
+	Test suite improvements and fixes.
+
+	Bring back definition of XML in xmlconfig.py. Add a URL test for
+	paravirt installs.
+	[1aa79e013ba6]
+
+	* tests/xmlconfig-xml/boot-many-disks2.xml, virtinst/VirtualDisk.py:
+	If creating a disk with no media, fill in a default 'type'.
+
+	Previously, we could end up with type='None' in the xml, which
+	causes errors.
+	[f2dfad48325a]
+
+	* tests/xmlconfig-xml/boot-many-devices.xml,
+	virtinst/VirtualVideoDevice.py:
+	Fix video device XML generation.
+	[70176b36e355]
+
+	* tests/xmlconfig-xml/boot-many-devices.xml, tests/xmlconfig.py,
+	virtinst/VirtualDevice.py, virtinst/VirtualVideoDevice.py,
+	virtinst/__init__.py:
+	Add VirtualVideoDevice module, corresponding to new libvirt device
+	<video>
+	[daafa39eb8cb]
+
+	* tests/clonetest.py:
+	Fix test suite with latest libvirt.
+
+	Libvirt adds a default <video> element if none is specified, which
+	breaks some round trip define/compare tests.
+	[18b1b9c31eb0]
+
+	* virtinst/VirtualCharDevice.py:
+	Add description lookup functions for VirtualCharDevice values.
+	[4f5216795603]
+
+	* virtinst/VirtualCharDevice.py:
+	Rename VirtualCharDevice source_mode values to be more accurate.
+	[1140cc9cabd0]
+
+	* tests/xmlconfig-xml/boot-many-chars.xml, tests/xmlconfig.py,
+	virtinst/VirtualCharDevice.py:
+	s/source_name/bind_name/g and s/connect_name/source_name/g for UDP
+	chardev.
+
+	This makes source name consistently the default 'connect' target for
+	network character devices.
+	[ce13a97146c5]
+
+	* tests/clitest.py, virt-install, virtinst/cli.py:
+	Break out duplicate command optstring parsing.
+
+	We are duplicating effort for --disk and --network: break this code
+	out into a separate function (will also be useful for --serial,
+	--parallel, etc.)
+	[88885f046356]
+
+2009-07-07  "Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualCharDevice.py:
+	Return proper character device class for dev type 'dev'
+	[959c8406bbfe]
+
+	* virtinst/__init__.py:
+	Add VirtualDevice class to the public API.
+	[c071bd24ae5a]
+
+2009-07-06  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	Fix generating disk driver XML from vol_install parameters.
+
+	We were mixing up driver name and type. This was breaking XML built
+	via virt-manager's create wizard. Should have only existed in HG.
+	[5746a86367d2]
+
+2009-07-02  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Storage.py:
+	Implement LVM storage pool building from raw disk devices.
+
+	The only previous method was for defining a pool from an existing
+	VG.
+	[05ce5fe6ced0]
+
+2009-06-26  David Robinson  <zxvdr.au@gmail.com>
+
+	* AUTHORS, virtinst/OSDistro.py:
+	Fix invalid/empty .treeinfo file from causing an exception.
+	[bb8d3a5bb858]
+
+2009-06-24  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-clone, virtinst/CloneManager.py:
+	CloneDesign: Move name and disk path generators into the public API.
+
+	These utility functions will be useful for other apps looking to
+	auto generate new names or paths for guests.
+	[4398f61e8979]
+
+	* tests/clone-xml/skip-in.xml, tests/clone-xml/skip-out.xml:
+	Actually add 'skip_target' test files.
+	[4669fb49e4a9]
+
+	* virtinst/Storage.py:
+	Use allocation as the max value for progress meter when creating
+	volumes.
+	[66ef1609e353]
+
+	* virtinst/_util.py:
+	Document _util.generate_name, add a few extra parameters for
+	customizability.
+	[905a04faef39]
+
+	* tests/storage.py, virtinst/Storage.py:
+	Add 'conn' parameter to is_create_vol_from_supported to futureproof
+	it.
+	[df308f78f28d]
+
+	* tests/clonetest.py, virtinst/CloneManager.py:
+	CloneDesign: Add 'skip_target' property
+
+	This works similar to force_target, except tells CloneDesign to
+	forcibly skip the passed targets. This takes precedence over
+	force_target.
+	[a24cfe70a6de]
+
+	* virt-clone, virtinst/CloneManager.py:
+	CloneDesign: deal with cloning to/from empty paths.
+
+	CloneDesign can now handle empty disks in it's original_devices
+	list, and handle 'None' as a clone_device path. This is requird to
+	be able to use devices_list to get a full output of disks in the
+	original XML.
+	[d3679b93f526]
+
+	* virtinst/CloneManager.py:
+	Add 'clone_policy' property to CloneDesign.
+
+	This allows the user to list what metrics the Design will use to
+	decide what devices should be queued up for cloning. Options are:
+
+	CLONE_POLICY_NO_READONLY = 1 CLONE_POLICY_NO_SHAREABLE = 2
+	CLONE_POLICY_NO_EMPTYMEDIA = 3
+
+	This allows us to change the default CloneDesign behavior, which is
+	to skip all of the above.
+	[895976b12eaa]
+
+	* tests/clone-xml/cross-pool-in.xml, tests/clone-xml/cross-pool-
+	out.xml, tests/clone-xml/force-in.xml, tests/clone-xml/force-
+	out.xml, tests/clone-xml/managed-storage-in.xml, tests/clone-xml
+	/managed-storage-out.xml, tests/clone-xml/readonly-disks-in.xml,
+	tests/clone-xml/readonly-disks-out.xml, tests/clonetest.py,
+	tests/testdriver.xml:
+	Add force_target testing to clonetest suite.
+
+	Also expand the testdriver to have a lvm pool, and tweak some typos
+	in clone test xml.
+	[702031e8325a]
+
+2009-06-23  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clitest.py, virtinst/cli.py:
+	Allow faux remote URI testing.
+
+	We basically add a hack to virtinst/cli which looks for a magic
+	string __virtinst_test_remote__ at the start of the passed libvirt
+	uri. If found, we convince the library that we are on a remote
+	connection, to exercise code paths where we deliberately check this.
+	Kind of crazy, but hey, it works, and helped find 2 regressions.
+	[0e9226cc19d1]
+
+	* virtinst/CloneManager.py:
+	Don't erroneously deny remote cloning if libvirt supports it.
+	[8d0afe6242b4]
+
+	* virtinst/VirtualDisk.py:
+	Unbreak managed storage on remote connection.
+
+	This regressed via semi recent virtualdisk refactoring. Regression
+	tests coming soon!
+	[a5693cd57868]
+
+	* tests/cli-test-xml/clone-disk-managed.xml, tests/clitest.py, tests
+	/clone-xml/cross-pool-out.xml, tests/clonetest.py,
+	tests/testdriver.xml, tests/validation.py:
+	Use a custom libvirt test driver for test suite.
+
+	This allows us to avoid setting up non-default storage pools, and
+	helps with volume testing in the cli suite. This requires some bug
+	fixes committed to libvirt quite recently.
+	[b979803366d9]
+
+	* tests/clitest.py:
+	Add some IDE target cli tests.
+	[4816ee537667]
+
+	* virtinst/CloneManager.py:
+	Don't check for MAC collision in setup_original.
+
+	We check at set time now, so it's kind of redundant. If we ever want
+	to have absolute last minute validation, we need better
+	infrastructure anyways.
+	[817ce13dd178]
+
+	* virtinst/CloneManager.py:
+	Simplifications and cleanups in CloneManager.
+
+	Don't carry around an index array to specify disks to clone: just
+	set 'target' in virtual disk. Also, make better use of xml parsing
+	utility functions.
+	[9221412446f8]
+
+	* virtinst/util.py:
+	Fix get_xml_path to return first entry if parse list of options.
+	[03c37e22a631]
+
+	* virtinst/CloneManager.py:
+	Add some documentation to CloneManager properties.
+	[93392d39396c]
+
+2009-06-22  Cole Robinson  <crobinso@redhat.com>
+
+	* AUTHORS:
+	Add myself as a primary AUTHOR, because I'm cool like that.
+	[12e14d427eaf]
+
+	* AUTHORS, tests/clone-xml/cross-pool-in.xml, tests/clone-xml/empty-
+	disks-in.xml, tests/clone-xml/general-cfg-in.xml, tests/clone-xml
+	/managed-storage-in.xml, tests/clone-xml/noclone-storage-in.xml,
+	tests/clone-xml/readonly-disks-in.xml:
+	Replace remaining usages of incorrect qemu/kvm mac prefix (Kaspar
+	Brand)
+	[9f11c8f159ff]
+
+2009-06-19  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-clone.pod, man/en/virt-install.pod.in, virtinst/util.py:
+	Correctly generate QEMU/KVM mac address (we were using wrong
+	prefix).
+
+	See https://www.redhat.com/archives/libvir-
+	list/2009-June/msg00336.html
+	[a3334a88986f]
+
+2009-06-18  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/cli-test-xml/faketree/images/boot.iso, tests/cli-test-
+	xml/faketree/images/pxeboot/initrd.img, tests/cli-test-
+	xml/faketree/images/pxeboot/vmlinuz, tests/clitest.py:
+	Add cli test cases for --location and --cdrom URL.
+
+	Make a fake centos install directory in the test files that we can
+	use to trigger the desired behavior.
+	[335ecbb1c2cd]
+
+	* virt-install, virtinst/DistroInstaller.py:
+	virt-install: Fix --cdrom URL installs
+
+	This has been busted since at least the prompting refresh.
+	[e76a9fc2b1fa]
+
+2009-06-17  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualNetworkInterface.py, virtinst/_util.py,
+	virtinst/util.py:
+	Refactor default net device searching.
+
+	We had some duplicate code, and some pretty careless code that could
+	bomb out in corner cases (rhbz 506319)
+	[503cd42936a9]
+
+	* virtinst/VirtualAudio.py:
+	Add 'ac97' to sound model list.
+	[9da0cafaf0e9]
+
+2009-06-12  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-clone, virt-image, virt-install, virtinst/cli.py:
+	Let libvirt decide the default connection.
+
+	Rather than look for xen or qemu files to determine the default
+	connection, just pass None to libvirt.open and let it decide for us.
+	[030fbc6df74f]
+
+	* virtconv/diskcfg.py:
+	Fix diskcfg typo in kvm-img commit.
+	[dbae1daaaded]
+
+2009-06-12  Guido  <Guido Gunther>
+
+	* virtinst/osdict.py:
+	use QEMU's USB Tablet with Squeeze guests evdev picks this up as
+	mouse which gives more exact mouse handling without the need to
+	grab/ungrab the mouse anymore.
+	--- virtinst/osdict.py | 7 +++++++ 1 files changed, 7
+	insertions(+), 0 deletions(-)
+	[9f62291919b3]
+
+2009-06-09  Cole Robinson  <crobinso@redhat.com>
+
+	* AUTHORS, virtconv/diskcfg.py:
+	Use kvm-img if qemu-img is not available. (Doug Goldstein)
+	[89c9f3ece3fb]
+
+2009-06-04  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/__init__.py, tests/pylint-virtinst.sh, tests/xmlconfig.py,
+	virt-install, virtinst/ParaVirtGuest.py:
+	Move file backed disks to use 'tap' driver in ParaVirtGuest.
+
+	Add some test cases to exercise the changes, and update pylint
+	script to be happy.
+	[ab66c26436cf]
+
+2009-06-04  Guido Gunther  <agx@sigxcpu.org>
+
+	* virtinst/util.py:
+	Parse /etc/default/console-setup for keymap
+
+	as used on Debian based distributions.
+	[3a188381a461]
+
+2009-06-04  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/urltest.py:
+	Don't bail URL test suite if distro detection fails.
+	[da8fa4e29394]
+
+	* tests/urltest.py, virtinst/OSDistro.py:
+	Fix fetching a boot.iso from an install URL for most distros.
+
+	A deficieny in the test suite was hiding an error. Fix the bug (and
+	the test suite to catch this in the future).
+	[eba75d447521]
+
+2009-06-03  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/cli.py:
+	Remove accidental debug print.
+	[d9f580f804f1]
+
+2009-05-07  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/cli.py:
+	Allow PolicyKit and SASL authentication.
+
+	Use openAuth when opening the initial connection: allows PolicyKit
+	and SASA username/password auth.
+	[5d6dc8af58b5]
+
+2009-05-26  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod.in, virt-install:
+	virt-install: Make --accelerate behavior the default.
+
+	With introduction of the --virt-type option, there is now a way to
+	specify a deliberately un-accelerated guest (--virt-type qemu). Now
+	we can make
+	--accelerate the default behavior, since if KVM/KQEMU is present we
+	can assume the user wants to make use of it.
+	[bec888f2890f]
+
+2009-05-22  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-install:
+	virt-install: Add --virt-type option.
+
+	Allows manually specifying a hypervisor name (kvm, qemu, xen, ...)
+	which maps to the /domain/@type attribute in libvirt xml.
+	[238f8cc1568f]
+
+	* man/en/virt-clone.pod, tests/clitest.py, virt-clone,
+	virtinst/CloneManager.py:
+	virt-clone: Add --auto-clone option
+
+	This option will generate a new VM name, and paths for new storage,
+	mostly by appending '-clone' to the source name/paths.
+	[26ad0e1b5959]
+
+	* virtinst/Storage.py, virtinst/_util.py:
+	Add a name generation function to _util.
+
+	Useful for finding non colliding names and paths.
+	[1b3c4b8a358b]
+
+	* tests/clone-xml/cross-pool-in.xml, tests/clone-xml/cross-pool-
+	out.xml, tests/clone-xml/managed-storage-in.xml, tests/clone-xml
+	/managed-storage-out.xml, tests/clonetest.py,
+	virtinst/CloneManager.py, virtinst/Storage.py,
+	virtinst/VirtualDisk.py:
+	Support managed storage cloning with virt-clone.
+
+	We move all the cloning routines into VirtualDisk, which saves us
+	lots of duplicate validation. A new parameter is added to
+	VirtualDisk: clone_path.
+
+	Several test cases are also added.
+	[b3a11d01c011]
+
+2009-05-21  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/storage.py, virtinst/Storage.py, virtinst/_util.py:
+	Add CloneVolume class.
+
+	Used for directly cloning a volume, just using name substitution in
+	the xml. This is the only future proof way to do it, rather than
+	pulling info out of the source xml and trying to populate a new
+	Volume object.
+	[7d341704bc49]
+
+2009-05-26  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Storage.py, virtinst/VirtualDisk.py:
+	Add explicit 'file_type' for file vs. block to StorageVolume
+	classes.
+
+	Previously we could only glean this information from instanceof.
+	[95f416db5c10]
+
+	* tests/storage.py, virtinst/Storage.py:
+	Add 'input_vol' parameter to StorageVolume objects.
+
+	Maps through to virStorageVolCreateXMLFrom, which allows storage
+	cloning and conversion.
+	[7aeacfce408e]
+
+	* virtinst/Storage.py:
+	Report libvirt storage allocation progress.
+
+	Requires libvirt 0.6.4 (not yet released) or later.
+	[94fb3e5f62d7]
+
+2009-05-22  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	Silence some debugging.
+	[7019487d9b19]
+
+	* virt-install:
+	virt-install: Small cleanup
+	[a900721b30ac]
+
+	* man/en/virt-install.pod.in, virt-install:
+	virt-install: Fix --wait -1
+	[ec66e66f7c02]
+
+	* virt-install:
+	Fix typo in error message.
+	[61f57fa3c2b9]
+
+2009-05-15  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	Remove libvirt storage sparse-only hack.
+
+	Libvirt upstream no longer blocks all pool operations while a file
+	volume is being allocated, so drop the hack.
+	[e34de678f53a]
+
+2009-05-26  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualNetworkInterface.py:
+	Don't make VirtualNetworkInterface.type read only.
+	[9e5ead73e8d2]
+
+2009-05-21  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-image.pod, man/en/virt-install.pod.in, virt-image, virt-
+	install, virtinst/cli.py:
+	Mark older network and storage cli options as deprectated.
+
+	Expand the cli tools output to include simple examples, and don't
+	list help output for deprecated options.
+	[29da8d156bdc]
+
+2009-05-20  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virtinst/cli.py:
+	Allow specifying mac= with --network option.
+	[8b8b79b2bfd0]
+
+	* tests/clitest.py, virt-image, virt-install, virtinst/cli.py:
+	Clean up cli network parameter handling.
+
+	Try to make the whole setup more extensible for adding future
+	parameters to --network, without having to touch every cli tool that
+	uses it.
+	[5c76390e0f24]
+
+	* tests/clitest.py, virtinst/VirtualNetworkInterface.py:
+	Clean up some validation in VirtualNetworkInterface
+	[ffc4facf5214]
+
+2009-05-11  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-image, virtinst/cli.py:
+	Remove some unnecessary wrapper functions from virt-image.
+	[601c4ff64c69]
+
+	* tests/clitest.py:
+	Add some more cli test cases.
+	[c42486cb1cbf]
+
+	* virt-image:
+	Fix virt-image --nographics
+	[acc28db587ff]
+
+2009-05-20  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig-xml/boot-many-chars.xml, tests/xmlconfig-xml/boot-
+	many-devices.xml, tests/xmlconfig.py:
+	Add character device xml building into the test suite.
+	[328414090700]
+
+	* tests/image-xml/image2guest/image-xenfv32.xml, tests/xmlconfig-xml
+	/boot-fullyvirt-disk-block.xml, tests/xmlconfig-xml/boot-fullyvirt-
+	disk-file.xml, tests/xmlconfig-xml/boot-fullyvirt-pxe-nodisks.xml,
+	tests/xmlconfig-xml/boot-fullyvirt-pxe.xml, tests/xmlconfig-xml
+	/boot-many-devices.xml, tests/xmlconfig-xml/boot-many-disks2.xml,
+	tests/xmlconfig-xml/boot-many-hostdevs.xml, tests/xmlconfig-xml
+	/boot-many-nics.xml, tests/xmlconfig-xml/boot-many-sounds.xml, tests
+	/xmlconfig-xml/boot-windowsxp.xml, tests/xmlconfig-
+	xml/install-f10.xml, tests/xmlconfig-xml/install-f11.xml, tests
+	/xmlconfig-xml/install-fullyvirt-disk-block.xml, tests/xmlconfig-xml
+	/install-fullyvirt-disk-file.xml, tests/xmlconfig-xml/install-
+	fullyvirt-import.xml, tests/xmlconfig-xml/install-fullyvirt-
+	livecd.xml, tests/xmlconfig-xml/install-fullyvirt-pxe-nodisks.xml,
+	tests/xmlconfig-xml/install-fullyvirt-pxe.xml, tests/xmlconfig-xml
+	/install-windowsxp.xml, tests/xmlconfig-xml/misc-qemu-driver-
+	name.xml, tests/xmlconfig-xml/misc-qemu-driver-type.xml, tests
+	/xmlconfig-xml/misc-xml-escaping.xml, virtinst/FullVirtGuest.py:
+	Use device API for the previously hardcoded 'console' device.
+
+	Since this changes the xml ordering, lots of test files need
+	updating.
+	[a138086e2fdf]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Use device APIs for building guest XML.
+	[bcc69213ad1a]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Use VirtualInputDevice internally.
+
+	We now only added the default input device if one wasn't manually
+	specified. This will allow future users to overwrite the previously
+	hardcoded default.
+	[a7a8c0bfb00e]
+
+	* tests/pylint-virtinst.sh, tests/xmlconfig.py,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ImageManager.py, virtinst/ParaVirtGuest.py:
+	Use internal device APIs when running the install process.
+	[f2267925858f]
+
+	* virtinst/Guest.py:
+	Add Guest device add/remove API.
+
+	Rather than maintain a separate list for each type of device (disks,
+	nics, hostdevs, ...), add an API for add, removing, and fetching
+	devices.
+
+	Back compat with the existing device lists is maintained, but the
+	new API is required for adding arbitrary input or char devices (and
+	all new devices going forward.)
+	[9b0cda365e95]
+
+	* tests/validation.py, virtinst/VirtualDevice.py,
+	virtinst/VirtualInputDevice.py, virtinst/__init__.py:
+	Add VirtualInputDevice class.
+	[d94c42f50eea]
+
+	* tests/pylint-virtinst.sh, tests/validation.py,
+	virtinst/VirtualCharDevice.py, virtinst/VirtualDevice.py,
+	virtinst/__init__.py:
+	Add VirtualCharDevice module.
+
+	Used for building serial, parallel, and back-compat console device
+	xml.
+	[c8cd5021fb2b]
+
+	* virtinst/VirtualAudio.py, virtinst/VirtualDevice.py,
+	virtinst/VirtualDisk.py, virtinst/VirtualGraphics.py,
+	virtinst/VirtualHostDevice.py, virtinst/VirtualNetworkInterface.py:
+	Add 'virtual_device_type' field to every device class.
+
+	Will facilitate a unified device add/remove API for the Guest class.
+	[f331a34a1c6e]
+
+	* tests/xmlconfig-xml/boot-many-devices.xml, tests/xmlconfig-xml/boot-
+	many-disks2.xml, tests/xmlconfig-xml/boot-many-hostdevs.xml, tests
+	/xmlconfig-xml/boot-many-nics.xml, tests/xmlconfig-xml/boot-many-
+	sounds.xml, tests/xmlconfig-xml/boot-windowsxp.xml, tests/xmlconfig-
+	xml/install-f10.xml, tests/xmlconfig-xml/install-f11.xml, tests
+	/xmlconfig-xml/install-windowsxp.xml, tests/xmlconfig.py:
+	Add xml test cases for OS Type/Variant installs + and multi device
+	xml.
+	[4a8a85512873]
+
+	* tests/nodedev.py, virtinst/VirtualHostDevice.py:
+	Fix cosmetic spacing issue with HostDevice xml generation.
+
+	Make it more inline with existing device convention.
+	[b6a00397fc03]
+
+	* tests/__init__.py, tests/image-xml/image.xml, tests/image-
+	xml/image2guest/image-xenfv32.xml, tests/image-xml/image2guest
+	/image-xenpv32.xml, tests/image.py:
+	Use prepare_install in image2guest test suite.
+
+	This actually populates devices in the final XML.
+	[cb97b3abb8cd]
+
+2009-05-11  Guido Günther  <agx@sigxcpu.org>
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-image, virt-
+	install, virtinst/cli.py:
+	Allow to specify nic model with --network
+	[ea0fe33e53a8]
+
+2009-05-09  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/pylint-virtinst.sh, tests/xmlconfig-xml/misc-qemu-driver-
+	name.xml, tests/xmlconfig-xml/misc-qemu-driver-type.xml,
+	tests/xmlconfig.py, virtinst/VirtualDisk.py:
+	Add support for QEMU driver name and type to VirtualDisk.
+
+	Also add a few test cases to make sure we get expected behavior.
+	[96bc6e8c5376]
+
+	* virtinst/VirtualDevice.py:
+	Add a _get_uri function to VirtualDevice
+
+	Useful for overriding in the test suite to make to fake any uri we
+	want.
+	[08ae1c1786e1]
+
+	* tests/clitest.py, virtinst/cli.py:
+	Fix --disk vol= and pool=
+
+	Regressed with changes to bring back parameter prompting. Also added
+	are several cli test cases to catch these regressions in the future.
+	[676312613510]
+
+	* tests/clitest.py:
+	Use proper image path in clitest, enable a disabled test case.
+	[6b4e1cd9a5cc]
+
+2009-05-07  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/cli.py:
+	Log the full virt-* command line.
+	[2450a9dcaa03]
+
+	* man/en/virt-clone.pod, man/en/virt-convert.pod, man/en/virt-
+	image.pod, man/en/virt-install.pod.in:
+	Update bug reporting info in manpages.
+
+	Basically offload it to http://virt-
+	manager.et.redhat.com/page/BugReporting
+	[fec32be02fba]
+
+	* man/en/virt-image.pod, man/en/virt-install.pod.in:
+	Tweak 'vnclisten' man page description.
+	[e683588c4177]
+
+	* virtinst/OSDistro.py:
+	Make sure autodetected OS type/variant are in the osdict.
+
+	If not, log a message and set the values to None, rather than barf
+	later down the line.
+	[db997572bdc8]
+
+	* tests/urltest.py, virtinst/OSDistro.py:
+	Fix os_variant autodetection for F11-{alpha/beta/preview}
+
+	Prevents URL installs for the stated releases, unless an --os-
+	variant is manually specified.
+	[9768e52d4d62]
+
+	* virtinst/_util.py, virtinst/cli.py:
+	Add helper 'log_exception' function.
+
+	Will log a traceback at the DEBUG level. Useful for logging
+	deliberately ignored exceptions, without spamming stderr when using
+	virt-* tools.
+	[94be2c80832a]
+
+	* tests/pylint-virtinst.sh:
+	Expand 'ignore' parameters regex for pylint script.
+	[9c40046826c9]
+
+2009-05-06  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-image.pod, man/en/virt-install.pod.in, tests/clitest.py,
+	virt-image, virt-install, virtinst/cli.py:
+	Add a --vnclisten option to virt-install and virt-image.
+	[78e590ca02ea]
+
+	* virt-image, virt-install, virtinst/cli.py:
+	Move duplicate graphics options definitions to cli.py
+	[bb6eb6a7dad0]
+
+2009-05-07  Cole Robinson  <crobinso@redhat.com>
+
+	* HACKING, setup.py, tests/cli-test-xml/clone-disk.xml, tests/cli-
+	test-xml/image.xml, tests/clitest.py:
+	Add a new test suite 'test_cli'
+
+	Exercises various invocations of virt-install, virt-clone, and virt-
+	image.
+	[76523994ee2b]
+
+2009-05-06  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clonetest.py:
+	Fix a bug in the clone test suite.
+	[668b1901f5bd]
+
+	* virtinst/CloneManager.py:
+	Fix a syntax error in CloneManager
+
+	Not too harmful, but was squashing legitimate errors if they arose.
+	[7322f9c73adb]
+
+	* virtinst/VirtualHostDevice.py:
+	Call host device detach/reset on the correct object.
+
+	Fixes PCI assignment, which on libvirt 0.6.2 was busted.
+	[ab3111177ec1]
+
+2009-04-23  John Levon  <john.levon@sun.com>
+
+	* virtinst/OSDistro.py:
+	Fix processing of extra args for OpenSolaris domains
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[722e1b1dacfd]
+
+2009-04-22  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/pylint-virtinst.sh, virtinst/VirtualDisk.py,
+	virtinst/_util.py:
+	Add selinux_label option to VirtualDisk
+
+	If not overridden by the user, selinux_label will be filled with the
+	label of the specified storage, or "" if we are creating storage.
+
+	If the user specifies a label, it will be used to label the new
+	storage or relabel the existing storage when 'setup()' is called.
+
+	This is deliberately crippled at the moment: even if the user
+	requests it, we will only change the label for existing, local
+	storage that is marked readonly (basically CD-ROM devices), since
+	that is the priority case at the moment for Fedora. The code
+	attempts to be robust in the case of selinux not being present, so
+	this shouldn't change behavior for other distros.
+	[47459aeae1ad]
+
+	* virtinst/cli.py:
+	Don't print two errors if cli validation fails, and not in prompting
+	mode.
+	[34c0a5dad404]
+
+	* virtinst/VirtualDisk.py:
+	Break VirtualDisk local file creation out into it's own function.
+	[6dcea8f463af]
+
+	* virtinst/CloneManager.py, virtinst/VirtualDisk.py:
+	Use BaseMeter to skip some 'meter == None' checks
+	[ed4e31291784]
+
+	* virtinst/VirtualDisk.py:
+	Factor out some duplicate checking in VirtualDisk
+	[df1ae8b2555c]
+
+	* virtconv/diskcfg.py:
+	popen2 is deprecated, switch to subprocess.
+	[cdf4e907f334]
+
+	* tests/pylint-virtinst.sh, virtinst/Installer.py, virtinst/_util.py:
+	Make sure kernel/initrd tmp directory has correct selinux labelling.
+	[aee2b9aba590]
+
+2009-04-20  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/OSDistro.py:
+	Support post-2009.06 OpenSolaris releases (John Levon)
+	[bb99f9a13ea4]
+
+2009-04-14  Cole Robinson  <crobinso@redhat.com>
+
+	* po/pl.po:
+	Updated polish translation.
+	[cdb5d5b6fee6]
+
+2009-04-09  Cole Robinson  <crobinso@redhat.com>
+
+	* po/es.po, po/fr.po, po/it.po, po/ja.po, po/pl.po, po/pt_BR.po,
+	po/sr.po, po/sr@latin.po, po/virtinst.pot, po/zh_CN.po:
+	Import updated translations, and resync pot file.
+	[e686e9aae123]
+
+2009-04-08  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/pylint-virtinst.sh, tests/storage.py, tests/validation.py,
+	virt-convert, virtconv/parsers/virtimage.py:
+	Fix up some pylint shown on Fedora 11.
+	[712276328f75]
+
+2009-04-06  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Installer.py:
+	Only use xen scratchdir if running as root.
+	[f971c1442dc8]
+
+	* tests/capabilities-xml/capabilities-qemu.xml, tests/capabilities.py,
+	virtinst/CapabilitiesParser.py:
+	Add capabilities 'secmodel' parsing.
+	[fbe3d06d2a81]
+
+	* tests/xmlconfig.py:
+	Fix test suite breakage with latest libvirt.
+	[b90cfb58f8a9]
+
+	* virt-install:
+	virt-install: Fix error message typo
+	[e65f527bef12]
+
+2009-03-23  Cole Robinson  <crobinso@redhat.com>
+
+	* po/es.po:
+	Add spanish translation.
+	[a4a3db71aa9e]
+
+	* man/en/virt-clone.1, man/en/virt-clone.pod, man/en/virt-image.1,
+	man/en/virt-image.pod, man/en/virt-install.1, man/en/virt-
+	install.pod.in, virt-clone, virt-image, virt-install,
+	virtinst/cli.py:
+	Bring back prompting for virt-install, virt-image. (though not as
+	the default behavior)
+
+	All apps now have prompting off by default. It can be turned back on
+	with the --prompt option. A hint to this effect is given when we
+	error out.
+
+	Additionally prompt for the virt-install --accelerate option.
+	[cda75d189b9c]
+
+	* virt-install:
+	Correctly handle 'virt-install --wait 0'
+	[b5c6e3cb0ebf]
+
+	* virtinst/ImageParser.py:
+	Fix virt-image with scratch + user disks.
+	[8fdb20af39f9]
+
+	* man/en/virt-image.pod:
+	fix --nographics description in virt-image man page.
+	[d5f630ee97ea]
+
+2009-03-20  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	Remove unneeded logging in VirtualDisk
+	[bb55bc475983]
+
+2009-03-19  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/FullVirtGuest.py, virtinst/VirtualDisk.py:
+	Fix specifying --disk device=floppy
+	[fd4baa6410d8]
+
+	* virtinst/CloneManager.py, virtinst/_util.py:
+	Add 'disk_exists' util method, use in CloneManager
+	[a55347f926f5]
+
+2009-03-18  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/pylint-virtinst.sh:
+	Add exception to pylint script.
+	[18f93adc0bd2]
+
+2009-03-18  John Levon  <john.levon@sun.com>
+
+	* virtinst/Guest.py:
+	Ignore failures to kill the child console process
+
+	For example, it may have quit already.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[03e7d0e8ca3b]
+
+	* virtinst/OSDistro.py:
+	Support OpenSolaris 2009.06
+
+	This has unfortunately moved the location of the boot archive for
+	SPARC support.
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[6d43e2816650]
+
+	* virtinst/DistroInstaller.py, virtinst/OSDistro.py,
+	virtinst/osdict.py:
+	Support NetWare PV installs
+
+	Signed-off-by: John Levon <john.levon@sun.com>
+	[afffc9d2e1c7]
+
+2009-03-18  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/_util.py, virtinst/cli.py, virtinst/util.py:
+	Validate passed --keymap value (Tomohiro Takahashi)
+	[1af9f5e4281c]
+
+	* virtinst/VirtualHostDevice.py:
+	Set host device managed=no for xen
+	[96dceaf29571]
+
+2009-03-17  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/NodeDeviceParser.py, virtinst/VirtualHostDevice.py:
+	Fix node device dettach/reset libvirt calls
+	[1288ff456cdb]
+
 2009-03-09  Cole Robinson  <crobinso@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_400_3 for changeset 6c4f3454c7a4
+	[143cad71a2a6]
+
+	* ChangeLog, NEWS, setup.py:
+	Update NEWS, ChangeLog, version #
+	[6c4f3454c7a4] [virtinst-0_400_3]
 
 	* man/en/virt-install.1, po/fr.po, po/it.po, po/ja.po, po/pl.po,
 	po/pt_BR.po, po/sr.po, po/sr@latin.po, po/virtinst.pot, po/zh_CN.po:
 	Update translations.
-	[d89edf29dbb0] [tip]
+	[2c64b3c9c7ce]
+
+	* virtinst/NodeDeviceParser.py:
+	Add child_dev option to NodeDevice pretty_description.
+	[9f2a2b99822e]
 
 2009-03-08  Cole Robinson  <crobinso@redhat.com>
 
