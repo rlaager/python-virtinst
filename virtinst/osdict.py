@@ -172,6 +172,13 @@ OS_TYPES = {\
                         "input" : { "type" : [ (["all"], "tablet") ],
                                     "bus"  : [ (["all"], "usb"), ] },
                      }},
+        "fedora12": { "label": "Fedora 12", "distro": "fedora",
+                      "devices" : {
+                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
+                        "net"  : { "model" : [ (["kvm"], "virtio") ] },
+                        "input" : { "type" : [ (["all"], "tablet") ],
+                                    "bus"  : [ (["all"], "usb"), ] },
+                     }},
         "sles10": { "label": "Suse Linux Enterprise Server",
                     "distro": "suse" },
         "sles11": { "label": "Suse Linux Enterprise Server 11",
