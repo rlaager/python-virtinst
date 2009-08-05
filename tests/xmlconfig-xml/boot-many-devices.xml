@@ -26,6 +26,11 @@
       <source dev='/dev/loop0'/>
       <target dev='sda' bus='scsi'/>
     </disk>
+    <disk type='file' device='disk'>
+      <driver name='qemu'/>
+      <source file='/default-pool/testvol1.img'/>
+      <target dev='sdb' bus='scsi'/>
+    </disk>
     <interface type='network'>
       <source network='default'/>
       <mac address='11:22:33:44:55:66'/>

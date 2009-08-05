@@ -492,8 +492,8 @@ class VirtualDisk(VirtualDevice):
             # User already set driverName to a different value, respect that
             return
 
-        self._driverName = drvname
-        self._driverType = drvtype
+        self._driverName = drvname or None
+        self._driverType = drvtype or None
 
     def __lookup_vol_name(self, name_tuple):
         """

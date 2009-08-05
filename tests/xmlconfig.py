@@ -28,7 +28,7 @@ from virtinst import VirtualCharDevice
 from virtinst import VirtualVideoDevice
 import tests
 
-conn = libvirt.open("test:///default")
+conn = tests.open_testdriver()
 
 def get_basic_paravirt_guest():
     g = virtinst.ParaVirtGuest(connection=conn, type="xen")
@@ -41,7 +41,6 @@ def get_basic_paravirt_guest():
     g.vcpus = 5
     return g
 
-conn = libvirt.open("test:///default")
 def get_basic_fullyvirt_guest(typ="xen"):
     g = virtinst.FullVirtGuest(connection=conn, type=typ,
                                emulator="/usr/lib/xen/bin/qemu-dm",
@@ -497,6 +496,10 @@ class TestXMLConfig(unittest.TestCase):
                                    device=VirtualDisk.DEVICE_FLOPPY))
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
                                    bus="scsi"))
+        d3 = VirtualDisk(conn=g.conn, path="/default-pool/testvol1.img",
+                         bus="scsi")
+        d3.driver_name = "qemu"
+        g.disks.append(d3)
 
         # Network devices
         net1 = get_virtual_network()

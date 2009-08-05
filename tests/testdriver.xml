@@ -62,19 +62,25 @@
     <name>default-vol</name>
     <capacity>1000000</capacity>
     <allocation>50000</allocation>
-    <target/>
+    <target>
+      <format type='qcow2'/>
+    </target>
   </volume>
   <volume>
     <name>testvol1.img</name>
     <capacity>1000000</capacity>
     <allocation>50000</allocation>
-    <target/>
+    <target>
+      <format type='qcow2'/>
+    </target>
   </volume>
   <volume>
     <name>testvol2.img</name>
     <capacity>1000000</capacity>
     <allocation>50000</allocation>
-    <target/>
+    <target>
+      <format type='qcow2'/>
+    </target>
   </volume>
 </pool>
 
@@ -153,7 +159,9 @@
     <name>testvol1.img</name>
     <capacity>107374182400</capacity>
     <allocation>107374182400</allocation>
-    <target/>
+    <target>
+      <format type='qcow2'/>
+    </target>
   </volume>
 </pool>
 
