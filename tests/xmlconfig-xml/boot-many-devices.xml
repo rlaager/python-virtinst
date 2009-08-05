@@ -27,7 +27,7 @@
       <target dev='sda' bus='scsi'/>
     </disk>
     <disk type='file' device='disk'>
-      <driver name='qemu'/>
+      <driver name='qemu' type='qcow2'/>
       <source file='/default-pool/testvol1.img'/>
       <target dev='sdb' bus='scsi'/>
     </disk>

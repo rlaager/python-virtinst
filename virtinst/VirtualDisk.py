@@ -470,7 +470,7 @@ class VirtualDisk(VirtualDevice):
 
         if self.vol_object:
             drvtype = _util.get_xml_path(self.vol_object.XMLDesc(0),
-                                         "/volume/target/format")
+                                         "/volume/target/format/@type")
 
         elif self.vol_install:
             if drvname == self.DRIVER_QEMU:
