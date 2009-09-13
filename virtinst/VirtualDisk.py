@@ -1142,12 +1142,14 @@ class VirtualDisk(VirtualDevice):
         the passed parameters.
         @returns: str prefix, or None if no reasonable guess can be made
         """
+        # The upper limits here aren't necessarilly 1024, but let the HV
+        # error as appropriate.
         if self.bus == "virtio":
-            return ("vd", 16)
+            return ("vd", 1024)
         elif self.bus == "scsi" or self.bus == "usb":
-            return ("sd", 16)
+            return ("sd", 1024)
         elif self.bus == "xen":
-            return ("xvd", 16)
+            return ("xvd", 1024)
         elif self.bus == "fdc" or self.device == self.DEVICE_FLOPPY:
             return ("fd", 2)
         elif self.bus == "ide":
