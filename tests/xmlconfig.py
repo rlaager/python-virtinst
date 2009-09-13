@@ -57,6 +57,9 @@ def get_basic_fullyvirt_guest(typ="xen"):
     g.vcpus = 5
     return g
 
+def get_floppy(path="/default-pool/testvol1.img"):
+    return VirtualDisk(path, conn=conn, device=VirtualDisk.DEVICE_FLOPPY)
+
 def get_filedisk(path="/tmp/test.img"):
     return VirtualDisk(path, size=.0001, conn=conn)
 
@@ -326,8 +329,11 @@ class TestXMLConfig(unittest.TestCase):
         g = get_basic_fullyvirt_guest("kvm")
         g.os_type = "linux"
         g.os_variant = "fedora11"
-        g.installer = virtinst.PXEInstaller(type="kvm", os_type="hvm",
-                                            conn=g.conn)
+        g.installer = virtinst.DistroInstaller(type="kvm", os_type="hvm",
+                                               conn=g.conn,
+                                               location="/default-pool/default-vol")
+        g.installer.cdrom = True
+        g.disks.append(get_floppy())
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())

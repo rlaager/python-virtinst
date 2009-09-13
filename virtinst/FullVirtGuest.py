@@ -24,6 +24,7 @@ import DistroInstaller
 
 from Guest import Guest
 from VirtualDevice import VirtualDevice
+from VirtualDisk import VirtualDisk
 from VirtualInputDevice import VirtualInputDevice
 from VirtualCharDevice import VirtualCharDevice
 
@@ -122,7 +123,8 @@ class FullVirtGuest(Guest):
             if net_model and not net.model:
                 net.model = net_model
         for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
-            if disk_bus and not disk.bus:
+            if (disk_bus and not disk.bus and
+                disk.device == VirtualDisk.DEVICE_DISK):
                 disk.bus = disk_bus
 
         # If no serial devices were attached to the guest, stick the default

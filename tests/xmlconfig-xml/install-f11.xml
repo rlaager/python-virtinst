@@ -17,6 +17,10 @@
   <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
+    <disk type='file' device='floppy'>
+      <source file='/default-pool/testvol1.img'/>
+      <target dev='fda' bus='fdc'/>
+    </disk>
     <disk type='file' device='disk'>
       <source file='/tmp/test.img'/>
       <target dev='vda' bus='virtio'/>
@@ -24,6 +28,11 @@
     <disk type='block' device='disk'>
       <source dev='/dev/loop0'/>
       <target dev='vdb' bus='virtio'/>
+    </disk>
+    <disk type='file' device='cdrom'>
+      <source file='/default-pool/default-vol'/>
+      <target dev='hdc' bus='ide'/>
+      <readonly/>
     </disk>
     <interface type='network'>
       <source network='default'/>
