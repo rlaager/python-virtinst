@@ -638,7 +638,7 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
             net = _util.default_network(conn)
             networks.append(net[0] + ":" + net[1])
         else:
-            networks.append("user")
+            networks.append(VirtualNetworkInterface.TYPE_USER)
 
     # ensure we have less macs then networks, otherwise autofill the mac list
     if len(macs) > len(networks):
@@ -654,7 +654,7 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
                 net = _util.default_network(conn)
                 networks.append(net[0] + ":" + net[1])
             else:
-                networks.append("user")
+                networks.append(VirtualNetworkInterface.TYPE_USER)
             macs.append(None)
 
     net_init_dicts = []

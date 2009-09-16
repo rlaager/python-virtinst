@@ -24,7 +24,6 @@ gettext.bindtextdomain(gettext_app, gettext_dir)
 def _virtinst(msg):
     return gettext.dgettext(gettext_app, msg)
 
-import util
 import Storage
 from Guest import Guest, XenGuest
 from VirtualDevice import VirtualDevice
@@ -47,6 +46,7 @@ from ImportInstaller import ImportInstaller
 from ImageManager import ImageInstaller
 from CloneManager import CloneDesign
 from User import User
+import util
 
 # This represents the PUBLIC API. Any changes to these classes (or 'util.py')
 # must be mindful of this fact.

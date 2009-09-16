@@ -40,7 +40,7 @@ import libvirt
 from virtinst import _virtinst as _
 import virtinst
 import CapabilitiesParser
-from User import User
+import User
 
 KEYBOARD_DIR = "/etc/sysconfig/keyboard"
 XORG_CONF = "/etc/X11/xorg.conf"
@@ -107,7 +107,7 @@ def default_connection():
         os.path.exists("/usr/bin/qemu-kvm") or \
         os.path.exists("/usr/bin/kvm") or \
         os.path.exists("/usr/bin/xenner"):
-        if User.current().has_priv(User.PRIV_QEMU_SYSTEM):
+        if User.User.current().has_priv(User.User.PRIV_QEMU_SYSTEM):
             return "qemu:///system"
         else:
             return "qemu:///session"

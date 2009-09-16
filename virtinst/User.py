@@ -19,6 +19,7 @@
 
 import platform
 import os
+import _util
 
 class User(object):
     """Defines a particular user account."""
@@ -49,6 +50,9 @@ class User(object):
 
         if priv == self.PRIV_QEMU_SYSTEM:
             return self._euid == 0
+
+        if priv == self.PRIV_CREATE_NETWORK:
+            return (self._euid == 0) or _util.is_qemu_system(conn)
 
         if platform.system() != 'SunOS':
             is_xen = not conn or conn.lower()[0:3] == 'xen'

@@ -374,6 +374,16 @@ def default_bridge2(conn = None):
 
     return None
 
+def is_qemu_system(conn):
+    if not conn:
+        return False
+
+    (scheme, ignore, ignore,
+     path, ignore, ignore) = uri_split(conn)
+    if path == "/system" and scheme.startswith("qemu"):
+        return True
+    return False
+
 #
 # These functions accidentally ended up in the API under virtinst.util
 #
