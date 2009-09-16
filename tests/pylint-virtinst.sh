@@ -58,6 +58,9 @@ OUTSIDE_INIT="(.*Test.*|.*createPool.*)outside __init__"
 # pylint complains about some of the subclass funkiness in chardev classes
 CHAR_SUBCLASS=".*VirtualCharDevice' has no '(source_mode|source_path)' member.*|.*Method '_char_xml' is abstract in class 'VirtualCharDevice'.*"
 
+# Crap spewed by python 2.6
+MAX_RECURSION="maximum recursion depth"
+
 # FIXME: Everything skipped below are all bugs
 
 # Libvirt connect() method is broken for getting an objects connection, this
@@ -113,7 +116,7 @@ pylint --ignore=coverage.py, $FILES \
   --output-format=colorized \
   --dummy-variables-rgx="dummy|ignore*|.*ignore" \
   --disable-msg=${DMSG} \
-  --disable-checker=${DCHECKERS} | \
+  --disable-checker=${DCHECKERS} 2>&1 | \
   egrep -ve "$EXCEPTHOOK" \
         -ve "$BTYPE_TYPE" \
         -ve "$BTYPE_FILE" \
@@ -131,6 +134,7 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$TEST_HACKS" \
         -ve "$PROT_MEM_BUGS" \
         -ve "$CHAR_SUBCLASS" \
+        -ve "$MAX_RECURSION" \
         -ve "$OUTSIDE_INIT" | \
   $AWK '\
 # Strip out any "*** Module name" lines if we dont list any errors for them
