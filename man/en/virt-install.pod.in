@@ -435,6 +435,12 @@ The cache value can be 'none', 'writethrough', or 'writeback'.
 'writethrough' provides read caching. 'writeback' provides
 read and write caching.
 
+=item B<format>
+
+Image format to be used if creating managed storage. For file volumes, this
+can be 'raw', 'qcow2', 'vmdk', etc. See format types in
+L<http://libvirt.org/storage.html> for possible values.
+
 =back
 
 See the examples section for some uses. This option deprecates C<--file>,

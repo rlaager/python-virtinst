@@ -659,6 +659,11 @@ The cache mode to be used. The host pagecache provides cache memory.
 The cache value can be 'none', 'writethrough', or 'writeback'.
 \&'writethrough' provides read caching. 'writeback' provides
 read and write caching.
+.IP "\fBformat\fR" 4
+.IX Item "format"
+Image format to be used if creating managed storage. For file volumes, this
+can be 'raw', 'qcow2', 'vmdk', etc. See format types in
+<http://libvirt.org/storage.html> for possible values.
 .RE
 .RS 2
 .Sp

@@ -146,7 +146,7 @@ class VirtualDisk(VirtualDevice):
                  device=DEVICE_DISK, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
                  volInstall=None, volName=None, bus=None, shareable=False,
-                 driverCache=None, selinuxLabel=None):
+                 driverCache=None, selinuxLabel=None, format=None):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -183,6 +183,8 @@ class VirtualDisk(VirtualDevice):
         @type driverCache: member of cache_types
         @param selinuxLabel: Used for labelling new or relabel existing storage
         @type selinuxLabel: C{str}
+        @param format: Storage volume format to use when creating storage
+        @type format: C{str}
         """
 
         VirtualDevice.__init__(self, conn=conn)
@@ -200,6 +202,7 @@ class VirtualDisk(VirtualDevice):
         self._driver_cache = None
         self._selinux_label = None
         self._clone_path = None
+        self._format = None
 
         # XXX: No property methods for these
         self.transient = transient
@@ -219,6 +222,7 @@ class VirtualDisk(VirtualDevice):
         self._set_shareable(shareable, validate=False)
         self._set_driver_cache(driverCache, validate=False)
         self._set_selinux_label(selinuxLabel, validate=False)
+        self._set_format(format, validate=False)
 
         if volName:
             self.__lookup_vol_name(volName)
@@ -375,6 +379,14 @@ class VirtualDisk(VirtualDevice):
         self.__validate_wrapper("_selinux_label", val, validate)
     selinux_label = property(_get_selinux_label, _set_selinux_label)
 
+    def _get_format(self):
+        return self._format
+    def _set_format(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "format")
+        self.__validate_wrapper("_format", val, validate)
+    format = property(_get_format, _set_format)
+
     # Validation assistance methods
 
     # Initializes attribute if it hasn't been done, then validates args.
@@ -391,6 +403,24 @@ class VirtualDisk(VirtualDevice):
             except:
                 setattr(self, varname, orig)
                 raise
+
+    def __set_format(self):
+        if not self.format:
+            return
+
+        if not self.__creating_storage():
+            return
+
+        if self.vol_install:
+            if not hasattr(self.vol_install, "format"):
+                raise ValueError(_("Storage type does not support format "
+                                   "parameter."))
+            if self.vol_install.format != self.format:
+                self.vol_install.format = self.format
+
+        elif self.format != "raw":
+            raise RuntimeError(_("Format cannot be specified for "
+                                 "unmanaged storage."))
 
     def __set_size(self):
         """
@@ -700,6 +730,7 @@ class VirtualDisk(VirtualDevice):
         create_media = self.__creating_storage()
 
         self.__set_size()
+        self.__set_format()
 
         if not self.selinux_label:
             # If we are using existing storage, pull the label from it

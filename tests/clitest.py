@@ -62,6 +62,7 @@ test_files = {
     'MANAGEDEXIST2'     : "/default-pool/testvol2.img",
     'MANAGEDNEW1'       : "/default-pool/clonevol",
     'MANAGEDNEW2'       : "/default-pool/clonevol",
+    'MANAGEDDISKNEW1'   : "/disk-pool/newvol1.img",
 }
 
 debug = False
@@ -130,6 +131,12 @@ args_dict = {
         "--disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s --disk path=%(EXISTIMG1)s,device=cdrom",
         # > 16 scsi disks
         " --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi --disk path=%(EXISTIMG1)s,bus=scsi",
+        # Unmanaged file using format 'raw'
+        "--disk path=%(NEWIMG1)s,format=raw,size=.0000001",
+        # Managed file using format raw
+        "--disk path=%(MANAGEDNEW1)s,format=raw,size=.0000001",
+        # Managed file using format qcow2
+        "--disk path=%(MANAGEDNEW1)s,format=qcow2,size=.0000001",
       ],
 
       "invalid": [
@@ -153,6 +160,12 @@ args_dict = {
         "--disk pool=%(POOL)s",
         # Unknown cache type
         "--disk path=%(EXISTIMG1)s,perms=ro,size=.0001,cache=FOOBAR",
+        # Unmanaged file using non-raw format
+        "--disk path=%(NEWIMG1)s,format=qcow2,size=.0000001",
+        # Managed file using unknown format
+        "--disk path=%(MANAGEDNEW1)s,format=frob,size=.0000001",
+        # Managed disk using any format
+        "--disk path=%(MANAGEDDISKNEW1)s,format=raw,size=.0000001",
       ]
      }, # category "storage"
 

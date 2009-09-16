@@ -156,7 +156,8 @@ def parse_disk_option(guest, path, size):
     ro = False
     shared = False
     sparse = True
-    option_whitelist = ["perms", "cache", "bus", "device", "size", "sparse"]
+    option_whitelist = ["perms", "cache", "bus", "device", "size", "sparse",
+                        "format"]
 
     # Strip media type
     path, ignore, optstr = partition(path, ",")
@@ -200,6 +201,7 @@ def parse_disk_option(guest, path, size):
     devtype = opts.get("device")
     bus     = opts.get("bus")
     cache   = opts.get("cache")
+    fmt     = opts.get("format")
 
     # We return (path, (poolname, volname), volinst, device, bus, readonly,
     #            shared)
@@ -220,6 +222,8 @@ def parse_disk_option(guest, path, size):
                                                               suffix=".img")
         volinst = vc(pool_name=path, name=vname, conn=guest.conn,
                      allocation=0, capacity=(size and size*1024*1024*1024))
+        if fmt:
+            volinst.format = fmt
 
     elif path_type == "vol=":
         if not path.count("/"):
@@ -235,7 +239,7 @@ def parse_disk_option(guest, path, size):
     if not devtype:
         devtype = virtinst.VirtualDisk.DEVICE_DISK
     ret = (abspath, voltuple, volinst, devtype, bus, ro, shared, size, sparse,
-           cache)
+           cache, fmt)
     logging.debug("parse_disk: returning %s" % str(ret))
     return ret
 
@@ -252,13 +256,13 @@ def get_disk(disk, size, sparse, guest, conn, is_file_path):
         # Get disk parameters
         if is_file_path:
             (path, voltuple, volinst, device, bus, readOnly, shared, size,
-             sparse, cache) = \
+             sparse, cache, fmt) = \
              (disk, None, None, virtinst.VirtualDisk.DEVICE_DISK, None, False,
-              False, size, sparse, None)
+              False, size, sparse, None, None)
         else:
             (path, voltuple, volinst,
              device, bus, readOnly, shared,
-             size, sparse, cache) = parse_disk_option(guest, disk, size)
+             size, sparse, cache, fmt) = parse_disk_option(guest, disk, size)
             if not sparse and volinst:
                 volinst.allocation = volinst.capacity
 
@@ -266,7 +270,7 @@ def get_disk(disk, size, sparse, guest, conn, is_file_path):
                   'volInstall': volinst, 'volName': voltuple,
                   'readOnly': readOnly, 'shareable': shared,
                   'device': device, 'bus': bus, 'conn': guest.conn,
-                  'driverCache': cache}
+                  'driverCache': cache, 'format': fmt}
 
         d = cli.disk_prompt(None, kwargs)
 
