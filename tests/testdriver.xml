@@ -67,6 +67,22 @@
     </target>
   </volume>
   <volume>
+    <name>iso-vol</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target>
+      <format type='iso'/>
+    </target>
+  </volume>
+  <volume>
+    <name>bochs-vol</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target>
+      <format type='bochs'/>
+    </target>
+  </volume>
+  <volume>
     <name>testvol1.img</name>
     <capacity>1000000</capacity>
     <allocation>50000</allocation>

@@ -302,9 +302,15 @@ class TestXMLConfig(unittest.TestCase):
             g.disks.append(get_blkdisk())
             self._compare(g, "misc-qemu-driver-name", True)
 
+            VirtualDisk._get_uri = new_get_uri
             g = get_basic_fullyvirt_guest()
             g.disks.append(get_filedisk())
             self._compare(g, "misc-qemu-driver-type", True)
+
+            VirtualDisk._get_uri = new_get_uri
+            g = get_basic_fullyvirt_guest()
+            g.disks.append(get_filedisk("/default-pool/iso-vol"))
+            self._compare(g, "misc-qemu-iso-disk", True)
         finally:
             VirtualDisk._get_uri = oldgetdriver
 
@@ -503,8 +509,7 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
                                    bus="scsi"))
         d3 = VirtualDisk(conn=g.conn, path="/default-pool/testvol1.img",
-                         bus="scsi")
-        d3.driver_name = "qemu"
+                         bus="scsi", driverName="qemu")
         g.disks.append(d3)
 
         # Network devices

@@ -55,6 +55,20 @@ def _vdisk_clone(path, clone):
     except OSError:
         return False
 
+def _qemu_sanitize_drvtype(phystype, fmt):
+    """
+    Sanitize libvirt storage volume format to a valid qemu driver type
+    """
+    raw_list = [ "iso" ]
+
+    if phystype == VirtualDisk.TYPE_BLOCK:
+        return VirtualDisk.DRIVER_QEMU_RAW
+
+    if fmt in raw_list:
+        return VirtualDisk.DRIVER_QEMU_RAW
+
+    return fmt
+
 class VirtualDisk(VirtualDevice):
     """
     Builds a libvirt domain disk xml description
@@ -490,8 +504,8 @@ class VirtualDisk(VirtualDevice):
 
         http://lists.gnu.org/archive/html/qemu-devel/2008-04/msg00675.html
         """
-        drvname = None
-        drvtype = None
+        drvname = self._driverName
+        drvtype = self._driverType
 
         if self.conn:
             driver = _util.get_uri_driver(self._get_uri())
@@ -499,15 +513,15 @@ class VirtualDisk(VirtualDevice):
                 drvname = self.DRIVER_QEMU
 
         if self.vol_object:
-            drvtype = _util.get_xml_path(self.vol_object.XMLDesc(0),
-                                         "/volume/target/format/@type")
+            fmt = _util.get_xml_path(self.vol_object.XMLDesc(0),
+                                     "/volume/target/format/@type")
+            if drvname == self.DRIVER_QEMU:
+                drvtype = _qemu_sanitize_drvtype(self.type, fmt)
 
         elif self.vol_install:
             if drvname == self.DRIVER_QEMU:
-                if self.vol_install.file_type == libvirt.VIR_STORAGE_VOL_FILE:
-                    drvtype = self.vol_install.format
-                else:
-                    drvtype = self.DRIVER_QEMU_RAW
+                drvtype = _qemu_sanitize_drvtype(self.type,
+                                                 self.vol_install.format)
 
         elif self.__creating_storage():
             if drvname == self.DRIVER_QEMU:
@@ -729,8 +743,10 @@ class VirtualDisk(VirtualDevice):
         managed_storage = self.__storage_specified()
         create_media = self.__creating_storage()
 
+        self.__set_dev_type()
         self.__set_size()
         self.__set_format()
+        self.__set_driver()
 
         if not self.selinux_label:
             # If we are using existing storage, pull the label from it
@@ -745,9 +761,6 @@ class VirtualDisk(VirtualDevice):
 
             self._selinux_label = context or ""
 
-        # Set driverName + driverType
-        self.__set_driver()
-
         # If not creating the storage, our job is easy
         if not create_media:
             # Make sure we have access to the local path
@@ -757,7 +770,6 @@ class VirtualDisk(VirtualDevice):
                     raise ValueError(_("The path '%s' must be a file or a "
                                        "device, not a directory") % self.path)
 
-            self.__set_dev_type()
             return True
 
 
@@ -770,7 +782,6 @@ class VirtualDisk(VirtualDevice):
             if self.type is self.TYPE_BLOCK:
                 raise ValueError, _("Local block device path '%s' must "
                                     "exist.") % self.path
-            self.set_type(self.TYPE_FILE, validate=False)
 
             # Path doesn't exist: make sure we have write access to dir
             if not os.access(os.path.dirname(self.path), os.R_OK):
@@ -782,9 +793,6 @@ class VirtualDisk(VirtualDevice):
             if not os.access(os.path.dirname(self.path), os.W_OK):
                 raise ValueError, _("No write access to directory '%s'") % \
                                     os.path.dirname(self.path)
-        else:
-            # Set dev type from existing storage
-            self.__set_dev_type()
 
         # Applicable for managed or local storage
         ret = self.is_size_conflict()
