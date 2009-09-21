@@ -96,12 +96,13 @@ addmsg "W0702"  # W0702: No exception type specified
 addmsg "R0201"  # R0201: Method could be a function
 
 # Possibly useful at some point
-#addmsg "W0201"  # W0201: Defined outside __init__
 addmsg "W0403"  # W0403: Relative imports
 addmsg "W0511"  # W0511: FIXME and XXX: messages (useful in the future)
 addmsg "C0322"  # C0322: *Operator not preceded by a space*
 addmsg "C0323"  # C0323: *Operator not followed by a space*
 addmsg "C0324"  # C0324: *Comma not followed by a space*
+addmsg "W6501"  # W6501: Using string formatters in logging message
+                #        (see help message for info)
 
 # Disabled Checkers:
 addchecker "Design"         # Things like "Too many func arguments",
