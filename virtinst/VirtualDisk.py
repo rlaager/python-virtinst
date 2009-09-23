@@ -213,7 +213,12 @@ class VirtualDisk(VirtualDevice):
         uid = _name_uid(username)
         fixlist = []
 
-        dirname, base = os.path.split(path)
+        if os.path.isdir(path):
+            dirname = path
+            base = "-"
+        else:
+            dirname, base = os.path.split(path)
+
         while base:
             if not _is_dir_searchable(uid, username, dirname):
                 fixlist.append(dirname)
