@@ -19,9 +19,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import os, statvfs
+import os, stat, pwd, statvfs
 import subprocess
 import logging
+import re
+
 import urlgrabber.progress as progress
 import libvirt
 
@@ -68,6 +70,46 @@ def _qemu_sanitize_drvtype(phystype, fmt):
         return VirtualDisk.DRIVER_QEMU_RAW
 
     return fmt
+
+def _name_uid(user):
+    """
+    Return UID for string username
+    """
+    pwdinfo = pwd.getpwnam(user)
+    return pwdinfo[2]
+
+def _is_dir_searchable(uid, username, path):
+    """
+    Check if passed directory is searchable by uid
+    """
+    try:
+        statinfo = os.stat(path)
+    except OSError:
+        return False
+
+    if uid == statinfo.st_uid:
+        flag = stat.S_IXUSR
+    elif uid == statinfo.st_gid:
+        flag = stat.S_IXGRP
+    else:
+        flag = stat.S_IXOTH
+
+    if bool(statinfo.st_mode & flag):
+        return True
+
+    # Check POSIX ACL (since that is what we use to 'fix' access)
+    cmd = ["getfacl", path]
+    proc = subprocess.Popen(cmd,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+
+    if proc.returncode != 0:
+        logging.debug("Cmd '%s' failed: %s" % (cmd, err))
+        return False
+
+    return bool(re.search("user:%s:..x" % username, out))
+
 
 class VirtualDisk(VirtualDevice):
     """
@@ -155,6 +197,63 @@ class VirtualDisk(VirtualDevice):
             pass
 
         return False
+
+    @staticmethod
+    def check_path_search_for_user(conn, path, username):
+        """
+        Check if the passed user has search permissions for all the
+        directories in the disk path.
+
+        @return: List of the directories the user cannot search, or empty list
+        @rtype : C{list}
+        """
+        if _util.is_uri_remote(conn.getURI()):
+            return []
+
+        uid = _name_uid(username)
+        fixlist = []
+
+        dirname, base = os.path.split(path)
+        while base:
+            if not _is_dir_searchable(uid, username, dirname):
+                fixlist.append(dirname)
+
+            dirname, base = os.path.split(dirname)
+
+        return fixlist
+
+    @staticmethod
+    def fix_path_search_for_user(conn, path, username):
+        """
+        Try to fix any permission problems found by check_path_search_for_user
+
+        @return: Return a dictionary of entries { broken path : error msg }
+        @rtype : C{dict}
+        """
+        fixlist = VirtualDisk.check_path_search_for_user(conn, path, username)
+        if not fixlist:
+            return []
+
+        fixlist.reverse()
+        errdict = {}
+
+        for dirname in fixlist:
+            try:
+                cmd = ["setfacl", "--modify", "user:%s:x" % username, dirname]
+                proc = subprocess.Popen(cmd,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+                out, err = proc.communicate()
+
+                logging.debug("Cmd '%s' output: \nout=%s, \nerr=%s" %
+                              (cmd, out, err))
+                if proc.returncode != 0:
+                    raise ValueError(err)
+            except Exception, e:
+                errdict[dirname] =  str(e)
+
+        return errdict
+
 
     def __init__(self, path=None, size=None, transient=False, type=None,
                  device=DEVICE_DISK, driverName=None, driverType=None,
