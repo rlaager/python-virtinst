@@ -570,8 +570,11 @@ Use 0.0.0.0 to allow access from other machines.
 
 =item  -k KEYMAP, --keymap=KEYMAP
 
-Request that the virtual VNC console be configured to run with a non-English
-keyboard layout.
+Request that the virtual VNC console be configured to run with a specific
+keyboard layout. If the special value 'local' is specified, virt-install
+will attempt to configure to use the same keymap as the local system. A value
+of 'none' specifically defers to the hypervisor. Default behavior is
+hypervisor specific, but typically is the same as 'local'.
 
 =item  --sdl
 

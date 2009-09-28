@@ -217,6 +217,10 @@ args_dict = {
         "--vnc --keymap ja --vncport 5950 --vnclisten 1.2.3.4",
         # --video option
         "--vnc --video vga",
+        # --keymap local,
+        "--vnc --keymap local",
+        # --keymap none
+        "--vnc --keymap none",
       ],
 
       "invalid": [

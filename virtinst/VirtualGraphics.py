@@ -31,6 +31,8 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     TYPE_SDL = "sdl"
     TYPE_VNC = "vnc"
 
+    KEYMAP_LOCAL = "local"
+
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
                  keymap=None, conn=None):
 
@@ -50,6 +52,15 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         self.set_listen(listen)
         self.set_passwd(passwd)
 
+    def _default_keymap(self):
+        if (self.conn and
+            _util.get_uri_driver(self.conn.getURI()) == "qemu" and
+            dir(self.conn).count("getVersion") and
+            self.conn.getVersion() > 11 * 1000):
+            return None
+
+        return _util.default_keymap()
+
     def get_type(self):
         return self._type
     type = property(get_type)
@@ -58,13 +69,18 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         return self._keymap
     def set_keymap(self, val):
         if not val:
-            val = _util.default_keymap()
+            val = self._default_keymap()
+
         if not val or type(val) != type("string"):
             raise ValueError, _("Keymap must be a string")
-        if len(val) > 16:
+
+        if val.lower() == self.KEYMAP_LOCAL:
+            val = _util.default_keymap()
+        elif len(val) > 16:
             raise ValueError, _("Keymap must be less than 16 characters")
-        if re.match("^[a-zA-Z0-9_-]*$", val) == None:
+        elif re.match("^[a-zA-Z0-9_-]*$", val) == None:
             raise ValueError, _("Keymap can only contain alphanumeric, '_', or '-' characters")
+
         self._keymap = val
     keymap = property(get_keymap, set_keymap)
 

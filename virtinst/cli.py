@@ -666,9 +666,9 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
     return net_init_dicts
 
 def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, guest):
-    if (vnc and nographics) or \
-       (vnc and sdl) or \
-       (sdl and nographics):
+    if ((vnc and nographics) or
+        (vnc and sdl) or
+        (sdl and nographics)):
         raise ValueError, _("Can't specify more than one of VNC, SDL, "
                             "or --nographics")
 
@@ -683,21 +683,31 @@ def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, guest):
     if nographics is not None:
         guest.graphics_dev = None
         return
+
     if sdl is not None:
         guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_SDL)
         return
+
     if vnc is not None:
         guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
         if vncport:
             guest.graphics_dev.port = vncport
         if vnclisten:
             guest.graphics_dev.listen = vnclisten
+
     if keymap:
-        checked_keymap = _util.check_keytable(keymap)
-        if checked_keymap:
-            guest.graphics_dev.keymap = checked_keymap
-        else:
-            raise ValueError, _("Didn't match keymap '%s' in keytable!" % keymap)
+        use_keymap = None
+
+        if keymap.lower() == "local":
+            use_keymap = virtinst.VirtualGraphics.KEYMAP_LOCAL
+
+        elif keymap.lower() != "none":
+            use_keymap = _util.check_keytable(keymap)
+            if not use_keymap:
+                raise ValueError(_("Didn't match keymap '%s' in keytable!") %
+                                 keymap)
+
+        guest.graphics_dev.keymap = use_keymap
 
 def get_sound(sound, guest):
 
