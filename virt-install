@@ -225,6 +225,9 @@ def parse_disk_option(guest, path, size):
         if fmt:
             volinst.format = fmt
 
+        if not sparse:
+            volinst.allocation = volinst.capacity
+
     elif path_type == "vol=":
         if not path.count("/"):
             raise ValueError(_("Storage volume must be specified as "
@@ -238,39 +241,40 @@ def parse_disk_option(guest, path, size):
 
     if not devtype:
         devtype = virtinst.VirtualDisk.DEVICE_DISK
-    ret = (abspath, voltuple, volinst, devtype, bus, ro, shared, size, sparse,
-           cache, fmt)
-    logging.debug("parse_disk: returning %s" % str(ret))
-    return ret
+
+    # Mapping to VirtualDisk __init__ options
+    kwargs = { 'conn' : guest.conn,
+               'path': path,
+               'size': size,
+               'sparse': sparse,
+               'volInstall': volinst,
+               'volName': voltuple,
+               'readOnly': ro,
+               'shareable': shared,
+               'device': devtype,
+               'bus': bus,
+               'driverCache': cache,
+               'format': fmt }
+
+    logging.debug("parse_disk: returning %s" % str(kwargs))
+    return kwargs
 
 def get_disk(disk, size, sparse, guest, conn, is_file_path):
 
     # If user specified --disk, disable prompting for the whole validation
-    # process, since falling back to prompting likely wouldn't
-
+    # process, since falling back to prompting likely wouldn't provide
+    # sufficient options.
     orig_prompt = cli.doprompt
     if not is_file_path:
         cli.set_prompt(False)
 
     try:
-        # Get disk parameters
         if is_file_path:
-            (path, voltuple, volinst, device, bus, readOnly, shared, size,
-             sparse, cache, fmt) = \
-             (disk, None, None, virtinst.VirtualDisk.DEVICE_DISK, None, False,
-              False, size, sparse, None, None)
+            kwargs = { 'conn': conn, 'path': disk, 'size': size,
+                       'sparse': sparse,
+                       'device': virtinst.VirtualDisk.DEVICE_DISK }
         else:
-            (path, voltuple, volinst,
-             device, bus, readOnly, shared,
-             size, sparse, cache, fmt) = parse_disk_option(guest, disk, size)
-            if not sparse and volinst:
-                volinst.allocation = volinst.capacity
-
-        kwargs = {'conn': conn, 'path': path, 'size': size, 'sparse': sparse,
-                  'volInstall': volinst, 'volName': voltuple,
-                  'readOnly': readOnly, 'shareable': shared,
-                  'device': device, 'bus': bus, 'conn': guest.conn,
-                  'driverCache': cache, 'format': fmt}
+            kwargs = parse_disk_option(guest, disk, size)
 
         d = cli.disk_prompt(None, kwargs)
 
