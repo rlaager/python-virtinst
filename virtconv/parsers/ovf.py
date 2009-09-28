@@ -214,11 +214,11 @@ def _parse_hw_section(vm, nodes, file_refs, disk_section):
 
             bus = (bus_id and disk_buses[bus_id]) or "ide"
 
-            format = diskcfg.DISK_FORMAT_RAW
+            fmt = diskcfg.DISK_FORMAT_RAW
 
             if path:
                 ref = None
-                format = diskcfg.DISK_FORMAT_VMDK
+                fmt = diskcfg.DISK_FORMAT_VMDK
 
                 if path.startswith("ovf:/disk/"):
                     disk_ref = path[len("ovf:/disk/"):]
@@ -226,7 +226,7 @@ def _parse_hw_section(vm, nodes, file_refs, disk_section):
                         raise ValueError(_("Unknown reference id '%s' "
                                            "for path %s.") % (path, ref))
 
-                    ref, format = disk_section[disk_ref]
+                    ref, fmt = disk_section[disk_ref]
 
                 elif path.startswith("ovf:/file/"):
                     ref = path[len("ovf:/file/"):]
@@ -244,7 +244,7 @@ def _parse_hw_section(vm, nodes, file_refs, disk_section):
 
                 path = file_refs[ref]
 
-            disk = diskcfg.disk(path=path, format=format, bus=bus,
+            disk = diskcfg.disk(path=path, format=fmt, bus=bus,
                                 type=diskcfg.DISK_TYPE_DISK)
 
             vm.disks[(bus, dev_num)] = disk
@@ -362,13 +362,13 @@ class ovf_parser(formats.parser):
                     if disk_node.name != "Disk":
                         continue
 
-                    format = disk_node.prop("format")
-                    if not format:
-                        format = diskcfg.DISK_FORMAT_VMDK
-                    elif format.lower().count("vmdk"):
-                        format = diskcfg.DISK_FORMAT_VMDK
+                    fmt = disk_node.prop("format")
+                    if not fmt:
+                        fmt = diskcfg.DISK_FORMAT_VMDK
+                    elif fmt.lower().count("vmdk"):
+                        fmt = diskcfg.DISK_FORMAT_VMDK
                     else:
-                        format = diskcfg.DISK_FORMAT_VMDK
+                        fmt = diskcfg.DISK_FORMAT_VMDK
 
                     disk_id = disk_node.prop("diskId")
                     file_ref = disk_node.prop("fileRef")
@@ -377,7 +377,7 @@ class ovf_parser(formats.parser):
                     capacity = convert_alloc_val(alloc_str, capacity)
 
                     # XXX: Empty fileref means 'create this disk'
-                    disk_section[disk_id] = (file_ref, format)
+                    disk_section[disk_id] = (file_ref, fmt)
 
             elif envelope_node.name == "NetworkSection":
                 for net_node in envelope_node.children:

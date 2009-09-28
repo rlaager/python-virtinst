@@ -138,6 +138,7 @@ class StorageObject(object):
             raise ValueError(_("'%s' is not an absolute path." % path))
 
     def _check_name_collision(self, name):
+        ignore = name
         raise RuntimeError, "Must be implemented in subclass"
 
     # XML Building
