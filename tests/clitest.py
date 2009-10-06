@@ -17,6 +17,9 @@
 import commands
 import os, sys
 
+# Set DISPLAY if it isn't already set
+os.environ["DISPLAY"] = "testdisplay"
+
 testuri = "test:///`pwd`/tests/testdriver.xml"
 
 # There is a hack in virtinst/cli.py to find this magic string and
