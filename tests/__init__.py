@@ -40,7 +40,7 @@ else:
     debug = False
 
 # Used to ensure consistent SDL xml output
-os.environ["HOME"] = "/testdir"
+os.environ["HOME"] = "/tmp"
 os.environ["DISPLAY"] = ":3.4"
 
 def open_testdriver():

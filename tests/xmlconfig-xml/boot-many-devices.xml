@@ -40,7 +40,7 @@
       <mac address='11:11:11:11:11:11'/>
     </interface>
     <input type='mouse' bus='ps2'/>
-    <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
+    <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>
     <serial type='null'/>
     <parallel type='unix'>
       <source mode='bind' path='/tmp/foobar'/>

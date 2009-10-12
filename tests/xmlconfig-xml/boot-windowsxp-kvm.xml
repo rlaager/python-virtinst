@@ -35,7 +35,7 @@
       <mac address='11:22:33:44:55:66'/>
     </interface>
     <input type='tablet' bus='usb'/>
-    <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
+    <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>
     <console type='pty'/>
   </devices>
 </domain>

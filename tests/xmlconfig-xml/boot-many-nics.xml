@@ -35,7 +35,7 @@
       <mac address='22:22:22:22:22:22'/>
     </interface>
     <input type='mouse' bus='ps2'/>
-    <graphics type='sdl' display=':3.4' xauth='/testdir/.Xauthority'/>
+    <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>
     <console type='pty'/>
   </devices>
 </domain>
