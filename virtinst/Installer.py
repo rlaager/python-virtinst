@@ -144,7 +144,7 @@ class Installer(object):
         else:
             scratch = os.path.expanduser("~/.virtinst/boot")
             if not os.path.exists(scratch):
-                os.makedirs(scratch, 0750)
+                os.makedirs(scratch, 0751)
             _util.selinux_restorecon(scratch)
             return scratch
     scratchdir = property(get_scratchdir)

@@ -91,10 +91,7 @@ def setupLogging(appname, debug=False):
     # set up logging
     vi_dir = os.path.expanduser("~/.virtinst")
     if not os.access(vi_dir,os.W_OK):
-        try:
-            os.mkdir(vi_dir)
-        except IOError, e:
-            raise RuntimeError, "Could not create %d directory: " % vi_dir, e
+        os.mkdir(vi_dir, 0751)
 
     dateFormat = "%a, %d %b %Y %H:%M:%S"
     fileFormat = "[%(asctime)s " + appname + " %(process)d] %(levelname)s (%(module)s:%(lineno)d) %(message)s"
