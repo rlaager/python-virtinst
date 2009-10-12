@@ -210,7 +210,12 @@ class VirtualDisk(VirtualDevice):
         if _util.is_uri_remote(conn.getURI()):
             return []
 
-        uid = _name_uid(username)
+        try:
+            uid = _name_uid(username)
+        except Exception, e:
+            logging.debug("Error looking up username: %s" % str(e))
+            return []
+
         fixlist = []
 
         if os.path.isdir(path):
