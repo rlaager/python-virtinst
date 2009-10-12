@@ -33,6 +33,22 @@ from VirtualDisk import VirtualDisk
 XEN_SCRATCH="/var/lib/xen"
 LIBVIRT_SCRATCH="/var/lib/libvirt/boot"
 
+def _get_scratchdir():
+    if platform.system() == 'SunOS':
+        scratch = '/var/tmp'
+    if os.geteuid() == 0:
+        if self.type == "xen" and os.path.exists(XEN_SCRATCH):
+            scratch = XEN_SCRATCH
+        if os.path.exists(LIBVIRT_SCRATCH):
+            scratch = LIBVIRT_SCRATCH
+    else:
+        scratch = os.path.expanduser("~/.virtinst/boot")
+        if not os.path.exists(scratch):
+            os.makedirs(scratch, 0751)
+        _util.selinux_restorecon(scratch)
+
+    return scratch
+
 class Installer(object):
     """
     Installer classes attempt to encapsulate all the parameters needed
@@ -68,6 +84,7 @@ class Installer(object):
         # XXX: We should set this default based on capabilities?
         self._os_type = "xen"
         self._conn = conn
+        self._scratchdir = _get_scratchdir()
 
         # VirtualDisk that contains install media
         self._install_disk = None
@@ -134,19 +151,7 @@ class Installer(object):
     arch = property(get_arch, set_arch)
 
     def get_scratchdir(self):
-        if platform.system() == 'SunOS':
-            return '/var/tmp'
-        if os.geteuid() == 0:
-            if self.type == "xen" and os.path.exists(XEN_SCRATCH):
-                return XEN_SCRATCH
-            if os.path.exists(LIBVIRT_SCRATCH):
-                return LIBVIRT_SCRATCH
-        else:
-            scratch = os.path.expanduser("~/.virtinst/boot")
-            if not os.path.exists(scratch):
-                os.makedirs(scratch, 0751)
-            _util.selinux_restorecon(scratch)
-            return scratch
+        return self._scratchdir
     scratchdir = property(get_scratchdir)
 
     def get_cdrom(self):
