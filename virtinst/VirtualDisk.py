@@ -240,15 +240,8 @@ class VirtualDisk(VirtualDevice):
         @return: Return a dictionary of entries { broken path : error msg }
         @rtype : C{dict}
         """
-        fixlist = VirtualDisk.check_path_search_for_user(conn, path, username)
-        if not fixlist:
-            return []
-
-        fixlist.reverse()
-        errdict = {}
-
-        for dirname in fixlist:
-            try:
+        def fix_perms(dirname, useacl=True):
+            if useacl:
                 cmd = ["setfacl", "--modify", "user:%s:x" % username, dirname]
                 proc = subprocess.Popen(cmd,
                                         stdout=subprocess.PIPE,
@@ -259,6 +252,29 @@ class VirtualDisk(VirtualDevice):
                               (cmd, out, err))
                 if proc.returncode != 0:
                     raise ValueError(err)
+            else:
+                mode = os.stat(dirname).st_mode
+                os.chmod(dirname, mode | stat.S_IXOTH)
+
+        fixlist = VirtualDisk.check_path_search_for_user(conn, path, username)
+        if not fixlist:
+            return []
+
+        fixlist.reverse()
+        errdict = {}
+
+        useacl = True
+        for dirname in fixlist:
+            try:
+                try:
+                    fix_perms(dirname, useacl)
+                except:
+                    # If acl fails, fall back to chmod and retry
+                    if not useacl:
+                        raise
+                    useacl = False
+
+                    fix_perms(dirname, useacl)
             except Exception, e:
                 errdict[dirname] =  str(e)
 
