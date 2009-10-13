@@ -267,6 +267,29 @@ args_dict = {
 
      }, # category 'char'
 
+     "cpuram" : {
+      "cpuram_args" : "--hvm --nographics --noautoconsole --nodisks --pxe",
+
+      "valid" : [
+        # Max VCPUS
+        "--vcpus 32",
+        # Cpuset
+        "--vcpus 4 --cpuset=1,3-5",
+        # Cpuset with trailing comma
+        "--vcpus 4 --cpuset=1,3-5,",
+        # Ram overcommit
+        "--ram 100000000000",
+      ],
+
+      "invalid" : [
+        # Bogus cpuset
+        "--vcpus 32 --cpuset=969-1000",
+        # Over max vcpus
+        "--vcpus 10000",
+      ],
+
+    }, # category 'cpuram'
+
      "misc": {
       "misc_args": "--nographics --noautoconsole",
 

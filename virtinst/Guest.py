@@ -196,11 +196,12 @@ class Guest(object):
                     raise ValueError, _("cpuset's pCPU numbers must be less "
                                         "than pCPUs.")
             else:
-                if len(c) > 0:
-                    val = int(c)
-                    if val >= pcpus:
-                        raise ValueError, _("cpuset's pCPU numbers must be less "
-                                            "than pCPUs.")
+                if len(c) == 0:
+                    continue
+
+                if int(c) >= pcpus:
+                    raise ValueError, _("cpuset's pCPU numbers must be less "
+                                        "than pCPUs.")
         self._cpuset = val
     cpuset = property(get_cpuset, set_cpuset)
 
