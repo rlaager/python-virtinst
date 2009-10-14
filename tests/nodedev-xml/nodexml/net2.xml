@@ -1,9 +1,0 @@
-<device>
-  <name>net_00_1c_bf_04_29_a4</name>
-  <parent>pci_8086_4227</parent>
-  <capability type='net'>
-    <interface>wlan0</interface>
-    <address>00:1c:bf:04:29:a4</address>
-    <capability type='80211'/>
-  </capability>
-</device>
