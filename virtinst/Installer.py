@@ -33,11 +33,11 @@ from VirtualDisk import VirtualDisk
 XEN_SCRATCH="/var/lib/xen"
 LIBVIRT_SCRATCH="/var/lib/libvirt/boot"
 
-def _get_scratchdir():
+def _get_scratchdir(typ):
     if platform.system() == 'SunOS':
         scratch = '/var/tmp'
     if os.geteuid() == 0:
-        if self.type == "xen" and os.path.exists(XEN_SCRATCH):
+        if typ == "xen" and os.path.exists(XEN_SCRATCH):
             scratch = XEN_SCRATCH
         if os.path.exists(LIBVIRT_SCRATCH):
             scratch = LIBVIRT_SCRATCH
@@ -84,7 +84,6 @@ class Installer(object):
         # XXX: We should set this default based on capabilities?
         self._os_type = "xen"
         self._conn = conn
-        self._scratchdir = _get_scratchdir()
 
         # VirtualDisk that contains install media
         self._install_disk = None
@@ -112,6 +111,7 @@ class Installer(object):
         if not extraargs is None:
             self.extraargs = extraargs
 
+        self._scratchdir = _get_scratchdir(self.type)
         self._tmpfiles = []
 
     def get_install_disk(self):
