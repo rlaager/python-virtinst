@@ -353,11 +353,37 @@ class SCSIBus(NodeDevice):
 
         self.host = None
 
+        self.vport_ops = False
+
+        self.fc_host = False
+        self.wwnn = None
+        self.wwpn = None
+
         self.parseXML(self._getCapabilityNode(node))
 
     def parseXML(self, node):
         val_map = { "host" : "host" }
-        self._parseHelper(node, val_map)
+
+        child = node.children
+        while child:
+            if child.name == "capability":
+                captype = child.prop("type")
+
+                if captype == "vport_ops":
+                    self.vport_ops = True
+                elif captype == "fc_host":
+                    self.fc_host = True
+                    fcchild = child.children
+                    while fcchild:
+                        if fcchild.name == "wwnn":
+                            self.wwnn = fcchild.content
+                        elif fcchild.name == "wwpn":
+                            self.wwpn = fcchild.content
+                        fcchild = fcchild.next
+            else:
+                self._parseValueHelper(child, val_map)
+
+            child = child.next
 
     def pretty_name(self, child_dev=None):
         ignore = child_dev
