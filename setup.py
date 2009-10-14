@@ -36,13 +36,25 @@ class TestBaseCommand(Command):
             os.environ["DEBUG_TESTS"] = "1"
 
     def run(self):
-        import tests.coverage as coverage
+        try:
+            import coverage
+            use_coverage = True
+        except:
+            # Use system 'coverage' if available
+            use_coverage = False
+
         tests = TestLoader().loadTestsFromNames(self._testfiles)
         t = TextTestRunner(verbosity = 1)
-        coverage.erase()
-        coverage.start()
+
+        if use_coverage:
+            coverage.erase()
+            coverage.start()
+
         result = t.run(tests)
-        coverage.stop()
+
+        if use_coverage:
+            coverage.stop()
+
         if len(result.failures) > 0 or len(result.errors) > 0:
             sys.exit(1)
         else:

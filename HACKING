@@ -24,6 +24,9 @@ throw some false positives or useless messages. If you think your patch
 exposes one of these, bring it up on the mailing list
 (virt-tools-list@redhat.com).
 
+If 'python-coverage' is installed, you can run 'coverage -r' after 'test'
+to see a code coverage report.
+
 'test_urls' only needs to be run if the patch is against the url fetching
 code (virtinst/OSDistro.py). This stuff is notoriously fragile, so running
 'test_urls' is a must. If you are debugging a certain url failure, you can

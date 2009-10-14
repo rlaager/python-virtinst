@@ -14,9 +14,7 @@ This library currently requires
     python >= 2.4 / 2.5
     virt-viewer >= 0.0.1
 
-
-With the exception of the tests/coverage.py file, all code is
-made available under the following terms:
+All code is made available under the following terms:
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
