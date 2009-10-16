@@ -223,7 +223,10 @@ def parse_disk_option(guest, path, size):
         volinst = vc(pool_name=path, name=vname, conn=guest.conn,
                      allocation=0, capacity=(size and size*1024*1024*1024))
         if fmt:
-            volinst.format = fmt
+            if not hasattr(volinst, "format"):
+                raise ValueError(_("Format attribute not supported for this "
+                                   "volume type"))
+            setattr(volinst, "format", fmt)
 
         if not sparse:
             volinst.allocation = volinst.capacity

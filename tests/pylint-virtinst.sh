@@ -37,6 +37,7 @@ UNDEF_GETTEXT="Undefined variable '_'"
 # Don't complain about 'ucred' or 'selinux' not being available
 UCRED="import 'ucred'"
 SELINUX="import 'selinux'"
+COVERAGE="import 'coverage'"
 OLDSELINUX="'selinux' has no "
 
 # Public api error
@@ -69,7 +70,7 @@ ACCESS__CONN="Access to a protected member _conn"
 
 # There isn't a clean API way to access this functions from the API, but
 # they provide info that is needed. These need need to be fixed.
-PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_add_install_dev)"
+PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_add_install_dev)|'virtinst.FullVirtGuest' has no '_OS_TYPES'"
 
 DMSG=""
 addmsg() {
@@ -107,6 +108,7 @@ addmsg "W0511"  # W0511: FIXME and XXX: messages (useful in the future)
 addmsg "C0322"  # C0322: *Operator not preceded by a space*
 addmsg "C0323"  # C0323: *Operator not followed by a space*
 addmsg "C0324"  # C0324: *Comma not followed by a space*
+addmsg "R0401"  # R0401: Cyclic imports
 
 # Not supported in many pylint versions
 addmsg_support "W6501"  # W6501: Using string formatters in logging message
@@ -133,6 +135,7 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$BTYPE_FORMAT" \
         -ve "$UCRED" \
         -ve "$SELINUX" \
+        -ve "$COVERAGE" \
         -ve "$OLDSELINUX" \
         -ve "$USE_OF__EXIT" \
         -ve "$UNDEF_GETTEXT" \

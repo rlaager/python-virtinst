@@ -570,8 +570,6 @@ class SuseDistro(Distro):
     name = "SUSE"
     os_type = "linux"
     _boot_iso_paths   = [ "boot/boot.iso" ]
-    _hvm_kernel_paths = []
-    _xen_kernel_paths = []
 
     def __init__(self, arch, uri, vmtype=None, scratchdir=None):
         Distro.__init__(self, arch, uri, vmtype, scratchdir)
@@ -579,11 +577,11 @@ class SuseDistro(Distro):
             self.arch = 'i386'
 
         # Tested with Opensuse 10, 11, and sles 10
-        self._hvm_kernel_paths += [ ("boot/%s/loader/linux" % self.arch,
-                                     "boot/%s/loader/initrd" % self.arch) ]
+        self._hvm_kernel_paths = [ ("boot/%s/loader/linux" % self.arch,
+                                    "boot/%s/loader/initrd" % self.arch) ]
         # Matches Opensuse > 10.2 and sles 10
-        self._xen_kernel_paths += [ ("boot/%s/vmlinuz-xen" % self.arch,
-                                     "boot/%s/initrd-xen" % self.arch) ]
+        self._xen_kernel_paths = [ ("boot/%s/vmlinuz-xen" % self.arch,
+                                    "boot/%s/initrd-xen" % self.arch) ]
 
     def isValidStore(self, fetcher, progresscb):
         # Suse distros always have a 'directory.yast' file in the top
