@@ -18,7 +18,6 @@ import unittest
 import os, os.path
 import logging
 import tests
-import libvirt
 
 from virtinst import CloneManager
 CloneDesign = CloneManager.CloneDesign
@@ -45,13 +44,14 @@ clonexml_dir = os.path.join(os.getcwd(), "tests/clone-xml")
 clone_files = []
 
 for f in os.listdir(clonexml_dir):
-    black_list = [ "managed-storage", "cross-pool", "force", "skip"]
+    black_list = [ "managed-storage", "cross-pool", "force", "skip",
+                   "fullpool"]
     if f.endswith("-out.xml"):
         f = f[0:(len(f) - len("-out.xml"))]
         if f not in clone_files and f not in black_list:
             clone_files.append(f)
 
-conn = libvirt.open("test:///%s/../testdriver.xml" % clonexml_dir)
+conn = tests.open_testdriver()
 
 def fake_is_uri_remote(ignore):
     return True
@@ -62,7 +62,7 @@ class TestClone(unittest.TestCase):
         pass
 
     def _clone_helper(self, filebase, disks=None, force_list=None,
-                      skip_list=None):
+                      skip_list=None, compare=True):
         """Helper for comparing clone input/output from 2 xml files"""
         infile = os.path.join(clonexml_dir, filebase + "-in.xml")
         in_content = tests.read_file(infile)
@@ -75,8 +75,12 @@ class TestClone(unittest.TestCase):
             cloneobj.skip_target = skip
 
         cloneobj = self._default_clone_values(cloneobj, disks)
-        self._clone_compare(cloneobj, filebase)
-        self._clone_define(filebase)
+
+        if compare:
+            self._clone_compare(cloneobj, filebase)
+            self._clone_define(filebase)
+        else:
+            cloneobj.setup()
 
     def _default_clone_values(self, cloneobj, disks=None):
         """Sets default values for the cloned VM."""
@@ -201,6 +205,16 @@ class TestClone(unittest.TestCase):
         self._clone_helper(base,
                            disks=["/dev/loop0", None, "/tmp/clone2.img"],
                            skip_list=["hda", "fdb"])
+
+    def testCloneFullPool(self):
+        base = "fullpool"
+        try:
+            self._clone_helper(base, disks=["/full-pool/test.img"],
+                               compare=False)
+        except Exception:
+            return
+
+        raise AssertionError("Expected exception, but none raised.")
 
     def testCloneManagedToUnmanaged(self):
         base = "managed-storage"
