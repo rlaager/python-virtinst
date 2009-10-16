@@ -592,31 +592,25 @@ class Guest(object):
         else:
             cpuset = ""
 
-        return """<domain type='%(type)s'>
-  <name>%(name)s</name>
-  <currentMemory>%(ramkb)s</currentMemory>
-  <memory>%(maxramkb)s</memory>
-  <uuid>%(uuid)s</uuid>
-  %(osblob)s
-  <on_poweroff>destroy</on_poweroff>
-  <on_reboot>%(action)s</on_reboot>
-  <on_crash>%(action)s</on_crash>
-  <vcpu%(cpuset)s>%(vcpus)d</vcpu>
-  <devices>
-%(devices)s
-  </devices>
-</domain>
-""" % { "type": self.type,
-        "name": self.name, \
-        "vcpus": self.vcpus, \
-        "cpuset": cpuset, \
-        "uuid": self.uuid, \
-        "ramkb": self.memory * 1024, \
-        "maxramkb": self.maxmemory * 1024, \
-        "devices": self._get_device_xml(install), \
-        "osblob": osblob, \
-        "action": action }
+        xml = ""
+        add = lambda x: _util.xml_append(xml, x)
 
+        xml = add("<domain type='%s'>" % self.type)
+        xml = add("  <name>%s</name>" % self.name)
+        xml = add("  <currentMemory>%s</currentMemory>" % (self.memory * 1024))
+        xml = add("  <memory>%s</memory>" % (self.maxmemory * 1024))
+        xml = add("  <uuid>%s</uuid>" % self.uuid)
+        xml = add("  %s" % osblob)
+        xml = add("  <on_poweroff>destroy</on_poweroff>")
+        xml = add("  <on_reboot>%s</on_reboot>" % action)
+        xml = add("  <on_crash>%s</on_crash>" % action)
+        xml = add("  <vcpu%s>%d</vcpu>" % (cpuset, self.vcpus))
+        xml = add("  <devices>")
+        xml = add("%s" % self._get_device_xml(install))
+        xml = add("  </devices>")
+        xml = add("</domain>\n")
+
+        return xml
 
     def start_install(self, consolecb=None, meter=None, removeOld=False,
                       wait=True):
