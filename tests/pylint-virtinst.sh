@@ -81,6 +81,12 @@ addchecker() {
     DCHECKERS="${DCHECKERS},$1"
 }
 
+addmsg_support() {
+    if `pylint --list-msgs | grep -q $1` ; then
+        addmsg "$1"
+    fi
+}
+
 # Disabled Messages:
 addmsg "C0103"  # C0103: Name doesn't match some style regex
 addmsg "C0111"  # C0111: No docstring
@@ -101,8 +107,10 @@ addmsg "W0511"  # W0511: FIXME and XXX: messages (useful in the future)
 addmsg "C0322"  # C0322: *Operator not preceded by a space*
 addmsg "C0323"  # C0323: *Operator not followed by a space*
 addmsg "C0324"  # C0324: *Comma not followed by a space*
-addmsg "W6501"  # W6501: Using string formatters in logging message
-                #        (see help message for info)
+
+# Not supported in many pylint versions
+addmsg_support "W6501"  # W6501: Using string formatters in logging message
+                        #        (see help message for info)
 
 # Disabled Checkers:
 addchecker "Design"         # Things like "Too many func arguments",
