@@ -277,6 +277,8 @@ args_dict = {
         "--vcpus 4 --cpuset=1,3-5",
         # Cpuset with trailing comma
         "--vcpus 4 --cpuset=1,3-5,",
+        # Cpuset with trailing comma
+        "--vcpus 4 --cpuset=auto",
         # Ram overcommit
         "--ram 100000000000",
       ],
@@ -284,6 +286,8 @@ args_dict = {
       "invalid" : [
         # Bogus cpuset
         "--vcpus 32 --cpuset=969-1000",
+        # Bogus cpuset
+        "--vcpus 32 --cpuset=autofoo",
         # Over max vcpus
         "--vcpus 10000",
       ],
