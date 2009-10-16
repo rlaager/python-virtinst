@@ -29,6 +29,7 @@ remoteuri = "__virtinst_test_remote__test:///`pwd`/tests/testdriver.xml"
 # Location
 xmldir = "tests/cli-test-xml"
 treedir = "tests/cli-test-xml/faketree"
+ro_img = "cli_exist3ro.img"
 
 # Images that will be created by virt-install/virt-clone, and removed before
 # each run
@@ -36,7 +37,7 @@ new_images =    [ "cli_new1.img", "cli_new2.img", "cli_new3.img",
                   "cli_exist1-clone.img", "cli_exist2-clone.img"]
 
 # Images that are expected to exist before a command is run
-exist_images =  [ "cli_exist1.img", "cli_exist2.img" ]
+exist_images =  [ "cli_exist1.img", "cli_exist2.img", ro_img]
 
 # Images that need to exist ahead of time for virt-image
 virtimage_exist = [os.path.join(xmldir, "cli_root.raw")]
@@ -59,6 +60,7 @@ test_files = {
     'NEWIMG3'           : new_images[2],
     'EXISTIMG1'         : exist_images[0],
     'EXISTIMG2'         : exist_images[1],
+    'ROIMG'             : ro_img,
     'POOL'              : "default-pool",
     'VOL'               : "testvol1.img",
     'MANAGEDEXIST1'     : "/default-pool/testvol1.img",
@@ -140,6 +142,10 @@ args_dict = {
         "--disk path=%(MANAGEDNEW1)s,format=raw,size=.0000001",
         # Managed file using format qcow2
         "--disk path=%(MANAGEDNEW1)s,format=qcow2,size=.0000001",
+        # Using ro path as a disk with readonly flag
+        "--disk path=%(ROIMG)s,perms=ro",
+        # Using RO path with cdrom dev
+        "--disk path=%(ROIMG)s,device=cdrom",
       ],
 
       "invalid": [
@@ -193,7 +199,9 @@ args_dict = {
         # Directory tree CDROM install
         "--hvm --cdrom %s" % treedir,
         # Paravirt location
-        "--paravirt --location %s" % treedir
+        "--paravirt --location %s" % treedir,
+        # Using ro path as a cd media
+        "--hvm --cdrom %(ROIMG)s",
       ],
 
       "invalid": [
@@ -636,14 +644,18 @@ def main():
         if os.path.exists(i):
             raise ValueError("'%s' will be used by testsuite, can not already"
                              " exist." % i)
+    for i in exist_files:
         os.system("touch %s" % i)
+
+    # Set ro_img to readonly
+    os.system("chmod 444 %s" % ro_img)
 
     try:
         run_tests()
     finally:
         # Cleanup files
         for i in clean_files:
-            os.system("rm %s > /dev/null 2>&1" % i)
+            os.system("rm -f %s > /dev/null 2>&1" % i)
 
 if __name__ == "__main__":
     main()
