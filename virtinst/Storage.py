@@ -58,7 +58,7 @@ from virtinst import _virtinst as _
 DEFAULT_DEV_TARGET = "/dev"
 DEFAULT_LVM_TARGET_BASE = "/dev/"
 DEFAULT_DIR_TARGET_BASE = "/var/lib/libvirt/images/"
-DEFAULT_ISCSI_TARGET = "/dev/disk/by-path"
+DEFAULT_SCSI_TARGET = "/dev/disk/by-path"
 
 def is_create_vol_from_supported(ignore_conn):
     return bool(dir(libvirt.virStoragePool).count("createXMLFrom"))
@@ -193,6 +193,7 @@ class StoragePool(StorageObject):
     TYPE_LOGICAL = "logical"
     TYPE_DISK    = "disk"
     TYPE_ISCSI   = "iscsi"
+    TYPE_SCSI   = "scsi"
     """@group Types: TYPE_*"""
 
     # Pool type descriptions for use in higher level programs
@@ -203,6 +204,7 @@ class StoragePool(StorageObject):
     _types[TYPE_LOGICAL] = _("LVM Volume Group")
     _types[TYPE_DISK]    = _("Physical Disk Device")
     _types[TYPE_ISCSI]   = _("iSCSI Target")
+    _types[TYPE_SCSI]    = _("SCSI host adapter")
 
     def get_pool_class(ptype):
         """
@@ -225,6 +227,8 @@ class StoragePool(StorageObject):
             return DiskPool
         if ptype == StoragePool.TYPE_ISCSI:
             return iSCSIPool
+        if ptype == StoragePool.TYPE_SCSI:
+            return SCSIPool
     get_pool_class = staticmethod(get_pool_class)
 
     def get_volume_for_pool(pool_type):
@@ -709,7 +713,7 @@ class iSCSIPool(StoragePool):
                            doc=_("Path on the host that is being shared."))
 
     def _get_default_target_path(self):
-        return DEFAULT_ISCSI_TARGET
+        return DEFAULT_SCSI_TARGET
 
     def _get_target_xml(self):
         xml = "    <path>%s</path>\n" % escape(self.target_path)
@@ -723,6 +727,57 @@ class iSCSIPool(StoragePool):
         xml = """    <host name="%s"/>\n""" % self.host + \
               """    <device path="%s"/>\n""" % escape(self.source_path)
         return xml
+
+class SCSIPool(StoragePool):
+    """
+    Create a SCSI based storage pool
+    """
+
+    target_path = property(StoragePool.get_target_path,
+                           StoragePool.set_target_path,
+                           doc=_("Root location for identifying new storage"
+                                 " volumes."))
+
+    def get_volume_class():
+        raise NotImplementedError(_("SCSI volume creation is not "
+                                    "implemented."))
+    get_volume_class = staticmethod(get_volume_class)
+
+    def __init__(self, conn, name, source_path=None,
+                 target_path=None, uuid=None):
+        StoragePool.__init__(self, name=name, type=StoragePool.TYPE_SCSI,
+                             uuid=uuid, target_path=target_path, conn=conn)
+
+        if source_path:
+            self.source_path = source_path
+
+    # Need to overwrite pool *_source_path since iscsi device isn't
+    # a fully qualified path
+    def get_source_path(self):
+        return self._source_path
+    def set_source_path(self, val):
+        self._source_path = val
+    source_path = property(get_source_path, set_source_path,
+                           doc=_("Name of the scsi adapter (ex. host2)"))
+
+    def _get_default_target_path(self):
+        return DEFAULT_SCSI_TARGET
+
+    def _get_target_xml(self):
+        xml = "    <path>%s</path>\n" % escape(self.target_path)
+        return xml
+
+    def _get_source_xml(self):
+        if not self.source_path:
+            raise RuntimeError(_("Adapter name is required"))
+        xml = """    <adapter name="%s"/>\n""" % escape(self.source_path)
+        return xml
+
+
+
+"""
+Storage Volume classes
+"""
 
 class StorageVolume(StorageObject):
     """

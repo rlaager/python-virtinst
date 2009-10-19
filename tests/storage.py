@@ -121,6 +121,12 @@ class TestStorage(unittest.TestCase):
         #volobj = createVol(poolobj)
         self.assertRaises(RuntimeError, createVol, poolobj)
 
+    def testSCSIPool(self):
+        poolobj = createPool(self.conn, StoragePool.TYPE_SCSI)
+        # Not supported
+        #volobj = createVol(poolobj)
+        self.assertRaises(RuntimeError, createVol, poolobj)
+
 if __name__ == "__main__":
     unittest.main()
 
