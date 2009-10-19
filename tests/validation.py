@@ -19,7 +19,6 @@ from virtinst import VirtualDisk
 
 # Test helpers
 import tests
-from storage import createPool, createVol
 
 import unittest
 import logging
