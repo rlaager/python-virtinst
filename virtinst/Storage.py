@@ -546,13 +546,18 @@ class LogicalPool(StoragePool):
                            doc=_("Location of the existing LVM volume group."))
 
     def __init__(self, conn, name, target_path=None, uuid=None, perms=None,
-                 source_path=None):
+                 source_path=None, source_name=None):
         StoragePool.__init__(self, name=name, type=StoragePool.TYPE_LOGICAL,
                              target_path=target_path, uuid=uuid, conn=conn)
+
+        self._source_name = None
+
         if perms:
             self.perms = perms
         if source_path:
             self.source_path = source_path
+        if source_name:
+            self.source_name = source_name
 
     # Need to overwrite storage path checks, since this optionally be a list
     # of devices
@@ -571,6 +576,13 @@ class LogicalPool(StoragePool):
                            doc=_("Optional device(s) to build new LVM volume "
                                  "on."))
 
+    def get_source_name(self):
+        return self._source_name
+    def set_source_name(self, val):
+        self._source_name = val
+    source_name = property(get_source_name, set_source_name,
+                           doc=_("Name of the Volume Group"))
+
     def _get_default_target_path(self):
         return DEFAULT_LVM_TARGET_BASE + self.name
 
@@ -587,6 +599,8 @@ class LogicalPool(StoragePool):
         xml = ""
         for s in sources:
             xml += "    <device path='%s'/>\n" % s
+        if self.source_name:
+            xml += "    <name>%s</name>\n" % self.source_name
         return xml
 
     def install(self, meter=None, create=False, build=False):

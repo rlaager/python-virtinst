@@ -30,8 +30,8 @@ def _findFreePoolName(conn, namebase):
         except:
             return poolname
 
-def createPool(conn, ptype, poolname=None, fmt=None, tpath=None,
-               spath=None, start=True):
+def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
+               source_path=None, start=True, source_name=None):
     poolclass = StoragePool.get_pool_class(ptype)
 
     if poolname is None:
@@ -42,11 +42,13 @@ def createPool(conn, ptype, poolname=None, fmt=None, tpath=None,
     if hasattr(pool_inst, "host"):
         pool_inst.host = "some.random.hostname"
     if hasattr(pool_inst, "source_path"):
-        pool_inst.source_path = spath or "/some/source/path"
+        pool_inst.source_path = source_path or "/some/source/path"
     if hasattr(pool_inst, "target_path"):
-        pool_inst.target_path = tpath or "/some/target/path"
+        pool_inst.target_path = target_path or "/some/target/path"
     if fmt and hasattr(pool_inst, "format"):
         pool_inst.format = fmt
+    if source_name and hasattr(pool_inst, "source_name"):
+        pool_inst.source_name = source_name
 
     return pool_inst.install(build=True, meter=None, create=start)
 
@@ -99,6 +101,13 @@ class TestStorage(unittest.TestCase):
         invol = createVol(poolobj)
         createVol(poolobj, volname=invol.name() + "input", input_vol=invol)
         createVol(poolobj, volname=invol.name() + "clone", clone_vol=invol)
+
+        # Test with source name
+        createPool(self.conn, StoragePool.TYPE_LOGICAL, source_name="vgname")
+
+        # Test creating with many devices
+        createPool(self.conn, StoragePool.TYPE_LOGICAL,
+                   source_path=[ "/tmp/path1", "/tmp/path2", "/tmp/path3" ])
 
     def testDiskPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_DISK, fmt="dos")
