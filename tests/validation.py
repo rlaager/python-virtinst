@@ -40,33 +40,15 @@ import os
 
 # We install several storage pools on the connection to ensure
 # we aren't bumping up against errors in that department.
-logging.debug("\n\nStarting 'validation' storage setup.")
 testconn = tests.open_testdriver()
 testcaps = virtinst.CapabilitiesParser.parse(testconn.getCapabilities())
 
 virtimage = virtinst.ImageParser.parse_file("tests/image-xml/image.xml")
 
-offdskpaths = [ "/dev", ]
-for path in offdskpaths:
-    createPool(testconn, virtinst.Storage.StoragePool.TYPE_DISK,
-               tpath=path, start=False, fmt="dos")
-
-dirpaths = [ "/var/lib/libvirt/images", "/", "/tmp" ]
-for path in dirpaths:
-    createPool(testconn, virtinst.Storage.StoragePool.TYPE_DIR,
-               tpath=path, start=True)
-
-dskpaths = [ "/somedev", "/dev/disk/by-uuid" ]
-for path in dskpaths:
-    createPool(testconn, virtinst.Storage.StoragePool.TYPE_DISK,
-               fmt="dos", tpath=path, start=False)
-
-# Create a usable pool/vol pairs
-p = createPool(testconn, virtinst.Storage.StoragePool.TYPE_DIR,
-               tpath="/pool-exist", start=True, poolname="pool-exist")
-dirvol = createVol(p, "vol-exist")
-volinst = virtinst.Storage.StorageVolume(pool=p, name="somevol", capacity=1)
-logging.debug("Ending 'validation' storage setup.\n\n")
+volinst = virtinst.Storage.StorageVolume(conn=testconn,
+                                         pool_name="default-pool",
+                                         name="val-vol",
+                                         capacity=1)
 
 args = {
 
@@ -133,9 +115,9 @@ args = {
     { 'path' : None },
     { 'path' : "noexist", 'size' : 900000, 'sparse' : False },
     { 'path' : "noexist", 'type' : VirtualDisk.DEVICE_CDROM},
-    { 'volName' : ("pool-exist", "vol-exist")},
-    { 'conn' : testconn, 'volName' : ("pool-noexist", "vol-exist")},
-    { 'conn' : testconn, 'volName' : ("pool-exist", "vol-noexist")},
+    { 'volName' : ("default-pool", "default-vol")},
+    { 'conn' : testconn, 'volName' : ("pool-noexist", "default-vol")},
+    { 'conn' : testconn, 'volName' : ("default-pool", "vol-noexist")},
     { 'conn' : testconn, 'volName' : ( 1234, "vol-noexist")},
     { 'path' : 'valid', 'size' : 1, 'driverCache' : 'invalid' },
     { 'conn' : testconn, "path" : "/full-pool/newvol.img", "size" : 1,
@@ -148,9 +130,9 @@ args = {
     { 'path' :'/dev/null'},
     { 'path' : None, 'device' : VirtualDisk.DEVICE_CDROM},
     { 'path' : None, 'device' : VirtualDisk.DEVICE_FLOPPY},
-    { 'conn' : testconn, 'volName' : ("pool-exist", "vol-exist")},
-    { 'conn' : testconn, 'path' : "/pool-exist/vol-exist" },
-    { 'conn' : testconn, 'path' : "/pool-exist/vol-noexist", 'size' : 1 },
+    { 'conn' : testconn, 'volName' : ("default-pool", "default-vol")},
+    { 'conn' : testconn, 'path' : "/default-pool/default-vol" },
+    { 'conn' : testconn, 'path' : "/default-pool/vol-noexist", 'size' : 1 },
     { 'conn' : testconn, 'volInstall': volinst},
     { 'path' : 'nonexist', 'size' : 1, 'driverCache' : 'writethrough' },
     # Full pool, but we are nonsparse
@@ -185,12 +167,12 @@ args = {
     'init_conns' : [ testconn, None ],
     'location'  : {
         'invalid' : ['nogood', 'http:/nogood', [], None,
-                     ("pool-noexist", "vol-exist"),
-                     ("pool-exist", "vol-noexist"),
+                     ("pool-noexist", "default-vol"),
+                     ("default-pool", "vol-noexist"),
                     ],
         'valid'   : ['/dev/null', 'http://web', 'ftp://ftp', 'nfs:nfsserv',
                      '/tmp', # For installing from local dir tree
-                     ("pool-exist", "vol-exist"),
+                     ("default-pool", "default-vol"),
                     ]}
 },
 
@@ -198,10 +180,10 @@ args = {
     'init_conns' : [ testconn, None ],
     'location'  : {
         'invalid' : ['path-noexist',
-                     ("pool-noexist", "vol-exist"),
-                     ("pool-exist", "vol-noexist"),
+                     ("pool-noexist", "default-vol"),
+                     ("default-pool", "vol-noexist"),
                     ],
-        'valid'   : ['/dev/null', ("pool-exist", "vol-exist"),
+        'valid'   : ['/dev/null', ("default-pool", "default-vol"),
                     ]}
 },
 
