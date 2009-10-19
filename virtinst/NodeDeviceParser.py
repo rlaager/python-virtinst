@@ -51,7 +51,8 @@ class NodeDevice(object):
         @returns Device description string
         @rtype C{str}
         """
-        raise NotImplementedError
+        ignore = child_dev
+        return self.name
 
     def _parseNodeXML(self, node):
         child = node.children
@@ -319,9 +320,6 @@ class USBBus(NodeDevice):
                     "protocol" : "protocol" }
         self._parseHelper(node, val_map)
 
-    def pretty_name(self, child_dev=None):
-        ignore = child_dev
-        return self.name
 
 class SCSIDevice(NodeDevice):
     def __init__(self, node):
@@ -342,10 +340,6 @@ class SCSIDevice(NodeDevice):
                     "lun" : "lun",
                     "type" : "type"}
         self._parseHelper(node, val_map)
-
-    def pretty_name(self, child_dev=None):
-        ignore = child_dev
-        return self.name
 
 class SCSIBus(NodeDevice):
     def __init__(self, node):
@@ -384,10 +378,6 @@ class SCSIBus(NodeDevice):
                 self._parseValueHelper(child, val_map)
 
             child = child.next
-
-    def pretty_name(self, child_dev=None):
-        ignore = child_dev
-        return self.name
 
 def is_nodedev_capable(conn):
     """
