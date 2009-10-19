@@ -514,5 +514,5 @@ def _typeToDeviceClass(t):
         return SCSIBus
     elif t == CAPABILITY_TYPE_SCSIDEV:
         return SCSIDevice
-
-    raise ValueError(_("Unknown host device capability '%s'.") % t)
+    else:
+        return NodeDevice

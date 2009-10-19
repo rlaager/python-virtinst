@@ -22,6 +22,18 @@ from virtinst import VirtualHostDevice
 
 conn = tests.open_testdriver()
 
+unknown_xml = """
+<device>
+  <name>foodevice</name>
+  <parent>computer</parent>
+  <capability type='frobtype'>
+    <hardware>
+      <vendor>LENOVO</vendor>
+    </hardware>
+  </capability>
+</device>
+"""
+
 class TestNodeDev(unittest.TestCase):
 
     def _nodeDevFromName(self, devname):
@@ -29,8 +41,11 @@ class TestNodeDev(unittest.TestCase):
         xml = node.XMLDesc(0)
         return nodeparse.parse(xml)
 
-    def _testCompare(self, devname, vals):
-        dev = self._nodeDevFromName(devname)
+    def _testCompare(self, devname, vals, devxml=None):
+        if devxml:
+            dev = nodeparse.parse(devxml)
+        else:
+            dev = self._nodeDevFromName(devname)
 
         for attr in vals.keys():
             self.assertEqual(vals[attr], getattr(dev, attr))
@@ -168,6 +183,10 @@ class TestNodeDev(unittest.TestCase):
                 "type": "disk"}
         self._testCompare(devname, vals)
 
+    def testUnknownDevice(self):
+        vals = {"name": "foodevice", "parent": "computer",
+                "device_type": "frobtype"}
+        self._testCompare(None, vals, devxml=unknown_xml)
 
         # NodeDevice 2 Device XML tests
     def testNodeDev2USB1(self):
