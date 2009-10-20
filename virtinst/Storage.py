@@ -259,16 +259,18 @@ class StoragePool(StorageObject):
         self._host = None
         self._format = None
         self._source_path = None
+        self._uuid = None
 
         if target_path is None:
             target_path = self._get_default_target_path()
         self.target_path = target_path
 
+        if uuid:
+            self.uuid = uuid
+
         # Initialize all optional properties
         self._host = None
         self._source_path = None
-        if not uuid:
-            self._uuid = None
         self._random_uuid = _util.uuidToString(_util.randomUUID())
 
     # Properties used by all pools
