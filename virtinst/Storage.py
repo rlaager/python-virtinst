@@ -63,6 +63,42 @@ DEFAULT_SCSI_TARGET = "/dev/disk/by-path"
 def is_create_vol_from_supported(ignore_conn):
     return bool(dir(libvirt.virStoragePool).count("createXMLFrom"))
 
+def _parse_pool_source_list(source_xml):
+    def source_parser(node):
+        ret_list = []
+
+        child = node.children
+        while child:
+            if child.name == "source":
+                val_dict = {}
+                source = child.children
+
+                while source:
+                    if source.name == "name":
+                        val_dict["source_name"] = source.content
+                    elif source.name == "host":
+                        val_dict["host"] = source.prop("name")
+                    elif source.name == "format":
+                        val_dict["format"] = source.prop("type")
+                    elif source.name in ["device", "dir"]:
+                        val_dict["source_path"] = source.prop("path")
+                    source = source.next
+
+                ret_list.append(val_dict)
+
+            child = child.next
+
+        for val_dict in ret_list:
+            if (val_dict.get("format") == "lvm2" and
+                val_dict.get("source_name") and
+                not val_dict.get("target_path")):
+                val_dict["target_path"] = (DEFAULT_LVM_TARGET_BASE +
+                                           val_dict["source_name"])
+
+        return ret_list
+
+    return _util.parse_node_helper(source_xml, "sources", source_parser)
+
 class StorageObject(object):
     """
     Base class for building any libvirt storage object.
@@ -247,6 +283,49 @@ class StoragePool(StorageObject):
         return StoragePool._types[pool_type]
     get_pool_type_desc = staticmethod(get_pool_type_desc)
 
+    def pool_list_from_sources(conn, name, pool_type, host=None):
+        """
+        Return a list of StoragePool instances built from libvirt's pool
+        source enumeration (if supported).
+
+        @param conn: Libvirt connection
+        @param name: Name for the new pool
+        @param pool_type: Pool type string from L{Types}
+        @param host: Option host string to poll for sources
+        """
+        if not dir(conn).count("findStoragePoolSources"):
+            return []
+
+        pool_class = StoragePool.get_pool_class(pool_type)
+        pool_inst = pool_class(conn=conn, name=name)
+
+        if host:
+            source_xml = "<source><host name='%s'/></source>" % host
+        else:
+            source_xml = "<source/>"
+
+        try:
+            xml = conn.findStoragePoolSources(pool_type, source_xml, 0)
+        except libvirt.libvirtError, e:
+            if e.get_error_code() == libvirt.VIR_ERR_NO_SUPPORT:
+                return []
+            raise
+
+        retlist = []
+        source_list = _parse_pool_source_list(xml)
+        for source in source_list:
+            pool_inst = pool_class(conn=conn, name=name)
+            for key, val in source.items():
+
+                if not hasattr(pool_inst, key):
+                    continue
+
+                setattr(pool_inst, key, val)
+
+            retlist.append(pool_inst)
+
+        return retlist
+    pool_list_from_sources = staticmethod(pool_list_from_sources)
 
     def __init__(self, conn, name, type, target_path=None, uuid=None):
         StorageObject.__init__(self, object_type=StorageObject.TYPE_POOL, \
