@@ -176,7 +176,7 @@ class StorageObject(object):
         xml = "%s" % (root_xml) + \
               """  <name>%s</name>\n""" % (self.name) + \
               """%(stor_xml)s""" % { "stor_xml" : self._get_storage_xml() } + \
-              """</%s>""" % (self.object_type)
+              """</%s>\n""" % (self.object_type)
         return xml
 
 
