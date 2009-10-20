@@ -1,0 +1,7 @@
+<volume>
+  <name>pool-logical-volinput</name>
+  <capacity>10737418240</capacity>
+  <allocation>5368709120</allocation>
+  <target>
+  </target>
+</volume>
