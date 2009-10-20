@@ -19,8 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import libxml2
 from virtinst import _virtinst as _
+import _util
 
 class CapabilitiesParserException(Exception):
     def __init__(self, msg):
@@ -339,35 +339,9 @@ class Capabilities(object):
             self.host.topology = self._topology
 
 def parse(xml):
-    class ErrorHandler:
-        def __init__(self):
-            self.msg = ""
-        def handler(self, ignore, s):
-            self.msg += s
-    error = ErrorHandler()
-    libxml2.registerErrorHandler(error.handler, None)
-
-    try:
-        # try/except/finally is only available in python-2.5
-        try:
-            doc = libxml2.readMemory(xml, len(xml),
-                                     None, None,
-                                     libxml2.XML_PARSE_NOBLANKS)
-        except (libxml2.parserError, libxml2.treeError), e:
-            raise CapabilitiesParserException("%s\n%s" % (e, error.msg))
-    finally:
-        libxml2.registerErrorHandler(None, None)
-
-    try:
-        root = doc.getRootElement()
-        if root.name != "capabilities":
-            raise CapabilitiesParserException("Root element is not 'capabilities'")
-
-        capabilities = Capabilities(root)
-    finally:
-        doc.freeDoc()
-
-    return capabilities
+    return _util.parse_node_helper(xml, "capabilities",
+                                   Capabilities,
+                                   CapabilitiesParserException)
 
 def guest_lookup(conn, caps=None, os_type=None, arch=None, type=None,
                  accelerated=False):

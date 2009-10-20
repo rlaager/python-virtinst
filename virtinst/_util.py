@@ -384,6 +384,41 @@ def is_qemu_system(conn):
         return True
     return False
 
+def parse_node_helper(xml, root_name, callback, exec_class=ValueError):
+    """
+    Parse the passed XML, expecting root as root_name, and pass the
+    root node to callback
+    """
+    class ErrorHandler:
+        def __init__(self):
+            self.msg = ""
+        def handler(self, ignore, s):
+            self.msg += s
+    error = ErrorHandler()
+    libxml2.registerErrorHandler(error.handler, None)
+
+    try:
+        try:
+            doc = libxml2.readMemory(xml, len(xml),
+                                     None, None,
+                                     libxml2.XML_PARSE_NOBLANKS)
+        except (libxml2.parserError, libxml2.treeError), e:
+            raise exec_class("%s\n%s" % (e, error.msg))
+    finally:
+        libxml2.registerErrorHandler(None, None)
+
+    ret = None
+    try:
+        root = doc.getRootElement()
+        if root.name != root_name:
+            raise ValueError("Root element is not '%s'" % root_name)
+
+        ret = callback(root)
+    finally:
+        doc.freeDoc()
+
+    return ret
+
 #
 # These functions accidentally ended up in the API under virtinst.util
 #

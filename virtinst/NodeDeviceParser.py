@@ -17,9 +17,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import libxml2
 import libvirt
+
 from virtinst import _virtinst as _
+import _util
 
 # class USBDevice
 
@@ -456,38 +457,13 @@ def parse(xml):
 
     @returns: L{NodeDevice} instance
     """
-
-    class ErrorHandler:
-        def __init__(self):
-            self.msg = ""
-        def handler(self, ignore, s):
-            self.msg += s
-    error = ErrorHandler()
-    libxml2.registerErrorHandler(error.handler, None)
-
-    try:
-        # try/except/finally is only available in python-2.5
-        try:
-            doc = libxml2.readMemory(xml, len(xml),
-                                     None, None,
-                                     libxml2.XML_PARSE_NOBLANKS)
-        except (libxml2.parserError, libxml2.treeError), e:
-            raise ValueError("%s\n%s" % (e, error.msg))
-    finally:
-        libxml2.registerErrorHandler(None, None)
-
-    try:
-        root = doc.getRootElement()
-        if root.name != "device":
-            raise ValueError("Root element is not 'device'")
-
+    def _parse_func(root):
         t = _findNodeType(root)
         devclass = _typeToDeviceClass(t)
         device = devclass(root)
-    finally:
-        doc.freeDoc()
+        return device
 
-    return device
+    return _util.parse_node_helper(xml, "device", _parse_func)
 
 def _findNodeType(node):
     child = node.children
