@@ -53,8 +53,7 @@ def _findFreePoolName(conn, namebase):
             return poolname
 
 def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
-               source_path=None, start=True, source_name=None,
-               uuid=None):
+               source_path=None, source_name=None, uuid=None):
     poolclass = StoragePool.get_pool_class(ptype)
 
     if poolname is None:
@@ -62,8 +61,6 @@ def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
 
     if uuid is None:
         uuid = generate_uuid_from_string(poolname)
-
-    filename = os.path.join(basepath, poolname + ".xml")
 
     pool_inst = poolclass(conn=conn, name=poolname, uuid=uuid)
 
@@ -78,9 +75,13 @@ def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
     if source_name and hasattr(pool_inst, "source_name"):
         pool_inst.source_name = source_name
 
+    return poolCompare(pool_inst)
+
+def poolCompare(pool_inst):
+    filename = os.path.join(basepath, pool_inst.name + ".xml")
     tests.diff_compare(pool_inst.get_xml_config(), filename)
 
-    return pool_inst.install(build=True, meter=None, create=start)
+    return pool_inst.install(build=True, meter=None, create=True)
 
 def createVol(poolobj, volname=None, input_vol=None, clone_vol=None):
     volclass = StorageVolume.get_volume_for_pool(pool_object=poolobj)
@@ -162,6 +163,37 @@ class TestStorage(unittest.TestCase):
         # Not supported
         #volobj = createVol(poolobj)
         self.assertRaises(RuntimeError, createVol, poolobj)
+
+    def _enumerateCompare(self, pool_list):
+        for pool in pool_list:
+            pool.name = pool.name + str(pool_list.index(pool))
+            pool.uuid = generate_uuid_from_string(pool.name)
+            poolCompare(pool)
+
+    def testEnumerateLogical(self):
+        name = "pool-logical-list"
+
+        lst = StoragePool.pool_list_from_sources(self.conn, name,
+                                                 StoragePool.TYPE_LOGICAL)
+        self._enumerateCompare(lst)
+
+    def testEnumerateNetFS(self):
+        name = "pool-netfs-list"
+        host = "example.com"
+
+        lst = StoragePool.pool_list_from_sources(self.conn, name,
+                                                 StoragePool.TYPE_NETFS,
+                                                 host=host)
+        self._enumerateCompare(lst)
+
+    def testEnumerateiSCSI(self):
+        name = "pool-iscsi-list"
+        host = "example.com"
+
+        lst = StoragePool.pool_list_from_sources(self.conn, name,
+                                                 StoragePool.TYPE_ISCSI,
+                                                 host=host)
+        self.assertTrue(len(lst) == 0)
 
 if __name__ == "__main__":
     unittest.main()
