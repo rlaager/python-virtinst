@@ -212,8 +212,8 @@ class CloneDesign(object):
 
         # Check path is valid
         # XXX: What if disk is being preserved, and storage is readonly?
-        try:
-            for path in pathlist:
+        for path in pathlist:
+            try:
                 device = VirtualDisk.DEVICE_DISK
                 if not path:
                     device = VirtualDisk.DEVICE_CDROM
@@ -222,9 +222,9 @@ class CloneDesign(object):
                                    conn=self._hyper_conn,
                                    device=device)
                 disklist.append(disk)
-        except Exception, e:
-            raise ValueError(_("Could not use path '%s' for cloning: %s") %
-                             (devpath, str(e)))
+            except Exception, e:
+                raise ValueError(_("Could not use path '%s' for cloning: %s") %
+                                 (path, str(e)))
 
         if is_list:
             self._clone_virtual_disks = []
