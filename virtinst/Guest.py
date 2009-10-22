@@ -250,7 +250,7 @@ class Guest(object):
             if self._OS_TYPES[self.os_type]["variants"].has_key(val):
                 self._os_variant = val
             else:
-                raise ValueError, _("OS variant '%(var)s; does not exist in "
+                raise ValueError, _("OS variant '%(var)s' does not exist in "
                                     "our dictionary for OS type '%(ty)s'" ) % \
                                     {'var' : val, 'ty' : self._os_type}
         else:
