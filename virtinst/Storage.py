@@ -662,11 +662,33 @@ class LogicalPool(StoragePool):
                                  "on."))
 
     def get_source_name(self):
-        return self._source_name
+        if self._source_name:
+            return self._source_name
+
+        # If a source name isn't explictly set, try to determine it from
+        # existing parameters
+        srcname = self.name
+
+        if (self.target_path and
+            self.target_path.startswith(DEFAULT_LVM_TARGET_BASE)):
+            # If there is a target path, parse it for an expected VG
+            # location, and pull the name from there
+            vg = self.target_path[len(DEFAULT_LVM_TARGET_BASE):]
+            srcname = vg.split("/", 1)[0]
+
+        return srcname
+
     def set_source_name(self, val):
         self._source_name = val
     source_name = property(get_source_name, set_source_name,
                            doc=_("Name of the Volume Group"))
+
+    def _make_source_name(self):
+        srcname = self.name
+
+        if self.source_path:
+            # Building a pool, so just use pool name
+            return srcname
 
     def _get_default_target_path(self):
         return DEFAULT_LVM_TARGET_BASE + self.name

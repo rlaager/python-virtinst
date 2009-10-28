@@ -137,13 +137,19 @@ class TestStorage(unittest.TestCase):
         createVol(poolobj, volname=invol.name() + "input", input_vol=invol)
         createVol(poolobj, volname=invol.name() + "clone", clone_vol=invol)
 
+        # Test parsing source name for target path
+        createPool(self.conn, StoragePool.TYPE_LOGICAL,
+                   "pool-logical-target-srcname",
+                   target_path="/dev/vgfoobar")
+
         # Test with source name
         createPool(self.conn, StoragePool.TYPE_LOGICAL, "pool-logical-srcname",
                    source_name="vgname")
 
         # Test creating with many devices
         createPool(self.conn, StoragePool.TYPE_LOGICAL, "pool-logical-manydev",
-                   source_path=[ "/tmp/path1", "/tmp/path2", "/tmp/path3" ])
+                   source_path=[ "/tmp/path1", "/tmp/path2", "/tmp/path3" ],
+                   target_path=None)
 
     def testDiskPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_DISK,

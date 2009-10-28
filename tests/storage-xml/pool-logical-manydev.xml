@@ -5,6 +5,7 @@
     <device path='/tmp/path1'/>
     <device path='/tmp/path2'/>
     <device path='/tmp/path3'/>
+    <name>pool-logical-manydev</name>
   </source>
   <target>
     <path>/some/target/path</path>
