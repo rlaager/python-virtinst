@@ -19,7 +19,7 @@ datafiles = [('share/man/man1', ['man/en/virt-install.1',
 locale = None
 builddir = None
 
-VERSION="0.500.0"
+VERSION = file("virtinst/version.py").read().split(" ")[2].strip(" \n\"")
 
 class TestBaseCommand(Command):
 

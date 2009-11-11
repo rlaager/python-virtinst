@@ -24,6 +24,9 @@ gettext.bindtextdomain(gettext_app, gettext_dir)
 def _virtinst(msg):
     return gettext.dgettext(gettext_app, msg)
 
+from version import __version__
+__version_info__ = tuple([ int(num) for num in __version__.split('.')])
+
 import Storage
 from Guest import Guest, XenGuest
 from VirtualDevice import VirtualDevice
