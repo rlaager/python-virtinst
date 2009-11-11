@@ -28,6 +28,7 @@ import errno
 import gettext, locale
 from optparse import OptionGroup
 
+import virtinst
 import virtinst.cli as cli
 from virtinst.cli import fail
 import virtinst.util as util
@@ -43,7 +44,8 @@ gettext.install(virtconv.gettext_app, virtconv.gettext_dir, unicode=1)
 def parse_args():
     """Parse and verify command line."""
     usage = "%prog [options] inputdir|input.vmx [outputdir|output.xml]"
-    opts = cli.VirtOptionParser(usage=usage)
+    opts = cli.VirtOptionParser(usage=usage,
+                                version=virtinst.__version__)
 
     cong = OptionGroup(opts, "Conversion Options")
     cong.add_option("-i", "--input-format", action="store",

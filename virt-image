@@ -71,7 +71,8 @@ def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
 def parse_args():
     usage = "%prog [options] image.xml"
     parser = cli.VirtOptionParser(usage=usage,
-                                  formatter=cli.VirtHelpFormatter())
+                                  formatter=cli.VirtHelpFormatter(),
+                                  version=virtinst.__version__)
 
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=cli.check_before_store,

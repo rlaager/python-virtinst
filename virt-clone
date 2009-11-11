@@ -127,7 +127,7 @@ def get_force_target(target, design):
         design.set_force_target(i)
 
 def parse_args():
-    parser = cli.VirtOptionParser()
+    parser = cli.VirtOptionParser(version=virtinst.__version__)
 
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=cli.check_before_store,

@@ -503,7 +503,8 @@ def validate_install_media(guest, location, cdpath, cdinstall=False):
 def parse_args():
     usage = "%prog --name NAME --ram RAM STORAGE INSTALL [options]"
     parser = cli.VirtOptionParser(usage=usage,
-                                  formatter=cli.VirtHelpFormatter())
+                                  formatter=cli.VirtHelpFormatter(),
+                                  version=virtinst.__version__)
 
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=cli.check_before_store,
