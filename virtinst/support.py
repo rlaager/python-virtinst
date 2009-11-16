@@ -34,6 +34,7 @@ SUPPORT_CONN_DOMAIN_VIDEO = 5
 SUPPORT_CONN_DOMAIN_SOUND_AC97 = 6
 
 # Flags for check_domain_support
+SUPPORT_DOMAIN_GETVCPUS = 1000
 
 # Flags for check_pool_support
 SUPPORT_STORAGE_CREATEVOLFROM = 2000
@@ -99,6 +100,11 @@ _support_dict = {
         "version" : 6000,
         "force_version" : True,
         "drv_version" : [ ("qemu", 11000) ],
+    },
+
+    SUPPORT_DOMAIN_GETVCPUS : {
+        "function" : "virDomain.vcpus",
+        "args" : (),
     },
 
     # This can't ever require a pool object for back compat reasons
