@@ -17,9 +17,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import libvirt
-
 from virtinst import _virtinst as _
+import support
 import _util
 
 # class USBDevice
@@ -389,24 +388,7 @@ def is_nodedev_capable(conn):
 
     @rtype: C{bool}
     """
-    if not conn:
-        return False
-    if not isinstance(conn, libvirt.virConnect):
-        raise ValueError(_("'conn' must be a virConnect instance."))
-
-    if dir(libvirt).count("virNodeDevice") == 0:
-        # Local libvirt doesn't support it
-        return False
-
-    try:
-        conn.listDevices(None, 0)
-        return True
-    except Exception, e:
-        if (e.get_error_code() == libvirt.VIR_ERR_RPC or
-            e.get_error_code() == libvirt.VIR_ERR_NO_SUPPORT):
-            return False
-
-    return True
+    return support.check_conn_support(conn, support.SUPPORT_CONN_NODEDEV)
 
 def is_pci_detach_capable(conn):
     """
@@ -417,16 +399,8 @@ def is_pci_detach_capable(conn):
 
     @rtype: C{bool}
     """
-    if not conn:
-        return False
-    if not isinstance(conn, libvirt.virConnect):
-        raise ValueError(_("'conn' must be a virConnect instance."))
-
-    if (hasattr(libvirt, "virNodeDevice") and
-        hasattr(libvirt.virNodeDevice, "dettach")):
-        return True
-
-    return False
+    return support.check_conn_support(conn,
+                                      support.SUPPORT_NODEDEV_PCI_DETACH)
 
 def lookupNodeName(conn, name):
     """

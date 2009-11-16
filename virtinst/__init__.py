@@ -50,6 +50,7 @@ from ImageManager import ImageInstaller
 from CloneManager import CloneDesign
 from User import User
 import util
+import support
 
 # This represents the PUBLIC API. Any changes to these classes (or 'util.py')
 # must be mindful of this fact.
@@ -58,6 +59,6 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "VirtualDisk", "XenDisk", "FullVirtGuest", "ParaVirtGuest",
            "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
            "ImportInstaller", "ImageInstaller", "CloneDesign", "Storage",
-           "User", "util", "VirtualDevice",
+           "User", "util", "support", "VirtualDevice",
            "VirtualHostDevice", "VirtualHostDeviceUSB", "VirtualVideoDevice",
            "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice"]

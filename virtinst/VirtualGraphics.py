@@ -22,6 +22,7 @@ import os
 
 import _util
 import VirtualDevice
+import support
 from virtinst import _virtinst as _
 
 class VirtualGraphics(VirtualDevice.VirtualDevice):
@@ -54,9 +55,8 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
     def _default_keymap(self):
         if (self.conn and
-            _util.get_uri_driver(self.conn.getURI()) == "qemu" and
-            dir(self.conn).count("getVersion") and
-            self.conn.getVersion() > 11 * 1000):
+            support.check_conn_support(self.conn,
+                                support.SUPPORT_CONN_KEYMAP_AUTODETECT)):
             return None
 
         return _util.default_keymap()

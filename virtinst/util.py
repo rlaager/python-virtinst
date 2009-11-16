@@ -41,6 +41,7 @@ from virtinst import _virtinst as _
 import virtinst
 import CapabilitiesParser
 import User
+import support
 
 KEYBOARD_DIR = "/etc/sysconfig/keyboard"
 XORG_CONF = "/etc/X11/xorg.conf"
@@ -495,19 +496,7 @@ def get_uri_driver(uri):
 
 def is_storage_capable(conn):
     """check if virConnectPtr passed has storage API support"""
-    if not conn:
-        return False
-    if not isinstance(conn, libvirt.virConnect):
-        raise ValueError(_("'conn' must be a virConnect instance."))
-    try:
-        if not dir(conn).count("listStoragePools"):
-            return False
-        conn.listStoragePools()
-    except libvirt.libvirtError, e:
-        if e.get_error_code() == libvirt.VIR_ERR_RPC or \
-           e.get_error_code() == libvirt.VIR_ERR_NO_SUPPORT:
-            return False
-    return True
+    return support.check_conn_support(conn, support.SUPPORT_CONN_STORAGE)
 
 def get_xml_path(xml, path=None, func=None):
     """

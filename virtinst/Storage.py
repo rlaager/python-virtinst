@@ -53,6 +53,7 @@ import logging
 from xml.sax.saxutils import escape
 
 import _util
+import support
 from virtinst import _virtinst as _
 
 DEFAULT_DEV_TARGET = "/dev"
@@ -60,8 +61,9 @@ DEFAULT_LVM_TARGET_BASE = "/dev/"
 DEFAULT_DIR_TARGET_BASE = "/var/lib/libvirt/images/"
 DEFAULT_SCSI_TARGET = "/dev/disk/by-path"
 
-def is_create_vol_from_supported(ignore_conn):
-    return bool(dir(libvirt.virStoragePool).count("createXMLFrom"))
+def is_create_vol_from_supported(conn):
+    return support.check_pool_support(conn,
+                                      support.SUPPORT_STORAGE_CREATEVOLFROM)
 
 def _parse_pool_source_list(source_xml):
     def source_parser(node):
@@ -297,7 +299,8 @@ class StoragePool(StorageObject):
         @param pool_type: Pool type string from L{Types}
         @param host: Option host string to poll for sources
         """
-        if not dir(conn).count("findStoragePoolSources"):
+        if not support.check_conn_support(conn,
+                                     support.SUPPORT_CONN_FINDPOOLSOURCES):
             return []
 
         pool_class = StoragePool.get_pool_class(pool_type)
@@ -311,7 +314,7 @@ class StoragePool(StorageObject):
         try:
             xml = conn.findStoragePoolSources(pool_type, source_xml, 0)
         except libvirt.libvirtError, e:
-            if e.get_error_code() == libvirt.VIR_ERR_NO_SUPPORT:
+            if support.is_error_nosupport(e):
                 return []
             raise
 
