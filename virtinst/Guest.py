@@ -35,6 +35,33 @@ from virtinst import _virtinst as _
 import logging
 import signal
 
+def _validate_cpuset(conn, val):
+    if val is None or val == "":
+        return
+
+    if type(val) is not type("string") or len(val) == 0:
+        raise ValueError, _("cpuset must be string")
+    if re.match("^[0-9,-]*$", val) is None:
+        raise ValueError, _("cpuset can only contain numeric, ',', or "
+                            "'-' characters")
+
+    pcpus = _util.get_phy_cpus(conn)
+    for c in val.split(','):
+        if c.find('-') != -1:
+            (x, y) = c.split('-')
+            if int(x) > int(y):
+                raise ValueError, _("cpuset contains invalid format.")
+            if int(x) >= pcpus or int(y) >= pcpus:
+                raise ValueError, _("cpuset's pCPU numbers must be less "
+                                    "than pCPUs.")
+        else:
+            if len(c) == 0:
+                continue
+
+            if int(c) >= pcpus:
+                raise ValueError, _("cpuset's pCPU numbers must be less "
+                                    "than pCPUs.")
+    return
 
 class Guest(object):
 
@@ -58,6 +85,26 @@ class Guest(object):
         return Guest._OS_TYPES[type]["variants"][variant]["label"]
     get_os_variant_label = staticmethod(get_os_variant_label)
 
+    def cpuset_str_to_tuple(conn, cpuset):
+        _validate_cpuset(conn, cpuset)
+        pinlist = [False] * _util.get_phy_cpus(conn)
+
+        entries = cpuset.split(",")
+        for e in entries:
+            series = e.split("-", 1)
+
+            if len(series) == 1:
+                pinlist[int(series[0])] = True
+                continue
+
+            start = int(series[0])
+            end = int(series[1])
+
+            for i in range(start, end):
+                pinlist[i] = True
+
+        return tuple(pinlist)
+    cpuset_str_to_tuple = staticmethod(cpuset_str_to_tuple)
 
     def __init__(self, type=None, connection=None, hypervisorURI=None,
                  installer=None):
@@ -184,28 +231,7 @@ class Guest(object):
             self._cpuset = None
             return
 
-        if type(val) is not type("string") or len(val) == 0:
-            raise ValueError, _("cpuset must be string")
-        if re.match("^[0-9,-]*$", val) is None:
-            raise ValueError, _("cpuset can only contain numeric, ',', or "
-                                "'-' characters")
-
-        pcpus = _util.get_phy_cpus(self.conn)
-        for c in val.split(','):
-            if c.find('-') != -1:
-                (x, y) = c.split('-')
-                if int(x) > int(y):
-                    raise ValueError, _("cpuset contains invalid format.")
-                if int(x) >= pcpus or int(y) >= pcpus:
-                    raise ValueError, _("cpuset's pCPU numbers must be less "
-                                        "than pCPUs.")
-            else:
-                if len(c) == 0:
-                    continue
-
-                if int(c) >= pcpus:
-                    raise ValueError, _("cpuset's pCPU numbers must be less "
-                                        "than pCPUs.")
+        _validate_cpuset(self.conn, val)
         self._cpuset = val
     cpuset = property(get_cpuset, set_cpuset)
 
