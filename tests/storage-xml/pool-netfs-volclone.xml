@@ -10,7 +10,7 @@
     <path>/some/target/path/pool-netfs-vol</path>
     <format type="raw"/>
     <permissions>
-      <mode>0600</mode>
+      <mode>0700</mode>
       <owner>10736</owner>
       <group>10736</group>
     </permissions>

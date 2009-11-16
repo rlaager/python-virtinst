@@ -162,9 +162,9 @@ class StorageObject(object):
     def set_perms(self, val):
         if type(val) is not dict:
             raise ValueError(_("Permissions must be passed as a dict object"))
-        for key in ["mode", "owner", "group", "label"]:
+        for key in ["mode", "owner", "group"]:
             if not key in val:
-                raise ValueError(_("Permissions must contain 'mode', 'owner', 'group' and 'label' keys."))
+                raise ValueError(_("Permissions must contain 'mode', 'owner' and 'group' keys."))
         self._perms = val
 
 
@@ -188,12 +188,16 @@ class StorageObject(object):
         perms = self.get_perms()
         if not perms:
             return ""
-        return "    <permissions>\n" + \
-               "      <mode>%o</mode>\n" % perms["mode"] + \
+        xml =  "    <permissions>\n" + \
+               "      <mode>0%o</mode>\n" % perms["mode"] + \
                "      <owner>%d</owner>\n" % perms["owner"] + \
-               "      <group>%d</group>\n" % perms["group"] + \
-               "      <label>%s</label>\n" % perms["label"] + \
-               "    </permissions>\n"
+               "      <group>%d</group>\n" % perms["group"]
+
+        if perms.has_key("label"):
+            xml += "      <label>%s</label>\n" % perms["label"]
+
+        xml += "    </permissions>\n"
+        return xml
 
 
     def get_xml_config(self):

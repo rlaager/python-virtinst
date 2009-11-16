@@ -93,6 +93,13 @@ def createVol(poolobj, volname=None, input_vol=None, clone_vol=None):
     cap = 10 * 1024 * 1024 * 1024
     vol_inst = volclass(name=volname, capacity=cap, allocation=alloc,
                         pool=poolobj)
+
+    perms = {}
+    perms["mode"] = 0700
+    perms["owner"] = 10736
+    perms["group"] = 10736
+
+    vol_inst.perms = perms
     if input_vol or clone_vol:
         if not virtinst.Storage.is_create_vol_from_supported(poolobj._conn):
             return
@@ -103,6 +110,8 @@ def createVol(poolobj, volname=None, input_vol=None, clone_vol=None):
         vol_inst = virtinst.Storage.CloneVolume(volname, clone_vol)
 
     filename = os.path.join(basepath, vol_inst.name + ".xml")
+
+    # Make sure permissions are properly set
     tests.diff_compare(vol_inst.get_xml_config(), filename)
 
     return vol_inst.install(meter=False)

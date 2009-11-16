@@ -64,6 +64,11 @@
     <allocation>50000</allocation>
     <target>
       <format type='qcow2'/>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
     </target>
   </volume>
   <volume>
@@ -72,6 +77,11 @@
     <allocation>50000</allocation>
     <target>
       <format type='iso'/>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
     </target>
   </volume>
   <volume>
@@ -80,6 +90,11 @@
     <allocation>50000</allocation>
     <target>
       <format type='bochs'/>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
     </target>
   </volume>
   <volume>
@@ -88,6 +103,11 @@
     <allocation>50000</allocation>
     <target>
       <format type='qcow2'/>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
     </target>
   </volume>
   <volume>
@@ -96,6 +116,11 @@
     <allocation>50000</allocation>
     <target>
       <format type='qcow2'/>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
     </target>
   </volume>
 </pool>
@@ -120,13 +145,25 @@
     <name>testvol1.img</name>
     <capacity>1000000</capacity>
     <allocation>50000</allocation>
-    <target/>
+    <target>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
+    </target>
   </volume>
   <volume>
     <name>testvol2.img</name>
     <capacity>1000000</capacity>
     <allocation>50000</allocation>
-    <target/>
+    <target>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
+    </target>
   </volume>
 </pool>
 
@@ -151,7 +188,13 @@
     <name>diskvol1</name>
     <capacity>1000000</capacity>
     <allocation>50000</allocation>
-    <target/>
+    <target>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
+    </target>
   </volume>
 </pool>
 
@@ -177,6 +220,11 @@
     <allocation>107374182400</allocation>
     <target>
       <format type='qcow2'/>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
     </target>
   </volume>
 </pool>
@@ -201,13 +249,25 @@
     <name>testvol1.img</name>
     <capacity>1000</capacity>
     <allocation>1000</allocation>
-    <target/>
+    <target>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
+    </target>
   </volume>
   <volume>
     <name>testvol2.img</name>
     <capacity>1000</capacity>
     <allocation>1000</allocation>
-    <target/>
+    <target>
+      <permissions>
+        <mode>0700</mode>
+        <owner>10736</owner>
+        <group>10736</group>
+      </permissions>
+    </target>
   </volume>
 </pool>
 
