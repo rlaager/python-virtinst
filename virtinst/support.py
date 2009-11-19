@@ -32,6 +32,8 @@ SUPPORT_CONN_KEYMAP_AUTODETECT = 3
 SUPPORT_CONN_GETHOSTNAME = 4
 SUPPORT_CONN_DOMAIN_VIDEO = 5
 SUPPORT_CONN_DOMAIN_SOUND_AC97 = 6
+SUPPORT_CONN_NETWORK = 7
+SUPPORT_CONN_INTERFACE = 8
 
 # Flags for check_domain_support
 SUPPORT_DOMAIN_GETVCPUS = 1000
@@ -102,17 +104,31 @@ _support_dict = {
         "drv_version" : [ ("qemu", 11000) ],
     },
 
+    SUPPORT_CONN_NETWORK : {
+        "function" : "virConnect.listNetworks",
+        "args" : (),
+    },
+
+    SUPPORT_CONN_INTERFACE : {
+        "function" : "virConnect.listInterfaces",
+        "args" : (),
+    },
+
+
+    # Domain checks
     SUPPORT_DOMAIN_GETVCPUS : {
         "function" : "virDomain.vcpus",
         "args" : (),
     },
 
+    # Pool checks
     # This can't ever require a pool object for back compat reasons
     SUPPORT_STORAGE_CREATEVOLFROM : {
         "function" : "virStoragePool.createXMLFrom",
         "version" : 6004,
     },
 
+    # Nodedev checks
     # This can't ever require a nodedev object for back compat reasons
     SUPPORT_NODEDEV_PCI_DETACH : {
         "function" : "virNodeDevice.dettach",
