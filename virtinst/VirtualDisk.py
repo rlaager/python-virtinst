@@ -1024,29 +1024,33 @@ class VirtualDisk(VirtualDevice):
 
         zeros = '\0' * 4096
 
+        src_fd, dst_fd = None, None
         try:
-            src_fd = os.open(self.clone_path, os.O_RDONLY)
-            dst_fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+            try:
+                src_fd = os.open(self.clone_path, os.O_RDONLY)
+                dst_fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
 
-            i=0
-            while 1:
-                l = os.read(src_fd, clone_block_size)
-                s = len(l)
-                if s == 0:
-                    meter.end(size_bytes)
-                    break
-                # check sequence of zeros
-                if sparse and zeros == l:
-                    os.lseek(dst_fd, s, 1)
-                else:
-                    b = os.write(dst_fd, l)
-                    if s != b:
-                        meter.end(i)
+                i=0
+                while 1:
+                    l = os.read(src_fd, clone_block_size)
+                    s = len(l)
+                    if s == 0:
+                        meter.end(size_bytes)
                         break
-                i += s
-                if i < size_bytes:
-                    meter.update(i)
-
+                    # check sequence of zeros
+                    if sparse and zeros == l:
+                        os.lseek(dst_fd, s, 1)
+                    else:
+                        b = os.write(dst_fd, l)
+                        if s != b:
+                            meter.end(i)
+                            break
+                    i += s
+                    if i < size_bytes:
+                        meter.update(i)
+            except OSError, e:
+                raise RuntimeError(_("Error cloning diskimage %s to %s: %s") %
+                                       (self.clone_path, self.path, str(e)))
         finally:
             if src_fd is not None:
                 os.close(src_fd)
