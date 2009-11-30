@@ -268,7 +268,7 @@ def _check_support(conn, feature, obj=None):
         if not _has_command(function_name, objname=object_name):
             return False
 
-        if args:
+        if args is not None:
             classobj = None
 
             # If function requires an object, make sure the passed obj
@@ -279,12 +279,10 @@ def _check_support(conn, feature, obj=None):
                     raise ValueError("Passed obj with args must be of type " +
                                      str(classobj))
 
-            if not _try_command(_get_command(function_name, obj=classobj),
-                                args):
-                return False
-            else:
-                # Function with args present passed, we are done
-                return True
+            cmd = _get_command(function_name, obj=obj)
+
+            # Function with args specified is all the proof we need
+            return _try_command(cmd, args)
 
     # Check that local libvirt version is sufficient
     if minimum_libvirt_version > actual_lib_ver:
