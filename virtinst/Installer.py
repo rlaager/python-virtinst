@@ -84,6 +84,7 @@ class Installer(object):
         # XXX: We should set this default based on capabilities?
         self._os_type = "xen"
         self._conn = conn
+        self._scratchdir = None
 
         # VirtualDisk that contains install media
         self._install_disk = None
@@ -111,7 +112,6 @@ class Installer(object):
         if not extraargs is None:
             self.extraargs = extraargs
 
-        self._scratchdir = _get_scratchdir(self.type)
         self._tmpfiles = []
 
     def get_install_disk(self):
@@ -151,6 +151,11 @@ class Installer(object):
     arch = property(get_arch, set_arch)
 
     def get_scratchdir(self):
+        if not self.scratchdir_required():
+            return None
+
+        if not self._scratchdir:
+            self._scratchdir = _get_scratchdir(self.type)
         return self._scratchdir
     scratchdir = property(get_scratchdir)
 
@@ -197,6 +202,15 @@ class Installer(object):
         self._extraargs = val
     extraargs = property(get_extra_args, set_extra_args)
 
+
+    # Public helper methods
+    def scratchdir_required(self):
+        """
+        Returns true if scratchdir is needed for the passed install parameters.
+        Apps can use this to determine if they should attempt to ensure
+        scratchdir permissions are adequate
+        """
+        return False
 
     # Private methods
 

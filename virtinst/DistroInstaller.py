@@ -227,6 +227,9 @@ class DistroInstaller(Installer.Installer):
 
     # General Installer methods
 
+    def scratchdir_required(self):
+        return bool(not self._location_is_path)
+
     def prepare(self, guest, meter, distro = None):
         self.cleanup()
 
