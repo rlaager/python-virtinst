@@ -248,8 +248,10 @@ class VirtualDisk(VirtualDevice):
                                         stderr=subprocess.PIPE)
                 out, err = proc.communicate()
 
-                logging.debug("Cmd '%s' output: \nout=%s, \nerr=%s" %
-                              (cmd, out, err))
+                logging.debug("Ran command '%s'" % cmd)
+                if out or err:
+                    logging.debug("out=%s\nerr=%s" % (out, err))
+
                 if proc.returncode != 0:
                     raise ValueError(err)
             else:
