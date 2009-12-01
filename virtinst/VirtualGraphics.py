@@ -71,7 +71,12 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         if not val:
             val = self._default_keymap()
 
-        if not val or type(val) != type("string"):
+        if val == None:
+            # At this point, 'None' is a valid value
+            self._keymap = val
+            return
+
+        if type(val) != type("string"):
             raise ValueError, _("Keymap must be a string")
 
         if val.lower() == self.KEYMAP_LOCAL:
