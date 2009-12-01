@@ -136,7 +136,7 @@ class TestNodeDev(unittest.TestCase):
                 "model": "WDC WD1600AAJS-2", "vendor": "ATA",
                 "size": 160041885696, "removable": False,
                 "hotpluggable": False, "media_available": False,
-                "media_size": 0}
+                "media_size": 0, "media_label": None}
         self._testCompare(devname, vals)
 
     def testStorageDevice2(self):
@@ -147,7 +147,7 @@ class TestNodeDev(unittest.TestCase):
                 "block": "/dev/sdb", "bus": "usb", "drive_type": "disk",
                 "model": "Cruzer Micro", "vendor": "SanDisk", "size": 0,
                 "removable": True, "hotpluggable": True,
-                "media_available": True, "media_size": 12345678}
+                "media_available": True, "media_size": 12345678 }
         self._testCompare(devname, vals)
 
     def testUSBBus(self):

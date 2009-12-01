@@ -254,6 +254,7 @@ class StorageDevice(NodeDevice):
         self.removable = False
         self.media_available = False
         self.media_size = 0
+        self.media_label = None
 
         self.hotpluggable = False
 
@@ -282,6 +283,8 @@ class StorageDevice(NodeDevice):
                             self.media_available = bool(int(rmchild.content))
                         elif rmchild.name == "media_size":
                             self.media_size = int(rmchild.content)
+                        elif rmchild.name == "media_label":
+                            self.media_label = rmchild.content
                         rmchild = rmchild.next
             else:
                 self._parseValueHelper(child, val_map)

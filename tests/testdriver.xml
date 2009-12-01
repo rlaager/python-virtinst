@@ -983,6 +983,7 @@
     <capability type='removable'>
       <media_available>1</media_available>
       <media_size>12345678</media_size>
+      <media_label>foobar</media_label>
     </capability>
     <capability type='hotpluggable' />
   </capability>
