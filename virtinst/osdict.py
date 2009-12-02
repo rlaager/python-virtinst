@@ -185,6 +185,12 @@ OS_TYPES = {
                    "distro": "rhel" },
         "rhel5": { "label": "Red Hat Enterprise Linux 5",
                    "distro": "rhel" },
+        "rhel5.4": { "label": "Red Hat Enterprise Linux 5.4 or later",
+                     "distro": "rhel",
+                      "devices" : {
+                        "disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
+                      },},
         "fedora5": { "sortby": "fedora05",
                      "label": "Fedora Core 5", "distro": "fedora" },
         "fedora6": { "sortby": "fedora06",

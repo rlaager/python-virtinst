@@ -37,6 +37,13 @@ from ImageFetcher import FTPImageFetcher
 from ImageFetcher import HTTPImageFetcher
 from ImageFetcher import DirectImageFetcher
 
+def safeint(c):
+    try:
+        val = int(c)
+    except:
+        val = 0
+    return val
+
 def _fetcherForURI(uri, scratchdir=None):
     if uri.startswith("http://"):
         fclass = HTTPImageFetcher
@@ -141,6 +148,12 @@ def acquireBootDisk(baseuri, progresscb, arch, scratchdir="/var/tmp",
                     type=None, distro=None):
     return _acquireMedia(False, None, baseuri, progresscb, arch,
                          scratchdir, type, distro)
+
+def _check_ostype_valid(os_type):
+    return bool(os_type in Guest.list_os_types())
+def _check_osvariant_valid(os_type, os_variant):
+    return bool(_check_ostype_valid(os_type) and
+                os_variant in Guest.list_os_variants(os_type))
 
 # Attempt to detect the os type + variant for the passed location
 def detectMediaDistro(location, arch):
@@ -260,13 +273,15 @@ class Distro:
         if not self.os_type:
             return (None, None)
 
-        if self.os_type not in Guest.list_os_types():
+        if not _check_ostype_valid(self.os_type):
             logging.debug("%s set os_type to %s, which is not in osdict." %
                           (self, self.os_type))
             return (None, None)
 
-        if (self.os_variant and
-            self.os_variant not in Guest.list_os_variants(self.os_type)):
+        if not self.os_variant:
+            return (self.os_type, None)
+
+        if not _check_osvariant_valid(self.os_type, self.os_variant):
             logging.debug("%s set os_variant to %s, which is not in osdict"
                           " for distro %s." %
                           (self, self.os_variant, self.os_type))
@@ -505,15 +520,49 @@ class RHELDistro(RedHatDistro):
                 return True
             return False
 
+    def _parseTreeinfoVersion(self, verstr):
+        version = safeint(verstr[0])
+        update = 0
+
+        updinfo = verstr.split(".")
+        if len(updinfo) > 1:
+            update = safeint(updinfo[1])
+
+        return version, update
+
     def _variantFromVersion(self):
-        # XXX: Version will look like '5.2', rather than just '5'. We
-        # need to support this in the os dictionary at some point, but for
-        # now, just use the '5' part
         ver = self.treeinfo.get("general", "version")
         if not ver:
             return
 
-        self.os_variant = "rhel" + ver[0]
+        version, update = self._parseTreeinfoVersion(ver)
+        self._setRHELVariant(version, update)
+
+    def _setRHELVariant(self, version, update):
+        if not _check_ostype_valid(self.os_type):
+            return
+
+        base = "rhel" + str(version)
+        if update < 0:
+            update = 0
+
+        ret = None
+        while update >= 0:
+            tryvar = base + ".%s" % update
+            if not _check_osvariant_valid(self.os_type, tryvar):
+                update -= 1
+                continue
+
+            ret = tryvar
+            break
+
+        if not ret:
+            # Try plain rhel5, rhel6, whatev
+            if _check_osvariant_valid(self.os_type, base):
+                ret = base
+
+        if ret:
+            self.os_variant = ret
 
 
 # CentOS distro check
@@ -561,6 +610,16 @@ class SLDistro(RHELDistro):
                 return True
             return False
 
+    def _parseTreeinfoVersion(self, verstr):
+        """
+        Overrides method in RHELDistro
+        """
+        version = safeint(verstr[0])
+        update = 0
+
+        if len(verstr) > 1:
+            update = safeint(verstr[1])
+        return version, update
 
 
 # Suse  image store is harder - we fetch the kernel RPM and a helper

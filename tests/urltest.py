@@ -113,10 +113,15 @@ urls = {
         'x86_64': FEDORA_BASEURL % ("11", "x86_64"),
         'distro': ("linux", "fedora11")
     },
-    "fedora-rawhide" : {
-        'i386'  : FEDORA_RAWHIDE_BASEURL % ("i386"),
-        'x86_64': FEDORA_RAWHIDE_BASEURL % ("x86_64"),
+    "fedora12" : {
+        'i386'  : FEDORA_BASEURL % ("12", "i386"),
+        'x86_64': FEDORA_BASEURL % ("12", "x86_64"),
         'distro': ("linux", "fedora12")
+    },
+    "fedora-rawhide" : {
+        #'i386'  : FEDORA_RAWHIDE_BASEURL % ("i386"),
+        #'x86_64': FEDORA_RAWHIDE_BASEURL % ("x86_64"),
+        #'distro': ("linux", "fedora13")
     },
 
     # SUSE Distros
@@ -136,23 +141,27 @@ urls = {
     # Debian Distros
     "debian-etch" : {
         'i386' : DEBIAN_BASEURL % ("etch", "i386"),
-        'x86_64': DEBIAN_BASEURL % ("etch", "amd64")
+        'x86_64': DEBIAN_BASEURL % ("etch", "amd64"),
+        'distro': ("linux", None)
     },
     "debian-lenny-32" : {
         'i386' : DEBIAN_BASEURL % ("lenny", "i386"),
+        'distro': ("linux", None)
     },
     "debian-lenny-64" : {
-        'x86_64': DEBIAN_BASEURL % ("lenny", "amd64")
+        'x86_64': DEBIAN_BASEURL % ("lenny", "amd64"),
+        'distro': ("linux", None)
     },
     "debian-daily" : {
         'i386' : "http://people.debian.org/~joeyh/d-i/",
+        'distro': ("linux", None)
     },
 
     # CentOS Distros
     "centos-5-latest" : {
         'i386' : CURCENTOS_BASEURL % ("5", "i386"),
-        'x86_64' : CURCENTOS_BASEURL % ("5", "x86_64"),
-        'distro': ("linux", "rhel5")
+        #'x86_64' : CURCENTOS_BASEURL % ("5", "x86_64"),  # No .treeinfo
+        'distro': ("linux", "rhel5.4")
     },
     "centos-4-latest" : {
         'i386' : CURCENTOS_BASEURL % ("4", "i386"),
@@ -171,49 +180,64 @@ urls = {
     },
 
     # Scientific Linux
+    "scientific-5.4" : {
+        'i386'  : SCIENTIFIC_BASEURL % ("54", "i386"),
+        'x86_64': SCIENTIFIC_BASEURL % ("54", "x86_64"),
+        'distro': ("linux", "rhel5.4")
+    },
     "scientific-5.2" : {
         'i386'  : SCIENTIFIC_BASEURL % ("52", "i386"),
         'x86_64': SCIENTIFIC_BASEURL % ("52", "x86_64"),
+        'distro': ("linux", "rhel5")
     },
     "scientific-5.0" : {
         'i386'  : SCIENTIFIC_BASEURL % ("50", "i386"),
         'x86_64': SCIENTIFIC_BASEURL % ("50", "x86_64"),
+        'distro': ("linux", None)
     },
     "scientific-4.7" : {
         'i386'  : SCIENTIFIC_BASEURL % ("47", "i386"),
         'x86_64': SCIENTIFIC_BASEURL % ("47", "x86_64"),
+        'distro': ("linux", None)
     },
     "scientific-4.0" : {
         'i386'  : SCIENTIFIC_BASEURL % ("40", "i386"),
         'x86_64': SCIENTIFIC_BASEURL % ("40", "x86_64"),
+        'distro': ("linux", None)
     },
 
     # Ubuntu
     "ubuntu-gutsy" : {
         'i386': UBUNTU_BASEURL % ("gutsy", "i386"),
         'x86_64': UBUNTU_BASEURL % ("gutsy", "amd64"),
+        'distro': ("linux", None)
     },
     "ubuntu-hardy" : {
         'i386': UBUNTU_BASEURL % ("hardy", "i386"),
         'x86_64': UBUNTU_BASEURL % ("hardy", "amd64"),
+        'distro': ("linux", None)
     },
     "ubuntu-intrepid" : {
         'i386': UBUNTU_BASEURL % ("intrepid", "i386"),
         'x86_64': UBUNTU_BASEURL % ("intrepid", "amd64"),
+        'distro': ("linux", None)
     },
 
     # Mandriva
     "mandriva-2007.1" : {
         'i386': MANDRIVA_BASEURL % ("2007.1", "i586"),
         'x86_64': MANDRIVA_BASEURL % ("2007.1", "x86_64"),
+        'distro': ("linux", None)
     },
     "mandriva-2008.1" : {
         'i386': MANDRIVA_BASEURL % ("2008.1", "i586"),
         'x86_64': MANDRIVA_BASEURL % ("2008.1", "x86_64"),
+        'distro': ("linux", None)
     },
     "mandriva-2009.0" : {
         'i386': MANDRIVA_BASEURL % ("2009.0", "i586"),
         'x86_64': MANDRIVA_BASEURL % ("2009.0", "x86_64"),
+        'distro': ("linux", None)
     },
 
 }
@@ -410,7 +434,7 @@ class TestURLFetch(unittest.TestCase):
                     continue
 
                 try:
-                    print "Testing %s-%s" % (label, arch)
+                    print "Testing %s-%s : %s" % (label, arch, url)
                     self._fetchFromURLDict(label, url, arch, distro_info)
                 except AssertionError:
                     print "%s-%s FAILED." % (label, arch)
