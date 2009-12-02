@@ -1152,6 +1152,10 @@ class StorageVolume(StorageObject):
                 logging.debug("Storage volume '%s' install complete." %
                               self.name)
                 return vol
+            except libvirt.libvirtError, e:
+                if support.is_error_nosupport(e):
+                    raise RuntimeError("Libvirt version does not support "
+                                       "storage cloning.")
             except Exception, e:
                 raise RuntimeError("Couldn't create storage volume "
                                    "'%s': '%s'" % (self.name, str(e)))
