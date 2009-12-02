@@ -191,6 +191,12 @@ OS_TYPES = {
                         "disk" : VIRTIO_DISK,
                         "net"  : VIRTIO_NET,
                       },},
+        "rhel6": { "label": "Red Hat Enterprise Linux 6", "distro": "rhel",
+                   "devices" : {
+                        "disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
+                        "input": USB_TABLET,
+                   }},
         "fedora5": { "sortby": "fedora05",
                      "label": "Fedora Core 5", "distro": "fedora" },
         "fedora6": { "sortby": "fedora06",
@@ -225,7 +231,7 @@ OS_TYPES = {
                         "net"  : VIRTIO_NET,
                         "input": USB_TABLET,
                      }},
-        "fedora12": { "label": "Fedora 12", "distro": "fedora",
+        "fedora13": { "label": "Fedora 13", "distro": "fedora",
                       "devices" : {
                         "disk" : VIRTIO_DISK,
                         "net"  : VIRTIO_NET,
