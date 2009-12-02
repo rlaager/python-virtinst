@@ -22,6 +22,7 @@
 import libvirt
 
 import _util
+from virtinst import _virtinst as _
 
 """
 Default values for OS_TYPES keys. Can be overwritten at os_type or
@@ -38,10 +39,26 @@ DEFAULTS = { \
     "devices" : {
      #  "devname" : { "attribute" : [( ["applicable", "hv-type", list"],
      #                               "recommended value for hv-types" ),]},
-        "input"   : { "type" : [ (["all"], "mouse") ],
-                      "bus"  : [ (["all"], "ps2") ] },
-        "disk"    : { "bus"  : [ (["all"], None) ] },
-        "net"     : { "model": [ (["all"], None) ] },
+        "input"   : {
+            "type" : [
+                (["all"], "mouse")
+            ],
+            "bus"  : [
+                (["all"], "ps2")
+            ],
+        },
+
+        "disk"    : {
+            "bus"  : [
+                (["all"], None)
+            ],
+        },
+
+        "net"     : {
+            "model": [
+                (["all"], None)
+            ],
+        },
     }
 }
 
@@ -75,6 +92,7 @@ def parse_key_entry(conn, hv_type, key_entry):
     except:
         drvver = 0
 
+    ret = None
     if type(key_entry) == list:
         # List of tuples with hv_type, version, etc. mappings
         for tup in key_entry:
@@ -99,9 +117,12 @@ def parse_key_entry(conn, hv_type, key_entry):
             if exp_lib_ver and libver > exp_lib_ver:
                 continue
 
-            return val
+            ret = val
+            break
     else:
-        return key_entry
+        ret = key_entry
+
+    return ret
 
 def lookup_osdict_key(conn, hv_type, os_type, var, key):
 
@@ -129,12 +150,33 @@ def lookup_device_param(conn, hv_type, os_type, var, device_key, param):
     raise RuntimeError(_("Invalid dictionary entry for device '%s %s'" %
                        (device_key, param)))
 
+VIRTIO_DISK = {
+    "bus" : [
+        (["kvm"], "virtio"),
+    ]
+}
+
+VIRTIO_NET = {
+    "model" : [
+        (["kvm"], "virtio"),
+    ]
+}
+
+USB_TABLET = {
+    "type" : [
+        (["all"], "tablet"),
+    ],
+    "bus"  : [
+        (["all"], "usb"),
+    ]
+}
+
 # NOTE: keep variant keys using only lowercase so we can do case
 #       insensitive checks on user passed input
-OS_TYPES = {\
-"linux": { \
+OS_TYPES = {
+"linux": {
     "label": "Linux",
-    "variants": { \
+    "variants": {
         "rhel2.1": { "label": "Red Hat Enterprise Linux 2.1",
                      "distro": "rhel" },
         "rhel3": { "label": "Red Hat Enterprise Linux 3",
@@ -157,100 +199,95 @@ OS_TYPES = {\
                         # Apparently F9 has selinux errors when installing
                         # with virtio:
                         # https://bugzilla.redhat.com/show_bug.cgi?id=470386
-                        #"disk" : { "bus"   : [ (["kvm"], "virtio") ] },
-                        "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                        #"disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
                       }},
         "fedora10": { "label": "Fedora 10", "distro": "fedora",
                       "devices" : {
-                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
-                        "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                        "disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
                       }},
         "fedora11": { "label": "Fedora 11", "distro": "fedora",
                       "devices" : {
-                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
-                        "net"  : { "model" : [ (["kvm"], "virtio") ] },
-                        "input" : { "type" : [ (["all"], "tablet") ],
-                                    "bus"  : [ (["all"], "usb"), ] },
+                        "disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
+                        "input": USB_TABLET,
                      }},
         "fedora12": { "label": "Fedora 12", "distro": "fedora",
                       "devices" : {
-                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
-                        "net"  : { "model" : [ (["kvm"], "virtio") ] },
-                        "input" : { "type" : [ (["all"], "tablet") ],
-                                    "bus"  : [ (["all"], "usb"), ] },
+                        "disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
+                        "input": USB_TABLET,
                      }},
         "fedora12": { "label": "Fedora 12", "distro": "fedora",
                       "devices" : {
-                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
-                        "net"  : { "model" : [ (["kvm"], "virtio") ] },
-                        "input" : { "type" : [ (["all"], "tablet") ],
-                                    "bus"  : [ (["all"], "usb"), ] },
+                        "disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
+                        "input": USB_TABLET,
                      }},
         "sles10": { "label": "Suse Linux Enterprise Server",
                     "distro": "suse" },
         "sles11": { "label": "Suse Linux Enterprise Server 11",
                     "distro": "suse",
                       "devices" : {
-                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
-                        "net"  : { "model" : [ (["kvm"], "virtio") ] },
-                    },
+                        "disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
+                      },
                   },
         "debianetch": { "label": "Debian Etch", "distro": "debian" },
         "debianlenny": { "label": "Debian Lenny", "distro": "debian",
                       "devices" : {
-                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
-                        "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                        "disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
                       }},
         "debiansqueeze": { "label": "Debian Squeeze", "distro": "debian",
                       "devices" : {
-                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
-                        "net"  : { "model" : [ (["kvm"], "virtio") ] },
-                        "input" : { "type" : [ (["all"], "tablet") ],
-                                    "bus"  : [ (["all"], "usb"), ] },
+                        "disk" : VIRTIO_DISK,
+                        "net"  : VIRTIO_NET,
+                        "input": USB_TABLET,
                      }},
         "ubuntuhardy": { "label": "Ubuntu 8.04 LTS (Hardy Heron)",
                          "distro": "ubuntu",
                          "devices" : {
-                            "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                            "net"  : VIRTIO_NET,
                          }},
         "ubuntuintrepid": { "label": "Ubuntu 8.10 (Intrepid Ibex)",
                             "distro": "ubuntu",
                             "devices" : {
-                                "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                              "net"  : VIRTIO_NET,
                            }},
         "ubuntujaunty": { "label": "Ubuntu 9.04 (Jaunty Jackalope)",
                           "distro": "ubuntu",
                           "devices" : {
-                            "net"  : { "model" : [ (["kvm"], "virtio") ] },
-                            "disk" : { "bus"   : [ (["kvm"], "virtio") ] }
+                            "disk" : VIRTIO_DISK,
+                            "net"  : VIRTIO_NET,
                         }},
         "ubuntukarmic": { "label": "Ubuntu 9.10 (Karmic Koala)",
                           "distro": "ubuntu",
                           "devices" : {
-                            "net"  : { "model" : [ (["kvm"], "virtio") ] },
-                            "disk" : { "bus"   : [ (["kvm"], "virtio") ] }
+                            "disk" : VIRTIO_DISK,
+                            "net"  : VIRTIO_NET,
                         }},
         "generic24": { "label": "Generic 2.4.x kernel" },
         "generic26": { "label": "Generic 2.6.x kernel" },
         "virtio26": { "sortby": "genericvirtio26",
                       "label": "Generic 2.6.25 or later kernel with virtio",
                       "devices" : {
-                        "disk" : { "bus"   : [ (["kvm"], "virtio") ] },
-                        "net"  : { "model" : [ (["kvm"], "virtio") ] }
+                            "disk" : VIRTIO_DISK,
+                            "net"  : VIRTIO_NET,
                     }},
 
     },
 },
 
-"windows": { \
+"windows": {
     "label": "Windows",
     "clock": "localtime",
     "continue": True,
     "devices" : {
-        "input" : { "type" : [ (["all"], "tablet") ],
-                    "bus"  : [ (["all"], "usb"), ] },
+        "input" : USB_TABLET,
     },
-    "variants": { \
+    "variants": {
         "winxp":{ "label": "Microsoft Windows XP (x86)",
                   "acpi": [ ("xen", 3001000, False),
                             ("all", True ), ],
@@ -276,23 +313,21 @@ OS_TYPES = {\
     "variants": {
         "solaris9": { "label": "Sun Solaris 9", },
         "solaris10": { "label": "Sun Solaris 10",
-                       "devices" : { "input" : {
-                         "type" : [ (["all"], "tablet") ],
-                         "bus"  : [ (["all"], "usb"), ]
-                         } },
+                       "devices" : {
+                        "input" : USB_TABLET,
+                         },
                        },
         "opensolaris": { "label": "Sun OpenSolaris",
-                       "devices" : { "input" : {
-                           "type" : [ (["all"], "tablet") ],
-                           "bus"  : [ (["all"], "usb"), ]
-                         } },
+                       "devices" : {
+                           "input" : USB_TABLET,
+                         },
                        },
     },
 },
 
 "unix": {
     "label": "UNIX",
-    "variants": { \
+    "variants": {
         "freebsd6": { "label": "Free BSD 6.x" ,
                       # http://www.nabble.com/Re%3A-Qemu%3A-bridging-on-FreeBSD-7.0-STABLE-p15919603.html
                       "devices" : {
@@ -311,9 +346,9 @@ OS_TYPES = {\
     },
 },
 
-"other": { \
+"other": {
     "label": "Other",
-    "variants": { \
+    "variants": {
         "msdos": { "label": "MS-DOS", "acpi": False, "apic": False },
         "netware4": { "label": "Novell Netware 4" },
         "netware5": { "label": "Novell Netware 5" },

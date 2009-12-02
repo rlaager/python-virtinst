@@ -345,6 +345,20 @@ class TestXMLConfig(unittest.TestCase):
         g.nics.append(get_virtual_network())
         self._compare(g, "install-f11", False)
 
+    def testF11Xen(self):
+        g = get_basic_fullyvirt_guest("xen")
+        g.os_type = "linux"
+        g.os_variant = "fedora11"
+        g.installer = virtinst.DistroInstaller(type="xen", os_type="hvm",
+                                               conn=g.conn,
+                                               location="/default-pool/default-vol")
+        g.installer.cdrom = True
+        g.disks.append(get_floppy())
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+        self._compare(g, "install-f11-xen", False)
+
     def testBootWindows(self):
         g = get_basic_fullyvirt_guest("kvm")
         g.os_type = "windows"
