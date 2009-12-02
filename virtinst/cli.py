@@ -548,6 +548,17 @@ def get_network(net_kwargs, guest):
     n = VirtualNetworkInterface(**net_kwargs)
     guest.nics.append(n)
 
+def set_os_variant(guest, distro_type, distro_variant):
+    if not distro_type and not distro_variant:
+        # Default to distro autodetection
+        guest.set_os_autodetect(True)
+    else:
+        if (distro_type and str(distro_type).lower() != "none"):
+            guest.set_os_type(distro_type)
+
+        if (distro_variant and str(distro_variant).lower() != "none"):
+            guest.set_os_variant(distro_variant)
+
 
 def parse_optstr(optstr, basedict=None):
     """

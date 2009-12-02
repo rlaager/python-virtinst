@@ -193,15 +193,15 @@ class DistroInstaller(Installer.Installer):
                 self.location, meter, guest.arch, scratchdir=self.scratchdir,
                 type=self.os_type, distro=distro)
 
-            # Only set OS type if the user didn't explictly pass one
-            # XXX: Should this be opt in?
-            if guest.os_type == None and os_type:
-                logging.debug("Auto detected OS type as: %s" % os_type)
-                guest.os_type = os_type
-            if (guest.os_variant == None and os_variant
-                and guest.os_type == os_type):
-                logging.debug("Auto detected OS variant as: %s" % os_variant)
-                guest.os_variant = os_variant
+            if guest.get_os_autodetect():
+                if os_type:
+                    logging.debug("Auto detected OS type as: %s" % os_type)
+                    guest.os_type = os_type
+
+                if (os_variant and guest.os_type == os_type):
+                    logging.debug("Auto detected OS variant as: %s" %
+                                  os_variant)
+                    guest.os_variant = os_variant
 
             self.install["kernel"] = kernelfn
             self.install["initrd"] = initrdfn

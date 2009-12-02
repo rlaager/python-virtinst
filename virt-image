@@ -214,10 +214,7 @@ def main():
     get_graphics(image.domain, options.vnc, options.vncport, options.vnclisten,
                  options.nographics, options.sdl, options.keymap, guest)
 
-    if options.distro_type:
-        guest.set_os_type(options.distro_type)
-    if options.distro_variant:
-        guest.set_os_variant(options.distro_variant)
+    cli.set_os_variant(guest, options.distro_type, options.distro_variant)
 
     if installer.is_hvm():
         if options.noacpi:

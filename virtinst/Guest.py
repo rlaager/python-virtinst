@@ -120,6 +120,7 @@ class Guest(object):
         self._cpuset = None
         self._graphics_dev = None
         self._consolechild = None
+        self._os_autodetect = False
 
         self._os_type = None
         self._os_variant = None
@@ -290,6 +291,12 @@ class Guest(object):
                     return
             raise ValueError, _("Unknown OS variant '%s'" % val)
     os_variant = property(get_os_variant, set_os_variant)
+
+    def set_os_autodetect(self, val):
+        self._os_autodetect = bool(val)
+    def get_os_autodetect(self):
+        return self._os_autodetect
+    os_autodetect = property(get_os_autodetect, set_os_autodetect)
 
     # Get the current variants 'distro' tag: 'rhel', 'fedora', etc.
     def get_os_distro(self):

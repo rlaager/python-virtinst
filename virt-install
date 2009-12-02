@@ -772,10 +772,7 @@ def main():
     cli.get_hostdevs(options.hostdevs, guest)
 
     guest.extraargs = options.extra
-    if options.distro_type:
-        guest.set_os_type(options.distro_type)
-    if options.distro_variant:
-        guest.set_os_variant(options.distro_variant)
+    cli.set_os_variant(guest, options.distro_type, options.distro_variant)
 
     # and now for the full-virt vs paravirt specific questions
     get_install_media(options.location, options.cdrom, options.pxe,

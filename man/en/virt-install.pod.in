@@ -123,13 +123,25 @@ an optimal cpu pinning using NUMA data, if available.
 Optimize the guest configuration for a type of operating system (ex. 'linux',
 'windows'). This will attempt to pick the most suitable ACPI & APIC settings,
 optimally supported mouse drivers, virtio, and generally accommodate other
-operating system quirks. See C<--os-variant> for valid options.
+operating system quirks.
+
+By default, virt-install will attempt to auto detect this value from
+the install media (currently only supported for URL installs). Autodetection
+can be disabled with the special value 'none'
+
+See C<--os-variant> for valid options.
 
 =item --os-variant=OS_VARIANT
 
 Further optimize the guest configuration for a specific operating system
 variant (ex. 'fedora8', 'winxp'). This parameter is optional, and does not
-require an C<--os-type> to be specified. Valid values are:
+require an C<--os-type> to be specified.
+
+By default, virt-install will attempt to auto detect this value from
+the install media (currently only supported for URL installs). Autodetection
+can be disabled with the special value 'none'.
+
+Valid values are:
 
 ::VARIANT VALUES::
 

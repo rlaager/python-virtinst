@@ -235,6 +235,10 @@ class sdist(_sdist):
                 output += osdict.OS_TYPES[t]["variants"][v]["label"] + "\n\n"
 
             output += "=back\n\n"
+
+        # Add special 'none' value
+        output += "=item none\n\n"
+        output += "No OS version specified (disables autodetect)\n\n"
         output += "=back\n\n"
 
         infile = "man/en/virt-install.pod.in"

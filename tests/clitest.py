@@ -202,6 +202,10 @@ args_dict = {
         "--paravirt --location %s" % treedir,
         # Using ro path as a cd media
         "--hvm --cdrom %(ROIMG)s",
+        # Paravirt location with --os-variant none
+        "--paravirt --location %s --os-variant none" % treedir,
+        # URL install with manual os-variant
+        "--hvm --location %s --os-variant fedora12" % treedir,
       ],
 
       "invalid": [
@@ -215,6 +219,8 @@ args_dict = {
         "--import",
         # LiveCD with no media
         "--livecd",
+        # Bogus --os-variant
+        "--hvm --pxe --os-variant farrrrrrrge"
       ],
      }, # category "install"
 
@@ -487,6 +493,8 @@ args_dict = {
         "--boot 1",
         # Lots of options
         "--name foobar --ram 64 --os-variant winxp",
+        # OS variant 'none'
+        "--name foobar --ram 64 --os-variant none",
       ],
 
       "invalid": [
