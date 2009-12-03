@@ -61,6 +61,10 @@ DEFAULT_LVM_TARGET_BASE = "/dev/"
 DEFAULT_DIR_TARGET_BASE = "/var/lib/libvirt/images/"
 DEFAULT_SCSI_TARGET = "/dev/disk/by-path"
 
+# Pulled from libvirt, used for building on older versions
+VIR_STORAGE_VOL_FILE = 0
+VIR_STORAGE_VOL_BLOCK = 1
+
 def is_create_vol_from_supported(conn):
     return support.check_pool_support(conn,
                                       support.SUPPORT_STORAGE_CREATEVOLFROM)
@@ -1222,7 +1226,7 @@ class FileVolume(StorageVolume):
     """
     Build and install xml for use on pools which use file based storage
     """
-    _file_type = libvirt.VIR_STORAGE_VOL_FILE
+    _file_type = VIR_STORAGE_VOL_FILE
 
     formats = ["raw", "bochs", "cloop", "cow", "dmg", "iso", "qcow",\
                "qcow2", "vmdk", "vpc"]
@@ -1251,6 +1255,7 @@ class DiskVolume(StorageVolume):
     """
     Build and install xml volumes for use on physical disk pools
     """
+    _file_type = VIR_STORAGE_VOL_BLOCK
 
     # Register applicable property methods from parent class
     perms = property(StorageObject.get_perms, StorageObject.set_perms)
@@ -1273,7 +1278,7 @@ class LogicalVolume(StorageVolume):
     """
     Build and install logical volumes for lvm pools
     """
-    _file_type = libvirt.VIR_STORAGE_VOL_BLOCK
+    _file_type = VIR_STORAGE_VOL_BLOCK
 
     # Register applicable property methods from parent class
     perms = property(StorageObject.get_perms, StorageObject.set_perms)
@@ -1329,7 +1334,7 @@ class CloneVolume(StorageVolume):
 #    """
 #    Build and install xml for use on iSCSI device pools
 #    """
-#    _file_type = libvirt.VIR_STORAGE_VOL_FILE
+#    _file_type = VIR_STORAGE_VOL_BLOCK
 #
 #    def __init__(self, *args, **kwargs):
 #        raise NotImplementedError
