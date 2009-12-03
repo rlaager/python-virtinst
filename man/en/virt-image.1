@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-IMAGE 1"
-.TH VIRT-IMAGE 1 "2009-03-23" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-IMAGE 1 "2009-12-01" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -213,11 +213,10 @@ Disables \s-1ACPI\s0 for fully virtualized guest (overrides value in \s-1XML\s0 
 .IX Subsection "Networking Configuration"
 .IP "\-m \s-1MAC\s0, \-\-mac=MAC" 2
 .IX Item "-m MAC, --mac=MAC"
-Fixed \s-1MAC\s0 address for the guest. See \fIvirt\-install\fR\|(1) for details
+This is deprecated in favor of \f(CW\*(C`\-\-network ...,mac=MAC,...\*(C'\fR
 .IP "\-b \s-1BRIDGE\s0, \-\-bridge=BRIDGE" 2
 .IX Item "-b BRIDGE, --bridge=BRIDGE"
-Bridge device to connect the guest \s-1NIC\s0 to. This is deprecated in favor of
-\&\f(CW\*(C`\-\-network\*(C'\fR
+This is deprecated in favor of \f(CW\*(C`\-\-network bridge=BRIDGE\*(C'\fR
 .IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK" 2
 .IX Item "-w NETWORK, --network=NETWORK"
 Connect the guest to the host network. See \fIvirt\-install\fR\|(1) for details
@@ -233,6 +232,13 @@ the host. See \fIvirt\-install\fR\|(1) for details
 .IX Item "--vncport=VNCPORT"
 Request a permanent, statically assigned port number for the guest \s-1VNC\s0
 console. See \fIvirt\-install\fR\|(1) for details
+.IP "\-\-vnclisten=VNCLISTEN" 2
+.IX Item "--vnclisten=VNCLISTEN"
+Address to listen on for \s-1VNC\s0 connections. See \fIvirt\-install\fR\|(1) for details.
+.IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 2
+.IX Item "-k KEYMAP, --keymap=KEYMAP"
+Request that the virtual \s-1VNC\s0 console be configured to run with a non-English
+keyboard layout.
 .IP "\-\-sdl" 2
 .IX Item "--sdl"
 Setup a virtual console in the guest and display an \s-1SDL\s0 window in the
@@ -241,10 +247,6 @@ host to render the output. See \fIvirt\-install\fR\|(1) for details
 .IX Item "--nographics"
 Do not attach a graphical device to the guest. See
 \&\fIvirt\-install\fR\|(1) for details
-.IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 2
-.IX Item "-k KEYMAP, --keymap=KEYMAP"
-Request that the virtual console be configured to run with a non-English
-keyboard layout.
 .Sh "Miscellaneous Options"
 .IX Subsection "Miscellaneous Options"
 .IP "\-p, \-\-print" 2
@@ -296,10 +298,7 @@ Written by David Lutterkort. See the \s-1AUTHORS\s0 file in the source
 distribution for the complete list of credits.
 .SH "BUGS"
 .IX Header "BUGS"
-Report bugs to the mailing list
-\&\f(CW\*(C`http://www.redhat.com/mailman/listinfo/et\-mgmt\-tools\*(C'\fR or directly to
-BugZilla \f(CW\*(C`http://bugzilla.redhat.com/bugzilla/\*(C'\fR against the \f(CW\*(C`Fedora\*(C'\fR
-product, and the \f(CW\*(C`python\-virtinst\*(C'\fR component.
+Please see http://virt\-manager.org/page/BugReporting
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (C) 2006\-2007 Red Hat, Inc, and various contributors.

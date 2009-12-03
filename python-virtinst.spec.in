@@ -77,6 +77,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-convert
 
 %changelog
+* Thu Dec  3 2009 Cole Robinson <crobinso@redhat.com> - 0.500.1-1
+- virt-install now attempts --os-variant detection by default.
+- New --disk option 'format', for creating image formats like qcow2 or vmdk
+- Many improvements and bugfixes
+
 * Tue Jul 28 2009 Cole Robinson <crobinso@redhat.com> - 0.500.0-1
 - New virt-install device options --serial, --parallel, and --video
 - Allow various auth types for libvirt connections (PolicyKit, SASL, ...)

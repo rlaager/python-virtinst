@@ -9,10 +9,10 @@ clean:
 	rm *.1 *.5
 
 %.1: %.pod
-	pod2man --center=$(CENTER) $< $@
+	pod2man --center=$(CENTER) --release="" $< $@
 
 %.html: %.pod
 	pod2html --header --podpath . --infile $< --outfile $@
 
 virt-image.5: virt-image-xml.pod
-	pod2man --center=$(CENTER) --section=5 --name=virt-image $< $@
+	pod2man --center=$(CENTER) --section=5 --release="" --name=virt-image $< $@

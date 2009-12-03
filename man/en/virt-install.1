@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2009-07-28" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2009-12-03" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -238,12 +238,24 @@ an optimal cpu pinning using \s-1NUMA\s0 data, if available.
 Optimize the guest configuration for a type of operating system (ex. 'linux',
 \&'windows'). This will attempt to pick the most suitable \s-1ACPI\s0 & \s-1APIC\s0 settings,
 optimally supported mouse drivers, virtio, and generally accommodate other
-operating system quirks. See \f(CW\*(C`\-\-os\-variant\*(C'\fR for valid options.
+operating system quirks.
+.Sp
+By default, virt-install will attempt to auto detect this value from
+the install media (currently only supported for \s-1URL\s0 installs). Autodetection
+can be disabled with the special value 'none'
+.Sp
+See \f(CW\*(C`\-\-os\-variant\*(C'\fR for valid options.
 .IP "\-\-os\-variant=OS_VARIANT" 2
 .IX Item "--os-variant=OS_VARIANT"
 Further optimize the guest configuration for a specific operating system
 variant (ex. 'fedora8', 'winxp'). This parameter is optional, and does not
-require an \f(CW\*(C`\-\-os\-type\*(C'\fR to be specified. Valid values are:
+require an \f(CW\*(C`\-\-os\-type\*(C'\fR to be specified.
+.Sp
+By default, virt-install will attempt to auto detect this value from
+the install media (currently only supported for \s-1URL\s0 installs). Autodetection
+can be disabled with the special value 'none'.
+.Sp
+Valid values are:
 .RS 2
 .IP "linux" 4
 .IX Item "linux"
@@ -283,6 +295,9 @@ Fedora 11
 .IP "fedora12" 4
 .IX Item "fedora12"
 Fedora 12
+.IP "fedora13" 4
+.IX Item "fedora13"
+Fedora 13
 .IP "generic24" 4
 .IX Item "generic24"
 Generic 2.4.x kernel
@@ -304,6 +319,12 @@ Red Hat Enterprise Linux 4
 .IP "rhel5" 4
 .IX Item "rhel5"
 Red Hat Enterprise Linux 5
+.IP "rhel5.4" 4
+.IX Item "rhel5.4"
+Red Hat Enterprise Linux 5.4 or later
+.IP "rhel6" 4
+.IX Item "rhel6"
+Red Hat Enterprise Linux 6
 .IP "sles10" 4
 .IX Item "sles10"
 Suse Linux Enterprise Server
@@ -411,6 +432,9 @@ Microsoft Windows \s-1XP\s0 (x86_64)
 .RE
 .RS 4
 .RE
+.IP "none" 4
+.IX Item "none"
+No \s-1OS\s0 version specified (disables autodetect)
 .RE
 .RS 2
 .RE
@@ -602,7 +626,13 @@ general format of a disk string is
 \&    \-\-disk opt1=val1,opt2=val2,...
 .Ve
 .Sp
-To specify media, one of the following options is required:
+To specify media, the command can either be:
+.Sp
+.Vb 1
+\&    \-\-disk /some/storage/path,opt1=val1
+.Ve
+.Sp
+or explicitly specify one of the following arguments:
 .RS 2
 .IP "\fBpath\fR" 4
 .IX Item "path"
@@ -767,8 +797,11 @@ example, the qemu driver default can be changed in /etc/libvirt/qemu.conf).
 Use 0.0.0.0 to allow access from other machines.
 .IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 2
 .IX Item "-k KEYMAP, --keymap=KEYMAP"
-Request that the virtual \s-1VNC\s0 console be configured to run with a non-English
-keyboard layout.
+Request that the virtual \s-1VNC\s0 console be configured to run with a specific
+keyboard layout. If the special value 'local' is specified, virt-install
+will attempt to configure to use the same keymap as the local system. A value
+of 'none' specifically defers to the hypervisor. Default behavior is
+hypervisor specific, but typically is the same as 'local'.
 .IP "\-\-sdl" 2
 .IX Item "--sdl"
 Setup a virtual console in the guest and display an \s-1SDL\s0 window in the
@@ -903,7 +936,7 @@ the rest of the options.
 \&  # virt\-install \e
 \&       \-\-name demo
 \&       \-\-ram 512
-\&       \-\-disk path=/home/user/VMs/mydisk.img
+\&       \-\-disk /home/user/VMs/mydisk.img
 \&       \-\-import
 .Ve
 .SH "AUTHORS"

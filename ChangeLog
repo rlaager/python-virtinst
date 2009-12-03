@@ -1,8 +1,517 @@
+2009-12-03  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Storage.py:
+	Storage: Don't use libvirt VIR_STORAGE_VOL* flags unless they exist
+	[c2ae8225c41e] [tip]
+
+	* virtinst/support.py:
+	support: Add check for libvirt openAuth
+	[6fab92a8f1e0]
+
+2009-12-02  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-install:
+	virt-install: --disk: make path= optional
+	[2734c2e0c792]
+
+	* man/en/virt-install.pod.in, setup.py, tests/clitest.py, virt-image,
+	virt-install, virtinst/DistroInstaller.py, virtinst/Guest.py,
+	virtinst/cli.py:
+	virt-install: Add --os-variant 'none' option to disable autodetect
+
+	First, add a new method set_os_detect to Guest, so that API users
+	can opt into the behavior, and set the behavior off by default.
+
+	However, virt-install will continue to do autodetect by default, but
+	now users have a way to opt out via --os-variant none
+	[aed4bbe95f16]
+
+	* virtinst/osdict.py:
+	osdict: Add fedora13 and rhel6 entries
+
+	Fedora 12 was mysteriously added to the osdict twice, so just
+	convert it to F13
+	[2939f390be61]
+
+	* tests/urltest.py, virtinst/DistroInstaller.py, virtinst/OSDistro.py,
+	virtinst/osdict.py:
+	osdict: Add RHEL 5.4 (and later) value
+
+	Also, fix up the URL test suite to verify this change.
+	[bb6c6b4cf8ae]
+
+	* tests/xmlconfig-xml/install-f11-xen.xml, tests/xmlconfig.py,
+	virtinst/osdict.py:
+	osdict: Use variables for common device settings
+
+	Improves readability a bit.
+	[6123c22fc70f]
+
+	* virtinst/Storage.py:
+	Storage: Report nicer error if createVolFrom not supported.
+	[c2764fbee918]
+
+2009-12-01  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/nodedev.py, tests/testdriver.xml,
+	virtinst/NodeDeviceParser.py:
+	NodeDeviceParser: Parse nodedev storage media media_label
+
+	Not committed upstream yet, but will likely go in, and I'd like this
+	as early as possible so it makes the pending release.
+	[1a15999a90eb]
+
+	* virtinst/VirtualGraphics.py:
+	VirtualGraphics: Fix 'None' keymap on recent qemu
+	[87d0ea558457]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Clean up fix_search_path logging a bit
+	[261c99a55362]
+
+	* virtinst/DistroInstaller.py, virtinst/Installer.py:
+	installer: Add public scratchdir_required()
+
+	Useful for API users to determine if a scratchdir will be used for
+	install, so requisit permissions can be checked.
+	[677c667cf505]
+
+2009-11-29  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/support.py:
+	support: Fix function checking with empty arg list
+	[05adb0b921e2]
+
+2009-11-22  Guido Günther  <agx@sigxcpu.org>
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: add error handling to VirtualDisk._clone_local()
+	[43b3af61d65a]
+
+2009-11-19  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/support.py:
+	support: Add checks for libvirt network and interface APIs
+	[997e88bcc653]
+
+2009-11-16  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Guest: Add static function cpuset_str_to_tuple
+
+	Helps using cpuset strings for the pinVcpu command.
+	[57e75a8140f8]
+
+	* virtinst/support.py:
+	support: Add support check for domain vcpus()
+	[2d35b0c7fa42]
+
+2009-11-15  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/NodeDeviceParser.py, virtinst/Storage.py,
+	virtinst/VirtualGraphics.py, virtinst/__init__.py,
+	virtinst/support.py, virtinst/util.py:
+	Add a new module 'support' for checking if libvirt feature avail.
+
+	Use this new module to implement all the support checks we are
+	currently using in the code base (with the exception of osdict).
+	[eca8d87c5501]
+
+	* tests/storage-xml/pool-dir-vol.xml, tests/storage-xml/pool-dir-
+	volclone.xml, tests/storage-xml/pool-dir-volinput.xml, tests
+	/storage-xml/pool-disk-vol.xml, tests/storage-xml/pool-disk-
+	volclone.xml, tests/storage-xml/pool-disk-volinput.xml, tests
+	/storage-xml/pool-fs-vol.xml, tests/storage-xml/pool-fs-
+	volclone.xml, tests/storage-xml/pool-fs-volinput.xml, tests/storage-
+	xml/pool-logical-vol.xml, tests/storage-xml/pool-logical-
+	volclone.xml, tests/storage-xml/pool-logical-volinput.xml, tests
+	/storage-xml/pool-netfs-vol.xml, tests/storage-xml/pool-netfs-
+	volclone.xml, tests/storage-xml/pool-netfs-volinput.xml,
+	tests/storage.py, tests/testdriver.xml, virtinst/Storage.py:
+	tests: Make sure storage test output doesn't use local UID
+	[94b620fe7a77]
+
+2009-11-11  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-clone, virt-convert, virt-image, virt-install:
+	Add --version commands for CLI utils.
+	[77a80a515b03]
+
+	* setup.py, virtinst/__init__.py, virtinst/version.py:
+	Add __version__ and __version_info__ values.
+
+	The canonical 'version' value is stored in virtinst/version.py,
+	which will need to be updated whenever cutting a new release.
+	[6731c62f618d]
+
+2009-10-28  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/storage-xml/pool-logical-manydev.xml, tests/storage-xml/pool-
+	logical-target-srcname.xml, tests/storage-xml/pool-logical.xml,
+	tests/storage.py, virtinst/Storage.py:
+	Storage: Always set a logical pool source name
+
+	Either set it via the pool name, or try to parse the target path for
+	a VG name.
+	[b5b11ab14a20]
+
+2009-10-21  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/storage-xml/pool-logical-list0.xml, tests/storage-xml/pool-
+	logical-list1.xml, tests/storage-xml/pool-netfs-list0.xml,
+	tests/storage.py:
+	tests: Add tests for FindPoolSources
+	[0fd667b7c1de]
+
+2009-10-22  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Guest: Fix up harmless error message typo
+	[43d1764b85c1]
+
+2009-10-21  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/CloneManager.py:
+	CloneManager: Fix error reporting to show the proper erroneous path.
+	[26d7a3e52035]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Fix LVM/Disk volume creation on QEMU
+
+	Make sure that a vol_install actually supports the format parameter
+	before we try and read it.
+	[7df4e1b4e25e]
+
+2009-10-20  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Storage.py:
+	Storage: Support listStoragePoolSources
+
+	We add a static method to storage pool class that takes the required
+	params (conn, pool type, extra source attributes) and returns a list
+	of build pool objects that libvirt gives us.
+	[08ea24699015]
+
+	* virtinst/CapabilitiesParser.py, virtinst/NodeDeviceParser.py,
+	virtinst/_util.py:
+	Break out duplicate XML parsing routings from *Parser files.
+	[2d85669256bc]
+
+	* tests/storage-xml/pool-dir-vol.xml, tests/storage-xml/pool-dir-
+	volclone.xml, tests/storage-xml/pool-dir-volinput.xml, tests
+	/storage-xml/pool-dir.xml, tests/storage-xml/pool-disk-vol.xml,
+	tests/storage-xml/pool-disk-volclone.xml, tests/storage-xml/pool-
+	disk-volinput.xml, tests/storage-xml/pool-disk.xml, tests/storage-
+	xml/pool-fs-vol.xml, tests/storage-xml/pool-fs-volclone.xml, tests
+	/storage-xml/pool-fs-volinput.xml, tests/storage-xml/pool-fs.xml,
+	tests/storage-xml/pool-iscsi.xml, tests/storage-xml/pool-logical-
+	manydev.xml, tests/storage-xml/pool-logical-srcname.xml, tests
+	/storage-xml/pool-logical-vol.xml, tests/storage-xml/pool-logical-
+	volclone.xml, tests/storage-xml/pool-logical-volinput.xml, tests
+	/storage-xml/pool-logical.xml, tests/storage-xml/pool-netfs-vol.xml,
+	tests/storage-xml/pool-netfs-volclone.xml, tests/storage-xml/pool-
+	netfs-volinput.xml, tests/storage-xml/pool-netfs.xml, tests/storage-
+	xml/pool-scsi.xml, tests/storage.py:
+	tests: Add XML comparison tests for storage objects
+	[bdf02618e2fe]
+
+	* virtinst/Storage.py:
+	Storage: Add a newline after generated XML
+
+	This helps XML comparison in the test driver, since editting an XML
+	file with vim won't cause the tests to break (since vim seems to add
+	some kind of silent trailing character).
+	[f031a6465894]
+
+	* virtinst/Storage.py:
+	Storage: Fix setting pool UUID on init
+	[ed36e208e4b4]
+
+2009-10-19  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/nodedev.py, virtinst/NodeDeviceParser.py:
+	NodeDevice: Don't error when parsing an unknown device.
+	[a000f2456166]
+
+	* virtinst/NodeDeviceParser.py:
+	NodeDevice: Use a shared pretty_name where applicable
+	[40903a86b5b7]
+
+	* tests/storage.py, virtinst/Storage.py:
+	storage: Allow creating SCSI pools.
+	[1a2992600b2f]
+
+	* tests/validation.py:
+	More cleanup
+	[23a3f03f3a96]
+
+	* tests/storage.py, virtinst/Storage.py:
+	storage: Allow setting logical pool source name
+	[c2be2bedfaa0]
+
+	* tests/validation.py:
+	tests: Use custom testdriver pools/vols in validation.py
+	[2ffa24ec9c10]
+
+2009-10-16  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Guest: Fix up XML generation to allow extra pieces without breaking
+	tests.
+	[60ad980b59b9]
+
+	* tests/clone-xml/fullpool-in.xml, tests/clonetest.py,
+	tests/testdriver.xml:
+	tests: Add clone tests for full pools.
+	[f631bcba9df1]
+
+	* tests/nodedev.py, tests/pylint-virtinst.sh, virt-install,
+	virtinst/OSDistro.py:
+	Fix up some pylint issues.
+	[3a903b9f2b80]
+
+	* tests/clitest.py:
+	clitest: Add readonly file checks
+	[fc150e1c42e3]
+
+	* tests/pylint-virtinst.sh:
+	pylint: Make sure we don't add msgs that aren't supported
+	[5f6f1621000e]
+
+	* tests/clitest.py:
+	Add some more cpuset cli tests.
+	[c4f6be2fe37d]
+
+2009-10-05  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Allow setting an empty cpuset.
+	[45c03200189c]
+
+2009-10-14  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/nodedev.py, virtinst/NodeDeviceParser.py:
+	NodeDevice: Add fc_host and vport_ops parsing.
+	[45a607465742]
+
+	* HACKING, README, setup.py, tests/coverage.py:
+	Remove static coverage.py infavor of the system installed version.
+	[84a9ae157978]
+
+	* tests/nodedev-xml/nodexml/net1.xml, tests/nodedev-
+	xml/nodexml/net2.xml, tests/nodedev-xml/nodexml/pci1.xml, tests
+	/nodedev-xml/nodexml/pci2.xml, tests/nodedev-
+	xml/nodexml/scsibus.xml, tests/nodedev-xml/nodexml/scsidev.xml,
+	tests/nodedev-xml/nodexml/storage1.xml, tests/nodedev-
+	xml/nodexml/storage2.xml, tests/nodedev-xml/nodexml/system.xml,
+	tests/nodedev-xml/nodexml/usbbus.xml, tests/nodedev-
+	xml/nodexml/usbdev1.xml, tests/nodedev-xml/nodexml/usbdev2.xml,
+	tests/nodedev.py, tests/testdriver.xml:
+	tests: Update libvirt test driver to read node device XML
+
+	Allows us to ditch all the nodexml files we keep around.
+	[29073b4c7a66]
+
+	* virtinst/Installer.py:
+	Fix error generating scratchdir for xen installs.
+	[f199361a3dd9]
+
+2009-10-13  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clitest.py, virtinst/Guest.py:
+	virt-install: Fix --cpuset
+
+	A commit before 0.500.0 broke cpuset with commas, and the test suite
+	wasn't checking it. Fix the error and add tests to prevent this in
+	the future.
+	[927ae9ed09f7]
+
+2009-10-12  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Installer.py:
+	Installer: Break out 'what is my scratchdir' logic.
+
+	This is really a static choice that doesn't have anything to do with
+	the Installer.
+	[b9a47bc1a561]
+
+	* tests/__init__.py, tests/image-xml/image2guest/image-xenfv32.xml,
+	tests/xmlconfig-xml/boot-fullyvirt-disk-block.xml, tests/xmlconfig-
+	xml/boot-fullyvirt-disk-file.xml, tests/xmlconfig-xml/boot-
+	fullyvirt-pxe-nodisks.xml, tests/xmlconfig-xml/boot-fullyvirt-
+	pxe.xml, tests/xmlconfig-xml/boot-many-chars.xml, tests/xmlconfig-
+	xml/boot-many-devices.xml, tests/xmlconfig-xml/boot-many-disks2.xml,
+	tests/xmlconfig-xml/boot-many-hostdevs.xml, tests/xmlconfig-xml
+	/boot-many-nics.xml, tests/xmlconfig-xml/boot-many-sounds.xml, tests
+	/xmlconfig-xml/boot-windowsxp-kvm.xml, tests/xmlconfig-
+	xml/install-f10.xml, tests/xmlconfig-xml/install-f11.xml, tests
+	/xmlconfig-xml/install-fullyvirt-disk-block.xml, tests/xmlconfig-xml
+	/install-fullyvirt-disk-file.xml, tests/xmlconfig-xml/install-
+	fullyvirt-import.xml, tests/xmlconfig-xml/install-fullyvirt-
+	livecd.xml, tests/xmlconfig-xml/install-fullyvirt-pxe-nodisks.xml,
+	tests/xmlconfig-xml/install-fullyvirt-pxe.xml, tests/xmlconfig-xml
+	/install-windowsxp-kvm.xml, tests/xmlconfig-xml/install-windowsxp-
+	xennew.xml, tests/xmlconfig-xml/install-windowsxp-xenold.xml, tests
+	/xmlconfig-xml/misc-qemu-driver-name.xml, tests/xmlconfig-xml/misc-
+	qemu-driver-type.xml, tests/xmlconfig-xml/misc-qemu-iso-disk.xml,
+	tests/xmlconfig-xml/misc-xml-escaping.xml:
+	Use a real directory as HOME in the test suite.
+	[7e0fade52d93]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: If changing path ACL fails, fall back to regular chmod
+	+x
+	[608f5e41b43f]
+
+	* virtinst/Installer.py, virtinst/cli.py:
+	Make .virtinst/* as globally searchable.
+
+	Makes life easier for allowing emulator access to downloaded
+	kernels.
+	[560627931a71]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Make sure requested user exists when checking disk
+	access.
+	[7a14186b241d]
+
+2009-10-06  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clitest.py:
+	clitest: Make sure DISPLAY is set.
+	[dfb9841a8a85]
+
+2009-10-05  Cole Robinson  <crobinso@redhat.com>
+
+	* po/es.po, po/it.po, po/pl.po:
+	Updated translations.
+	[419a9fbd63b3]
+
+2009-09-28  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod.in, tests/clitest.py,
+	virtinst/VirtualGraphics.py, virtinst/cli.py:
+	virt-install: Add --keymap 'none' and 'local' values.
+
+	Allows the user more control over the default behavior. Default is
+	also changed to take the hypervisor and version into account (for
+	example, newer qemu versions shouldn't have a keymap specified if
+	using gtk-vnc).
+	[30700fede5b6]
+
+	* virtconv/parsers/ovf.py, virtinst/Storage.py:
+	Fix some harmless pylint.
+	[bf29bec11708]
+
+	* virt-install:
+	virt-install: clean up --disk vs. --file parsing.
+
+	Make it easier to extend in the future without breaking back compat.
+	[f5071587f1e8]
+
+2009-09-23  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Teach perms changing functions about a target
+	directory.
+	[a523260ac56e]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Add methods for checking/changing path perms for
+	username.
+
+	Since libvirtd can now run qemu processes as non-root, the tools
+	need to try to check directory permissions and make sure they are at
+	least searchable by a specific username. This simply implements the
+	functions to make that happen.
+	[53cd275974ab]
+
+2009-09-21  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/testdriver.xml, tests/xmlconfig-xml/misc-qemu-iso-disk.xml,
+	tests/xmlconfig.py, virtinst/VirtualDisk.py:
+	VirtualDisk: Don't use 'iso' as a qemu driver name (bz 524109)
+	[aff98f015293]
+
+	* tests/pylint-virtinst.sh:
+	Ignore a new pylint check.
+	[143b09da8bcc]
+
+2009-09-16  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/User.py, virtinst/__init__.py, virtinst/_util.py,
+	virtinst/cli.py, virtinst/util.py:
+	Use virtual networking (not user) if we are non-root on
+	qemu:///system.
+
+	Since virt-install can use policykit now, we can be non-root and
+	still use qemu:///system.
+	[761714f08589]
+
+	* tests/pylint-virtinst.sh:
+	Ignore 'maximum recursion' warnings from pylint.
+	[be36b376adad]
+
+	* virtinst/osdict.py:
+	osdict: Add 'Fedora 12' entry
+	[d8f88998215a]
+
+	* man/en/virt-install.1, man/en/virt-install.pod.in, tests/clitest.py,
+	virt-install, virtinst/VirtualDisk.py:
+	virt-install: Add 'format' option to --disk
+
+	Allows specifying storage volume format (raw, qcow2, etc.).
+	[6a398359952b]
+
+2009-09-13  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig-xml/install-f11.xml, tests/xmlconfig.py,
+	virtinst/FullVirtGuest.py:
+	Don't use virtio for cdrom/floppy devices (bz 517151)
+
+	Also add a test case to prevent against this issue in the future.
+	[252ff7bc5ff9]
+
+	* tests/clitest.py, virtinst/VirtualDisk.py:
+	Don't erroneously limit the amount of virtio disks (bz 499654)
+
+	Just let qemu error if we add too many.
+	[726dc6953396]
+
+2009-08-05  Alban Browaeys  <prahal@yahoo.com>
+
+	* AUTHORS, tests/xmlconfig-xml/boot-many-devices.xml,
+	virtinst/VirtualDisk.py:
+	Set proper driver type from storage volume xml.
+
+	Fixes possible traceback if creating a qemu VM from a storage
+	volume.
+	[0d3cdc5ff5d0]
+
+2009-08-05  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/testdriver.xml, tests/xmlconfig-xml/boot-many-devices.xml,
+	tests/xmlconfig.py, virtinst/VirtualDisk.py:
+	Add virtual disk XML tests for pulling driver type/name from volume.
+	[07d296ecfbeb]
+
 2009-07-28  Cole Robinson  <crobinso@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_500_0 for changeset 273dbcbdd051
+	[2ca5493b648a]
+
+	* python-virtinst.spec.in:
+	Update spec changelog.
+	[273dbcbdd051] [virtinst-0_500_0]
+
+	* ChangeLog, NEWS, man/en/virt-install.1, setup.py:
+	Bump version number, update NEWS and CHANGELOG.
+	[33c4cc47e503]
 
 	* tests/urltest.py:
 	Update url test suite with newer fedora links.
-	[fca47128bbd8] [tip]
+	[fca47128bbd8]
 
 	* virtinst/osdict.py:
 	osdict: Add Fedora 12.
@@ -504,7 +1013,7 @@
 	Fix diskcfg typo in kvm-img commit.
 	[dbae1daaaded]
 
-2009-06-12  Guido  <Guido Gunther>
+2009-06-12  Guido Gunther  <Guido Gunther>
 
 	* virtinst/osdict.py:
 	use QEMU's USB Tablet with Squeeze guests evdev picks this up as

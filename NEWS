@@ -1,6 +1,14 @@
    Virtinst News
    =================
 
+Release 0.501.0 (December 3, 2009)
+----------------------------------
+ - virt-install now attempts --os-variant detection by default. This can be
+        disabled with '--os-variant none' (distro detection currently only
+        works for URL installs)
+ - New --disk option 'format', for creating image formats like qcow2 or vmdk
+ - Many improvements and bugfixes
+
 Release 0.500.0 (July 28, 2009)
 -------------------------------
 

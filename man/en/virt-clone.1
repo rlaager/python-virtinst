@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-CLONE 1"
-.TH VIRT-CLONE 1 "2009-03-23" "perl v5.10.0" "Virtual Machine Install Tools"
+.TH VIRT-CLONE 1 "2009-12-01" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -151,9 +151,10 @@ with an identical virtual hardware configuration. Elements which require
 uniqueness will be updated to avoid a clash between old and new guests.
 .PP
 By default, virt-clone will show an error if the necessary information to
-clone the guest is not provided. An interactive mode is available
-with the \-\-prompt option, but this will only ask for the minimum required
-options.
+clone the guest is not provided. The \-\-auto\-clone option will generate
+all needed input, aside from the source guest to clone. An interactive mode
+is available with the \-\-prompt option, but this will only ask for the
+minimum required options.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 Most options are not required. Minimum requirements are \-\-original or
@@ -177,6 +178,22 @@ since it is not possible to safely clone active guests at this time.
 Libvirt guest xml file to use as the original guest. The guest does not need to
 be defined on the libvirt connection. This takes the place of the
 \&\f(CW\*(C`\-\-original\*(C'\fR parameter.
+.IP "\-\-auto\-clone" 2
+.IX Item "--auto-clone"
+Generate a new guest name, and paths for new storage.
+.Sp
+An example or possible generated output:
+.Sp
+.Vb 2
+\&  Original name        : MyVM
+\&  Generated clone name : MyVM\-clone
+\&
+\&  Original disk path   : /home/user/foobar.img
+\&  Generated disk path  : /home/user/foobar\-clone.img
+.Ve
+.Sp
+If generated names collide with existing VMs or storage, a number is appended,
+such as foobar\-clone\-1.img, or MyVM\-clone\-3.
 .IP "\-n \s-1NAME\s0, \-\-name=NAME" 2
 .IX Item "-n NAME, --name=NAME"
 Name of the new guest virtual machine instance. This must be unique amongst
@@ -233,6 +250,15 @@ Specifically enable prompting for required information. Default prompting
 is off.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
+Clone the guest called \f(CW\*(C`demo\*(C'\fR on the default connection, auto generating
+a new name and disk clone path.
+.PP
+.Vb 3
+\&  # virt\-clone \e
+\&       \-\-original demo \e
+\&       \-\-auto\-clone
+.Ve
+.PP
 Clone the guest called \f(CW\*(C`demo\*(C'\fR which has a single disk to copy
 .PP
 .Vb 4
@@ -262,7 +288,7 @@ new guest can do a filesystem resize when it boots.
 \&       \-\-connect qemu:///system \e
 \&       \-\-name demo \e
 \&       \-\-file /dev/HostVG/DemoVM \e
-\&       \-\-mac 54:52:00:34:11:54
+\&       \-\-mac 52:54:00:34:11:54
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"
@@ -270,9 +296,7 @@ Written by Kazuki Mizushima, and a team of many other contributors. See the \s-1
 file in the source distribution for the complete list of credits.
 .SH "BUGS"
 .IX Header "BUGS"
-Report bugs to the mailing list \f(CW\*(C`http://www.redhat.com/mailman/listinfo/et\-mgmt\-tools\*(C'\fR
-or directly to BugZilla \f(CW\*(C`http://bugzilla.redhat.com/bugzilla/\*(C'\fR against the
-\&\f(CW\*(C`Fedora\*(C'\fR product, and the \f(CW\*(C`python\-virtinst\*(C'\fR component.
+Please see http://virt\-manager.org/page/BugReporting
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (C) Fujitsu Limited 2007, and various contributors. 
