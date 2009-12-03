@@ -146,6 +146,10 @@ args_dict = {
         "--disk path=%(ROIMG)s,perms=ro",
         # Using RO path with cdrom dev
         "--disk path=%(ROIMG)s,device=cdrom",
+        # Not specifying path=
+        "--disk %(EXISTIMG1)s",
+        # Not specifying path= but creating storage
+        "--disk %(NEWIMG1)s,format=raw,size=.0000001",
       ],
 
       "invalid": [
@@ -175,6 +179,8 @@ args_dict = {
         "--disk path=%(MANAGEDNEW1)s,format=frob,size=.0000001",
         # Managed disk using any format
         "--disk path=%(MANAGEDDISKNEW1)s,format=raw,size=.0000001",
+        # Not specifying path= and non existent storage w/ no size
+        "--disk %(NEWIMG1)s",
       ]
      }, # category "storage"
 

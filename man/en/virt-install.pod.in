@@ -377,7 +377,11 @@ general format of a disk string is
 
     --disk opt1=val1,opt2=val2,...
 
-To specify media, one of the following options is required:
+To specify media, the command can either be:
+
+    --disk /some/storage/path,opt1=val1
+
+or explicitly specify one of the following arguments:
 
 =over 4
 
@@ -726,7 +730,7 @@ the rest of the options.
   # virt-install \
        --name demo
        --ram 512
-       --disk path=/home/user/VMs/mydisk.img
+       --disk /home/user/VMs/mydisk.img
        --import
 
 =head1 AUTHORS

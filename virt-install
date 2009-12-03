@@ -161,15 +161,19 @@ def parse_disk_option(guest, path, size):
 
     # Strip media type
     path, ignore, optstr = partition(path, ",")
+    path_type = None
     if path.startswith("path="):
         path_type = "path="
     elif path.startswith("vol="):
         path_type = "vol="
     elif path.startswith("pool="):
         path_type = "pool="
+
+    if path_type:
+        path = path[len(path_type):]
     else:
-        fail(_("--disk path must start with path=, pool=, or vol=."))
-    path = path[len(path_type):]
+        # Allow a default fallback mode --disk /some/path,foo,rah
+        path_type = "path="
 
     # Parse out comma separated options
     opts = cli.parse_optstr(optstr)
@@ -209,6 +213,7 @@ def parse_disk_option(guest, path, size):
         abspath = os.path.abspath(path)
         if os.path.dirname(abspath) == DEFAULT_POOL_PATH:
             build_default_pool(guest)
+
     elif path_type == "pool=":
         if not size:
             raise ValueError(_("Size must be specified with all 'pool='"))
