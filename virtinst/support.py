@@ -327,6 +327,9 @@ def is_error_nosupport(err):
 
 def support_threading():
     return bool(_local_lib_ver() >= 6000)
+def support_openauth():
+    return bool(_local_lib_ver() >= 4000)
+
 
 def check_conn_support(conn, feature):
     return _check_support(conn, feature, conn)
