@@ -1,7 +1,7 @@
    Virtinst News
    =================
 
-Release 0.501.0 (December 3, 2009)
+Release 0.500.1 (December 3, 2009)
 ----------------------------------
  - virt-install now attempts --os-variant detection by default. This can be
         disabled with '--os-variant none' (distro detection currently only
