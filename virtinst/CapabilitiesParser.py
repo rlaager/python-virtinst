@@ -309,7 +309,7 @@ class Capabilities(object):
             if g.os_type != "hvm" or g.arch != "x86_64":
                 continue
             for d in g.domains:
-                if d.emulator.find("lib64") != -1:
+                if d.emulator is not None and d.emulator.find("lib64") != -1:
                     fixEmulator = d.emulator
 
         if not fixEmulator:
@@ -319,7 +319,7 @@ class Capabilities(object):
             if g.os_type != "hvm" or g.arch != "i686":
                 continue
             for d in g.domains:
-                if d.emulator.find("lib64") == -1:
+                if d.emulator is not None and d.emulator.find("lib64") == -1:
                     d.emulator = fixEmulator
 
     def parseXML(self, node):
