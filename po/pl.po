@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-12-03 15:34-0500\n"
-"PO-Revision-Date: 2009-10-04 20:23+0200\n"
+"PO-Revision-Date: 2009-12-05 18:13+0100\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <fedora-trans-pl@redhat.com>\n"
 "MIME-Version: 1.0\n"
@@ -365,7 +365,7 @@ msgid "OS variant must be a string."
 msgstr "Wariant systemu operacyjnego musi być ciągiem."
 
 #: virtinst/Guest.py:280
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "OS variant '%(var)s' does not exist in our dictionary for OS type '%(ty)s'"
 msgstr ""
@@ -664,10 +664,8 @@ msgid "Permissions must be passed as a dict object"
 msgstr "Uprawnienia muszą zostać przekazane jako obiekt słownika"
 
 #: virtinst/Storage.py:173
-#, fuzzy
 msgid "Permissions must contain 'mode', 'owner' and 'group' keys."
-msgstr ""
-"Uprawnienia muszą zawierać klucze \"mode\", \"owner\", \"group\" i \"label\"."
+msgstr "Uprawnienia muszą zawierać klucze \"mode\", \"owner\" i \"group\"."
 
 #: virtinst/Storage.py:180
 #, python-format
@@ -700,7 +698,7 @@ msgstr "Cel iSCSI"
 
 #: virtinst/Storage.py:253
 msgid "SCSI host adapter"
-msgstr ""
+msgstr "Adapter SCSI gospodarza"
 
 #: virtinst/Storage.py:263 virtinst/Storage.py:346
 #, python-format
@@ -794,9 +792,8 @@ msgid "Optional device(s) to build new LVM volume on."
 msgstr "Opcjonalne urządzenia do zbudowania na nich nowego woluminu LVM."
 
 #: virtinst/Storage.py:695
-#, fuzzy
 msgid "Name of the Volume Group"
-msgstr "Grupa woluminów LVM"
+msgstr "Nazwa grupy woluminów"
 
 #: virtinst/Storage.py:726
 msgid "Must explicitly specify source path if building' pool"
@@ -829,18 +826,16 @@ msgid "iSCSI volume creation is not implemented."
 msgstr "Tworzenie woluminów iSCSI nie jest zaimplementowane."
 
 #: virtinst/Storage.py:856
-#, fuzzy
 msgid "SCSI volume creation is not implemented."
-msgstr "Tworzenie woluminów iSCSI nie jest zaimplementowane."
+msgstr "Tworzenie woluminów SCSI nie jest zaimplementowane."
 
 #: virtinst/Storage.py:875
 msgid "Name of the scsi adapter (ex. host2)"
-msgstr ""
+msgstr "Nazwa adaptera SCSI (np. gospodarz2)"
 
 #: virtinst/Storage.py:886
-#, fuzzy
 msgid "Adapter name is required"
-msgstr "Nazwa gospodarza jest wymagana"
+msgstr "Nazwa adaptera jest wymagana"
 
 #: virtinst/Storage.py:918
 msgid "One of pool or pool_name must be specified."
@@ -1187,14 +1182,12 @@ msgid "SELinux label '%s' is not valid."
 msgstr "Etykieta SELinuksa \"%s\" nie jest w prawidłowa."
 
 #: virtinst/VirtualDisk.py:557
-#, fuzzy
 msgid "Storage type does not support format parameter."
-msgstr "Połączenie nie obsługuje zarządzania pamięcią masową."
+msgstr "Typ pamięci masowej nie obsługuje parametru formatu."
 
 #: virtinst/VirtualDisk.py:563
-#, fuzzy
 msgid "Format cannot be specified for unmanaged storage."
-msgstr "--location nie może zostać podane dla połączeń zdalnych."
+msgstr "Format nie może zostać podany dla niezarządzanych pamięci masowych."
 
 #: virtinst/VirtualDisk.py:604
 msgid "Unknown storage volume type."
@@ -1312,9 +1305,9 @@ msgid "Error creating diskimage %s: %s"
 msgstr "Błąd podczas tworzenia obrazu dysku %s: %s"
 
 #: virtinst/VirtualDisk.py:1054
-#, fuzzy, python-format
+#, python-format
 msgid "Error cloning diskimage %s to %s: %s"
-msgstr "Błąd podczas tworzenia obrazu dysku %s: %s"
+msgstr "Błąd podczas klonowania obrazu dysku %s do %s: %s"
 
 #: virtinst/VirtualDisk.py:1103
 msgid "'disknode' or self.target must be set!"
@@ -1999,7 +1992,7 @@ msgstr "Rozmiar musi zostać podany z całą \"pool=\""
 
 #: virt-install:232
 msgid "Format attribute not supported for this volume type"
-msgstr ""
+msgstr "Atrybut formatu nie jest obsługiwany dla tego typu woluminu"
 
 #: virt-install:241
 msgid "Storage volume must be specified as vol=poolname/volname"
@@ -2318,9 +2311,3 @@ msgid ""
 msgstr ""
 "Trwa instalacja domeny. Można ponownie połączyć się z \n"
 "konsolą, aby ukończyć proces instalacji."
-
-#~ msgid "Unknown host device capability '%s'."
-#~ msgstr "Nieznana możliwość urządzenia gospodarza \"%s\"."
-
-#~ msgid "--disk path must start with path=, pool=, or vol=."
-#~ msgstr "Ścieżka --disk musi zaczynać się od path=, pool= lub vol=."
