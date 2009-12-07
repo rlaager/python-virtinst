@@ -37,8 +37,7 @@ POOL1 = "/default-pool"
 POOL2 = "/cross-pool"
 DISKPOOL = "/disk-pool"
 
-for f in [ FILE1, FILE2 ]:
-    os.system("touch %s" % f)
+local_files = [ FILE1, FILE2]
 
 clonexml_dir = os.path.join(os.getcwd(), "tests/clone-xml")
 clone_files = []
@@ -59,7 +58,12 @@ def fake_is_uri_remote(ignore):
 class TestClone(unittest.TestCase):
 
     def setUp(self):
-        pass
+        for f in local_files:
+            os.system("touch %s" % f)
+
+    def tearDown(self):
+        for f in local_files:
+            os.unlink(f)
 
     def _clone_helper(self, filebase, disks=None, force_list=None,
                       skip_list=None, compare=True):
