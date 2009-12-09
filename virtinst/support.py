@@ -173,7 +173,8 @@ def _try_command(func, args):
             return False
 
     except Exception:
-        return True
+        # Other python exceptions likely mean the bindings are horked
+        return False
 
     return True
 
