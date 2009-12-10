@@ -630,14 +630,24 @@ class SuseDistro(Distro):
     os_type = "linux"
     _boot_iso_paths   = [ "boot/boot.iso" ]
 
-    def __init__(self, arch, uri, vmtype=None, scratchdir=None):
-        Distro.__init__(self, arch, uri, vmtype, scratchdir)
+    def __init__(self, uri, arch, vmtype=None, scratchdir=None):
+        Distro.__init__(self, uri, arch, vmtype, scratchdir)
         if re.match(r'i[4-9]86', arch):
             self.arch = 'i386'
 
-        # Tested with Opensuse 10, 11, and sles 10
+        oldkern = "linux"
+        oldinit = "initrd"
+        if arch == "x86_64":
+            oldkern += "64"
+            oldinit += "64"
+
+        # Tested with Opensuse >= 10.2, 11, and sles 10
         self._hvm_kernel_paths = [ ("boot/%s/loader/linux" % self.arch,
                                     "boot/%s/loader/initrd" % self.arch) ]
+        # Tested with Opensuse 10.0
+        self._hvm_kernel_paths.append(("boot/loader/%s" % oldkern,
+                                       "boot/loader/%s" % oldinit))
+
         # Matches Opensuse > 10.2 and sles 10
         self._xen_kernel_paths = [ ("boot/%s/vmlinuz-xen" % self.arch,
                                     "boot/%s/initrd-xen" % self.arch) ]
@@ -858,7 +868,7 @@ class DebianDistro(Distro):
     os_type = "linux"
 
     def __init__(self, uri, arch, vmtype=None, scratchdir=None):
-        Distro.__init__(self, arch, uri, vmtype, scratchdir)
+        Distro.__init__(self, uri, arch, vmtype, scratchdir)
         if uri.count("installer-i386"):
             self._treeArch = "i386"
         elif uri.count("installer-amd64"):
