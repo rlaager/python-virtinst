@@ -906,11 +906,17 @@ def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
 
         return None, state
 
-    ret, state = check_domain_state()
-    if ret:
-        return ret
+    do_sleep = bool(conscb)
+    try:
+        ret, state = check_domain_state()
+        if ret:
+            return ret
+    except Exception, e:
+        # Sometimes we see errors from libvirt here due to races
+        logging.exception(e)
+        do_sleep = True
 
-    if conscb:
+    if do_sleep:
         # Sleep a bit and try again to be sure the HV has caught up
         time.sleep(2)
 
