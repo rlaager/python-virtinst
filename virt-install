@@ -866,10 +866,12 @@ def main():
                  guest.name)
         raise
 
-def domain_is_shutdown(dom):
-    info     = dom.info()
-    state    = info[0]
-    cpu_time = info[4]
+def domain_is_shutdown(dominfo, dom=None):
+    if dom:
+        dominfo = dom.info()
+
+    state    = dominfo[0]
+    cpu_time = dominfo[4]
 
     if state == libvirt.VIR_DOMAIN_SHUTOFF:
         return True
@@ -880,17 +882,43 @@ def domain_is_shutdown(dom):
     # shutdown. We will catch the error later.
     return state == libvirt.VIR_DOMAIN_NOSTATE and cpu_time == 0
 
+def domain_is_crashed(dominfo):
+    state = dominfo[0]
+
+    return state == libvirt.VIR_DOMAIN_CRASHED
+
 def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
                install_func):
 
     dom = install_func(conscb, progresscb, wait=(not wait))
 
-    if dom is None:
-        print _("Guest installation failed.")
-        sys.exit(0)
+    # Wait a bit so info is accurate
+    def check_domain_state():
+        dominfo = dom.info()
+        state = dominfo[0]
 
-    if domain_is_shutdown(dom):
-        return dom
+        if domain_is_crashed(dominfo):
+            print _("Domain has crashed.")
+            sys.exit(1)
+
+        if domain_is_shutdown(dominfo):
+            return dom, state
+
+        return None, state
+
+    ret, state = check_domain_state()
+    if ret:
+        return ret
+
+    if conscb:
+        # Sleep a bit and try again to be sure the HV has caught up
+        time.sleep(2)
+
+    ret, state = check_domain_state()
+    if ret:
+        return ret
+
+    logging.debug("Domain state after install: %s" % state)
 
     # Domain seems to be running
     if wait and wait_time != 0:
@@ -903,7 +931,7 @@ def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
 
         # Wait loop
         while True:
-            if domain_is_shutdown(dom):
+            if domain_is_shutdown(None, dom):
                 print _("Domain has shutdown. Continuing.")
                 try:
                     # Lookup a new domain object incase current
