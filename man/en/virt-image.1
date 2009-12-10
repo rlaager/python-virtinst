@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-IMAGE 1"
-.TH VIRT-IMAGE 1 "2009-12-01" "" "Virtual Machine Install Tools"
+.TH VIRT-IMAGE 1 "2009-12-10" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -149,8 +149,7 @@ virt\-image \- create virtual machines from an image descriptor
 the virtual machine are taken from the \s-1XML\s0 descriptor (e.g., where the
 files to back the virtual machine's disks are and how to map them into the
 guest), though certain information must be added on the command line, such
-as the name of the guest. By default, missing information will cause an
-error, but an interactive mode is available with the \-\-prompt option.
+as the name of the guest.
 .PP
 The \s-1XML\s0 descriptor defines most attributes of the guest, making it possible
 to bundle and distribute it together with the files backing the guest's
@@ -273,10 +272,6 @@ Print debugging information
 .IX Item "--force"
 Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
-.IP "\-\-prompt" 2
-.IX Item "--prompt"
-Specifically enable prompting for information not provided in the image
-description. Default prompting is off.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 Create and start a guest called \f(CW\*(C`example\*(C'\fR with a \s-1VNC\s0 console from

@@ -152,8 +152,7 @@ def parse_args():
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=_("Print debugging information"))
     misc.add_option("", "--prompt", action="store_true", dest="prompt",
-                    help=_("Request user input for ambiguous situations or "
-                           "required options."), default=False)
+                    help=optparse.SUPPRESS_HELP, default=False)
     misc.add_option("", "--force", action="store_true", dest="force",
                     help=_("Do not prompt for input. Answers yes where "
                            "applicable, terminates for all other prompts"),
