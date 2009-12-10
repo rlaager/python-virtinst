@@ -202,6 +202,8 @@ args_dict = {
         #"--arch i486 --pxe",
         # Directory tree URL install
         "--hvm --location %s" % treedir,
+        # Directory tree URL install with extra-args
+        "--hvm --location %s --extra-args console=ttyS0" % treedir,
         # Directory tree CDROM install
         "--hvm --cdrom %s" % treedir,
         # Paravirt location
