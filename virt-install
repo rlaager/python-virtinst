@@ -269,13 +269,6 @@ def parse_disk_option(guest, path, size):
 
 def get_disk(disk, size, sparse, guest, conn, is_file_path):
 
-    # If user specified --disk, disable prompting for the whole validation
-    # process, since falling back to prompting likely wouldn't provide
-    # sufficient options.
-    orig_prompt = cli.doprompt
-    if not is_file_path:
-        cli.set_prompt(False)
-
     try:
         if is_file_path:
             kwargs = { 'conn': conn, 'path': disk, 'size': size,
@@ -290,7 +283,6 @@ def get_disk(disk, size, sparse, guest, conn, is_file_path):
         fail(_("Error with storage parameters: %s" % str(e)))
 
     guest.disks.append(d)
-    cli.set_prompt(orig_prompt)
 
 def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, conn):
     if nodisks:
@@ -303,7 +295,7 @@ def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, conn):
     elif not file_paths and not disk_paths and not cli.is_prompt():
         fail(_("A disk must be specified (use --nodisks to override)"))
 
-    is_file_path = ((file_paths or cli.is_prompt()) or False)
+    is_file_path = (file_paths or (not disk_paths and cli.is_prompt()))
     disk = (file_paths or disk_paths)
 
     # ensure we have equal length lists
