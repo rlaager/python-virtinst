@@ -314,7 +314,11 @@ def prompt_for_yes_or_no(warning, question):
     errmsg = warning + _(" (Use --prompt or --force to override)")
 
     while 1:
-        inp = prompt_for_input(errmsg, warning + question, None)
+        msg = warning
+        if question:
+            msg += ("\n" + question)
+
+        inp = prompt_for_input(errmsg, msg, None)
         try:
             res = yes_or_no(inp)
             break
