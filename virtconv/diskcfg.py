@@ -24,6 +24,7 @@ import errno
 import sys
 import os
 import re
+import logging
 
 from virtconv import _gettext as _
 
@@ -31,6 +32,9 @@ DISK_FORMAT_NONE = 0
 DISK_FORMAT_RAW = 1
 DISK_FORMAT_VMDK = 2
 DISK_FORMAT_VDISK = 3
+DISK_FORMAT_QCOW = 4
+DISK_FORMAT_QCOW2 = 5
+DISK_FORMAT_COW = 6
 
 DISK_TYPE_DISK = 0
 DISK_TYPE_CDROM = 1
@@ -43,12 +47,18 @@ disk_suffixes = {
     DISK_FORMAT_RAW: ".raw",
     DISK_FORMAT_VMDK: ".vmdk",
     DISK_FORMAT_VDISK: ".vdisk",
+    DISK_FORMAT_QCOW: ".qcow",
+    DISK_FORMAT_QCOW2: ".qcow2",
+    DISK_FORMAT_COW: ".cow",
 }
 
 qemu_formats = {
     DISK_FORMAT_RAW: "raw",
     DISK_FORMAT_VMDK: "vmdk",
     DISK_FORMAT_VDISK: "vdisk",
+    DISK_FORMAT_QCOW: "qcow",
+    DISK_FORMAT_QCOW2: "qcow2",
+    DISK_FORMAT_COW: "cow",
 }
 
 disk_format_names = {
@@ -56,6 +66,9 @@ disk_format_names = {
     "raw": DISK_FORMAT_RAW,
     "vmdk": DISK_FORMAT_VMDK,
     "vdisk": DISK_FORMAT_VDISK,
+    "qcow": DISK_FORMAT_QCOW,
+    "qcow2": DISK_FORMAT_QCOW2,
+    "cow": DISK_FORMAT_COW,
 }
 
 checksum_types = {
@@ -70,7 +83,7 @@ def ensuredirs(path):
     """
     try:
         os.makedirs(os.path.dirname(path))
-    except OSError, e: 
+    except OSError, e:
         if e.errno != errno.EEXIST:
             raise
 
@@ -78,6 +91,7 @@ def run_cmd(cmd):
     """
     Return the exit status and output to stdout and stderr.
     """
+    logging.debug("Running command: %s" % " ".join(cmd))
     proc = subprocess.Popen(cmd, stderr=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             close_fds=True)
@@ -240,14 +254,13 @@ class disk(object):
 
         out_format = disk_format_names[output_format]
 
-        if os.getenv("VIRTCONV_TEST_NO_DISK_CONVERSION"):
-            self.path = self.out_file(self.format)
-            return
-
         if not (out_format == DISK_FORMAT_NONE or
             out_format == DISK_FORMAT_VDISK or
             out_format == DISK_FORMAT_RAW or
-            out_format == DISK_FORMAT_VMDK):
+            out_format == DISK_FORMAT_VMDK or
+            out_format == DISK_FORMAT_QCOW or
+            out_format == DISK_FORMAT_QCOW2 or
+            out_format == DISK_FORMAT_COW):
             raise NotImplementedError(_("Cannot convert to disk format %s") %
                 output_format)
 
@@ -273,6 +286,11 @@ class disk(object):
         absout = os.path.join(outdir, relout)
 
         ensuredirs(absout)
+
+        if os.getenv("VIRTCONV_TEST_NO_DISK_CONVERSION"):
+            self.format = out_format
+            self.path = self.out_file(self.format)
+            return
 
         if out_format == DISK_FORMAT_VDISK:
             self.vdisk_convert(absin, absout)
