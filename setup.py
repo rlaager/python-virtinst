@@ -100,11 +100,13 @@ class TestCLI(TestBaseCommand):
     description = "Test various CLI invocations"
 
     user_options = (TestBaseCommand.user_options +
-                    [("prompt", None, "Run interactive CLI invocations.")])
+                    [("prompt", None, "Run interactive CLI invocations."),
+                    ("app=", None, "Only run tests for requested app")])
 
     def initialize_options(self):
         TestBaseCommand.initialize_options(self)
         self.prompt = 0
+        self.app = None
 
     def run(self):
         cmd = "python tests/clitest.py"
@@ -112,6 +114,8 @@ class TestCLI(TestBaseCommand):
             cmd += " debug"
         if self.prompt:
             cmd += " prompt"
+        if self.app:
+            cmd += " --app %s" % self.app
         os.system(cmd)
 
 class TestURLFetch(TestBaseCommand):

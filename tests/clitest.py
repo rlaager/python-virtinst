@@ -19,6 +19,7 @@ import os, sys
 
 # Set DISPLAY if it isn't already set
 os.environ["DISPLAY"] = "testdisplay"
+os.environ["VIRTCONV_TEST_NO_DISK_CONVERSION"] = "1"
 
 testuri = "test:///`pwd`/tests/testdriver.xml"
 
@@ -28,8 +29,10 @@ remoteuri = "__virtinst_test_remote__test:///`pwd`/tests/testdriver.xml"
 
 # Location
 xmldir = "tests/cli-test-xml"
-treedir = "tests/cli-test-xml/faketree"
+treedir = "%s/faketree" % xmldir
+vcdir = "%s/virtconv" % xmldir
 ro_img = "cli_exist3ro.img"
+virtconv_out = "virtconv-outdir"
 
 # Images that will be created by virt-install/virt-clone, and removed before
 # each run
@@ -45,9 +48,13 @@ virtimage_exist = [os.path.join(xmldir, "cli_root.raw")]
 # Images created by virt-image
 virtimage_new = [os.path.join(xmldir, "cli_scratch.raw")]
 
+# virt-convert output dirs
+virtconv_dirs = [virtconv_out]
+
 exist_files = exist_images + virtimage_exist
-new_files   = new_images + virtimage_new
-clean_files = new_images + exist_images + virtimage_exist + virtimage_new
+new_files   = new_images + virtimage_new + virtconv_dirs
+clean_files = (new_images + exist_images +
+               virtimage_exist + virtimage_new + virtconv_dirs)
 
 test_files = {
     'TESTURI'           : testuri,
@@ -68,6 +75,10 @@ test_files = {
     'MANAGEDNEW1'       : "/default-pool/clonevol",
     'MANAGEDNEW2'       : "/default-pool/clonevol",
     'MANAGEDDISKNEW1'   : "/disk-pool/newvol1.img",
+
+    'VIRTCONV_OUT'      : "%s/test.out" % virtconv_out,
+    'VC_IMG1'           : "%s/virtimage/test1.virt-image" % vcdir,
+    'VMX_IMG1'          : "%s/vmx/test1.vmx" % vcdir,
 }
 
 debug = False
@@ -560,9 +571,44 @@ args_dict = {
       ],
 
      }, # category "network"
-    "prompt" : [ " --connect %(TESTURI) %(IMAGE_XML)s --debug --prompt" ],
+    "prompt" : [ " --connect %(TESTURI)s %(IMAGE_XML)s --debug --prompt" ],
 
-  } # app 'virt-image'
+  }, # app 'virt-image'
+
+
+  "virt-convert" : {
+    "global_args" : "--debug",
+
+    "misc" : {
+     "misc_args": "",
+
+     "valid": [
+        # virt-image to default (virt-image) w/ no convert
+        "%(VC_IMG1)s -D none %(VIRTCONV_OUT)s",
+        # virt-image to virt-image w/ no convert
+        "%(VC_IMG1)s -o virt-image -D none %(VIRTCONV_OUT)s",
+        # virt-image to vmx w/ no convert
+        "%(VC_IMG1)s -o vmx -D none %(VIRTCONV_OUT)s",
+        # virt-image to vmx w/ raw
+        "%(VC_IMG1)s -o vmx -D raw %(VIRTCONV_OUT)s",
+        # virt-image to vmx w/ vmdk
+        "%(VC_IMG1)s -o vmx -D vmdk %(VIRTCONV_OUT)s",
+        # virt-image to vmx w/ qcow2
+        "%(VC_IMG1)s -o vmx -D qcow2 %(VIRTCONV_OUT)s",
+        # vmx to vmx no convert
+        "%(VMX_IMG1)s -o vmx -D none %(VIRTCONV_OUT)s",
+     ],
+
+     "invalid": [
+        # virt-image to virt-image with invalid format
+        "%(VC_IMG1)s -o virt-image -D foobarfmt %(VIRTCONV_OUT)s",
+        # virt-image to ovf (has no output formatter)
+        "%(VC_IMG1)s -o ovf %(VIRTCONV_OUT)s",
+     ]
+
+    }, # category 'misc'
+
+  }, # app 'virt-conver'
 }
 
 def runcomm(comm):
@@ -603,8 +649,14 @@ def assertFail(comm):
                              "Output was:\n%s" % ret[1])
 
 # Setup: build cliarg dict, which uses
-def run_tests():
+def run_tests(do_app):
+    if do_app and do_app not in args_dict.keys():
+        raise ValueError("Unknown app '%s'" % do_app)
+
     for app in args_dict:
+        if do_app and app != do_app:
+            continue
+
         unique = {}
         prompts = []
         global_args = ""
@@ -648,12 +700,16 @@ def main():
     global debug
     global testprompt
 
+    do_app = None
+
     if len(sys.argv) > 1:
         for i in range(1, len(sys.argv)):
             if sys.argv[i].count("debug"):
                 debug = True
             elif sys.argv[i].count("prompt"):
                 testprompt = True
+            elif sys.argv[i].count("--app"):
+                do_app = sys.argv[i+1]
 
     # Setup needed files
     for i in exist_files:
@@ -667,11 +723,11 @@ def main():
     os.system("chmod 444 %s" % ro_img)
 
     try:
-        run_tests()
+        run_tests(do_app)
     finally:
         # Cleanup files
         for i in clean_files:
-            os.system("rm -f %s > /dev/null 2>&1" % i)
+            os.system("rm -rf %s > /dev/null 2>&1" % i)
 
 if __name__ == "__main__":
     main()
