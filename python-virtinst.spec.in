@@ -10,7 +10,7 @@
 
 %define appname virtinst
 
-%if 0%{?fedora} >= 9
+%if 0%{?fedora} >= 9 || 0%{?rhel} >= 6
 %define with_egg 1
 %else
 %define with_egg 0
