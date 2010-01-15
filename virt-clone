@@ -208,10 +208,11 @@ def main():
     cli.set_prompt(options.prompt)
     cli.set_force(options.force)
 
-    if not User.current().has_priv(User.PRIV_CLONE, options.connect):
+    conn = cli.getConnection(options.connect)
+
+    if not User.current().has_priv(User.PRIV_CLONE, conn.getURI()):
         fail(_("Must be privileged to clone Xen guests"))
 
-    conn = cli.getConnection(options.connect)
     design = clmgr.CloneDesign(connection=conn)
 
     try:
