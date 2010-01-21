@@ -34,14 +34,17 @@ XEN_SCRATCH="/var/lib/xen"
 LIBVIRT_SCRATCH="/var/lib/libvirt/boot"
 
 def _get_scratchdir(typ):
+    scratch = None
     if platform.system() == 'SunOS':
         scratch = '/var/tmp'
+
     if os.geteuid() == 0:
         if typ == "xen" and os.path.exists(XEN_SCRATCH):
             scratch = XEN_SCRATCH
-        if os.path.exists(LIBVIRT_SCRATCH):
+        elif os.path.exists(LIBVIRT_SCRATCH):
             scratch = LIBVIRT_SCRATCH
-    else:
+
+    if not scratch:
         scratch = os.path.expanduser("~/.virtinst/boot")
         if not os.path.exists(scratch):
             os.makedirs(scratch, 0751)
