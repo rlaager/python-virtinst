@@ -6,9 +6,9 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-01-25 10:17-0500\n"
-"PO-Revision-Date: 2009-12-05 18:13+0100\n"
+"PO-Revision-Date: 2010-01-25 18:37+0100\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Polish <fedora-trans-pl@redhat.com>\n"
+"Language-Team: Polish <trans-pl@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -989,9 +989,8 @@ msgid "Unsupported sound model '%s'"
 msgstr "Nieobsługiwany model dźwięku \"%s\""
 
 #: virtinst/VirtualCharDevice.py:64
-#, fuzzy
 msgid "Pseudo TTY"
-msgstr "Pseudo-TTY"
+msgstr "Pseudo TTY"
 
 #: virtinst/VirtualCharDevice.py:66
 msgid "Physical host character device"
@@ -2276,9 +2275,8 @@ msgstr ""
 " proszę ponownie uruchomić instalację."
 
 #: virt-install:901
-#, fuzzy
 msgid "Domain has crashed."
-msgstr "Domena została już uruchomiona."
+msgstr "Domena zawiesiła się."
 
 #: virt-install:933
 #, python-format
@@ -2313,6 +2311,3 @@ msgid ""
 msgstr ""
 "Trwa instalacja domeny. Można ponownie połączyć się z \n"
 "konsolą, aby ukończyć proces instalacji."
-
-#~ msgid "Guest installation failed."
-#~ msgstr "Instalacja gościa nie powiodła się."
