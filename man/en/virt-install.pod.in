@@ -178,7 +178,7 @@ noted. Some of the types of character device redirection are:
 
 =item B<--serial pty>
 
-Psuedo TTY. The allocated pty will be listed in the running guests XML
+Pseudo TTY. The allocated pty will be listed in the running guests XML
 description.
 
 =item B<--serial dev,path=HOSTPATH>

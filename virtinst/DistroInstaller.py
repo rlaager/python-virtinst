@@ -30,7 +30,7 @@ from virtinst import _virtinst as _
 
 def _is_url(url, is_local):
     """
-    Check if passed string is a (psuedo) valid http, ftp, or nfs url.
+    Check if passed string is a (pseudo) valid http, ftp, or nfs url.
     """
     if is_local and os.path.exists(url):
         if os.path.isdir(url):

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: virt-inst.tip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-12-03 15:34-0500\n"
+"POT-Creation-Date: 2010-01-25 10:17-0500\n"
 "PO-Revision-Date: 2009-12-10 19:58+1000\n"
 "Last-Translator: Leah Liu <lliu@redhat.com>\n"
 "Language-Team: Simplified Chinese <zh@li.org>\n"
@@ -45,7 +45,8 @@ msgstr "主机不支持 %(virttype)s %(arch)s"
 msgid ""
 "Host does not support domain type '%(domain)s' for virtualization type '%"
 "(virttype)s' arch '%(arch)s'"
-msgstr "主机不为虚拟化类型 '%(virttype)s' arch '%(arch)s' 支持域类型 '%(domain)s'"
+msgstr ""
+"主机不为虚拟化类型 '%(virttype)s' arch '%(arch)s' 支持域类型 '%(domain)s'"
 
 #: virtinst/cli.py:149
 msgid "Exiting at user request."
@@ -63,99 +64,99 @@ msgstr "（使用 --prompt 互动运行）"
 msgid " (Use --prompt or --force to override)"
 msgstr "（使用 --prompt 或者 --force 覆盖）"
 
-#: virtinst/cli.py:349
+#: virtinst/cli.py:353
 msgid "Graphics Configuration"
 msgstr "图形配置"
 
-#: virtinst/cli.py:351
+#: virtinst/cli.py:355
 msgid "Use VNC for graphics support"
 msgstr "用 VNC 进行图形支持"
 
-#: virtinst/cli.py:353
+#: virtinst/cli.py:357
 msgid "Port to use for VNC"
 msgstr "VNC 使用的端口"
 
-#: virtinst/cli.py:355
+#: virtinst/cli.py:359
 msgid "Address to listen on for VNC connections."
 msgstr "侦听 VNC 连接的地址。"
 
-#: virtinst/cli.py:358
+#: virtinst/cli.py:362
 msgid "set up keymap for the VNC console"
 msgstr "为 VNC 控制台设置 keymap"
 
-#: virtinst/cli.py:360
+#: virtinst/cli.py:364
 msgid "Use SDL for graphics support"
 msgstr "用 SDL 进行图形支持"
 
-#: virtinst/cli.py:362
+#: virtinst/cli.py:366
 msgid "Don't set up a graphical console for the guest."
 msgstr "不要为该客户端设置图形控制台。"
 
-#: virtinst/cli.py:385
+#: virtinst/cli.py:389
 msgid "A disk path must be specified."
 msgstr "必须指定一个磁盘路径。"
 
-#: virtinst/cli.py:387
+#: virtinst/cli.py:391
 msgid "What would you like to use as the disk (file path)?"
 msgstr "您希望使用什么作为该磁盘（文件路径）？"
 
-#: virtinst/cli.py:389
+#: virtinst/cli.py:393
 #, python-format
 msgid ""
 "Please enter the path to the file you would like to use for storage. It will "
 "have size %sGB."
 msgstr "请输入您要用来作为存储使用的文件路径。其大小为 %sGB。"
 
-#: virtinst/cli.py:398
+#: virtinst/cli.py:402
 msgid "A size must be specified for non-existent disks."
 msgstr "必须为非现有磁盘指定大小。"
 
-#: virtinst/cli.py:400
+#: virtinst/cli.py:404
 #, python-format
 msgid "How large would you like the disk (%s) to be (in gigabytes)?"
 msgstr "您希望该磁盘（%s）有多大（以 GB 为单位）？"
 
-#: virtinst/cli.py:421 virt-install:290
+#: virtinst/cli.py:425 virt-install:283
 #, python-format
 msgid "Error with storage parameters: %s"
 msgstr "存储参数错误：%s"
 
-#: virtinst/cli.py:423
+#: virtinst/cli.py:427
 msgid "Do you really want to use this disk (yes or no)"
 msgstr "您确实要使用这个磁盘吗（yes/no）？"
 
-#: virtinst/cli.py:427
+#: virtinst/cli.py:431
 #, python-format
 msgid "This will overwrite the existing path '%s'!\n"
 msgstr "这将会覆盖当前路径 '%s'!\n"
 
-#: virtinst/cli.py:434
+#: virtinst/cli.py:438
 #, python-format
 msgid "Disk %s is already in use by another guest!\n"
 msgstr "磁盘 %s 已经被其它客户端使用！\n"
 
-#: virtinst/cli.py:461
+#: virtinst/cli.py:465
 msgid "What is the name of your virtual machine?"
 msgstr "您的虚拟机的名称是什么？"
 
-#: virtinst/cli.py:462
+#: virtinst/cli.py:466
 msgid "A name is required for the virtual machine."
 msgstr "虚拟机需要一个名称。"
 
-#: virtinst/cli.py:469
+#: virtinst/cli.py:473
 msgid "How much RAM should be allocated (in megabytes)?"
 msgstr "要分配多少 RAM（以 MB 为单位）？"
 
-#: virtinst/cli.py:470
+#: virtinst/cli.py:474
 msgid "Memory amount is required for the virtual machine."
 msgstr "虚拟机需要内存数。"
 
-#: virtinst/cli.py:474
+#: virtinst/cli.py:478
 #, python-format
 msgid "Installs currently require %d megs of RAM."
 msgstr "安装目前需要 %d MB 内存。"
 
-#: virtinst/cli.py:495
+#: virtinst/cli.py:499
 #, python-format
 msgid ""
 "You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
@@ -164,33 +165,33 @@ msgstr ""
 "您要求的虚拟 CPU 数（%d）已经超过了主机中的物理 CPU（%d）。这样也可以，但性能"
 "会很差。"
 
-#: virtinst/cli.py:498
+#: virtinst/cli.py:502
 msgid "Are you sure? (yes or no)"
 msgstr "您确定吗？（yes/no）"
 
-#: virtinst/cli.py:620
+#: virtinst/cli.py:624
 #, python-format
 msgid "Unknown network option '%s'"
 msgstr "未知网络选项 '%s'"
 
-#: virtinst/cli.py:638
+#: virtinst/cli.py:642
 msgid "Cannot mix both --bridge and --network arguments"
 msgstr "不能混合使用 --bridge 和 --network 参数"
 
-#: virtinst/cli.py:653
+#: virtinst/cli.py:657
 msgid "Cannot pass more mac addresses than networks."
 msgstr "无法通过超过网络的 mac 地址。"
 
-#: virtinst/cli.py:680
+#: virtinst/cli.py:684
 msgid "Can't specify more than one of VNC, SDL, or --nographics"
 msgstr "无法指定超过一个 VNC、SDL 或者 --nographics"
 
-#: virtinst/cli.py:715
+#: virtinst/cli.py:719
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
 msgstr "与键盘表中的 keymap '%s' 不匹配！"
 
-#: virtinst/cli.py:749 virtinst/cli.py:754
+#: virtinst/cli.py:753 virtinst/cli.py:758
 #, python-format
 msgid "%s option requires an argument"
 msgstr "%s 选项需要参数"
@@ -351,7 +352,8 @@ msgstr "操作系统变体必须是一个字符串。"
 
 #: virtinst/Guest.py:280
 #, python-format
-msgid "OS variant '%(var)s' does not exist in our dictionary for OS type '%(ty)s'"
+msgid ""
+"OS variant '%(var)s' does not exist in our dictionary for OS type '%(ty)s'"
 msgstr "我们的词典中不存在用于操作系统类型 '%(ty)s' 的操作系统变体 '%(var)s'"
 
 #: virtinst/Guest.py:292
@@ -591,24 +593,24 @@ msgstr "无法为 virt 类型 '%s' 找到内核路径"
 msgid "Could not find a boot iso path for this tree."
 msgstr "无法为这个树找到引导 iso 路径。"
 
-#: virtinst/OSDistro.py:733
+#: virtinst/OSDistro.py:743
 msgid "Unable to determine kernel RPM path"
 msgstr "无法确定内核 RPM 路径"
 
-#: virtinst/OSDistro.py:735
+#: virtinst/OSDistro.py:745
 msgid "Unable to determine install-initrd RPM path"
 msgstr "无法确定 install-initrd RPM 路径"
 
-#: virtinst/OSDistro.py:746
+#: virtinst/OSDistro.py:756
 msgid "Building initrd"
 msgstr "创建 initrd"
 
-#: virtinst/OSDistro.py:1108
+#: virtinst/OSDistro.py:1118
 #, python-format
 msgid "Solaris miniroot not found at %s"
 msgstr "在 %s 中没有找到 Solaris miniroot"
 
-#: virtinst/OSDistro.py:1146
+#: virtinst/OSDistro.py:1156
 #, python-format
 msgid "OpenSolaris PV kernel not found at %s"
 msgstr "在 %s 中没有找到 OpenSolaris PV 内核"
@@ -898,7 +900,7 @@ msgstr ""
 "当卷已经被全部分配后，需要的卷容量将超过可用池空间。（%d M 需要的容量 > %d M "
 "可用容量）"
 
-#: virtinst/support.py:242 virtinst/VirtualDevice.py:86
+#: virtinst/support.py:243 virtinst/VirtualDevice.py:86
 msgid "'conn' must be a virConnect instance."
 msgstr "'conn' 必须是一个 virConnect 事件。"
 
@@ -958,7 +960,8 @@ msgid "Unsupported sound model '%s'"
 msgstr "不支持的声音模型 '%s'"
 
 #: virtinst/VirtualCharDevice.py:64
-msgid "Psuedo TTY"
+#, fuzzy
+msgid "Pseudo TTY"
 msgstr "Psuedo TTY"
 
 #: virtinst/VirtualCharDevice.py:66
@@ -1321,7 +1324,8 @@ msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr "Keyap 只能包含数字字母、'_' 或者 '-' 字符。"
 
 #: virtinst/VirtualGraphics.py:99
-msgid "VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
+msgid ""
+"VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr "VNC 端口必须是 5900 和 65535 之间的，使用 -l 可自动分配"
 
 #: virtinst/VirtualHostDevice.py:43
@@ -1415,7 +1419,8 @@ msgid ""
 msgstr "您输入的 MAC 地址已经被另一个活跃的虚拟机使用。"
 
 #: virtinst/VirtualNetworkInterface.py:142
-msgid "The MAC address you entered conflicts with a device on the physical host."
+msgid ""
+"The MAC address you entered conflicts with a device on the physical host."
 msgstr "您输入的 MAC 地址与物理主机中的设备冲突。"
 
 #: virtinst/VirtualNetworkInterface.py:144
@@ -1424,12 +1429,12 @@ msgid ""
 "machine."
 msgstr "您输入的 MAC 地址已经被另一个不活跃的虚拟机使用。"
 
-#: virtconv/diskcfg.py:251
+#: virtconv/diskcfg.py:264
 #, python-format
 msgid "Cannot convert to disk format %s"
 msgstr "无法转换成磁盘格式 %s"
 
-#: virtconv/diskcfg.py:264
+#: virtconv/diskcfg.py:277
 #, python-format
 msgid "Cannot convert disk with absolute path %s"
 msgstr "无法转换出带绝对路径 %s 的磁盘"
@@ -1526,11 +1531,11 @@ msgstr "需要原始机器名称或者 xml 文件。"
 msgid "What would you like to use as the cloned disk (file path) for '%s'?"
 msgstr "作为克隆的磁盘（文件路径）您希望如何使用 '%s'？"
 
-#: virt-clone:134 virt-image:79 virt-install:516
+#: virt-clone:134 virt-image:79 virt-install:508
 msgid "Connect to hypervisor with URI"
 msgstr "使用 URI 连接到监控程序"
 
-#: virt-clone:137 virt-image:82 virt-install:519
+#: virt-clone:137 virt-image:82 virt-install:511
 msgid "General Options"
 msgstr "通用选项"
 
@@ -1556,7 +1561,7 @@ msgstr "新客户端的名称"
 msgid "New UUID for the clone guest; Default is a randomly generated UUID"
 msgstr "克隆客户端的新 UUID；默认为随机生成 UUID"
 
-#: virt-clone:159 virt-install:605
+#: virt-clone:159 virt-install:597
 msgid "Storage Configuration"
 msgstr "存储配置"
 
@@ -1568,7 +1573,8 @@ msgstr "作为新客户端磁盘映像的新文件"
 msgid ""
 "Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-"
 "copy=hdc)"
-msgstr "强制复制设备（例如：如果 'hdc' 是随机光驱设备，则使用 --force-copy=hdc）"
+msgstr ""
+"强制复制设备（例如：如果 'hdc' 是随机光驱设备，则使用 --force-copy=hdc）"
 
 #: virt-clone:172
 msgid "Do not use a sparse file for the clone's disk image"
@@ -1578,7 +1584,7 @@ msgstr "不要用稀疏文件作为克隆的磁盘映像"
 msgid "Preserve a new file to use as the disk image for the new guest"
 msgstr "保留新文件作为新客户端的磁盘映像使用"
 
-#: virt-clone:180 virt-image:119 virt-install:627
+#: virt-clone:180 virt-image:119 virt-install:619
 msgid "Networking Configuration"
 msgstr "联网配置"
 
@@ -1588,19 +1594,19 @@ msgid ""
 "MAC"
 msgstr "克隆客户端的新固定 MAC 地址。默认为随机生成 MAC。"
 
-#: virt-clone:188 virt-image:139 virt-install:656
+#: virt-clone:188 virt-image:139 virt-install:648
 msgid "Miscellaneous Options"
 msgstr "其它选项"
 
-#: virt-clone:190 virt-convert:93 virt-image:153 virt-install:658
+#: virt-clone:190 virt-convert:93 virt-image:153 virt-install:650
 msgid "Print debugging information"
 msgstr "输入故障排除信息"
 
-#: virt-clone:192 virt-image:155 virt-install:669
+#: virt-clone:192 virt-install:661
 msgid "Request user input for ambiguous situations or required options."
 msgstr "要求用户为模糊情况或者需要的选项输入。"
 
-#: virt-clone:195 virt-image:158
+#: virt-clone:195 virt-image:157
 msgid ""
 "Do not prompt for input. Answers yes where applicable, terminates for all "
 "other prompts"
@@ -1619,7 +1625,7 @@ msgstr ""
 "\n"
 "克隆 '%s' 成功。"
 
-#: virt-clone:257 virt-image:265 virt-install:947
+#: virt-clone:257 virt-image:264 virt-install:973
 msgid "Installation aborted at user request"
 msgstr "根据用户要求取消安装"
 
@@ -1635,11 +1641,11 @@ msgstr "输出格式，例如：'virt-image'"
 msgid "Output disk format"
 msgstr "删除磁盘格式"
 
-#: virt-convert:62 virt-install:574
+#: virt-convert:62 virt-install:566
 msgid "This guest should be a fully virtualized guest"
 msgstr "客户端应该是一个全虚拟客户端"
 
-#: virt-convert:64 virt-install:576
+#: virt-convert:64 virt-install:568
 msgid "This guest should be a paravirtualized guest"
 msgstr "这个客户端一个是一个半虚拟客户端"
 
@@ -1647,8 +1653,9 @@ msgstr "这个客户端一个是一个半虚拟客户端"
 msgid "Machine Architecture Type (i686/x86_64/ppc)"
 msgstr "机器构架类型（i686/x86_64/ppc）"
 
-#: virt-convert:73 virt-install:542
-msgid "The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
+#: virt-convert:73 virt-install:534
+msgid ""
+"The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
 msgstr "全虚拟客户端的操作系统类型，例如：'linux'、'unix'、'windows'"
 
 #: virt-convert:77
@@ -1659,13 +1666,13 @@ msgstr ""
 "全虚拟客体的操作系统变体，例"
 "如：'fedora6'、'rhel5'、'solaris10'、'win2k'、'vista'"
 
-#: virt-convert:80 virt-install:564
+#: virt-convert:80 virt-install:556
 msgid ""
 "Disables APIC for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
 msgstr "为全虚拟客户端禁用 APIC（在 os-type/os-variant db 中覆盖数值）"
 
-#: virt-convert:84 virt-install:568
+#: virt-convert:84 virt-install:560
 msgid ""
 "Disables ACPI for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
@@ -1733,22 +1740,22 @@ msgstr "无法导入文件 \"%s\": %s"
 msgid "Generating output in '%(format)s' format to %(dir)s/"
 msgstr "在 %(dir)s/ 中以 '%(format)s' 格式生成输出"
 
-#: virt-convert:253
+#: virt-convert:255
 #, python-format
 msgid "Converting disk '%(path)s' to type %(format)s..."
 msgstr "正在将磁盘 '%(path)s' 转换为类型 %(format)s......"
 
-#: virt-convert:260 virt-convert:263
+#: virt-convert:262 virt-convert:265
 #, python-format
 msgid "Couldn't convert disks: %s"
 msgstr "无法转换磁盘：%s"
 
-#: virt-convert:269
+#: virt-convert:271
 #, python-format
 msgid "Couldn't export to file \"%s\": %s"
 msgstr "无法导出到文件 \"%s\": %s"
 
-#: virt-convert:281
+#: virt-convert:283
 msgid "Aborted at user request"
 msgstr "根据用户要求丢弃"
 
@@ -1764,27 +1771,27 @@ msgstr "警告：[%i] 提供更多网络，然后 nics 需要的 [%i]。忽略�
 msgid "The image requires %i network interface."
 msgstr "映像需要 %i 网络接口。"
 
-#: virt-image:85 virt-install:522
+#: virt-image:85 virt-install:514
 msgid "Name of the guest instance"
 msgstr "客户端事件名称"
 
-#: virt-image:87 virt-install:524
+#: virt-image:87 virt-install:516
 msgid "Memory to allocate for guest instance in megabytes"
 msgstr "以 MB 为单位为客户端事件分配的内存"
 
-#: virt-image:91 virt-install:531
+#: virt-image:91 virt-install:523
 msgid "UUID for the guest."
 msgstr "客户端 UUID。"
 
-#: virt-image:93 virt-install:533
+#: virt-image:93 virt-install:525
 msgid "Number of vcpus to configure for your guest"
 msgstr "配置您的客户端的 vcpu 数目"
 
-#: virt-image:95 virt-install:535
+#: virt-image:95 virt-install:527
 msgid "Check that vcpus do not exceed physical CPUs and warn if they do."
 msgstr "检查确定 vcpu 没有超过物理 CPU 数目，如果超过则发出警告。"
 
-#: virt-image:99 virt-install:539
+#: virt-image:99 virt-install:531
 msgid "Set which physical CPUs Domain can use."
 msgstr "设定可以使用的物理 CPU。"
 
@@ -1793,10 +1800,11 @@ msgid "The OS type being installed, e.g. 'linux', 'unix', 'windows'"
 msgstr "要安装的操作系统类型，例如：'linux'、'unix'、'windows'"
 
 #: virt-image:106
-msgid "The OS variant being installed, e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k'"
+msgid ""
+"The OS variant being installed, e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k'"
 msgstr "要安装的操作系统变体，例如：'fedora6'、'rhel5'、'solaris10'、'win2k'"
 
-#: virt-image:110 virt-install:559
+#: virt-image:110 virt-install:551
 msgid "Full Virtualization specific options"
 msgstr "全虚拟化特定选项"
 
@@ -1836,20 +1844,20 @@ msgstr "使用同样的名称覆盖或者销毁当前映像"
 msgid "Skip disk checksum verification process"
 msgstr "跳过磁盘 checksum 验证过程"
 
-#: virt-image:166
+#: virt-image:165
 msgid "You need to provide an image XML descriptor"
 msgstr "您需要提供映像 XML 描述符"
 
-#: virt-image:185
+#: virt-image:184
 msgid "Cannot parse"
 msgstr "无法解析"
 
-#: virt-image:190
+#: virt-image:189
 #, python-format
 msgid "The index for --boot must be between 0 and %d"
 msgstr "--boot 的索引必须在 0 和 %d 之间"
 
-#: virt-image:243
+#: virt-image:242
 #, python-format
 msgid ""
 "\n"
@@ -1860,11 +1868,11 @@ msgstr ""
 "\n"
 "创建客户端 %s......"
 
-#: virt-image:247
+#: virt-image:246
 msgid "Guest creation failed"
 msgstr "客户端创建失败"
 
-#: virt-image:253
+#: virt-image:252
 #, python-format
 msgid ""
 "Domain creation may not have been\n"
@@ -1924,11 +1932,11 @@ msgstr "在这个卷类型中不支持的格式属性"
 msgid "Storage volume must be specified as vol=poolname/volname"
 msgstr "必须将存储卷指定为 vol=poolname/volname"
 
-#: virt-install:298
+#: virt-install:290
 msgid "Cannot use --file, --file-size, or --disk with --nodisks"
 msgstr "--nodisks 无法与 --file、--file--size 或者 --disk 共用"
 
-#: virt-install:301
+#: virt-install:293
 msgid ""
 "Cannot mix --file, --nonsparse, or --file-size with --disk options. Please "
 "see the manual for --disk syntax."
@@ -1936,143 +1944,145 @@ msgstr ""
 "--disk 选项不能与 --file、--nonsparse 或者 --file-size 混用。请查看手册中的 "
 "--disk 语法。"
 
-#: virt-install:304
+#: virt-install:296
 msgid "A disk must be specified (use --nodisks to override)"
 msgstr "必须指定一个磁盘（请使用 --nodisks 覆盖）"
 
-#: virt-install:312
+#: virt-install:304
 msgid "Need to pass size for each disk"
 msgstr "需要给出每张磁盘的大小"
 
-#: virt-install:327
+#: virt-install:319
 msgid "Cannot use --mac with --nonetworks"
 msgstr "不能使用带 --nonetworks 的 --mac"
 
-#: virt-install:329
+#: virt-install:321
 msgid "Cannot use --bridges with --nonetworks"
 msgstr "不能使用带 --nonetworks 的 --bridge"
 
-#: virt-install:331
+#: virt-install:323
 msgid "Cannot use --network with --nonetworks"
 msgstr "不能使用带 --nonetworks 的 --network"
 
-#: virt-install:358
+#: virt-install:350
 msgid ""
 "Would you like a fully virtualized guest (yes or no)? This will allow you to "
 "run unmodified operating systems."
 msgstr "您想要一个全虚拟客户端吗（yes/no）？这将允许您运行未修改的操作系统。"
 
-#: virt-install:383
+#: virt-install:375
 #, python-format
 msgid "Would you like to use %s acceleration? (yes or no)"
 msgstr "您要使用 %s 加速吗（yes/no）？"
 
-#: virt-install:395
+#: virt-install:387
 msgid "Can't do both --hvm and --paravirt"
 msgstr "无法同时进行 --hvm 和 --paravirt 操作"
 
-#: virt-install:417 virt-install:418
+#: virt-install:409 virt-install:410
 msgid "default"
 msgstr "默认"
 
-#: virt-install:439
+#: virt-install:431
 #, python-format
 msgid "Only one install method (%s) can be used"
 msgstr "只能使用一种安装方法（%s）"
 
-#: virt-install:445
+#: virt-install:437
 msgid "Network PXE boot is not supported for paravirtualized guests"
 msgstr "在半虚拟客户端中还不支持网络 PXE 引导"
 
-#: virt-install:448
+#: virt-install:440
 msgid "Paravirtualized guests cannot install off cdrom media."
 msgstr "半虚拟客户端无法在没有光盘介质情况下安装"
 
-#: virt-install:451
+#: virt-install:443
 msgid "--location can not be specified for remote connections."
 msgstr "无法为远程连接指定 --location。"
 
-#: virt-install:460
+#: virt-install:452
 #, python-format
 msgid "One of %s, or cdrom media must be specified."
 msgstr "必须指定 %s 之一或者 cdrom 介质。"
 
-#: virt-install:473
+#: virt-install:465
 #, python-format
 msgid "Error creating cdrom disk: %s"
 msgstr "创建光盘失败：%s"
 
-#: virt-install:478
+#: virt-install:470
 msgid "What is the install CD-ROM/ISO or URL?"
 msgstr "什么是安装光盘/映像或者 URL？"
 
-#: virt-install:480
+#: virt-install:472
 msgid "What is the install URL?"
 msgstr "什么是安装 URL？"
 
-#: virt-install:528
+#: virt-install:520
 msgid "The CPU architecture to simulate"
 msgstr "模拟的 CPU 构架"
 
-#: virt-install:546
+#: virt-install:538
 msgid ""
 "The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
 "'solaris10', 'win2k'"
-msgstr "全虚拟客户端的操作系统变体，例如：'fedora6'、'rhel5'、'solaris10'、'win2k'"
+msgstr ""
+"全虚拟客户端的操作系统变体，例如：'fedora6'、'rhel5'、'solaris10'、'win2k'"
 
-#: virt-install:550
+#: virt-install:542
 msgid "Add a serial device to the domain."
 msgstr "在域中添加串口设备。"
 
-#: virt-install:553
+#: virt-install:545
 msgid "Add a parallel device to the domain."
 msgstr "在域中添加并口设备。"
 
-#: virt-install:556
+#: virt-install:548
 msgid "Physical host device to attach to the domain."
 msgstr "要附加到域中的物理主机设备。"
 
-#: virt-install:561
+#: virt-install:553
 msgid "Use sound device emulation"
 msgstr "使用仿真声音设备"
 
-#: virt-install:572
+#: virt-install:564
 msgid "Virtualization Type Options"
 msgstr "虚拟化类型选项"
 
-#: virt-install:579
+#: virt-install:571
 msgid "Hypervisor name to use (kvm, qemu, xen, ...)"
 msgstr "要使用的管理程序名称（kvm、qemu、xen 等等）"
 
-#: virt-install:585
+#: virt-install:577
 msgid "Installation Method Options"
 msgstr "安装方法选项"
 
-#: virt-install:588
+#: virt-install:580
 msgid "CD-ROM installation media"
 msgstr "光驱安装介质"
 
-#: virt-install:591
-msgid "Installation source (eg, nfs:host:/path, http://host/path, ftp://host/path)"
+#: virt-install:583
+msgid ""
+"Installation source (eg, nfs:host:/path, http://host/path, ftp://host/path)"
 msgstr "安装源（例如：nfs:host:/path、http://host/path、ftp://host/path）"
 
-#: virt-install:594
+#: virt-install:586
 msgid "Boot from the network using the PXE protocol"
 msgstr "使用 PXE 协议从网络引导"
 
-#: virt-install:596
+#: virt-install:588
 msgid "Build guest around an existing disk image"
 msgstr "在磁盘映像中构建客体"
 
-#: virt-install:598
+#: virt-install:590
 msgid "Treat the CD-ROM media as a Live CD"
 msgstr "将光驱介质视为 Live CD"
 
-#: virt-install:601
+#: virt-install:593
 msgid "Additional arguments to pass to the kernel booted from --location"
 msgstr "附加到使用 --location 引导的内核的参数"
 
-#: virt-install:608
+#: virt-install:600
 msgid ""
 "Specify storage with various options. Ex.\n"
 "--disk path=/my/existing/disk\n"
@@ -2084,11 +2094,11 @@ msgstr ""
 "--disk path=/my/new/disk,size=5 (in gigabytes)\n"
 "--disk vol=poolname:volname,device=cdrom,bus=scsi,..."
 
-#: virt-install:613
+#: virt-install:605
 msgid "Don't set up any disks for the guest."
 msgstr "不要为该客户端设置任何磁盘。"
 
-#: virt-install:630
+#: virt-install:622
 msgid ""
 "Specify a network interface. Ex:\n"
 "--network bridge=mybr0\n"
@@ -2100,41 +2110,42 @@ msgstr ""
 "--network network=my_libvirt_virtual_net\n"
 "--network network=mynet,model=virtio,mac=00:11..."
 
-#: virt-install:635
+#: virt-install:627
 msgid "Don't create network interfaces for the guest."
 msgstr "不要为该客体创建网络接口。"
 
-#: virt-install:649
+#: virt-install:641
 msgid "Specify video hardware type."
 msgstr "指定视频硬件类型。"
 
-#: virt-install:652
+#: virt-install:644
 msgid "Don't automatically try to connect to the guest console"
 msgstr "不要自动尝试连接到客户端控制台"
 
-#: virt-install:660
+#: virt-install:652
 msgid "Disables the automatic rebooting when the installation is complete."
 msgstr "安装完成时请禁用自动重启。"
 
-#: virt-install:663
+#: virt-install:655
 msgid "Time to wait (in minutes)"
 msgstr "要等待的时间（以分钟为单位）"
 
-#: virt-install:665
+#: virt-install:657
 msgid "Forces 'yes' for any applicable prompts, terminates for all others"
 msgstr "对任意应用程序提示强制回答‘yes’，终止左右其它提示"
 
-#: virt-install:688
+#: virt-install:680
 msgid ""
 "Unable to connect to graphical console: virt-viewer not installed. Please "
 "install the 'virt-viewer' package."
-msgstr "无法连接到图形控制台：没有安装 virt-viewer。请安装 'virt-viewer' 软件包。"
+msgstr ""
+"无法连接到图形控制台：没有安装 virt-viewer。请安装 'virt-viewer' 软件包。"
 
-#: virt-install:730
+#: virt-install:722
 msgid "Can't use --pxe with --nonetworks"
 msgstr "不能使用带 --nonetworks 的 --pxe"
 
-#: virt-install:832
+#: virt-install:824
 msgid ""
 "\n"
 "\n"
@@ -2144,7 +2155,7 @@ msgstr ""
 "\n"
 "开始安装......"
 
-#: virt-install:843
+#: virt-install:835
 #, python-format
 msgid ""
 "Domain installation does not appear to have been\n"
@@ -2157,7 +2168,7 @@ msgstr ""
 "重启您的域，否则请重\n"
 "新开始安装。"
 
-#: virt-install:854
+#: virt-install:846
 #, python-format
 msgid ""
 "Guest installation complete... you can restart your domain\n"
@@ -2166,15 +2177,15 @@ msgstr ""
 "客户端安装完成......您可以运行\n"
 " 'virsh start %s' 重启您的域"
 
-#: virt-install:858
+#: virt-install:850
 msgid "Guest installation complete... restarting guest."
 msgstr "客户端安装完成......重启客户端"
 
-#: virt-install:864
+#: virt-install:856
 msgid "Guest install interrupted."
 msgstr "客体安装中断。"
 
-#: virt-install:871
+#: virt-install:863
 #, python-format
 msgid ""
 "Domain installation may not have been\n"
@@ -2187,36 +2198,37 @@ msgstr ""
 "重启您的域，否则请重\n"
 "新开始安装。"
 
-#: virt-install:897
-msgid "Guest installation failed."
-msgstr "客体安装失败。"
+#: virt-install:901
+#, fuzzy
+msgid "Domain has crashed."
+msgstr "域已经启动！"
 
-#: virt-install:907
+#: virt-install:933
 #, python-format
 msgid "%d minutes "
 msgstr "%d 分钟"
 
-#: virt-install:909
+#: virt-install:935
 #, python-format
 msgid ""
 "Domain installation still in progress. Waiting %sfor installation to "
 "complete."
 msgstr "域安装仍在进行。请等待 %s 完成安装。"
 
-#: virt-install:915
+#: virt-install:941
 msgid "Domain has shutdown. Continuing."
 msgstr "域已经关闭。请继续......"
 
-#: virt-install:922
+#: virt-install:948
 #, python-format
 msgid "Could not lookup domain after install: %s"
 msgstr "安装后无法查找域：%s"
 
-#: virt-install:929
+#: virt-install:955
 msgid "Installation has exceeded specified time limit. Exiting application."
 msgstr "安装已经超过指定的时间限制。退出程序。"
 
-#: virt-install:935
+#: virt-install:961
 msgid ""
 "Domain installation still in progress. You can reconnect to \n"
 "the console to complete the installation process."
@@ -2224,3 +2236,5 @@ msgstr ""
 "域安装仍在进行。您可以重新连接\n"
 "到控制台以便完成安装进程。"
 
+#~ msgid "Guest installation failed."
+#~ msgstr "客体安装失败。"

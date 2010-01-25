@@ -61,7 +61,7 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         desc = ""
 
         if char_type == VirtualCharDevice.CHAR_PTY:
-            desc = _("Psuedo TTY")
+            desc = _("Pseudo TTY")
         elif char_type == VirtualCharDevice.CHAR_DEV:
             desc = _("Physical host character device")
         elif char_type == VirtualCharDevice.CHAR_STDIO:
