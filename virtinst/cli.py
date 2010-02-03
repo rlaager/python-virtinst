@@ -90,8 +90,16 @@ class VirtHelpFormatter(optparse.IndentedHelpFormatter):
 def setupLogging(appname, debug=False):
     # set up logging
     vi_dir = os.path.expanduser("~/.virtinst")
-    if not os.access(vi_dir,os.W_OK):
-        os.mkdir(vi_dir, 0751)
+    if not os.access(vi_dir, os.W_OK):
+        if os.path.exists(vi_dir):
+            raise RuntimeError("No write access to directory %s" % vi_dir)
+
+        try:
+            os.mkdir(vi_dir, 0751)
+        except IOError, e:
+            raise RuntimeError("Could not create directory %s: %s" %
+                               (vi_dir, e))
+
 
     dateFormat = "%a, %d %b %Y %H:%M:%S"
     fileFormat = "[%(asctime)s " + appname + " %(process)d] %(levelname)s (%(module)s:%(lineno)d) %(message)s"
