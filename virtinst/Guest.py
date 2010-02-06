@@ -504,11 +504,15 @@ class Guest(object):
         """
         if dev == self._graphics_dev:
             self._graphics_dev = None
+            return
 
         for devlist in [self.disks, self.nics, self.sound_devs, self.hostdevs,
                         self._devices]:
             if dev in devlist:
                 devlist.remove(dev)
+                return
+
+        raise ValueError(_("Did not find device %s") % str(dev))
 
     # Device fetching functions used internally during the install process.
     # These allow us to change dev defaults, add install media, etc. during
