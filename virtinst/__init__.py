@@ -46,7 +46,7 @@ from DistroInstaller import DistroInstaller
 from PXEInstaller import PXEInstaller
 from LiveCDInstaller import LiveCDInstaller
 from ImportInstaller import ImportInstaller
-from ImageManager import ImageInstaller
+from ImageInstaller import ImageInstaller
 from CloneManager import CloneDesign
 from User import User
 import util
