@@ -150,8 +150,6 @@ class ImageInstaller(Installer.Installer):
             d = VirtualDisk(p, s,
                             device = device,
                             type = VirtualDisk.TYPE_FILE)
-            if self.boot_caps.type == "xen" and _util.is_blktap_capable():
-                d.driver_name = VirtualDisk.DRIVER_TAP
             d.target = m.target
 
             guest._add_install_dev(d)
