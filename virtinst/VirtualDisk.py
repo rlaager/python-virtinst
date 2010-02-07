@@ -1059,15 +1059,22 @@ class VirtualDisk(VirtualDevice):
             if dst_fd is not None:
                 os.close(dst_fd)
 
-    def setup(self, progresscb=None):
+    def setup_dev(self, conn=None, meter=None):
         """
         Build storage (if required)
 
         If storage doesn't exist (a non-existent file 'path', or 'vol_install'
         was specified), we create it.
 
-        @param progresscb: progress meter
-        @type progresscb: instanceof urlgrabber.BaseMeter
+        @param conn: Optional connection to use if self.conn not specified
+        @param meter: Progress meter to report file creation on
+        @type meter: instanceof urlgrabber.BaseMeter
+        """
+        return self.setup(meter)
+
+    def setup(self, progresscb=None):
+        """
+        DEPRECATED: Please use setup_dev instead
         """
         if not progresscb:
             progresscb = progress.BaseMeter()

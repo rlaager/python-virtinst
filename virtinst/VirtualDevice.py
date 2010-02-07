@@ -116,3 +116,14 @@ class VirtualDevice(object):
         @rtype: str
         """
         raise NotImplementedError()
+
+    def setup_dev(self, conn=None, meter=None):
+        """
+        Perform any necessary device initialization
+
+        @param conn: Optional connection to use if neccessary. If not
+                     specified, device's 'conn' will be used
+        @param meter: Optional progress meter to use
+        """
+        # Will be overwritten by subclasses if necessary.
+        return

@@ -144,7 +144,16 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             return (False, _("The MAC address you entered is already in use by another inactive virtual machine."))
         return (False, None)
 
-    def setup(self, conn):
+    def setup_dev(self, conn=None, meter=None):
+        return self.setup(conn)
+
+    def setup(self, conn=None):
+        """
+        DEPRECATED: Please use setup_dev instead
+        """
+        if not conn:
+            conn = self.conn
+
         if self.macaddr is None:
             while 1:
                 self.macaddr = _util.randomMAC(type=conn.getType().lower())

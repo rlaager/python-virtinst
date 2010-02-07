@@ -147,8 +147,13 @@ class VirtualHostDeviceUSB(VirtualHostDevice):
                                  " 'device' are required."))
         return xml
 
+    def setup_dev(self, conn=None, meter=None):
+        return self.setup(conn)
 
     def setup(self, conn = None):
+        """
+        DEPRECATED: Please use setup_dev instead
+        """
         if not conn:
             conn = self.conn
 
@@ -191,12 +196,18 @@ class VirtualHostDevicePCI(VirtualHostDevice):
         xml = "        <address domain='%s' bus='%s' slot='%s' function='%s'/>\n"
         return xml % (self.domain, self.bus, self.slot, self.function)
 
-    def setup(self, conn = None):
+    def setup_dev(self, conn=None, meter=None):
         """
         Perform DeviceDetach and DeviceReset calls if necessary
 
         @param conn: libvirt virConnect instance to use (defaults to devices
                      connection)
+        """
+        return self.setup(conn)
+
+    def setup(self, conn = None):
+        """
+        DEPRECATED: Please use setup_dev instead
         """
         if not conn:
             conn = self.conn

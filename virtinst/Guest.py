@@ -784,12 +784,8 @@ class Guest(object):
         """
         Ensure that devices are setup
         """
-        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
-            disk.setup(progresscb)
-        for nic in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_NET):
-            nic.setup(self.conn)
-        for hostdev in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_HOSTDEV):
-            hostdev.setup()
+        for dev in self._get_all_install_devs():
+            dev.setup_dev(self.conn, progresscb)
 
     def _do_install(self, consolecb, meter, removeOld=False, wait=True):
         vm = None
