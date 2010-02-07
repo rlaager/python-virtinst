@@ -11,7 +11,7 @@
   <features>
     <acpi/><apic/>
   </features>
-  <clock offset="utc"/>
+  <clock offset="localtime"/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
@@ -60,4 +60,8 @@
       </source>
     </hostdev>
   </devices>
+  <seclabel type='static' model='selinux'>
+    <label>foolabel</label>
+    <imagelabel>imagelabel</imagelabel>
+  </seclabel>
 </domain>

@@ -31,6 +31,7 @@ import support
 from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
 from Clock import Clock
+from Seclabel import Seclabel
 
 import osdict
 from virtinst import _virtinst as _
@@ -138,6 +139,7 @@ class Guest(object):
         self._os_autodetect = False
         self._autostart = False
         self._clock = Clock(self.conn)
+        self._seclabel = None
         self.features = None
 
         self._os_type = None
@@ -184,6 +186,18 @@ class Guest(object):
     def get_clock(self):
         return self._clock
     clock = property(get_clock)
+
+    def get_seclabel(self):
+        return self._seclabel
+    def set_seclabel(self, val):
+        if val and not isinstance(val, Seclabel):
+            raise ValueError("'seclabel' must be a Seclabel() instance.")
+
+        if val:
+            # Check for validation purposes
+            val.get_xml_config()
+        self._seclabel = val
+    seclabel = property(get_seclabel, set_seclabel)
 
     # Domain name of the guest
     def get_name(self):
@@ -681,6 +695,16 @@ class Guest(object):
         """
         return self.clock.get_xml_config()
 
+    def _get_seclabel_xml(self):
+        """
+        Return <seclabel> XML
+        """
+        xml = ""
+        if self.seclabel:
+            xml = self.seclabel.get_xml_config()
+
+        return xml
+
     def _get_osblob(self, install):
         """
         Return os, features, and clock xml (Implemented in subclass)
@@ -751,6 +775,7 @@ class Guest(object):
         xml = add("  <devices>")
         xml = add("%s" % self._get_device_xml(install))
         xml = add("  </devices>")
+        xml = add("%s" % self._get_seclabel_xml())
         xml = add("</domain>\n")
 
         return xml

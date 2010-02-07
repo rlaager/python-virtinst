@@ -50,6 +50,7 @@ from ImageInstaller import ImageInstaller
 from CloneManager import CloneDesign
 from User import User
 from Clock import Clock
+from Seclabel import Seclabel
 import util
 import support
 
@@ -60,6 +61,6 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "VirtualDisk", "XenDisk", "FullVirtGuest", "ParaVirtGuest",
            "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
            "ImportInstaller", "ImageInstaller", "CloneDesign", "Storage",
-           "User", "util", "support", "VirtualDevice", "Clock",
+           "User", "util", "support", "VirtualDevice", "Clock", "Seclabel",
            "VirtualHostDevice", "VirtualHostDeviceUSB", "VirtualVideoDevice",
            "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice"]

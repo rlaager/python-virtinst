@@ -556,6 +556,15 @@ class TestXMLConfig(unittest.TestCase):
         g.add_device(vdev1)
         g.add_device(vdev2)
 
+        g.clock.offset = "localtime"
+
+        seclabel = virtinst.Seclabel(g.conn)
+        seclabel.type = seclabel.SECLABEL_TYPE_STATIC
+        seclabel.model = "selinux"
+        seclabel.label = "foolabel"
+        seclabel.imagelabel = "imagelabel"
+        g.seclabel = seclabel
+
         g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
                                             conn=g.conn)
         self._compare(g, "boot-many-devices", False)
