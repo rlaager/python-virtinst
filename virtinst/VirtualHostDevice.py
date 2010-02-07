@@ -20,7 +20,9 @@
 import VirtualDevice
 import NodeDeviceParser
 import logging
+import libvirt
 
+from virtinst import support
 from virtinst import _util
 from virtinst import _virtinst as _
 
@@ -216,12 +218,16 @@ class VirtualHostDevicePCI(VirtualHostDevice):
             return
 
         try:
-            # Do this as a sanity check, so that we don't fail at domain
-            # start time. This is independent of the 'managed' state, since
-            # this should work regardless.
-            node = conn.nodeDeviceLookupByName(self._nodedev.name)
-            node.dettach()
-            node.reset()
+            try:
+                # Do this as a sanity check, so that we don't fail at domain
+                # start time. This is independent of the 'managed' state, since
+                # this should work regardless.
+                node = conn.nodeDeviceLookupByName(self._nodedev.name)
+                node.dettach()
+                node.reset()
+            except libvirt.libvirtError, e:
+                if not support.is_error_nosupport(e):
+                    raise
         except Exception, e:
             raise RuntimeError(_("Could not detach PCI device: %s" % str(e)))
 
