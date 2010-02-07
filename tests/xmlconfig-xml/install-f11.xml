@@ -29,8 +29,7 @@
       <source dev='/dev/loop0'/>
       <target dev='vdb' bus='virtio'/>
     </disk>
-    <disk type='file' device='cdrom'>
-      <source file='/default-pool/default-vol'/>
+    <disk type='block' device='cdrom'>
       <target dev='hdc' bus='ide'/>
       <readonly/>
     </disk>

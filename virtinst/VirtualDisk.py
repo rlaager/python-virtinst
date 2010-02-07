@@ -385,6 +385,12 @@ class VirtualDisk(VirtualDevice):
         if val is not None:
             self._check_str(val, "path")
             val = os.path.abspath(val)
+
+        if validate:
+            self._vol_install = None
+            self._vol_object = None
+            self._type = None
+
         self.__validate_wrapper("_path", val, validate)
     path = property(_get_path, _set_path)
 

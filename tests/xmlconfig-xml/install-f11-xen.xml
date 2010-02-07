@@ -30,8 +30,7 @@
       <source dev='/dev/loop0'/>
       <target dev='hdb' bus='ide'/>
     </disk>
-    <disk type='file' device='cdrom'>
-      <source file='/default-pool/default-vol'/>
+    <disk type='block' device='cdrom'>
       <target dev='hdc' bus='ide'/>
       <readonly/>
     </disk>
