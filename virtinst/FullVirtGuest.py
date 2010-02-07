@@ -78,20 +78,6 @@ class FullVirtGuest(Guest):
         self._set_default_input_dev()
 
 
-    def os_features(self):
-        """Determine the guest features, based on explicit settings in FEATURES
-        and the OS_TYPE and OS_VARIANT. FEATURES takes precedence over the OS
-        preferences"""
-        if self.features is None:
-            return None
-
-        # explicitly disabling apic and acpi will override OS_TYPES values
-        features = dict(self.features)
-        for f in ["acpi", "apic"]:
-            val = self._lookup_osdict_key(f)
-            features[f] = val
-        return features
-
     def _get_input_device(self):
         typ = self._lookup_device_param("input", "type")
         bus = self._lookup_device_param("input", "bus")
@@ -99,18 +85,6 @@ class FullVirtGuest(Guest):
         dev.type = typ
         dev.bus = bus
         return dev
-
-    def _get_features_xml(self):
-        ret = "  <features>\n"
-        features = self.os_features()
-        if features:
-            ret += "    "
-            for k in sorted(features.keys()):
-                v = features[k]
-                if v:
-                    ret += "<%s/>" %(k,)
-            ret += "\n"
-        return ret + "  </features>"
 
     def _get_clock_xml(self):
         val = self._lookup_osdict_key("clock")

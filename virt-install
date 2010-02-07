@@ -780,11 +780,10 @@ def main():
                       options.livecd, options.import_install, guest, ishvm)
 
     continue_inst = guest.get_continue_inst()
-    if ishvm:
-        if options.noacpi:
-            guest.features["acpi"] = False
-        if options.noapic:
-            guest.features["apic"] = False
+    if options.noacpi:
+        guest.features["acpi"] = False
+    if options.noapic:
+        guest.features["apic"] = False
 
     def show_console(dom):
         if guest.graphics_dev:

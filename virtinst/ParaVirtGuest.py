@@ -36,6 +36,8 @@ class ParaVirtGuest(Guest):
         self.disknode = "xvd"
         self._diskbus = "xen"
 
+        self.features = {"acpi": False, "apic": False, "pae": False}
+
         # Add default input device
         self._set_default_input_dev()
 

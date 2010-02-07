@@ -123,6 +123,7 @@ class Guest(object):
         self._consolechild = None
         self._os_autodetect = False
         self._autostart = False
+        self.features = None
 
         self._os_type = None
         self._os_variant = None
@@ -623,11 +624,46 @@ class Guest(object):
 
         return xml
 
+    def _get_features(self):
+        """
+        Determine the guest features, based on explicit settings in FEATURES
+        and the OS_TYPE and OS_VARIANT. FEATURES takes precedence over the OS
+        preferences
+        """
+        if self.features is None:
+            return None
+
+        # explicitly disabling apic and acpi will override OS_TYPES values
+        features = dict(self.features)
+        for f in ["acpi", "apic"]:
+            val = self._lookup_osdict_key(f)
+            if features.get(f) == None:
+                features[f] = val
+        return features
+
     def _get_features_xml(self):
         """
-        Return features (pae, acpi, apic) xml (currently only releavnt for FV)
+        Return features (pae, acpi, apic) xml
         """
-        return ""
+        features = self._get_features()
+        found_feature = False
+
+        ret = "  <features>\n"
+
+        if features:
+            ret += "    "
+            for k in sorted(features.keys()):
+                v = features[k]
+                if v:
+                    ret += "<%s/>" % k
+                    found_feature = True
+            ret += "\n"
+
+        if not found_feature:
+            # Don't print empty feature block if no features added
+            return ""
+
+        return ret + "  </features>"
 
     def _get_clock_xml(self):
         """
