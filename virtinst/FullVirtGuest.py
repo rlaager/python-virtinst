@@ -86,10 +86,6 @@ class FullVirtGuest(Guest):
         dev.bus = bus
         return dev
 
-    def _get_clock_xml(self):
-        val = self._lookup_osdict_key("clock")
-        return """  <clock offset="%s"/>""" % val
-
     def _get_device_xml(self, install=True):
         emu_xml = ""
         if self.emulator is not None:
@@ -109,6 +105,9 @@ class FullVirtGuest(Guest):
             if (disk_bus and not disk.bus and
                 disk.device == VirtualDisk.DEVICE_DISK):
                 disk.bus = disk_bus
+
+        if self.clock.offset == None:
+            self.clock.offset = self._lookup_osdict_key("clock")
 
         # Run this last, so we get first crack at disk attributes
         Guest._set_defaults(self, devlist_func)

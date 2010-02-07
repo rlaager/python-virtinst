@@ -30,6 +30,7 @@ import VirtualGraphics
 import support
 from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
+from Clock import Clock
 
 import osdict
 from virtinst import _virtinst as _
@@ -109,9 +110,22 @@ class Guest(object):
 
     def __init__(self, type=None, connection=None, hypervisorURI=None,
                  installer=None):
+
+        # Set up the connection, since it is fundamental for other init
+        self.conn = connection
+        if self.conn == None:
+            logging.debug("No conn passed to Guest, opening URI '%s'" % \
+                          hypervisorURI)
+            self.conn = libvirt.open(hypervisorURI)
+
+        if self.conn == None:
+            raise RuntimeError, _("Unable to connect to hypervisor, aborting "
+                                  "installation!")
+
         # We specifically ignore the 'type' parameter here, since
         # it has been replaced by installer.type, and child classes can
         # use it when creating a default installer.
+        ignore = type
         self._installer = installer
         self._name = None
         self._uuid = None
@@ -123,6 +137,7 @@ class Guest(object):
         self._consolechild = None
         self._os_autodetect = False
         self._autostart = False
+        self._clock = Clock(self.conn)
         self.features = None
 
         self._os_type = None
@@ -155,15 +170,6 @@ class Guest(object):
         self._default_console_assigned = None
         self._default_input_assigned = None
 
-        self.conn = connection
-        if self.conn == None:
-            logging.debug("No conn passed to Guest, opening URI '%s'" % \
-                          hypervisorURI)
-            self.conn = libvirt.open(hypervisorURI)
-        if self.conn == None:
-            raise RuntimeError, _("Unable to connect to hypervisor, aborting "
-                                  "installation!")
-
         self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
 
 
@@ -174,6 +180,10 @@ class Guest(object):
         # working operation. Should we even allow it to be changed?
         self._installer = val
     installer = property(get_installer, set_installer)
+
+    def get_clock(self):
+        return self._clock
+    clock = property(get_clock)
 
     # Domain name of the guest
     def get_name(self):
@@ -667,12 +677,14 @@ class Guest(object):
 
     def _get_clock_xml(self):
         """
-        Return <clock/> xml (currently only relevant for FV guests)
+        Return <clock/> xml
         """
-        return ""
+        return self.clock.get_xml_config()
 
     def _get_osblob(self, install):
-        """Return os, features, and clock xml (Implemented in subclass)"""
+        """
+        Return os, features, and clock xml (Implemented in subclass)
+        """
         xml = ""
 
         osxml = self.installer.get_install_xml(self, install)
