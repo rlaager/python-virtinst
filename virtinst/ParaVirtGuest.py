@@ -45,12 +45,12 @@ class ParaVirtGuest(Guest):
         dev.bus = "xen"
         return dev
 
-    def _set_defaults(self):
+    def _set_defaults(self, devlist_func):
         # Default file backed PV guests to tap driver
-        for d in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
+        for d in devlist_func(VirtualDevice.VIRTUAL_DEV_DISK):
             if (d.type == VirtualDisk.TYPE_FILE
                 and _util.is_blktap_capable()
                 and d.driver_name == None):
                 d.driver_name = VirtualDisk.DRIVER_TAP
 
-        Guest._set_defaults(self)
+        Guest._set_defaults(self, devlist_func)

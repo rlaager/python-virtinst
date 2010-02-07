@@ -561,9 +561,6 @@ class Guest(object):
     # Device fetching functions used internally during the install process.
     # These allow us to change dev defaults, add install media, etc. during
     # the install, but revert to a clean state if the install fails
-    def _init_install_devs(self):
-        self._install_devices = self.get_all_devices()[:]
-
     def _get_install_devs(self, devtype):
         return self._dev_build_list(devtype, self._install_devices)
 
@@ -762,7 +759,11 @@ class Guest(object):
 
 
     def _prepare_install(self, meter):
-        self._init_install_devs()
+        # Initialize install device list
+        self._install_devices = self.get_all_devices()[:]
+
+        # Set regular device defaults
+        self.set_defaults()
 
         self._installer.prepare(guest = self,
                                 meter = meter)
@@ -771,7 +772,7 @@ class Guest(object):
 
         # Run 'set_defaults' after install prep, since some installers
         # (ImageInstaller) alter the device list.
-        self._set_defaults()
+        self._set_defaults(self._get_install_devs)
 
     def _cleanup_install(self):
         # Empty install dev list
@@ -780,7 +781,9 @@ class Guest(object):
         self._installer.cleanup()
 
     def _create_devices(self, progresscb):
-        """Ensure that devices are setup"""
+        """
+        Ensure that devices are setup
+        """
         for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
             disk.setup(progresscb)
         for nic in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_NET):
@@ -879,6 +882,14 @@ class Guest(object):
         if self.domain is not None:
             raise RuntimeError, _("Domain has already been started!")
 
+        if self.name is None or self.memory is None:
+            raise RuntimeError(_("Name and memory must be specified for "
+                                 "all guests!"))
+
+        if _util.vm_uuid_collision(self.conn, self.uuid):
+            raise RuntimeError(_("The UUID you entered is already in "
+                                 "use by another guest!"))
+
     def _set_default_input_dev(self):
         # This is called at init time, but also whenever the OS changes,
         # since the input dev maybe be dependent on OS
@@ -893,9 +904,17 @@ class Guest(object):
         self.add_device(self._get_input_device())
         self._default_input_assigned = True
 
-    def _set_defaults(self):
+    def set_defaults(self):
+        """
+        Public function to set guest defaults. Things like preferred
+        disk bus (unless one is specified). This will be called by the
+        install process, but can be called earlier if needed
+        """
+        self._set_defaults(self.get_devices)
+
+    def _set_defaults(self, devlist_func):
         used_targets = []
-        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
+        for disk in devlist_func(VirtualDevice.VIRTUAL_DEV_DISK):
             if not disk.bus:
                 if disk.device == disk.DEVICE_FLOPPY:
                     disk.bus = "fdc"
@@ -909,12 +928,7 @@ class Guest(object):
                 if _util.vm_uuid_collision(self.conn, self.uuid):
                     continue
                 break
-        else:
-            if _util.vm_uuid_collision(self.conn, self.uuid):
-                raise RuntimeError, _("The UUID you entered is already in "
-                                      "use by another guest!")
-        if self.name is None or self.memory is None:
-            raise RuntimeError, _("Name and memory must be specified for all guests!")
+
 
     # Guest Dictionary Helper methods
 

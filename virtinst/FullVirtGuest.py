@@ -123,18 +123,18 @@ class FullVirtGuest(Guest):
 
         return (emu_xml + Guest._get_device_xml(self, install))
 
-    def _set_defaults(self):
+    def _set_defaults(self, devlist_func):
         disk_bus  = self._lookup_device_param("disk", "bus")
         net_model = self._lookup_device_param("net", "model")
 
         # Only overwrite params if they weren't already specified
-        for net in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_NET):
+        for net in devlist_func(VirtualDevice.VIRTUAL_DEV_NET):
             if net_model and not net.model:
                 net.model = net_model
-        for disk in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
+        for disk in devlist_func(VirtualDevice.VIRTUAL_DEV_DISK):
             if (disk_bus and not disk.bus and
                 disk.device == VirtualDisk.DEVICE_DISK):
                 disk.bus = disk_bus
 
         # Run this last, so we get first crack at disk attributes
-        Guest._set_defaults(self)
+        Guest._set_defaults(self, devlist_func)
