@@ -36,6 +36,9 @@ class ParaVirtGuest(Guest):
         self.disknode = "xvd"
         self._diskbus = "xen"
 
+        # Add default input device
+        self._set_default_input_dev()
+
     def _get_input_device(self):
         dev = VirtualInputDevice(self.conn)
         dev.type = "mouse"

@@ -68,6 +68,15 @@ class FullVirtGuest(Guest):
         if (not self.loader) and self.type == "xen":
             self.loader = "/usr/lib/xen/boot/hvmloader"
 
+        # Add a default console device
+        dev = VirtualCharDevice.get_dev_instance(self.conn,
+                                                 VirtualCharDevice.DEV_CONSOLE,
+                                                 VirtualCharDevice.CHAR_PTY)
+        self.add_device(dev)
+        self._default_console_assigned = True
+
+        self._set_default_input_dev()
+
 
     def os_features(self):
         """Determine the guest features, based on explicit settings in FEATURES
@@ -126,15 +135,6 @@ class FullVirtGuest(Guest):
             if (disk_bus and not disk.bus and
                 disk.device == VirtualDisk.DEVICE_DISK):
                 disk.bus = disk_bus
-
-        # If no serial devices were attached to the guest, stick the default
-        # console device in.
-        if (not self._get_install_devs(VirtualDevice.VIRTUAL_DEV_SERIAL) and
-            not self._get_install_devs(VirtualDevice.VIRTUAL_DEV_CONSOLE)):
-            dev = VirtualCharDevice.get_dev_instance(self.conn,
-                                                     VirtualCharDevice.DEV_CONSOLE,
-                                                     VirtualCharDevice.CHAR_PTY)
-            self._add_install_dev(dev)
 
         # Run this last, so we get first crack at disk attributes
         Guest._set_defaults(self)

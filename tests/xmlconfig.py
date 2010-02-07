@@ -94,7 +94,7 @@ class TestXMLConfig(unittest.TestCase):
             dom.destroy()
             dom.undefine()
         finally:
-            xenguest.installer.cleanup()
+            xenguest._cleanup_install()
 
 
     def testBootParavirtDiskFile(self):

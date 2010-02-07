@@ -147,6 +147,11 @@ class Guest(object):
         # Default bus for disks (set in subclass)
         self._diskbus = None
 
+        # Indicates that default devices have been assigned, so look for
+        # the user to overwrite
+        self._default_console_assigned = None
+        self._default_input_assigned = None
+
         self.conn = connection
         if self.conn == None:
             logging.debug("No conn passed to Guest, opening URI '%s'" % \
@@ -255,16 +260,16 @@ class Guest(object):
         val = val.lower()
 
         if self._OS_TYPES.has_key(val):
-            if self._os_type == val:
-                # No change, don't invalidate variant
-                return
-
-            # Invalidate variant, since it may not apply to the new os type
-            self._os_type = val
-            self._os_variant = None
+            if self._os_type != val:
+                # Invalidate variant, since it may not apply to the new os type
+                self._os_type = val
+                self._os_variant = None
         else:
             raise ValueError, _("OS type '%s' does not exist in our "
                                 "dictionary") % val
+
+        # Default may have changed with OS info
+        self._set_default_input_dev()
     os_type = property(get_os_type, set_os_type)
 
     def get_os_variant(self):
@@ -273,6 +278,7 @@ class Guest(object):
         if type(val) is not str:
             raise ValueError(_("OS variant must be a string."))
         val = val.lower()
+
         if self.os_type:
             if self._OS_TYPES[self.os_type]["variants"].has_key(val):
                 self._os_variant = val
@@ -281,6 +287,7 @@ class Guest(object):
                                     "our dictionary for OS type '%(ty)s'" ) % \
                                     {'var' : val, 'ty' : self._os_type}
         else:
+            found = False
             for ostype in self.list_os_types():
                 if self._OS_TYPES[ostype]["variants"].has_key(val) and \
                    not self._OS_TYPES[ostype]["variants"][val].get("skip"):
@@ -288,8 +295,13 @@ class Guest(object):
                                   (ostype, val))
                     self.os_type = ostype
                     self._os_variant = val
-                    return
-            raise ValueError, _("Unknown OS variant '%s'" % val)
+                    found = True
+
+            if not found:
+                raise ValueError, _("Unknown OS variant '%s'" % val)
+
+        # Default may have changed with OS info
+        self._set_default_input_dev()
     os_variant = property(get_os_variant, set_os_variant)
 
     def set_os_autodetect(self, val):
@@ -453,6 +465,23 @@ class Guest(object):
             raise ValueError(_("Must pass a VirtualDevice instance."))
         devtype = dev.virtual_device_type
 
+        # Handling for back compat default device behavior
+        if ((devtype == VirtualDevice.VIRTUAL_DEV_CONSOLE or
+             devtype == VirtualDevice.VIRTUAL_DEV_SERIAL) and
+            self._default_console_assigned == True):
+
+            rmdev = self.get_devices(VirtualDevice.VIRTUAL_DEV_CONSOLE)[0]
+            self.remove_device(rmdev)
+            self._default_console_assigned = False
+
+        if (devtype == VirtualDevice.VIRTUAL_DEV_INPUT and
+            self._default_input_assigned == True):
+
+            rmdev = self.get_devices(VirtualDevice.VIRTUAL_DEV_INPUT)[0]
+            self.remove_device(rmdev)
+            self._default_input_assigned = False
+
+        # Actually add the device
         if   devtype == VirtualDevice.VIRTUAL_DEV_DISK:
             self.disks.append(dev)
         elif devtype == VirtualDevice.VIRTUAL_DEV_NET:
@@ -502,17 +531,32 @@ class Guest(object):
 
         @param dev: VirtualDevice instance
         """
+        found = False
         if dev == self._graphics_dev:
             self._graphics_dev = None
-            return
+            found = True
 
         for devlist in [self.disks, self.nics, self.sound_devs, self.hostdevs,
                         self._devices]:
+            if found:
+                break
+
             if dev in devlist:
                 devlist.remove(dev)
-                return
+                found = True
+                break
 
-        raise ValueError(_("Did not find device %s") % str(dev))
+        if not found:
+            raise ValueError(_("Did not find device %s") % str(dev))
+
+        if (dev.virtual_device_type == VirtualDevice.VIRTUAL_DEV_INPUT and
+            self._default_input_assigned == True):
+            self._default_input_assigned = False
+        if (dev.virtual_device_type in [VirtualDevice.VIRTUAL_DEV_CONSOLE,
+                                        VirtualDevice.VIRTUAL_DEV_SERIAL] and
+            self._default_console_assigned == True):
+            self._default_console_assigned = False
+
 
     # Device fetching functions used internally during the install process.
     # These allow us to change dev defaults, add install media, etc. during
@@ -554,7 +598,16 @@ class Guest(object):
 
         xml = ""
         try:
-            for dev in self._get_all_install_devs():
+            # If install hasn't been prepared yet, make sure we use
+            # the regular device list
+            inst_devs = self._get_all_install_devs()
+            reg_devs = self.get_all_devices()
+            if len(inst_devs) >= len(reg_devs):
+                devs = inst_devs
+            else:
+                devs = reg_devs
+
+            for dev in devs:
                 xml = _util.xml_append(xml, dev.get_xml_config())
         finally:
             try:
@@ -663,7 +716,7 @@ class Guest(object):
         try:
             return self._do_install(consolecb, meter, removeOld, wait)
         finally:
-            self._installer.cleanup()
+            self._cleanup_install()
 
     def get_continue_inst(self):
         val = self._lookup_osdict_key("continue")
@@ -720,9 +773,11 @@ class Guest(object):
         # (ImageInstaller) alter the device list.
         self._set_defaults()
 
-        # Only set up an input device if there isn't already preset
-        if not self._get_install_devs(VirtualDevice.VIRTUAL_DEV_INPUT):
-            self._add_install_dev(self._get_input_device())
+    def _cleanup_install(self):
+        # Empty install dev list
+        self._install_devices = []
+
+        self._installer.cleanup()
 
     def _create_devices(self, progresscb):
         """Ensure that devices are setup"""
@@ -823,6 +878,20 @@ class Guest(object):
     def validate_parms(self):
         if self.domain is not None:
             raise RuntimeError, _("Domain has already been started!")
+
+    def _set_default_input_dev(self):
+        # This is called at init time, but also whenever the OS changes,
+        # since the input dev maybe be dependent on OS
+        if self._default_input_assigned == False:
+            return
+
+        for d in self.get_devices(VirtualDevice.VIRTUAL_DEV_INPUT):
+            self.remove_device(d)
+
+        # Add default input device
+        self._default_input_assigned = False
+        self.add_device(self._get_input_device())
+        self._default_input_assigned = True
 
     def _set_defaults(self):
         used_targets = []
