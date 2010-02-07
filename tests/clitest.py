@@ -337,6 +337,8 @@ args_dict = {
         "--hvm --import --disk path=virt-install",
         # PV Import install
         "--paravirt --import --disk path=virt-install",
+        # --autostart flag
+        "--hvm --nodisks --pxe --autostart",
       ],
 
       "invalid": [

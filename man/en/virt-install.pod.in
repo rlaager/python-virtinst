@@ -631,6 +631,11 @@ Print debugging information to the terminal when running the install process.
 The debugging information is also stored in C<$HOME/.virtinst/virt-install.log>
 even if this parameter is omitted.
 
+=item --autostart
+
+Set the autostart flag for a domain. This causes the domain to be started
+on host boot up.
+
 =item --noreboot
 
 Prevent the domain from automatically rebooting after the install has

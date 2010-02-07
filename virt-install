@@ -648,6 +648,9 @@ def parse_args():
     misc = OptionGroup(parser, _("Miscellaneous Options"))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=_("Print debugging information"))
+    misc.add_option("", "--autostart", action="store_true", default=False,
+                    dest="autostart",
+                    help=_("Have domain autostart on host boot up."))
     misc.add_option("", "--noreboot", action="store_true", dest="noreboot",
                     help=_("Disables the automatic rebooting when the "
                            "installation is complete."))
@@ -751,6 +754,7 @@ def main():
         get_chardevs(VirtualDevice.VIRTUAL_DEV_PARALLEL, options.parallels,
                      guest)
 
+    guest.autostart = options.autostart
     cli.get_video(options.video, guest)
 
     # set up disks

@@ -27,6 +27,7 @@ import _util
 import libvirt
 import CapabilitiesParser
 import VirtualGraphics
+import support
 from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
 
@@ -121,6 +122,7 @@ class Guest(object):
         self._graphics_dev = None
         self._consolechild = None
         self._os_autodetect = False
+        self._autostart = False
 
         self._os_type = None
         self._os_variant = None
@@ -315,6 +317,12 @@ class Guest(object):
         return self._lookup_osdict_key("distro")
     os_distro = property(get_os_distro)
 
+    def get_autostart(self):
+        return self._autostart
+    def set_autostart(self, val):
+        self._autostart = bool(val)
+    autostart = property(get_autostart, set_autostart,
+                         doc="Have domain autostart when the host boots.")
 
     # DEPRECATED PROPERTIES
 
@@ -741,7 +749,6 @@ class Guest(object):
         self.domain.create()
         self.conn.defineXML(finalxml)
 
-        #self.domain = self.conn.createLinux(install_xml, 0)
         if self.domain is None:
             raise RuntimeError, _("Unable to start domain for guest, aborting installation!")
         meter.end(0)
@@ -846,7 +853,19 @@ class Guest(object):
 
         # This should always work, because it'll lookup a config file
         # for inactive guest, or get the still running install..
-        return self.conn.lookupByName(self.name)
+        self.domain = self.conn.lookupByName(self.name)
+
+        if self.autostart:
+            try:
+                self.domain.setAutostart(True)
+            except libvirt.libvirtError, e:
+                if support.is_error_nosupport(e):
+                    logging.warn("Could not set autostart flag: libvirt "
+                                 "connection does not support autostart.")
+                else:
+                    raise e
+
+        return self.domain
 
     def post_install_check(self):
         return self.installer.post_install_check(self)
