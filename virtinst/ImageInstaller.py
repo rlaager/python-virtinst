@@ -23,7 +23,6 @@ import os
 import Installer
 import ImageParser
 import CapabilitiesParser as Cap
-import _util
 from VirtualDisk import VirtualDisk
 from virtinst import _virtinst as _
 

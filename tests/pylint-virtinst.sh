@@ -70,7 +70,7 @@ ACCESS__CONN="Access to a protected member _conn"
 
 # There isn't a clean API way to access this functions from the API, but
 # they provide info that is needed. These need need to be fixed.
-PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_add_install_dev)|'virtinst.FullVirtGuest' has no '_OS_TYPES'"
+PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_add_install_dev|_cleanup_install)|'virtinst.FullVirtGuest' has no '_OS_TYPES'"
 
 DMSG=""
 addmsg() {

@@ -126,4 +126,6 @@ class VirtualDevice(object):
         @param meter: Optional progress meter to use
         """
         # Will be overwritten by subclasses if necessary.
+        ignore = conn
+        ignore = meter
         return
