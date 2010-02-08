@@ -208,7 +208,7 @@ def randomMAC(type = "xen"):
         oui = ouis['xen']
 
     mac = oui + [
-            random.randint(0x00, 0x7f),
+            random.randint(0x00, 0xff),
             random.randint(0x00, 0xff),
             random.randint(0x00, 0xff) ]
     return ':'.join(map(lambda x: "%02x" % x, mac))
