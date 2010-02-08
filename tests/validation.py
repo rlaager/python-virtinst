@@ -16,6 +16,7 @@
 
 import virtinst
 from virtinst import VirtualDisk
+from virtinst import Interface
 
 # Test helpers
 import tests
@@ -48,6 +49,14 @@ volinst = virtinst.Storage.StorageVolume(conn=testconn,
                                          pool_name="default-pool",
                                          name="val-vol",
                                          capacity=1)
+
+iface_proto1 = Interface.InterfaceProtocol.protocol_class_for_family(
+                Interface.InterfaceProtocol.INTERFACE_PROTOCOL_FAMILY_IPV4)()
+iface_proto2 = Interface.InterfaceProtocol.protocol_class_for_family(
+                Interface.InterfaceProtocol.INTERFACE_PROTOCOL_FAMILY_IPV6)()
+iface_ip1 = Interface.InterfaceProtocolIPAddress("129.63.1.2")
+iface_ip2 = Interface.InterfaceProtocolIPAddress("fe80::215:58ff:fe6e:5",
+                                                 prefix="64")
 
 args = {
 
@@ -253,6 +262,95 @@ args = {
     'protocol': {
         'invalid'   : [ None ],
         'valid'     : virtinst.VirtualCharDevice.char_protocols },
+},
+
+'interface' : {
+    'init_conns'    : [ testconn ],
+    'name' : {
+        'invalid'   : ["eth0", None, 1234],
+        'valid'     : ["foobar"], },
+    'mtu' : {
+        'invalid'   : [],
+        'valid'     : [None, 0, 1, 1234, "1234"], },
+    'start_mode' : {
+        'invalid'   : ["foobar", None],
+        'valid'     : [Interface.Interface.INTERFACE_START_MODE_ONBOOT], },
+    'macaddr' : {
+        'invalid'   : [0, 100, "11:22:33", "foobar"],
+        'valid'     : [None, "11:22:33:44:55:66"], },
+
+    'protocols' : {
+        'invalid'   : [],
+        'valid'     : [[], [iface_proto1, iface_proto2]], },
+
+    # Bond params
+    'bond_mode' : {
+        'invalid'   : [],
+        'valid'     : ["active-backup", "broadcast"], },
+    'monitor_mode' : {
+        'invalid'   : [],
+        'valid'     :
+            [Interface.InterfaceBond.INTERFACE_BOND_MONITOR_MODE_ARP,
+             Interface.InterfaceBond.INTERFACE_BOND_MONITOR_MODE_MII], },
+
+    'mii_frequency' : {
+        'invalid'   : [],
+        'valid'     : ["123", 123], },
+    'mii_updelay' : {
+        'invalid'   : [],
+        'valid'     : ["123", 123], },
+    'mii_downdelay' : {
+        'invalid'   : [],
+        'valid'     : ["123", 123], },
+    'mii_carrier_mode' : {
+        'invalid'   : [],
+        'valid'     : ["ioctl", "netif"], },
+
+    'arp_interval' : {
+        'invalid'   : [],
+        'valid'     : [123, "123"], },
+    'arp_target' : {
+        'invalid'   : [],
+        'valid'     : ["129.168.1.2"], },
+    'arp_validate_mode' : {
+        'invalid'   : [],
+        'valid'     : ["active", "backup"], },
+
+    # VLAN params
+    'tag' : {
+        'invalid'   : [],
+        'valid'     : [123, "123"], },
+    'parent_interface' : {
+        'invalid'   : [None],
+        'valid'     : ["eth1", testconn.interfaceLookupByName("eth1")], },
+
+    # Bridge params
+    'stp' : {
+        'invalid'   : [0, 1, "foo"],
+        'valid'     : [True, False], },
+    'delay' : {
+        'invalid'   : [],
+        'valid'     : [0, 1, "4"], },
+},
+
+'interface_proto' : {
+    'gateway' : {
+        'invalid'   : [],
+        'valid'     : ["129.168.1.2"], },
+
+    'autoconf' : {
+        'invalid'   : [],
+        'valid'     : [True, False], },
+    'dhcp' : {
+        'invalid'   : [],
+        'valid'     : [True, False], },
+    'peerdns' : {
+        'invalid'   : [],
+        'valid'     : [True, False], },
+    'ips' : {
+        'invalid'   : [],
+        'valid'     : [[], [iface_ip1, iface_ip2]], },
+
 }
 
 } # End of validation dict
@@ -452,6 +550,38 @@ class TestValidation(unittest.TestCase):
                     custom_dict[key] = paramdict[key]
             self._testArgs(dev, virtinst.VirtualCharDevice, label,
                            manual_dict=custom_dict)
+
+    def testInterface(self):
+        label = 'interface'
+        paramdict = args[label]
+
+        for itype in Interface.Interface.INTERFACE_TYPES:
+            custom_dict = {}
+            iclass = Interface.Interface.interface_class_for_type(itype)
+
+            for key in paramdict.keys():
+                if hasattr(iclass, key):
+                    custom_dict[key] = paramdict[key]
+
+            for conn in self._getInitConns(label):
+                iobj = iclass("foo-validation-test", conn)
+
+                self._testArgs(iobj, iclass, label, manual_dict=custom_dict)
+
+    def testInterfaceProtocol(self):
+        label = 'interface_proto'
+        paramdict = args[label]
+
+        for itype in Interface.InterfaceProtocol.INTERFACE_PROTOCOL_FAMILIES:
+            custom_dict = {}
+            iclass = Interface.InterfaceProtocol.protocol_class_for_family(itype)
+
+            for key in paramdict.keys():
+                if hasattr(iclass, key):
+                    custom_dict[key] = paramdict[key]
+
+            iobj = iclass()
+            self._testArgs(iobj, iclass, label, manual_dict=custom_dict)
 
 if __name__ == "__main__":
     unittest.main()

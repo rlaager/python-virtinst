@@ -75,6 +75,7 @@ test_files = {
     'MANAGEDNEW1'       : "/default-pool/clonevol",
     'MANAGEDNEW2'       : "/default-pool/clonevol",
     'MANAGEDDISKNEW1'   : "/disk-pool/newvol1.img",
+    'COLLIDE'           : "/default-pool/collidevol1.img",
 
     'VIRTCONV_OUT'      : "%s/test.out" % virtconv_out,
     'VC_IMG1'           : "%s/virtimage/test1.virt-image" % vcdir,
@@ -161,6 +162,8 @@ args_dict = {
         "--disk %(EXISTIMG1)s",
         # Not specifying path= but creating storage
         "--disk %(NEWIMG1)s,format=raw,size=.0000001",
+        # Colliding storage with --force
+        "--disk %(COLLIDE)s --force"
       ],
 
       "invalid": [
@@ -192,6 +195,8 @@ args_dict = {
         "--disk path=%(MANAGEDDISKNEW1)s,format=raw,size=.0000001",
         # Not specifying path= and non existent storage w/ no size
         "--disk %(NEWIMG1)s",
+        # Colliding storage without --force
+        "--disk %(COLLIDE)s"
       ]
      }, # category "storage"
 
@@ -352,13 +357,13 @@ args_dict = {
 
       "valid": [
         # Just a macaddr
-        "--mac 11:22:33:44:55:66",
+        "--mac 11:22:33:44:55:AF",
         # user networking
         "--network=user",
         # Old bridge option
         "--bridge mybr0",
         # Old bridge w/ mac
-        "--bridge mybr0 --mac 11:22:33:44:55:66",
+        "--bridge mybr0 --mac 11:22:33:44:55:AF",
         # --network bridge:
         "--network bridge:mybr0,model=e1000",
         # VirtualNetwork with a random macaddr
@@ -370,7 +375,7 @@ args_dict = {
         # with NIC model
         "--network=user,model=e1000",
         # several networks
-        "--network=network:default,model=e1000 --network=user,model=virtio,mac=11:22:33:44:55:66",
+        "--network=network:default,model=e1000 --network=user,model=virtio,mac=11:22:33:44:55:AF",
       ],
       "invalid": [
         # Nonexistent network
@@ -378,9 +383,11 @@ args_dict = {
         # Invalid mac
         "--network=network:default --mac 1234",
         # More mac addrs than nics
-        "--network user --mac 00:11:22:33:44:55 --mac 00:11:22:33:44:66",
+        "--network user --mac 00:11:22:33:44:EF --mac 00:11:22:33:44:AB",
         # Mixing bridge and network
         "--network user --bridge foo0",
+        # Colliding macaddr
+        "--mac 11:22:33:44:55:66",
       ],
 
      }, # category "network"
@@ -438,7 +445,7 @@ args_dict = {
         # XML w/ managed storage, specify managed path
         "--original-xml %(CLONE_STORAGE_XML)s --file %(MANAGEDNEW1)s",
         # XML w/ managed storage, specify managed path across pools
-        #"--original-xml %(CLONE_STORAGE_XML)s --file /cross-pool/clonevol",
+        "--original-xml %(CLONE_STORAGE_XML)s --file /cross-pool/clonevol",
       ],
 
       "invalid": [

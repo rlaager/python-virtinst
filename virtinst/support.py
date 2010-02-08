@@ -44,6 +44,8 @@ SUPPORT_STORAGE_CREATEVOLFROM = 2000
 # Flags for check_nodedev_support
 SUPPORT_NODEDEV_PCI_DETACH = 3000
 
+# Flags for check_interface_support
+SUPPORT_INTERFACE_XML_INACTIVE = 4000
 
 """
 Possible keys:
@@ -62,6 +64,9 @@ Possible keys:
   "function" : Function name to check exists. If object not specified,
                function is checked against libvirt module.
   "args": Argument tuple to actually test object.function with.
+  "flag": A flag to check exists. This will be appended to the argument
+          list if args are provided, otherwise we will only check against
+          the local libvirt version.
 
   "drv_version" : A list of tuples of the form
                   (driver name (e.g qemu, xen, lxc), minimum supported version)
@@ -134,6 +139,13 @@ _support_dict = {
         "function" : "virNodeDevice.dettach",
         "version" : 6001,
     },
+
+    # Interface checks
+    SUPPORT_INTERFACE_XML_INACTIVE : {
+        "function" : "virInterface.XMLDesc",
+        "args" : (),
+        "flag" : "VIR_INTERFACE_XML_INACTIVE",
+    }
 }
 
 # Pull a connection object from the passed libvirt object
@@ -162,14 +174,21 @@ def _get_command(funcname, objname=None, obj=None):
 def _has_command(funcname, objname=None, obj=None):
     return bool(_get_command(funcname, objname, obj))
 
+# Make sure libvirt object has flag 'flag_name'
+def _get_flag(flag_name):
+    return _get_command(flag_name)
+
 # Try to call the passed function, and look for signs that libvirt or driver
 # doesn't support it
-def _try_command(func, args):
+def _try_command(func, args, check_all_error=False):
     try:
         func(*args)
 
     except libvirt.libvirtError, e:
         if is_error_nosupport(e):
+            return False
+
+        if check_all_error:
             return False
 
     except Exception:
@@ -253,6 +272,7 @@ def _check_support(conn, feature, obj=None):
     drv_version = get_value("drv_version") or []
     object_name, function_name = _split_function_name(get_value("function"))
     args = get_value("args")
+    flag = get_value("flag")
 
     actual_lib_ver = _local_lib_ver()
     actual_daemon_ver = _daemon_lib_ver(conn, force_version)
@@ -266,8 +286,16 @@ def _check_support(conn, feature, obj=None):
     if function_name:
         # Make sure function is present in either libvirt module or
         # object_name class
+        flag_tuple = ()
+
         if not _has_command(function_name, objname=object_name):
             return False
+
+        if flag:
+            found_flag = _get_flag(flag)
+            if not bool(found_flag):
+                return False
+            flag_tuple = (found_flag,)
 
         if args is not None:
             classobj = None
@@ -283,7 +311,9 @@ def _check_support(conn, feature, obj=None):
             cmd = _get_command(function_name, obj=obj)
 
             # Function with args specified is all the proof we need
-            return _try_command(cmd, args)
+            ret = _try_command(cmd, args + flag_tuple,
+                               check_all_error=bool(flag_tuple))
+            return ret
 
     # Check that local libvirt version is sufficient
     if minimum_libvirt_version > actual_lib_ver:
@@ -342,4 +372,7 @@ def check_pool_support(pool, feature):
     return _check_support(_get_conn_from_object(pool), feature, pool)
 
 def check_nodedev_support(nodedev, feature):
+    return _check_support(_get_conn_from_object(nodedev), feature, nodedev)
+
+def check_interface_support(nodedev, feature):
     return _check_support(_get_conn_from_object(nodedev), feature, nodedev)

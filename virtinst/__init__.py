@@ -28,6 +28,7 @@ from version import __version__
 __version_info__ = tuple([ int(num) for num in __version__.split('.')])
 
 import Storage
+import Interface
 from Guest import Guest, XenGuest
 from VirtualDevice import VirtualDevice
 from VirtualNetworkInterface import VirtualNetworkInterface, \
@@ -60,7 +61,8 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "XenNetworkInterface", "VirtualGraphics", "VirtualAudio",
            "VirtualDisk", "XenDisk", "FullVirtGuest", "ParaVirtGuest",
            "DistroInstaller", "PXEInstaller", "LiveCDInstaller",
-           "ImportInstaller", "ImageInstaller", "CloneDesign", "Storage",
+           "ImportInstaller", "ImageInstaller", "CloneDesign",
+           "Storage", "Interface",
            "User", "util", "support", "VirtualDevice", "Clock", "Seclabel",
            "VirtualHostDevice", "VirtualHostDeviceUSB", "VirtualVideoDevice",
            "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice"]

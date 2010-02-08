@@ -81,3 +81,4 @@ import urltest
 import clonetest
 import nodedev
 import virtconvtest
+import interface

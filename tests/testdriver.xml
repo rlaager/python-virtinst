@@ -29,6 +29,53 @@
   </devices>
 </domain>
 
+<domain type='xen'>
+  <name>test-for-clone</name>
+  <currentMemory>204800</currentMemory>
+  <memory>409600</memory>
+  <uuid>12345678-1234-1234-1234-12345678FFFF</uuid>
+  <os>
+    <type arch='i686'>hvm</type>
+    <loader>/usr/lib/xen/boot/hvmloader</loader>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/><apic/>
+  </features>
+  <clock offset="utc"/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <vcpu>5</vcpu>
+  <devices>
+    <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
+    <disk type='block' device='disk'>
+      <source dev='/disk-pool/diskvol1'/>
+      <target dev='sda' bus='scsi'/>
+    </disk>
+    <disk type='block' device='cdrom'>
+      <target dev='sdb' bus='scsi'/>
+    </disk>
+    <disk type='block' device='disk'>
+      <source dev='/default-pool/collidevol1.img'/>
+      <target dev='sdc' bus='scsi'/>
+      <readonly/>
+      <shareable/>
+    </disk>
+    <interface type='network'>
+      <source network='default'/>
+      <mac address='11:22:33:44:55:66'/>
+      <model type='e1000'/>
+    </interface>
+    <interface type='user'>
+      <mac address='11:11:11:11:11:11'/>
+    </interface>
+    <parallel type='file'>
+      <source path='/tmp/foo.log'/>
+    </parallel>
+  </devices>
+</domain>
+
 <network>
   <name>default</name>
   <uuid>715666b7-dbd4-6c78-fa55-94863da09f2d</uuid>
@@ -122,6 +169,12 @@
         <group>10736</group>
       </permissions>
     </target>
+  </volume>
+  <volume>
+    <name>collidevol1.img</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target/>
   </volume>
 </pool>
 
@@ -1225,5 +1278,129 @@
 </device>
 
 <!-- End NPIV block -->
+
+<!-- Interfaces -->
+
+<interface type='ethernet' name='eth0'>
+  <start mode='none'/>
+  <mac address='00:FF:EE:FF:EE:FF'/>
+</interface>
+<interface type='ethernet' name='eth1'>
+  <mac address='00:FF:EE:FF:EE:AB'/>
+</interface>
+<interface type='ethernet' name='eth2'>
+  <start mode='hotplug'/>
+  <mac address='00:FF:EE:FF:EE:CD'/>
+</interface>
+
+<interface type='ethernet' name='lo'>
+  <start mode='onboot'/>
+  <protocol family='ipv4'>
+    <ip address='127.0.0.1' prefix='8'/>
+  </protocol>
+</interface>
+
+<interface type='ethernet' name='wlan0'>
+  <start mode='none'/>
+  <mac address='00:AA:CC:BB:AA:BB'/>
+</interface>
+
+<!-- backup bond -->
+<interface type="bond" name="bond0">
+  <start mode="none"/>
+  <protocol family="ipv4">
+    <ip address="192.168.50.7" prefix="24"/>
+    <route gateway="192.168.50.1"/>
+  </protocol>
+  <bond mode="active-backup">
+    <miimon freq="100" updelay="10" carrier="ioctl"/>
+    <interface type="ethernet" name="eth-bond0-1"/>
+    <interface type="ethernet" name="eth-bond0-2"/>
+  </bond>
+</interface>
+<interface type="ethernet" name="eth-bond0-1"/>
+<interface type="ethernet" name="eth-bond0-2"/>
+
+<!-- Plain bridge -->
+<interface type="bridge" name="brplain">
+  <start mode="onboot"/>
+  <mtu size="1500"/>
+  <bridge stp="off">
+    <interface type="ethernet" name="eth-brplain0"/>
+    <interface type="ethernet" name="eth-brplain1"/>
+  </bridge>
+</interface>
+
+<interface type="ethernet" name="eth-brplain0"/>
+<interface type="ethernet" name="eth-brplain1"/>
+
+
+<!-- Empty bridge -->
+<interface type="bridge" name="brempty">
+  <start mode="onboot"/>
+  <mtu size="1500"/>
+  <bridge stp="off"/>
+</interface>
+
+<!-- Bridge using vlan -->
+<interface type="bridge" name="brvlan">
+  <start mode="onboot"/>
+  <protocol family="ipv4">
+    <dhcp/>
+  </protocol>
+  <bridge stp="off">
+    <interface type="vlan" name="eth0.42">
+      <vlan tag="42">
+        <interface  name="eth0"/>
+      </vlan>
+    </interface>
+  </bridge>
+</interface>
+
+<interface type="vlan" name="eth0.42">
+  <start mode="onboot"/>
+  <protocol family="ipv4">
+    <dhcp peerdns="no"/>
+  </protocol>
+  <vlan tag="42">
+    <interface name="eth0"/>
+  </vlan>
+</interface>
+
+<!-- Bridge using bond -->
+<interface type="bond" name="bond-brbond">
+  <start mode="none"/>
+  <bond mode="active-backup">
+    <miimon freq="100" updelay="10" carrier="ioctl"/>
+    <interface type="ethernet" name="brbond-eth0"/>
+    <interface type="ethernet" name="brbond-eth1"/>
+  </bond>
+</interface>
+<interface type="ethernet" name="eth-bond-brbond0"/>
+<interface type="ethernet" name="eth-bond-brbond1"/>
+
+<interface type="bridge" name="brbond">
+  <start mode="onboot"/>
+  <mtu size="1500"/>
+  <bridge stp="off">
+    <interface type="bond" name="bond-brbond"/>
+  </bridge>
+</interface>
+
+<!-- Multi interface bridge -->
+
+<!-- Unused vlan -->
+<interface type="vlan" name="vlaneth1.3">
+  <start mode="onboot"/>
+  <vlan tag="43">
+    <interface name="vlaneth1"/>
+  </vlan>
+</interface>
+<interface type="ethernet" name="vlaneth1"/>
+
+<!-- Unused interface -->
+<interface type="ethernet" name="unusedeth0"/>
+
+<!-- End interfaces -->
 
 </node>
