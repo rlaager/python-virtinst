@@ -42,13 +42,13 @@ local_files = [ FILE1, FILE2]
 clonexml_dir = os.path.join(os.getcwd(), "tests/clone-xml")
 clone_files = []
 
-for f in os.listdir(clonexml_dir):
+for tmpf in os.listdir(clonexml_dir):
     black_list = [ "managed-storage", "cross-pool", "force", "skip",
                    "fullpool"]
-    if f.endswith("-out.xml"):
-        f = f[0:(len(f) - len("-out.xml"))]
-        if f not in clone_files and f not in black_list:
-            clone_files.append(f)
+    if tmpf.endswith("-out.xml"):
+        tmpf = tmpf[0:(len(tmpf) - len("-out.xml"))]
+        if tmpf not in clone_files and tmpf not in black_list:
+            clone_files.append(tmpf)
 
 conn = tests.open_testdriver()
 

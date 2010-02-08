@@ -153,6 +153,17 @@ def validate_name(name_type, val):
         raise ValueError, _("%s name can only contain alphanumeric, '_', '.', "
                             "or '-' characters") % name_type
 
+def validate_macaddr(val):
+    if val is None:
+        return
+
+    if type(val) is not str:
+        raise ValueError, _("MAC address must be a string.")
+
+    form = re.match("^([0-9a-fA-F]{1,2}:){5}[0-9a-fA-F]{1,2}$", val)
+    if form is None:
+        raise ValueError(_("MAC address must be of the format "
+                           "AA:BB:CC:DD:EE:FF"))
 def xml_append(orig, new):
     """
     Little function that helps generate consistent xml

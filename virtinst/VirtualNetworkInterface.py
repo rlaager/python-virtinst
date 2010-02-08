@@ -17,10 +17,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import re
 import logging
 import libvirt
-import __builtin__
 
 import _util
 import VirtualDevice
@@ -82,17 +80,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     def get_macaddr(self):
         return self._macaddr
     def set_macaddr(self, val):
-        if val is None:
-            self._macaddr = None
-            return
-
-        if __builtin__.type(val) is not str:
-            raise ValueError, _("MAC address must be a string.")
-
-        form = re.match("^([0-9a-fA-F]{1,2}:){5}[0-9a-fA-F]{1,2}$", val)
-        if form is None:
-            raise ValueError(_("MAC address must be of the format "
-                               "AA:BB:CC:DD:EE:FF"))
+        _util.validate_macaddr(val)
         self._macaddr = val
     macaddr = property(get_macaddr, set_macaddr)
 
