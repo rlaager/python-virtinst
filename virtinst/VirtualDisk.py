@@ -1360,12 +1360,11 @@ class VirtualDisk(VirtualDevice):
         if prefix is None:
             raise ValueError(_("Cannot determine device bus/type."))
 
-        # Special case: IDE cdrom must be hdc
+        # Special case: IDE cdrom should prefer hdc for back compat
         if self.device == self.DEVICE_CDROM and prefix == "hd":
             if "hdc" not in skip_targets:
                 self.target = "hdc"
                 return self.target
-            raise ValueError(_("IDE CDROM must use 'hdc', but target in use."))
 
         # Regular scanning
         for i in range(maxnode):

@@ -163,7 +163,9 @@ args_dict = {
         # Not specifying path= but creating storage
         "--disk %(NEWIMG1)s,format=raw,size=.0000001",
         # Colliding storage with --force
-        "--disk %(COLLIDE)s --force"
+        "--disk %(COLLIDE)s --force",
+        # Two IDE cds
+        "--disk path=%(EXISTIMG1)s,device=cdrom --disk path=%(EXISTIMG1)s,device=cdrom",
       ],
 
       "invalid": [
@@ -175,8 +177,6 @@ args_dict = {
         "--file %(NEWIMG1)s",
         # Too many IDE
         "--file %(EXISTIMG1)s --file %(EXISTIMG1)s --file %(EXISTIMG1)s --file %(EXISTIMG1)s --file %(EXISTIMG1)s",
-        # Two IDE cds
-        "--disk path=%(EXISTIMG1)s,device=cdrom --disk path=%(EXISTIMG1)s,device=cdrom",
         # Size, no file
         "--file-size .0001",
         # Specify a nonexistent pool
