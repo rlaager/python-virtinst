@@ -173,7 +173,8 @@ class VirtualDisk(VirtualDevice):
 
     TYPE_FILE = "file"
     TYPE_BLOCK = "block"
-    types = [TYPE_FILE, TYPE_BLOCK]
+    TYPE_DIR = "dir"
+    types = [TYPE_FILE, TYPE_BLOCK, TYPE_DIR]
 
     @staticmethod
     def path_exists(conn, path):
@@ -614,7 +615,9 @@ class VirtualDisk(VirtualDevice):
             else:
                 dtype = self.TYPE_BLOCK
         elif self.path:
-            if _util.stat_disk(self.path)[0]:
+            if os.path.isdir(self.path):
+                dtype = self.TYPE_DIR
+            elif _util.stat_disk(self.path)[0]:
                 dtype = self.TYPE_FILE
             else:
                 dtype = self.TYPE_BLOCK
@@ -899,8 +902,9 @@ class VirtualDisk(VirtualDevice):
         if not create_media:
             # Make sure we have access to the local path
             if not managed_storage:
-                if os.path.isdir(self.path) and not _util.is_vdisk(self.path):
-                    # vdisk _is_ a directory.
+                if (os.path.isdir(self.path) and
+                    not _util.is_vdisk(self.path) and
+                    not self.device == self.DEVICE_FLOPPY):
                     raise ValueError(_("The path '%s' must be a file or a "
                                        "device, not a directory") % self.path)
 
@@ -1106,7 +1110,7 @@ class VirtualDisk(VirtualDevice):
                          takes precedence.
         @type disknode: C{str}
         """
-        typeattr = 'file'
+        typeattr = self.type
         if self.type == VirtualDisk.TYPE_BLOCK:
             typeattr = 'dev'
 

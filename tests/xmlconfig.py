@@ -522,6 +522,7 @@ class TestXMLConfig(unittest.TestCase):
                                    device=VirtualDisk.DEVICE_FLOPPY))
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
                                    bus="scsi"))
+        g.disks.append(VirtualDisk(conn=g.conn, path="/tmp", device="floppy"))
         d3 = VirtualDisk(conn=g.conn, path="/default-pool/testvol1.img",
                          bus="scsi", driverName="qemu")
         g.disks.append(d3)

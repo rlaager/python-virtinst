@@ -70,6 +70,7 @@ test_files = {
     'ROIMG'             : ro_img,
     'POOL'              : "default-pool",
     'VOL'               : "testvol1.img",
+    'DIR'               : os.getcwd(),
     'MANAGEDEXIST1'     : "/default-pool/testvol1.img",
     'MANAGEDEXIST2'     : "/default-pool/testvol2.img",
     'MANAGEDNEW1'       : "/default-pool/clonevol",
@@ -166,6 +167,8 @@ args_dict = {
         "--disk %(COLLIDE)s --force",
         # Two IDE cds
         "--disk path=%(EXISTIMG1)s,device=cdrom --disk path=%(EXISTIMG1)s,device=cdrom",
+        # Dir with a floppy dev
+        "--disk %(DIR)s,device=floppy",
       ],
 
       "invalid": [
@@ -196,7 +199,9 @@ args_dict = {
         # Not specifying path= and non existent storage w/ no size
         "--disk %(NEWIMG1)s",
         # Colliding storage without --force
-        "--disk %(COLLIDE)s"
+        "--disk %(COLLIDE)s",
+        # Dir without floppy
+        "--disk %(DIR)s,device=cdrom",
       ]
      }, # category "storage"
 
