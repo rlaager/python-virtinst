@@ -20,6 +20,8 @@
 from virtinst import _virtinst as _
 import support
 import _util
+import libvirt
+import logging
 
 # class USBDevice
 
@@ -405,25 +407,123 @@ def is_pci_detach_capable(conn):
     return support.check_conn_support(conn,
                                       support.SUPPORT_NODEDEV_PCI_DETACH)
 
-def lookupNodeName(conn, name):
-    """
-    Convert the passed libvirt node device name to a NodeDevice
-    instance, with proper error reporting.
-
-    @param conn: libvirt.virConnect instance to perform the lookup on
-    @param name: libvirt node device name to lookup
-
-    @rtype: L{NodeDevice} instance
-    """
-
-    if not is_nodedev_capable(conn):
-        raise ValueError(_("Connection does not support host device "
-                           "enumeration."))
-
+def _lookupNodeName(conn, name):
     nodedev = conn.nodeDeviceLookupByName(name)
     xml = nodedev.XMLDesc(0)
     return parse(xml)
 
+def lookupNodeName(conn, name):
+    """
+    Convert the passed libvirt node device name to a NodeDevice
+    instance, with proper error reporting. If the name is name is not
+    found, we will attempt to parse the name as would be passed to
+    devAddressToNodeDev
+
+    @param conn: libvirt.virConnect instance to perform the lookup on
+    @param name: libvirt node device name to lookup, or address for
+                 devAddressToNodedev
+
+    @rtype: L{NodeDevice} instance
+    """
+    if not is_nodedev_capable(conn):
+        raise ValueError(_("Connection does not support host device "
+                           "enumeration."))
+
+    try:
+        return _lookupNodeName(conn, name)
+    except libvirt.libvirtError, e:
+        ret = _isAddressStr(name)
+        if not ret:
+            raise e
+
+        return devAddressToNodedev(conn, name)
+
+def _isAddressStr(addrstr):
+    cmp_func = None
+
+    try:
+        # Determine addrstr type
+        if addrstr.count(":") in [1, 2] and addrstr.count("."):
+            devtype = CAPABILITY_TYPE_PCI
+            addrstr, func = addrstr.split(".", 1)
+            addrstr, slot = addrstr.rsplit(":", 1)
+            domain = "0"
+            if addrstr.count(":"):
+                domain, bus = addrstr.split(":", 1)
+            else:
+                bus = addrstr
+
+            func = int(func, 16)
+            slot = int(slot, 16)
+            domain = int(domain, 16)
+            bus = int(bus, 16)
+
+            def pci_cmp(nodedev):
+                return ((int(nodedev.domain) == domain) and
+                        (int(nodedev.function) == func) and
+                        (int(nodedev.bus) == bus) and
+                        (int(nodedev.slot) == slot))
+            cmp_func = pci_cmp
+
+        elif addrstr.count(":"):
+            devtype = CAPABILITY_TYPE_USBDEV
+            vendor, product = addrstr.split(":")
+            vendor = int(vendor, 16)
+            product = int(product, 16)
+
+            def usbprod_cmp(nodedev):
+                return ((int(nodedev.vendor_id, 16) == vendor) and
+                        (int(nodedev.product_id, 16) == product))
+            cmp_func = usbprod_cmp
+
+        elif addrstr.count("."):
+            devtype = CAPABILITY_TYPE_USBDEV
+            bus, addr = addrstr.split(".", 1)
+            bus = int(bus)
+            addr = int(addr)
+
+            def usbaddr_cmp(nodedev):
+                return ((int(nodedev.bus) == bus) and
+                        (int(nodedev.device) == addr))
+            cmp_func = usbaddr_cmp
+    except:
+        logging.exception("Error parsing node device string.")
+        return None
+
+    return cmp_func, devtype
+
+def devAddressToNodedev(conn, addrstr):
+    """
+    Look up the passed host device address string as a libvirt node device,
+    parse its xml, and return a NodeDevice instance.
+
+    addrstr can be the following formats:
+        bus.addr (ex. 001.003 for a usb device)
+        vendor:product (ex. 0x1234:0x5678 for a usb device
+        (domain:)bus:slot.func (ex. 00:10.0 for a pci device)
+
+    @param conn: libvirt.virConnect instance to perform the lookup on
+    @param name: host device string to parse and lookup
+    """
+    if not is_nodedev_capable(conn):
+        raise ValueError(_("Connection does not support host device "
+                           "enumeration."))
+
+    ret = _isAddressStr(addrstr)
+    if not ret:
+        raise ValueError(_("Could not determine format of '%s'") % addrstr)
+
+    cmp_func, devtype = ret
+
+    # Iterate over node devices and compare
+    nodenames = conn.listDevices(devtype, 0)
+    for name in nodenames:
+        nodedev = _lookupNodeName(conn, name)
+        if cmp_func(nodedev):
+            return nodedev
+
+    raise ValueError(_("Did not find a matching node device for '%s'") %
+                     addrstr)
 
 def parse(xml):
     """

@@ -32,11 +32,15 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
 
     def device_from_node(conn, name=None, nodedev=None):
         """
-        Convert the passed libvirt node device name to a VirtualHostDevice
-        instance, with proper error reporting.
+        Convert the passed device name to a VirtualHostDevice
+        instance, with proper error reporting. Name can be any of the
+        values accepted by NodeDeviceParser.lookupNodeName. If a node
+        device name is not specified, a virtinst.NodeDevice instance can
+        be passed in to create a dev from.
 
         @param conn: libvirt.virConnect instance to perform the lookup on
-        @param name: libvirt node device name to lookup
+        @param name: optional libvirt node device name to lookup
+        @param nodedev: optional L{virtinst.NodeDevice} instance to use
 
         @rtype: L{virtinst.VirtualHostDevice} instance
         """

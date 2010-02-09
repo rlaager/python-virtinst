@@ -432,7 +432,7 @@
     <name>sdhci-pci</name>
   </driver>
   <capability type='pci'>
-    <domain>0</domain>
+    <domain>2</domain>
     <bus>21</bus>
     <slot>0</slot>
     <function>2</function>

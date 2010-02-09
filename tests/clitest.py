@@ -397,6 +397,26 @@ args_dict = {
 
      }, # category "network"
 
+     "hostdev" : {
+      "hostdev_args": "--noautoconsole --nographics --nodisks --pxe",
+
+      "valid" : [
+        # Host dev by libvirt name
+        "--host-device usb_device_781_5151_2004453082054CA1BEEE",
+        # Many hostdev parsing types
+        "--host-device 001.003 --host-device 15:0.1 --host-device 2:15:0.2 --host-device 0:15:0.3 --host-device 0x0781:0x5151 --host-device 1d6b:2",
+      ],
+
+      "invalid" : [
+        # Unsupported hostdev type
+        "--host-device pci_8086_2850_scsi_host_scsi_host",
+        # Unknown hostdev
+        "--host-device foobarhostdev",
+        # Parseable hostdev, but unknown digits
+        "--host-device 300:400",
+      ],
+     }, # category "hostdev"
+
      "remote" : {
       "remote_args": "--connect %(REMOTEURI)s --nographics --noautoconsole",
 
