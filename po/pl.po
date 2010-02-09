@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-02-08 22:44-0500\n"
-"PO-Revision-Date: 2010-01-25 18:37+0100\n"
+"PO-Revision-Date: 2010-02-09 17:17+0100\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <trans-pl@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
@@ -50,7 +50,7 @@ msgstr ""
 
 #: virtinst/cli.py:157
 msgid "Exiting at user request."
-msgstr "Kończenie pracy na żądanie użytkownika."
+msgstr "Kończenie działania na żądanie użytkownika."
 
 #: virtinst/cli.py:164
 msgid "Must be root to create Xen guests"
@@ -398,9 +398,9 @@ msgid "Must pass a VirtualDevice instance."
 msgstr "Należy przekazać instancję VirtualDevice."
 
 #: virtinst/Guest.py:583
-#, fuzzy, python-format
+#, python-format
 msgid "Did not find device %s"
-msgstr "Nie można odłączyć urządzenia PCI: %s"
+msgstr "Nie odnaleziono urządzenia %s"
 
 #: virtinst/Guest.py:826
 msgid "Unable to start domain for guest, aborting installation!"
@@ -575,140 +575,140 @@ msgid "'conn' must be a libvirt connection object."
 msgstr "\"conn\" musi być obiektem połączenia biblioteki libvirt."
 
 #: virtinst/Interface.py:116
-#, fuzzy
 msgid "Passed connection is not libvirt interface capable"
-msgstr ""
-"Przekazane połączenie nie jest zgodne z pamięcią masową biblioteki libvirt"
+msgstr "Przekazane połączenie nie jest zgodne z interfejsem biblioteki libvirt"
 
 #: virtinst/Interface.py:126
-#, fuzzy
 msgid "Interface name"
-msgstr "Interfejs %s"
+msgstr "Nazwa interfejsu"
 
 #: virtinst/Interface.py:131
-#, fuzzy
 msgid "Name for the interface object."
-msgstr "Nazwa obiektu pamięci podręcznej."
+msgstr "Nazwa obiektu interfejsu."
 
 #: virtinst/Interface.py:138
 msgid "Maxmimum transmit size in bytes"
-msgstr ""
+msgstr "Maksymalny rozmiar przesyłania w bajtach"
 
 #: virtinst/Interface.py:146
-#, fuzzy
 msgid "Interface MAC address"
-msgstr "Interfejs %s"
+msgstr "Adres MAC interfejsu"
 
 #: virtinst/Interface.py:152
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown start mode '%s"
-msgstr "Nieznany tryb znakowy \"%s\"."
+msgstr "Nieznany tryb uruchamiania \"%s\""
 
 #: virtinst/Interface.py:155
 msgid "When the interface will be auto-started."
-msgstr ""
+msgstr "Kiedy interfejs będzie automatycznie uruchamiany."
 
 #: virtinst/Interface.py:162
-#, fuzzy
 msgid "Network protocol configuration"
-msgstr "Konfiguracja sieci"
+msgstr "Konfiguracja protokołu sieciowego"
 
 #: virtinst/Interface.py:171
-#, fuzzy, python-format
+#, python-format
 msgid "Name '%s' already in use by another interface."
-msgstr "Nazwa \"%s\" jest już używana przez inny wolumin."
+msgstr "Nazwa \"%s\" jest już używana przez inny interfejs."
 
 #: virtinst/Interface.py:230
-#, fuzzy, python-format
+#, python-format
 msgid "Could not define interface: %s"
-msgstr "Nie można określić puli pamięci masowej: %s"
+msgstr "Nie można określić interfejsu: %s"
 
 #: virtinst/Interface.py:237
-#, fuzzy, python-format
+#, python-format
 msgid "Could not create interface: %s"
-msgstr "Nie można uruchomić puli pamięci masowej: %s"
+msgstr "Nie można utworzyć interfejsu: %s"
 
 #: virtinst/Interface.py:322
 msgid "Whether STP is enabled on the bridge"
-msgstr ""
+msgstr "Czy STP jest włączone na mostku"
 
 #: virtinst/Interface.py:329
 msgid "Delay in seconds before forwarding begins when joining a network."
 msgstr ""
+"Opóźnienie w sekundach przez rozpoczęciem przekierowania podczas dołączania "
+"do sieci."
 
 #: virtinst/Interface.py:390
 msgid "Mode of operation of the bonding device"
-msgstr ""
+msgstr "Tryb działania powiązanego urządzenia"
 
 #: virtinst/Interface.py:401
 msgid "Availability monitoring mode for the bond device"
-msgstr ""
+msgstr "Dostępność trybu monitorowania dla powiązanego urządzenia"
 
 #: virtinst/Interface.py:410
 msgid "ARP monitoring interval in milliseconds"
-msgstr ""
+msgstr "Czas między aktualizowaniem monitorowania ARP w milisekundach"
 
 #: virtinst/Interface.py:417
 msgid "IP target used in ARP monitoring packets"
-msgstr ""
+msgstr "Docelowy adres IP w pakietach monitorowania ARP"
 
 #: virtinst/Interface.py:425
 msgid "ARP monitor validation mode"
-msgstr ""
+msgstr "Tryb sprawdzania monitorowania ARP"
 
 #: virtinst/Interface.py:433
 msgid "MII monitoring method."
-msgstr ""
+msgstr "Metoda monitorowania MII."
 
 #: virtinst/Interface.py:440
 msgid "MII monitoring interval in milliseconds"
-msgstr ""
+msgstr "Czas między aktualizowaniem monitorowania MII w milisekundach"
 
 #: virtinst/Interface.py:447
 msgid ""
 "Time in milliseconds to wait before enabling a slave after link recovery "
 msgstr ""
+"Czas oczekiwania w milisekundach przed włączeniem podrzędnego po "
+"przywrócenia dowiązania "
 
 #: virtinst/Interface.py:455
 msgid ""
 "Time in milliseconds to wait before disabling a slave after link failure"
 msgstr ""
+"Czas oczekiwania w milisekundach przed włyączeniem podrzędnego po "
+"niepowodzeniu dowiązania "
 
 #: virtinst/Interface.py:535
 msgid "VLAN device tag number"
-msgstr ""
+msgstr "Numer znacznika urządzenia VLAN"
 
 #: virtinst/Interface.py:547
 msgid "Parent interface to create VLAN on"
-msgstr ""
+msgstr "Interfejs nadrzędny, na którym utworzyć VLAN"
 
 #: virtinst/Interface.py:551
 msgid "Tag and parent interface are required."
-msgstr ""
+msgstr "Wymagany jest znacznik i interfejs nadrzędny."
 
 #: virtinst/Interface.py:625
 msgid "Whether to enable DHCP"
-msgstr ""
+msgstr "Czy włączyć DHCP"
 
 #: virtinst/Interface.py:638
 msgid "Network gateway address"
-msgstr ""
+msgstr "Adres bramy sieciowej"
 
 #: virtinst/Interface.py:645
 msgid "Static IP addresses"
-msgstr ""
+msgstr "Statyczny adres IP"
 
 #: virtinst/Interface.py:686
 msgid "Whether to enable IPv6 autoconfiguration"
-msgstr ""
+msgstr "Czy włączyć automatyczną konfigurację IPv6"
 
 #: virtinst/Interface.py:707
 msgid "IPv6 address prefix"
-msgstr ""
+msgstr "Przedrostek adresu IPv6"
 
 #: virtinst/Interface.py:714
 msgid "IP address"
-msgstr ""
+msgstr "Adres IP"
 
 #: virtinst/LiveCDInstaller.py:66
 msgid "CDROM media must be specified for the live CD installer."
@@ -728,14 +728,14 @@ msgid "Connection does not support host device enumeration."
 msgstr "Połączenie nie obsługuje wyliczania urządzenia gospodarza."
 
 #: virtinst/NodeDeviceParser.py:514
-#, fuzzy, python-format
+#, python-format
 msgid "Could not determine format of '%s'"
-msgstr "Nie można ustalić formatu wejściowego \"%s\": %s"
+msgstr "Nie można ustalić formatu \"%s\""
 
 #: virtinst/NodeDeviceParser.py:525
 #, python-format
 msgid "Did not find a matching node device for '%s'"
-msgstr ""
+msgstr "Nie odnaleziono pasującego urządzenia węzła dla \"%s\""
 
 #: virtinst/osdict.py:150
 #, python-format
@@ -2344,7 +2344,7 @@ msgstr "Nie próbuje automatycznie łączyć się z konsolą gościa"
 
 #: virt-install:653
 msgid "Have domain autostart on host boot up."
-msgstr ""
+msgstr "Automatyczne uruchamianie domeny podczas uruchamiania gospodarza."
 
 #: virt-install:655
 msgid "Disables the automatic rebooting when the installation is complete."
@@ -2453,7 +2453,8 @@ msgstr "Nie można wyszukać domeny po instalacji: %s"
 #: virt-install:958
 msgid "Installation has exceeded specified time limit. Exiting application."
 msgstr ""
-"Instalacja przekroczyła podane ograniczenie czasu. Kończenie pracy aplikacji."
+"Instalacja przekroczyła podane ograniczenie czasu. Kończenie działania "
+"aplikacji."
 
 #: virt-install:964
 msgid ""
@@ -2462,6 +2463,3 @@ msgid ""
 msgstr ""
 "Trwa instalacja domeny. Można ponownie połączyć się z \n"
 "konsolą, aby ukończyć proces instalacji."
-
-#~ msgid "IDE CDROM must use 'hdc', but target in use."
-#~ msgstr "CD-ROM IDE musi używać \"hdc\", ale cel jest używany."
