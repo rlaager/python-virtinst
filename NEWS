@@ -1,6 +1,13 @@
    Virtinst News
    =================
 
+Release 0.500.2 (February 8, 2010)
+----------------------------------
+ - virt-install: New option --autostart for setting domain autostart flag
+ - virt-install: Allow specifying --host-device with lsusb and lspci
+                 format (0x1234:0x5678 for USB, etc)
+ - virtinst: New 'Interface' module for building libvirt interface XML
+
 Release 0.500.1 (December 3, 2009)
 ----------------------------------
  - virt-install now attempts --os-variant detection by default. This can be

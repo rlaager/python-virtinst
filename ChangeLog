@@ -1,8 +1,339 @@
+2010-02-08  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.1, man/en/virt-install.pod.in, tests/clitest.py,
+	tests/testdriver.xml, virtinst/NodeDeviceParser.py,
+	virtinst/VirtualHostDevice.py:
+	virt-install: Allow specifying --host-device by lsusb, lspci output
+	[612458530e0b] [tip]
+
+	* tests/clitest.py, tests/xmlconfig-xml/boot-many-devices.xml,
+	tests/xmlconfig.py, virtinst/VirtualDisk.py:
+	VirtualDisk: Support floppy 'dir' mode (fat:floppy for qemu)
+	[75b1cda38391]
+
+	* virtinst/util.py:
+	util: Don't limit random mac addr range
+
+	This function was originally taken from xen, which limited the range
+	to reserve some MAC addresses for possible internal testing. Doesn't
+	seem like it was ever leveraged in practice, and libvirt doesn't
+	limit mac generation in a similar way, so just drop it.
+	[7589271169e6]
+
+	* tests/clitest.py, virtinst/VirtualDisk.py:
+	VirtualDisk: Qemu can actually support more than 2 IDE cdroms
+	[5da35bd803ae]
+
+	* tests/pylint-virtinst.sh, virtinst/ImageInstaller.py,
+	virtinst/VirtualDevice.py:
+	Fix up some pylint.
+	[dbca294be688]
+
+	* tests/__init__.py, tests/clitest.py, tests/interface-xml/test-bond-
+	arp.xml, tests/interface-xml/test-bond-mii.xml, tests/interface-xml
+	/test-bond.xml, tests/interface-xml/test-bridge-ip.xml, tests
+	/interface-xml/test-bridge.xml, tests/interface-xml/test-ethernet-
+	params.xml, tests/interface-xml/test-ethernet.xml, tests/interface-
+	xml/test-vlan.xml, tests/interface.py, tests/testdriver.xml,
+	tests/validation.py, virtinst/Interface.py, virtinst/__init__.py,
+	virtinst/_util.py, virtinst/support.py:
+	Add Interface module for building libvirt interface XML
+	[0d47513dd988]
+
+2010-01-12  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/__init__.py, tests/virtconv-test.py, tests/virtconvtest.py:
+	tests: Rename virtconv-test to virtconvtest for easier importing
+	[f55dec280887]
+
+2010-01-27  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/pylint-virtinst.sh:
+	Fix an error detecting pylint features
+	[23043312eb89]
+
+2010-01-15  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-clone:
+	virt-clone: Priviledge checks should happen after conn opening
+
+	Otherwise we don't know what the real default URI will be.
+	[29455af5909e]
+
+2010-02-08  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clonetest.py, virtinst/VirtualNetworkInterface.py,
+	virtinst/_util.py:
+	util: Break out helper for mac address validation
+	[e86d3af3a89a]
+
+2010-02-07  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig-xml/install-f11-xen.xml, tests/xmlconfig-
+	xml/install-f11.xml, virtinst/VirtualDisk.py:
+	VirtualDisk: If path is overwritten, invalidate cached storage
+	objects.
+	[64a7138a203c]
+
+2010-02-06  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualHostDevice.py:
+	VirtualHostDevice: Don't error if nodedev dettach isn't supportted.
+	[a03af2ef22ec]
+
+	* tests/xmlconfig-xml/boot-many-devices.xml, tests/xmlconfig.py,
+	virtinst/Guest.py, virtinst/Seclabel.py, virtinst/__init__.py:
+	Add 'Seclabel' module for building <seclabel> XML
+	[93c719d7a33e]
+
+	* virtinst/Clock.py, virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/__init__.py:
+	Add a proper 'Clock' class for building <clock> XML
+	[9b9a6fa9aea4]
+
+2010-02-07  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/image-xml/image2guest/image-xenpv32.xml, tests/xmlconfig-xml
+	/install-windowsxp-xenold.xml, virt-install,
+	virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ImageInstaller.py, virtinst/ParaVirtGuest.py:
+	Allow setting <features> for all guest types
+
+	Even though it doesn't have any meaning for PV guests, it's just a
+	pain to have it be FV specific, so drop it.
+	[9a0e07b7c13a]
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-install,
+	virtinst/Guest.py:
+	virt-install: Add --autostart, to mark autostart flag for new
+	domains.
+	[1ab9deef0e25]
+
+	* virtinst/Guest.py, virtinst/VirtualDevice.py,
+	virtinst/VirtualDisk.py, virtinst/VirtualHostDevice.py,
+	virtinst/VirtualNetworkInterface.py:
+	Add a common setup_dev function for all VirtualDevices.
+
+	This replaces setup() functions, and has a common signature for all
+	devices.
+	[e92f6a06dc71]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Guest: Make set_defaults a public function.
+
+	API users can run this before the install step to fill in guest
+	defaults. This step isn't required, but can be useful to get a full
+	idea of what XML will be created.
+	[92a6f1b7514f]
+
+	* tests/xmlconfig.py, virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py:
+	Guest: Add default devices up front, rather then at install time
+
+	This gives API users a chance to remove these default devices, not
+	to only have them reappear when install is kicked off.
+	[503066d21fc6]
+
+2010-02-05  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/ImageInstaller.py:
+	ImageInstaller: Remove unneeded blktap hack (handled by
+	ParavirtGuest)
+	[a6a7d16dc65a]
+
+2010-02-06  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Guest: Error if request is made to remove unknown device
+	[95c4c8dad7fa]
+
+2010-02-05  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/ImageInstaller.py, virtinst/ImageManager.py,
+	virtinst/__init__.py:
+	ImageManager.py -> ImageInstaller.py
+	[222630c756c7]
+
+2010-02-03  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/cli.py:
+	Better error reporting when opening ~/.virtinst
+	[64bede181e87]
+
+2010-02-03  logan  <logan@fedoraproject.org>
+
+	* po/es.po:
+	Sending translation for Spanish
+	[1123ed28f173]
+
+2010-01-25  raven  <raven@fedoraproject.org>
+
+	* po/pl.po:
+	Sending translation for Polish
+	[9184d3353fb2]
+
+2010-01-25  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.1, man/en/virt-install.pod.in, po/es.po,
+	po/fr.po, po/it.po, po/ja.po, po/pl.po, po/pt_BR.po, po/sr.po,
+	po/sr@latin.po, po/virtinst.pot, po/zh_CN.po,
+	virtinst/DistroInstaller.py, virtinst/VirtualCharDevice.py:
+	Fix misspelling of 'pseudo'
+	[3c1c1ab1a100]
+
+2010-01-22  ypoyarko  <ypoyarko@fedoraproject.org>
+
+	* po/ru.po:
+	Sending translation for po/ru.po
+	[36abcc1e2a2b]
+
+2010-01-21  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Installer.py:
+	Installer: Make sure we set always set a default scratchdir
+
+	Running as root with no libvirt dirs present (due to a messed up
+	install) could try to return an unset scratchdir
+	[f0e6ecdd057e]
+
+2010-01-14  Cole Robinson  <crobinso@redhat.com>
+
+	* python-virtinst.spec.in:
+	Fix RPM building on RHEL6
+	[c1cd2cb595de]
+
+2009-12-07  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clonetest.py:
+	tests: Properly clean up created files in clonetest
+	[0c8229bd1853]
+
+2009-12-16  logan  <logan@fedoraproject.org>
+
+	* po/es.po:
+	Sending translation for Spanish
+	[2432632f911e]
+
+2009-12-11  Cole Robinson  <crobinso@redhat.com>
+
+	* setup.py, tests/cli-test-xml/virtconv/virtimage/data.raw, tests/cli-
+	test-xml/virtconv/virtimage/root.raw, tests/cli-test-
+	xml/virtconv/virtimage/scratch.raw, tests/cli-test-
+	xml/virtconv/virtimage/test1.virt-image, tests/cli-test-
+	xml/virtconv/vmx/data.raw, tests/cli-test-xml/virtconv/vmx/root.raw,
+	tests/cli-test-xml/virtconv/vmx/scratch.raw, tests/cli-test-
+	xml/virtconv/vmx/test1.vmx, tests/clitest.py:
+	testcli: Add virt-convert tests
+	[e6d788f03309]
+
+	* virt-convert:
+	virt-convert: Don't force vmdk conversion for vmx output
+	[bf1045b5944b]
+
+	* virtconv/diskcfg.py:
+	virtconv: Allow converting to qcow, qcow2, and cow
+	[42d188f2d87a]
+
+2009-12-10  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-install:
+	virt-install: If post info info() fails, sleep a bit and try again
+
+	Some race conditions (like reading memory info from qemu monitor)
+	can cause info() to fail, so sleep a bit and give it another try
+	before bombing.
+	[b87b17aeb9ac]
+
+	* man/en/virt-image.1, man/en/virt-image.pod, virt-image:
+	virt-image: Hide --prompt option (doesn't do anything anyways)
+
+	When/if it is ever implemented, we can deal with it then.
+	[fc962689be97]
+
+	* virt-install:
+	virt-install: Wait a bit before checking domain exit status
+
+	There are possible races in between leaving the VM console and
+	checking its status. Wait a bit to facilitate more accurate results,
+	and also log the VM state and try to handle a crashed VM.
+	[8d76655497e8]
+
+	* virtinst/OSDistro.py:
+	OSDistro: Allow installing old opensuse 10.0
+	[29cb16f846fd]
+
+	* tests/clitest.py:
+	clitest: Add test for extra-args install
+	[f6fc63efb1b1]
+
+	* tests/urltest.py:
+	urltest: Improve some error reporting, fix tests for old opensuse
+	[fca63a80e00b]
+
+	* virt-install:
+	virt-install: Fix --prompt if --disk also specified
+	[dcabeb876e39]
+
+	* virtinst/cli.py:
+	cli: Clean up prompt question formatting.
+	[645bde011e49]
+
+2009-12-10  leahliu  <leahliu@fedoraproject.org>
+
+	* po/zh_CN.po:
+	Sending translation for Chinese (Simplified)
+	[1b7452ae3954]
+
+2009-12-09  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/support.py:
+	support: Generic exceptions mean libvirt support is busted.
+
+	Fixes testing for interface APIs on libvirt < 0.7.4
+	[15c118a449a7]
+
+2009-12-07  raven  <raven@fedoraproject.org>
+
+	* po/pl.po:
+	Sending translation for Polish
+	[989eb68a9c18]
+
+2009-12-04  Matthias Bolte  <matthias.bolte@googlemail.com>
+
+	* virtinst/CapabilitiesParser.py:
+	Check if emulator element is present before accessing it
+
+	VMware ESX capabilities don't contain an emulator element. Virt
+	Manager reports a NoneType exception when trying to connect to an
+	ESX server.
+	[56fcec89f06f]
+
 2009-12-03  Cole Robinson  <crobinso@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_500_1 for changeset 8f01af70e5ca
+	[269a7225fef1]
+
+	* NEWS:
+	Fix NEWS file typo.
+	[8f01af70e5ca] [virtinst-0_500_1]
+
+	* .hgtags:
+	Added tag virtinst-0_500_1 for changeset 69dc73009f30
+	[49a45f82bbfe]
+
+	* ChangeLog, NEWS, man/en/Makefile, man/en/virt-clone.1, man/en/virt-
+	convert.1, man/en/virt-image.1, man/en/virt-image.5, man/en/virt-
+	install.1, po/es.po, po/fr.po, po/it.po, po/ja.po, po/pl.po,
+	po/pt_BR.po, po/sr.po, po/sr@latin.po, po/virtinst.pot, po/zh_CN.po,
+	python-virtinst.spec.in, virtinst/version.py:
+	Prep for release (Update translations, NEWS, version, ...)
+	[69dc73009f30]
 
 	* virtinst/Storage.py:
 	Storage: Don't use libvirt VIR_STORAGE_VOL* flags unless they exist
-	[c2ae8225c41e] [tip]
+	[c2ae8225c41e]
 
 	* virtinst/support.py:
 	support: Add check for libvirt openAuth
