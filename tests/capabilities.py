@@ -18,6 +18,13 @@ import os.path
 import unittest
 import virtinst.CapabilitiesParser as capabilities
 
+def build_host_feature_dict(feature_list):
+    fdict = {}
+    for f in feature_list:
+        fdict[f] = capabilities.FEATURE_ON
+
+    return fdict
+
 class TestCapabilities(unittest.TestCase):
 
     def _compareGuest(self, (arch, os_type, domains, features), guest):
@@ -32,9 +39,15 @@ class TestCapabilities(unittest.TestCase):
         for n in features:
             self.assertEqual(features[n],        guest.features[n])
 
+    def _buildCaps(self, filename):
+        path = os.path.join("tests/capabilities-xml", filename)
+        xml = file(path).read()
+
+        return capabilities.parse(xml)
+
     def _testCapabilities(self, path, (host_arch, host_features), guests,
                           secmodel=None):
-        caps = capabilities.parse(file(os.path.join("tests/capabilities-xml", path)).read())
+        caps = self._buildCaps(path)
 
         self.assertEqual(host_arch,     caps.host.arch)
         for n in host_features:
@@ -115,6 +128,34 @@ class TestCapabilities(unittest.TestCase):
         ]
 
         self._testCapabilities("capabilities-test.xml", host, guests)
+
+    def testCapsCPUFeaturesOldSyntax(self):
+        filename = "rhel5.4-xen-caps-virt-disabled.xml"
+        host_feature_list = ["vmx"]
+        feature_dict = build_host_feature_dict(host_feature_list)
+
+        caps = self._buildCaps(filename)
+        for f in feature_dict.keys():
+            self.assertEquals(caps.host.features[f], feature_dict[f])
+
+    def testCapsCPUFeaturesOldSyntaxSVM(self):
+        filename = "rhel5.4-xen-caps.xml"
+        host_feature_list = ["svm"]
+        feature_dict = build_host_feature_dict(host_feature_list)
+
+        caps = self._buildCaps(filename)
+        for f in feature_dict.keys():
+            self.assertEquals(caps.host.features[f], feature_dict[f])
+
+    def testCapsCPUFeaturesNewSyntax(self):
+        filename = "libvirt-0.7.6-qemu-caps.xml"
+        host_feature_list = ['lahf_lm', 'xtpr', 'cx16', 'tm2', 'est', 'vmx',
+                             'ds_cpl', 'pbe', 'tm', 'ht', 'ss', 'acpi', 'ds']
+        feature_dict = build_host_feature_dict(host_feature_list)
+
+        caps = self._buildCaps(filename)
+        for f in feature_dict.keys():
+            self.assertEquals(caps.host.features[f], feature_dict[f])
 
 if __name__ == "__main__":
     unittest.main()

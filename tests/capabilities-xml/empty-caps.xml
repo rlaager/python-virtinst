@@ -1,0 +1,11 @@
+<capabilities>
+
+  <host>
+    <cpu>
+      <arch>x86_64</arch>
+    </cpu>
+  </host>
+
+</capabilities>
+
+

@@ -51,8 +51,19 @@ class Features(object):
 
     def parseXML(self, node):
         d = self.features
-        for n in node.xpathEval("*"):
-            feature = n.name
+
+        feature_list = []
+        if node.name == "features":
+            node_list = node.xpathEval("*")
+            for n in node_list:
+                feature_list.append(n.name)
+        else:
+            # New style features
+            node_list = node.xpathEval("feature/@name")
+            for n in node_list:
+                feature_list.append(n.content)
+
+        for feature in feature_list:
             if not d.has_key(feature):
                 d[feature] = 0
 
@@ -72,6 +83,7 @@ class CapabilityFeatures(Features):
         toggle = xpathString(n, "@toggle")
 
         if default is not None:
+            # Format for guest features
             if default == "on":
                 d[feature] = FEATURE_ON
             elif default == "off":
@@ -81,6 +93,8 @@ class CapabilityFeatures(Features):
             if toggle == "yes":
                 d[feature] |= d[feature] ^ (FEATURE_ON|FEATURE_OFF)
         else:
+            # Format for old HOST features, on OLD old guest features
+            # back compat is just <$featurename>, like <svm/>
             if feature == "nonpae":
                 d["pae"] |= FEATURE_OFF
             else:
@@ -94,6 +108,13 @@ class Host(object):
         self.features = CapabilityFeatures()
         self.topology = None
         self.secmodel = None
+
+        # Set to true if host features are of the libvirt 0.7.4+ format
+        # <feature name='foo'/>
+        #
+        # This piece of info will be used to help workaround the fact
+        # that older qemu caps didn't output any features at all
+        self._newstyle_features = False
 
         if not node is None:
             self.parseXML(node)
@@ -111,11 +132,22 @@ class Host(object):
                 child = child.next
                 continue
 
+            # Do a first pass to try and detect new style features
+            n = child.children
+            while n:
+                if n.name == "feature":
+                    self._newstyle_features = True
+                    break
+                n = n.next
+
+            if self._newstyle_features:
+                self.features = CapabilityFeatures(child)
+
             n = child.children
             while n:
                 if n.name == "arch":
                     self.arch = n.content
-                elif n.name == "features":
+                elif n.name == "features" and not self._newstyle_features:
                     self.features = CapabilityFeatures(n)
                 n = n.next
 
