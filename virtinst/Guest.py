@@ -140,6 +140,7 @@ class Guest(object):
         self._autostart = False
         self._clock = Clock(self.conn)
         self._seclabel = None
+        self._description = None
         self.features = None
 
         self._os_type = None
@@ -416,6 +417,11 @@ class Guest(object):
 
     graphics = property(get_graphics, set_graphics)
 
+    def _get_description(self):
+        return self._description
+    def _set_description(self, val):
+        self._description = val
+    description = property(_get_description, _set_description)
 
     # Properties that are mapped through to the Installer
 
@@ -754,10 +760,15 @@ class Guest(object):
             # This means there is no 'install' phase, so just return
             return None
 
+        cpuset = ""
         if self.cpuset is not None:
             cpuset = " cpuset='" + self.cpuset + "'"
-        else:
-            cpuset = ""
+
+        desc_xml = ""
+        if self.description is not None:
+            desc = str(self.description)
+            desc_xml = ("  <description>%s</description>" %
+                        _util.xml_escape(desc))
 
         xml = ""
         add = lambda x: _util.xml_append(xml, x)
@@ -767,15 +778,16 @@ class Guest(object):
         xml = add("  <currentMemory>%s</currentMemory>" % (self.memory * 1024))
         xml = add("  <memory>%s</memory>" % (self.maxmemory * 1024))
         xml = add("  <uuid>%s</uuid>" % self.uuid)
+        xml = add(desc_xml)
         xml = add("  %s" % osblob)
         xml = add("  <on_poweroff>destroy</on_poweroff>")
         xml = add("  <on_reboot>%s</on_reboot>" % action)
         xml = add("  <on_crash>%s</on_crash>" % action)
         xml = add("  <vcpu%s>%d</vcpu>" % (cpuset, self.vcpus))
         xml = add("  <devices>")
-        xml = add("%s" % self._get_device_xml(install))
+        xml = add(self._get_device_xml(install))
         xml = add("  </devices>")
-        xml = add("%s" % self._get_seclabel_xml())
+        xml = add(self._get_seclabel_xml())
         xml = add("</domain>\n")
 
         return xml

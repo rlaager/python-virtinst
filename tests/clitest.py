@@ -349,6 +349,8 @@ args_dict = {
         "--paravirt --import --disk path=virt-install",
         # --autostart flag
         "--hvm --nodisks --pxe --autostart",
+        # --description
+        "--hvm --nodisks --pxe --description \"foobar & baz\"",
       ],
 
       "invalid": [

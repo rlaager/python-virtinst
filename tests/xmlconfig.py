@@ -506,6 +506,7 @@ class TestXMLConfig(unittest.TestCase):
 
     def testManyDevices(self):
         g = get_basic_fullyvirt_guest()
+        g.description = "foooo barrrr \n baz && snarf. '' \"\" @@$\n"
 
         # Hostdevs
         dev1 = VirtualHostDeviceUSB(g.conn)

@@ -257,6 +257,11 @@ Unix socket (see unix(7). MODE has similar behavior and defaults as 'tcp'.
 
 =back
 
+=item --description
+
+Human readable text description of the virtual machine. This will be stored
+in the guests XML configuration for access by other applications.
+
 =item  --noapic
 
 Override the OS type / variant to disables the APIC setting for fully

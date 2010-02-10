@@ -546,6 +546,10 @@ def parse_args():
     geng.add_option("", "--host-device", type="string", dest="hostdevs",
                     action="callback", callback=cli.check_before_append,
                     help=_("Physical host device to attach to the domain."))
+    geng.add_option("", "--description", type="string", dest="description",
+                    action="callback", callback=cli.check_before_store,
+                    help=_("Human readable description of the VM to store in "
+                           "the generated XML."))
     parser.add_option_group(geng)
 
     fulg = OptionGroup(parser, _("Full Virtualization specific options"))
@@ -755,6 +759,8 @@ def main():
                      guest)
 
     guest.autostart = options.autostart
+    guest.description = options.description
+
     cli.get_video(options.video, guest)
 
     # set up disks
