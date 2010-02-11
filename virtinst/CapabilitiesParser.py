@@ -109,18 +109,12 @@ class Host(object):
         self.topology = None
         self.secmodel = None
 
-        # Set to true if host features are of the libvirt 0.7.4+ format
-        # <feature name='foo'/>
-        #
-        # This piece of info will be used to help workaround the fact
-        # that older qemu caps didn't output any features at all
-        self._newstyle_features = False
-
         if not node is None:
             self.parseXML(node)
 
     def parseXML(self, node):
         child = node.children
+        newstyle_features = False
         while child:
             if child.name == "topology":
                 self.topology = Topology(child)
@@ -136,18 +130,18 @@ class Host(object):
             n = child.children
             while n:
                 if n.name == "feature":
-                    self._newstyle_features = True
+                    newstyle_features = True
                     break
                 n = n.next
 
-            if self._newstyle_features:
+            if newstyle_features:
                 self.features = CapabilityFeatures(child)
 
             n = child.children
             while n:
                 if n.name == "arch":
                     self.arch = n.content
-                elif n.name == "features" and not self._newstyle_features:
+                elif n.name == "features" and not newstyle_features:
                     self.features = CapabilityFeatures(n)
                 n = n.next
 
@@ -314,6 +308,93 @@ class Capabilities(object):
 
 
         self._fixBrokenEmulator()
+
+    def _is_xen(self):
+        for g in self.guests:
+            if g.os_type != "xen":
+                continue
+
+            for d in g.domains:
+                if d.hypervisor_type == "xen":
+                    return True
+
+        return False
+
+    def no_install_options(self):
+        """
+        Return True if there are no install options available
+        """
+        for g in self.guests:
+            if len(g.domains) > 0:
+                return False
+
+        return True
+
+    def hw_virt_supported(self):
+        """
+        Return True if the machine supports hardware virtualization.
+
+        For some cases (like qemu caps pre libvirt 0.7.4) this info isn't
+        sufficiently provided, so we will return True in cases that we
+        aren't sure.
+        """
+        # Obvious case of feature being specified
+        if (self.host.features["vmx"] == FEATURE_ON or
+            self.host.features["svm"] == FEATURE_ON):
+            return True
+
+        # If there is other features, but no virt bit, then HW virt
+        # isn't supported
+        if len(self.host.features.names()):
+            return False
+
+        # Xen caps have always shown this info, so if we didn't find any
+        # features, the host really doesn't have the necc support
+        if self._is_xen():
+            return False
+
+        # Otherwise, we can't be sure, because there was a period for along
+        # time that qemu caps gave no indication one way or the other.
+        return True
+
+    def is_kvm_available(self):
+        """
+        Return True if kvm guests can be installed
+        """
+        for g in self.guests:
+            if g.os_type != "hvm":
+                continue
+
+            for d in g.domains:
+                if d.hypervisor_type == "kvm":
+                    return True
+
+        return False
+
+    def is_bios_virt_disabled(self):
+        """
+        Try to determine if fullvirt may be disabled in the bios.
+
+        Check is basically:
+        - We support HW virt
+        - We appear to be xen
+        - There are no HVM install options
+
+        We don't do this check for KVM, since no KVM options may mean
+        KVM isn't installed or the module isn't loaded (and loading the
+        module will give an appropriate error
+        """
+        if not self.hw_virt_supported():
+            return False
+
+        if not self._is_xen():
+            return False
+
+        for g in self.guests:
+            if g.os_type == "hvm":
+                return False
+
+        return True
 
     def guestForOSType(self, type = None, arch = None):
         if self.host is None:

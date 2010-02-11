@@ -130,7 +130,7 @@ class TestCapabilities(unittest.TestCase):
         self._testCapabilities("capabilities-test.xml", host, guests)
 
     def testCapsCPUFeaturesOldSyntax(self):
-        filename = "rhel5.4-xen-caps-virt-disabled.xml"
+        filename = "rhel5.4-xen-caps-virt-enabled.xml"
         host_feature_list = ["vmx"]
         feature_dict = build_host_feature_dict(host_feature_list)
 
@@ -156,6 +156,26 @@ class TestCapabilities(unittest.TestCase):
         caps = self._buildCaps(filename)
         for f in feature_dict.keys():
             self.assertEquals(caps.host.features[f], feature_dict[f])
+
+    def testCapsUtilFuncs(self):
+        new_caps = self._buildCaps("libvirt-0.7.6-qemu-caps.xml")
+        empty_caps = self._buildCaps("empty-caps.xml")
+        rhel_xen_enable_hvm_caps = self._buildCaps(
+                                    "rhel5.4-xen-caps-virt-enabled.xml")
+        rhel_xen_caps = self._buildCaps("rhel5.4-xen-caps.xml")
+        rhel_kvm_caps = self._buildCaps("rhel5.4-kvm-caps.xml")
+
+        def test_utils(caps, no_guests, is_hvm, is_kvm, is_bios_disable):
+            self.assertEquals(caps.no_install_options(), no_guests)
+            self.assertEquals(caps.hw_virt_supported(), is_hvm)
+            self.assertEquals(caps.is_kvm_available(), is_kvm)
+            self.assertEquals(caps.is_bios_virt_disabled(), is_bios_disable)
+
+        test_utils(new_caps, False, True, True, False)
+        test_utils(empty_caps, True, False, False, False)
+        test_utils(rhel_xen_enable_hvm_caps, False, True, False, False)
+        test_utils(rhel_xen_caps, False, True, False, True)
+        test_utils(rhel_kvm_caps, False, True, True, False)
 
 if __name__ == "__main__":
     unittest.main()
