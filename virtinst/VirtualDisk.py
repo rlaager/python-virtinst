@@ -99,10 +99,14 @@ def _is_dir_searchable(uid, username, path):
 
     # Check POSIX ACL (since that is what we use to 'fix' access)
     cmd = ["getfacl", path]
-    proc = subprocess.Popen(cmd,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    out, err = proc.communicate()
+    try:
+        proc = subprocess.Popen(cmd,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+    except OSError:
+        logging.debug("Didn't find the getfacl command.")
+        return False
 
     if proc.returncode != 0:
         logging.debug("Cmd '%s' failed: %s" % (cmd, err))
