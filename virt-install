@@ -24,9 +24,11 @@
 import os, sys
 import time
 import errno
+import re
+import logging
 import optparse
 from optparse import OptionGroup
-import logging
+
 import urlgrabber.progress as progress
 
 import libvirt
@@ -409,12 +411,15 @@ def get_virt_type(conn, options):
                   ((req_virt_type and req_virt_type or _("default")),
                    (req_hv_type and req_hv_type or _("default"))))
 
+    arch = options.arch
+    if re.match("i.86", arch or ""):
+        arch = "i686"
+
     try:
         (capsguest,
          capsdomain) = virtinst.CapabilitiesParser.guest_lookup(conn=conn,
                         caps=capabilities, os_type=req_virt_type,
-                        arch=options.arch, type=req_hv_type,
-                        accelerated=req_accel)
+                        arch=arch, type=req_hv_type, accelerated=req_accel)
     except Exception, e:
         fail(e)
 

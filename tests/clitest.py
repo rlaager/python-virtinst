@@ -223,7 +223,7 @@ args_dict = {
         # Explicity fullvirt + arch
         "--arch i686 --pxe",
         # Convert i*86 -> i686
-        #"--arch i486 --pxe",
+        "--arch i486 --pxe",
         # Directory tree URL install
         "--hvm --location %s" % treedir,
         # Directory tree URL install with extra-args
