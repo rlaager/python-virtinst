@@ -359,6 +359,8 @@ args_dict = {
       "invalid": [
         # pxe and nonetworks
         "--nodisks --pxe --nonetworks",
+        # Colliding name
+        "--nodisks --pxe --name test",
       ],
      }, # category "misc"
 
