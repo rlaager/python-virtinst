@@ -34,7 +34,7 @@ def _gettext(msg):
 parsers_path = [os.path.join(__path__[0], "parsers/")]
 
 # iter_modules is only in Python 2.5, sadly
-parser_names = [ "vmx", "virtimage" ]
+parser_names = [ "vmx", "virtimage", "ovf"]
 
 if hasattr(pkgutil, "iter_modules"):
     parser_names = []
