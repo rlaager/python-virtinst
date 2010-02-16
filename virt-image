@@ -201,6 +201,7 @@ def main():
 
 
     # now let's get some of the common questions out of the way
+    guest.replace = options.replace
     cli.get_name(options.name, guest, image.name)
     cli.get_memory(options.memory, guest, image.domain.memory)
     cli.get_uuid(options.uuid, guest)
@@ -241,7 +242,7 @@ def main():
         try:
             print _("\n\nCreating guest %s...") % guest.name
 
-            dom = guest.start_install(None, progresscb, options.replace)
+            dom = guest.start_install(None, progresscb)
             if dom is None:
                 print _("Guest creation failed")
                 sys.exit(1)

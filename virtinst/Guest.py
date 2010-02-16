@@ -142,6 +142,7 @@ class Guest(object):
         self._seclabel = None
         self._description = None
         self.features = None
+        self._replace = None
 
         self._os_type = None
         self._os_variant = None
@@ -205,13 +206,20 @@ class Guest(object):
         return self._name
     def set_name(self, val):
         _util.validate_name(_("Guest"), val)
-        try:
-            self.conn.lookupByName(val)
-        except:
-            # Name not found
-            self._name = val
-            return
-        raise ValueError(_("Guest name '%s' is already in use.") % val)
+
+        do_fail = False
+        if self.replace != True:
+            try:
+                self.conn.lookupByName(val)
+                do_fail = True
+            except:
+                # Name not found
+                pass
+
+        if do_fail:
+            raise ValueError(_("Guest name '%s' is already in use.") % val)
+
+        self._name = val
     name = property(get_name, set_name)
 
     # Memory allocated to the guest.  Should be given in MB
@@ -422,6 +430,14 @@ class Guest(object):
     def _set_description(self, val):
         self._description = val
     description = property(_get_description, _set_description)
+
+    def _get_replace(self):
+        return self._replace
+    def _set_replace(self, val):
+        self._replace = bool(val)
+    replace = property(_get_replace, _set_replace,
+                       doc=_("Whether we should overwrite an existing guest "
+                             "with the same name."))
 
     # Properties that are mapped through to the Installer
 
@@ -792,9 +808,14 @@ class Guest(object):
 
         return xml
 
-    def start_install(self, consolecb=None, meter=None, removeOld=False,
+    def start_install(self, consolecb=None, meter=None, removeOld=None,
                       wait=True):
-        """Do the startup of the guest installation."""
+        """
+        Do the startup of the guest installation.
+        """
+        if removeOld == None:
+            removeOld = self.replace
+
         self.validate_parms()
         self._consolechild = None
 

@@ -577,10 +577,15 @@ args_dict = {
     "misc": {
      "misc_args" : "",
 
-      "valid" : [],
+      "valid" : [
+        # Colliding VM name w/ --replace
+        "--name test --replace",
+      ],
       "invalid" : [
         # No name specified, and no prompt flag
         "",
+        # Colliding VM name without --replace
+        "--name test",
       ],
 
      }, # category 'misc'
