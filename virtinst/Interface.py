@@ -23,7 +23,6 @@ Classes for building and installing libvirt interface xml
 import libvirt
 
 import logging
-#from xml.sax.saxutils import escape
 
 import _util
 import support

@@ -18,7 +18,7 @@
 # MA 02110-1301 USA.
 
 import VirtualDevice
-from xml.sax.saxutils import escape as xml_escape
+from _util import  xml_escape
 
 from virtinst import _virtinst as _
 

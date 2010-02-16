@@ -50,7 +50,7 @@ import threading
 import time
 
 import logging
-from xml.sax.saxutils import escape
+from _util import xml_escape as escape
 
 import _util
 import support
