@@ -77,6 +77,7 @@ test_files = {
     'MANAGEDNEW2'       : "/default-pool/clonevol",
     'MANAGEDDISKNEW1'   : "/disk-pool/newvol1.img",
     'COLLIDE'           : "/default-pool/collidevol1.img",
+    'SHARE'             : "/default-pool/sharevol.img",
 
     'VIRTCONV_OUT'      : "%s/test.out" % virtconv_out,
     'VC_IMG1'           : "%s/virtimage/test1.virt-image" % vcdir,
@@ -165,6 +166,8 @@ args_dict = {
         "--disk %(NEWIMG1)s,format=raw,size=.0000001",
         # Colliding storage with --force
         "--disk %(COLLIDE)s --force",
+        # Colliding shareable storage
+        "--disk %(SHARE)s,perms=sh",
         # Two IDE cds
         "--disk path=%(EXISTIMG1)s,device=cdrom --disk path=%(EXISTIMG1)s,device=cdrom",
         # Dir with a floppy dev

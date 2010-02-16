@@ -60,6 +60,10 @@
       <source dev='/default-pool/collidevol1.img'/>
       <target dev='sdc' bus='scsi'/>
       <readonly/>
+    </disk>
+    <disk type='block' device='disk'>
+      <source dev='/default-pool/sharevol.img'/>
+      <target dev='sdx' bus='scsi'/>
       <shareable/>
     </disk>
     <interface type='network'>
@@ -172,6 +176,12 @@
   </volume>
   <volume>
     <name>collidevol1.img</name>
+    <capacity>1000000</capacity>
+    <allocation>50000</allocation>
+    <target/>
+  </volume>
+  <volume>
+    <name>sharevol.img</name>
     <capacity>1000000</capacity>
     <allocation>50000</allocation>
     <target/>

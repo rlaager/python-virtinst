@@ -1234,8 +1234,15 @@ class VirtualDisk(VirtualDevice):
         def count_cb(ctx):
             c = 0
 
-            c += ctx.xpathEval("count(/domain/devices/disk/source[@dev='%s'])" % path)
-            c += ctx.xpathEval("count(/domain/devices/disk/source[@file='%s'])" % path)
+            template = "count(/domain/devices/disk["
+            if self.shareable:
+                template += "not(shareable) and "
+            template += "source/@%s='%s'])"
+
+            for dtype in ["dev", "file", "dir"]:
+                xpath = template % (dtype, path)
+                c += ctx.xpathEval(xpath)
+
             return c
 
         count = 0
