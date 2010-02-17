@@ -19,12 +19,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import libvirt
-
-import _util
+import support
 from VirtualDevice import VirtualDevice
 from virtinst import _virtinst as _
 
+HV_ALL = "all"
 
 """
 Default values for OS_TYPES keys. Can be overwritten at os_type or
@@ -36,41 +35,42 @@ DISK  = VirtualDevice.VIRTUAL_DEV_DISK
 INPUT = VirtualDevice.VIRTUAL_DEV_INPUT
 SOUND = VirtualDevice.VIRTUAL_DEV_AUDIO
 
-DEFAULTS = { \
-    "acpi": True,
-    "apic": True,
-    "clock": "utc",
-    "continue": False,
-    "distro": None,
-    "label": None,
+DEFAULTS = {
+    "acpi":             True,
+    "apic":             True,
+    "clock":            "utc",
+    "continue":         False,
+    "distro":           None,
+    "label":            None,
     "pv_cdrom_install": False,
+
     "devices" : {
-     #  "devname" : { "attribute" : [( ["applicable", "hv-type", list"],
-     #                               "recommended value for hv-types" ),]},
+        #  "devname" : { "attribute" : [( ["applicable", "hv-type", list"],
+        #                               "recommended value for hv-types" ),]},
         INPUT   : {
             "type" : [
-                (["all"], "mouse")
+                (HV_ALL, "mouse")
             ],
             "bus"  : [
-                (["all"], "ps2")
+                (HV_ALL, "ps2")
             ],
         },
 
         DISK    : {
             "bus"  : [
-                (["all"], None)
+                (HV_ALL, None)
             ],
         },
 
         NET     : {
             "model": [
-                (["all"], None)
+                (HV_ALL, None)
             ],
         },
 
         SOUND : {
             "model": [
-                (["all"], "es1370"),
+                (HV_ALL, "es1370"),
             ]
         }
     }
@@ -98,90 +98,84 @@ def sort_helper(tosort):
 
     return retlist
 
-def parse_key_entry(conn, hv_type, key_entry):
-    d = _util.get_uri_driver(conn.getURI())
-    libver = libvirt.getVersion()
-    try:
-        drvver = libvirt.getVersion(d)[1]
-    except:
-        drvver = 0
-
+def parse_key_entry(conn, hv_type, key_entry, defaults):
     ret = None
+    found = False
     if type(key_entry) == list:
-        # List of tuples with hv_type, version, etc. mappings
+
+        # List of tuples with (support -> value) mappings
         for tup in key_entry:
-            exp_hvs = tup[0]
-            if type(exp_hvs) != list:
-                exp_hvs = [exp_hvs]
-            exp_hv_ver = 0
-            exp_lib_ver = 0
-            val = tup[-1]
 
-            if len(tup) > 2:
-                exp_hv_ver = tup[1]
-            if len(tup) > 3:
-                exp_lib_ver = tup[2]
+            support_key = tup[0]
+            value = tup[1]
 
-            if hv_type not in exp_hvs and "all" not in exp_hvs:
-                continue
+            # HV_ALL means don't check for support, just return the value
+            if support_key != HV_ALL:
+                support_ret = support.check_conn_hv_support(conn,
+                                                            support_key,
+                                                            hv_type)
 
-            if exp_hv_ver and drvver > exp_hv_ver:
-                continue
+                if support_ret != True:
+                    continue
 
-            if exp_lib_ver and libver > exp_lib_ver:
-                continue
-
-            ret = val
+            found = True
+            ret = value
             break
     else:
+        found = True
         ret = key_entry
+
+    if not found and defaults:
+        ret = parse_key_entry(conn, hv_type, defaults, None)
 
     return ret
 
 def lookup_osdict_key(conn, hv_type, os_type, var, key):
 
-    dictval = DEFAULTS[key]
+    defaults = DEFAULTS[key]
+    dictval = defaults
     if os_type:
         if var and OS_TYPES[os_type]["variants"][var].has_key(key):
             dictval = OS_TYPES[os_type]["variants"][var][key]
         elif OS_TYPES[os_type].has_key(key):
             dictval = OS_TYPES[os_type][key]
 
-    return parse_key_entry(conn, hv_type, dictval)
+    return parse_key_entry(conn, hv_type, dictval, defaults)
 
 
 def lookup_device_param(conn, hv_type, os_type, var, device_key, param):
 
     os_devs = lookup_osdict_key(conn, hv_type, os_type, var, "devices")
-    default_devs = DEFAULTS["devices"]
+    defaults = DEFAULTS["devices"]
 
-    for devs in [os_devs, default_devs]:
+    for devs in [os_devs, defaults]:
         if not devs.has_key(device_key):
             continue
 
-        return parse_key_entry(conn, hv_type, devs[device_key][param])
+        return parse_key_entry(conn, hv_type, devs[device_key][param],
+                               defaults.get(param))
 
     raise RuntimeError(_("Invalid dictionary entry for device '%s %s'" %
                        (device_key, param)))
 
 VIRTIO_DISK = {
     "bus" : [
-        (["kvm"], "virtio"),
+        (support.SUPPORT_CONN_HV_VIRTIO, "virtio"),
     ]
 }
 
 VIRTIO_NET = {
     "model" : [
-        (["kvm"], "virtio"),
+        (support.SUPPORT_CONN_HV_VIRTIO, "virtio"),
     ]
 }
 
 USB_TABLET = {
     "type" : [
-        (["all"], "tablet"),
+        (HV_ALL, "tablet"),
     ],
     "bus"  : [
-        (["all"], "usb"),
+        (HV_ALL, "usb"),
     ]
 }
 
@@ -315,16 +309,22 @@ OS_TYPES = {
     },
     "variants": {
         "winxp":{ "label": "Microsoft Windows XP (x86)",
-                  "acpi": [ ("xen", 3001000, False),
-                            ("all", True ), ],
-                  "apic": [ ("xen", 3001000, False),
-                            ("all", True ), ], },
+                  "acpi": [
+                    (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
+                  ],
+                  "apic": [
+                    (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
+                  ],
+        },
         "winxp64":{ "label": "Microsoft Windows XP (x86_64)" },
         "win2k": { "label": "Microsoft Windows 2000",
-                  "acpi": [ ("xen", 3001000, False),
-                            ("all", True ), ],
-                  "apic": [ ("xen", 3001000, False),
-                            ("all", True ), ], },
+                  "acpi": [
+                    (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
+                  ],
+                  "apic": [
+                    (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
+                  ],
+        },
         "win2k3": { "label": "Microsoft Windows 2003" },
         "win2k8": { "label": "Microsoft Windows 2008" },
         "vista": { "label": "Microsoft Windows Vista" },
@@ -357,17 +357,17 @@ OS_TYPES = {
         "freebsd6": { "label": "Free BSD 6.x" ,
                       # http://www.nabble.com/Re%3A-Qemu%3A-bridging-on-FreeBSD-7.0-STABLE-p15919603.html
                       "devices" : {
-                        NET : { "model" : [ (["all"], "ne2k_pci") ] }
+                        NET : { "model" : [ (HV_ALL, "ne2k_pci") ] }
                       }},
         "freebsd7": { "label": "Free BSD 7.x" ,
                       "devices" : {
-                        NET : { "model" : [ (["all"], "ne2k_pci") ] }
+                        NET : { "model" : [ (HV_ALL, "ne2k_pci") ] }
                       }},
         "openbsd4": { "label": "Open BSD 4.x" ,
                       # http://calamari.reverse-dns.net:980/cgi-bin/moin.cgi/OpenbsdOnQemu
                       # https://www.redhat.com/archives/et-mgmt-tools/2008-June/msg00018.html
                       "devices" : {
-                        NET  : { "model" : [ (["all"], "pcnet") ] }
+                        NET  : { "model" : [ (HV_ALL, "pcnet") ] }
                     }},
     },
 },
