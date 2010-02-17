@@ -470,6 +470,7 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
         g.add_device(VirtualAudio())
+        g.add_device(VirtualVideoDevice(g.conn))
 
         self.conn_function_wrappers(g, "install-windowsxp-kvm", True,
                                     conn_uri=qemu_uri)
@@ -647,8 +648,11 @@ class TestXMLConfig(unittest.TestCase):
         vdev2.model_type = "cirrus"
         vdev2.vram = 10 * 1024
         vdev2.heads = 3
+
+        vdev3 = VirtualVideoDevice(g.conn)
         g.add_device(vdev1)
         g.add_device(vdev2)
+        g.add_device(vdev3)
 
         g.clock.offset = "localtime"
 

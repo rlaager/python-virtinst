@@ -766,8 +766,6 @@ def main():
     guest.autostart = options.autostart
     guest.description = options.description
 
-    cli.get_video(options.video, guest)
-
     # set up disks
     get_disks(options.file_path, options.diskopts, options.disksize,
               options.sparse, options.nodisks, guest, conn)
@@ -776,9 +774,10 @@ def main():
     get_networks(options.mac, options.bridge, options.network,
                  options.nonetworks, guest)
 
-    # set up graphics information
+    # set up graphics and video device information
     cli.get_graphics(options.vnc, options.vncport, options.vnclisten,
-                     options.nographics, options.sdl, options.keymap, guest)
+                     options.nographics, options.sdl, options.keymap,
+                     options.video, guest)
 
     # Set host device info
     cli.get_hostdevs(options.hostdevs, guest)

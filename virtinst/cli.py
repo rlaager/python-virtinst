@@ -30,7 +30,8 @@ import libvirt
 import _util
 import virtinst
 from virtinst import CapabilitiesParser, VirtualNetworkInterface, \
-                     VirtualGraphics, VirtualAudio, VirtualDisk, User
+                     VirtualGraphics, VirtualAudio, VirtualDisk, User, \
+                     VirtualVideoDevice
 from virtinst import _virtinst as _
 
 MIN_RAM = 64
@@ -685,12 +686,20 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
 
     return net_init_dicts
 
-def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, guest):
+def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
+                 video_models, guest):
+    video_models = video_models or []
+
     if ((vnc and nographics) or
         (vnc and sdl) or
         (sdl and nographics)):
         raise ValueError, _("Can't specify more than one of VNC, SDL, "
                             "or --nographics")
+
+    for model in video_models:
+        dev = virtinst.VirtualVideoDevice(guest.conn)
+        dev.model_type = model
+        guest.add_device(dev)
 
     if not (vnc or nographics or sdl):
         if "DISPLAY" in os.environ.keys():
@@ -703,6 +712,11 @@ def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, guest):
     if nographics is not None:
         guest.graphics_dev = None
         return
+
+    # After this point, we are using graphics, so add a video device
+    # if one wasn't passed
+    if not video_models:
+        guest.add_device(VirtualVideoDevice(conn=guest.conn))
 
     if sdl is not None:
         guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_SDL)
@@ -743,15 +757,6 @@ def get_hostdevs(hostdevs, guest):
         dev = virtinst.VirtualHostDevice.device_from_node(conn=guest.conn,
                                                           name=devname)
         guest.hostdevs.append(dev)
-
-def get_video(video_models, guest):
-    if not video_models:
-        return
-
-    for model in video_models:
-        dev = virtinst.VirtualVideoDevice(guest.conn)
-        dev.model_type = model
-        guest.add_device(dev)
 
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):

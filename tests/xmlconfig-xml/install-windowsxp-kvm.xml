@@ -41,5 +41,8 @@
     <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>
     <console type='pty'/>
     <sound model='es1370'/>
+    <video>
+      <model type='cirrus'/>
+    </video>
   </devices>
 </domain>

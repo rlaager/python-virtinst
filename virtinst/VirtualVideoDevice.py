@@ -24,12 +24,13 @@ class VirtualVideoDevice(VirtualDevice.VirtualDevice):
     _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_VIDEO
 
     # Default models list
-    _model_types = [ "cirrus", "vga", "vmvga", "xen" ]
+    MODEL_DEFAULT = "default"
+    _model_types = [ "cirrus", "vga", "vmvga", "xen", MODEL_DEFAULT]
 
     def __init__(self, conn):
         VirtualDevice.VirtualDevice.__init__(self, conn=conn)
 
-        self._model_type    = None
+        self._model_type    = self.MODEL_DEFAULT
         self._vram          = None
         self._heads         = None
 
@@ -56,9 +57,13 @@ class VirtualVideoDevice(VirtualDevice.VirtualDevice):
     heads = property(get_heads, set_heads)
 
     def get_xml_config(self):
+        model = self.model_type
+        if self.model_type == self.MODEL_DEFAULT:
+            model = "cirrus"
+
         model_xml = "      <model"
         if self.model_type:
-            model_xml += " type='%s'" % self.model_type
+            model_xml += " type='%s'" % model
         if self.vram:
             model_xml += " vram='%s'" % self.vram
         if self.heads:

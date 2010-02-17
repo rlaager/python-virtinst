@@ -60,6 +60,9 @@
     <video>
       <model type='cirrus' vram='10240' heads='3'/>
     </video>
+    <video>
+      <model type='cirrus'/>
+    </video>
     <hostdev mode='subsystem' type='usb' managed='yes'>
       <source>
         <vendor id='0x4321'/>
