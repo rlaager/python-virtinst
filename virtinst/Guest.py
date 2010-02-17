@@ -1035,6 +1035,7 @@ class Guest(object):
 
     def _set_defaults(self, devlist_func):
         soundtype = VirtualDevice.VIRTUAL_DEV_AUDIO
+        videotype = VirtualDevice.VIRTUAL_DEV_VIDEO
 
         # Generate disk targets, and set preferred disk bus
         used_targets = []
@@ -1051,6 +1052,12 @@ class Guest(object):
         for sound in devlist_func(soundtype):
             if sound.model == sound.MODEL_DEFAULT:
                 sound.model = sound_model
+
+        # Set video device model
+        video_model  = self._lookup_device_param(videotype, "model_type")
+        for video in devlist_func(videotype):
+            if video.model_type == video.MODEL_DEFAULT:
+                video.model_type = video_model
 
         # Generate UUID
         if self.uuid is None:

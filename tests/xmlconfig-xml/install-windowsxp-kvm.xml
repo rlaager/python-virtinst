@@ -42,7 +42,7 @@
     <console type='pty'/>
     <sound model='es1370'/>
     <video>
-      <model type='cirrus'/>
+      <model type='vga'/>
     </video>
   </devices>
 </domain>

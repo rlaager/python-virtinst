@@ -400,7 +400,7 @@ class TestXMLConfig(unittest.TestCase):
                 return (libver, libver)
             return libver
 
-        def conn_nosupport_ac97(drv=None):
+        def conn_nosupport_ac97():
             return 10000
 
         def conn_support_ac97():
@@ -479,7 +479,7 @@ class TestXMLConfig(unittest.TestCase):
         def old_xen_ver():
             return 3000001
 
-        def new_xen_ver(drv=None):
+        def new_xen_ver():
             return 3100000
 
 

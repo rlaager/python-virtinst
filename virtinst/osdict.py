@@ -34,6 +34,7 @@ NET   = VirtualDevice.VIRTUAL_DEV_NET
 DISK  = VirtualDevice.VIRTUAL_DEV_DISK
 INPUT = VirtualDevice.VIRTUAL_DEV_INPUT
 SOUND = VirtualDevice.VIRTUAL_DEV_AUDIO
+VIDEO = VirtualDevice.VIRTUAL_DEV_VIDEO
 
 VIRTIO_DISK = {
     "bus" : [
@@ -53,6 +54,12 @@ USB_TABLET = {
     ],
     "bus"  : [
         (HV_ALL, "usb"),
+    ]
+}
+
+VGA_VIDEO = {
+    "model_type": [
+        (HV_ALL, "vga"),
     ]
 }
 
@@ -94,7 +101,13 @@ DEFAULTS = {
                 (support.SUPPORT_CONN_HV_SOUND_AC97, "ac97"),
                 (HV_ALL, "es1370"),
             ]
-        }
+        },
+
+        VIDEO : {
+            "model_type": [
+                (HV_ALL, "cirrus"),
+            ]
+        },
     }
 }
 
@@ -308,6 +321,7 @@ OS_TYPES = {
     "continue": True,
     "devices" : {
         INPUT : USB_TABLET,
+        VIDEO : VGA_VIDEO,
     },
     "variants": {
         "winxp":{ "label": "Microsoft Windows XP (x86)",
