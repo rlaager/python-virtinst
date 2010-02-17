@@ -24,13 +24,16 @@ class VirtualAudio(VirtualDevice.VirtualDevice):
 
     _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_AUDIO
 
-    MODELS = [ "es1370", "sb16", "pcspk", "ac97" ]
+    MODEL_DEFAULT = "default"
+    MODELS = [ "es1370", "sb16", "pcspk", "ac97", MODEL_DEFAULT ]
 
-    def __init__(self, model, conn=None):
+    def __init__(self, model=None, conn=None):
         VirtualDevice.VirtualDevice.__init__(self, conn)
 
         self._model = None
 
+        if model == None:
+            model = self.MODEL_DEFAULT
         self.model = model
 
     def get_model(self):
@@ -45,4 +48,8 @@ class VirtualAudio(VirtualDevice.VirtualDevice):
     model = property(get_model, set_model)
 
     def get_xml_config(self):
-        return "    <sound model='%s'/>" % self.model
+        model = self.model
+        if model == self.MODEL_DEFAULT:
+            model = "es1370"
+
+        return "    <sound model='%s'/>" % model

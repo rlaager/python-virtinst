@@ -731,11 +731,9 @@ def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, guest):
 
 def get_sound(sound, guest):
 
-    # Sound is just a boolean value, so just specify a default of 'es1370'
-    # model since this should provide audio out of the box for most modern
-    # distros
+    # Use os default
     if sound:
-        guest.sound_devs.append(VirtualAudio(model="es1370"))
+        guest.sound_devs.append(VirtualAudio(conn=guest.conn))
 
 def get_hostdevs(hostdevs, guest):
     if not hostdevs:

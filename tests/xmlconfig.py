@@ -375,6 +375,7 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
+        g.add_device(VirtualAudio())
         self._compare(g, "install-windowsxp-kvm", True)
 
     def testInstallWindowsXenNew(self):
@@ -397,6 +398,7 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
+        g.add_device(VirtualAudio())
 
         try:
             for f, xml in [(old_xen_ver, "install-windowsxp-xenold"),
@@ -468,6 +470,7 @@ class TestXMLConfig(unittest.TestCase):
         g.sound_devs.append(VirtualAudio("sb16", conn=g.conn))
         g.sound_devs.append(VirtualAudio("es1370", conn=g.conn))
         g.sound_devs.append(VirtualAudio("pcspk", conn=g.conn))
+        g.sound_devs.append(VirtualAudio(conn=g.conn))
 
         g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
                                             conn=g.conn)

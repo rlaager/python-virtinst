@@ -34,6 +34,7 @@ variant level
 NET   = VirtualDevice.VIRTUAL_DEV_NET
 DISK  = VirtualDevice.VIRTUAL_DEV_DISK
 INPUT = VirtualDevice.VIRTUAL_DEV_INPUT
+SOUND = VirtualDevice.VIRTUAL_DEV_AUDIO
 
 DEFAULTS = { \
     "acpi": True,
@@ -66,6 +67,12 @@ DEFAULTS = { \
                 (["all"], None)
             ],
         },
+
+        SOUND : {
+            "model": [
+                (["all"], "es1370"),
+            ]
+        }
     }
 }
 

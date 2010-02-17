@@ -1034,6 +1034,9 @@ class Guest(object):
         self._set_defaults(self.get_devices)
 
     def _set_defaults(self, devlist_func):
+        soundtype = VirtualDevice.VIRTUAL_DEV_AUDIO
+
+        # Generate disk targets, and set preferred disk bus
         used_targets = []
         for disk in devlist_func(VirtualDevice.VIRTUAL_DEV_DISK):
             if not disk.bus:
@@ -1043,6 +1046,13 @@ class Guest(object):
                     disk.bus = self._diskbus
             used_targets.append(disk.generate_target(used_targets))
 
+        # Set sound device model
+        sound_model  = self._lookup_device_param(soundtype, "model")
+        for sound in devlist_func(soundtype):
+            if sound.model == sound.MODEL_DEFAULT:
+                sound.model = sound_model
+
+        # Generate UUID
         if self.uuid is None:
             while 1:
                 self.uuid = _util.uuidToString(_util.randomUUID())
