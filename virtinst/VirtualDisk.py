@@ -1137,7 +1137,7 @@ class VirtualDisk(VirtualDevice):
         if not dname and self.driver_cache:
             self.driver_name = "qemu"
 
-        if not self.driver_name is None:
+        if path and not self.driver_name is None:
             dtypexml = ""
             if not self.driver_type is None:
                 dtypexml = " type='%s'" % self.driver_type
