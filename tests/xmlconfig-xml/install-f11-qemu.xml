@@ -1,4 +1,4 @@
-<domain type='kvm'>
+<domain type='qemu'>
   <name>TestGuest</name>
   <currentMemory>204800</currentMemory>
   <memory>409600</memory>
@@ -25,12 +25,12 @@
     <disk type='file' device='disk'>
       <driver name='qemu' type='raw'/>
       <source file='/tmp/test.img'/>
-      <target dev='vda' bus='virtio'/>
+      <target dev='hda' bus='ide'/>
     </disk>
     <disk type='block' device='disk'>
       <driver name='qemu'/>
       <source dev='/dev/loop0'/>
-      <target dev='vdb' bus='virtio'/>
+      <target dev='hdb' bus='ide'/>
     </disk>
     <disk type='block' device='cdrom'>
       <target dev='hdc' bus='ide'/>
@@ -39,7 +39,6 @@
     <interface type='network'>
       <source network='default'/>
       <mac address='11:22:33:44:55:66'/>
-      <model type='virtio'/>
     </interface>
     <input type='tablet' bus='usb'/>
     <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>

@@ -73,6 +73,12 @@ def get_virtual_network():
     dev.network = "default"
     return dev
 
+def qemu_uri():
+    return "qemu:///system"
+
+def xen_uri():
+    return "xen:///"
+
 class TestXMLConfig(unittest.TestCase):
 
     def _compare(self, xenguest, filebase, install):
@@ -96,6 +102,37 @@ class TestXMLConfig(unittest.TestCase):
         finally:
             xenguest._cleanup_install()
 
+    def conn_function_wrappers(self, guest, filename, do_boot,
+                               conn_version=None,
+                               conn_uri=None,
+                               libvirt_version=None):
+        testconn = guest.conn
+
+        def set_func(newfunc, funcname, obj):
+            if newfunc and hasattr(obj, funcname):
+                orig = getattr(obj, funcname)
+                setattr(obj, funcname, newfunc)
+                return orig
+
+        def set_version(newfunc):
+            return set_func(newfunc, "getVersion", testconn)
+        def set_uri(newfunc):
+            return set_func(newfunc, "getURI", testconn)
+        def set_libvirt_version(newfunc):
+            return set_func(newfunc, "getVersion", libvirt)
+
+        old_version = None
+        old_uri = None
+        old_libvirt_version = None
+        try:
+            old_version = set_version(conn_version)
+            old_uri = set_uri(conn_uri)
+            old_libvirt_version = set_libvirt_version(libvirt_version)
+            self._compare(guest, filename, do_boot)
+        finally:
+            set_version(old_version)
+            set_uri(old_uri)
+            set_libvirt_version(old_libvirt_version)
 
     def testBootParavirtDiskFile(self):
         g = get_basic_paravirt_guest()
@@ -329,7 +366,8 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self._compare(g, "install-f10", True)
+        self.conn_function_wrappers(g, "install-f10", True,
+                                    conn_uri=qemu_uri)
 
     def testF11(self):
         g = get_basic_fullyvirt_guest("kvm")
@@ -343,7 +381,23 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self._compare(g, "install-f11", False)
+        self.conn_function_wrappers(g, "install-f11", False,
+                                    conn_uri=qemu_uri)
+
+    def testF11Qemu(self):
+        g = get_basic_fullyvirt_guest("qemu")
+        g.os_type = "linux"
+        g.os_variant = "fedora11"
+        g.installer = virtinst.DistroInstaller(type="qemu", os_type="hvm",
+                                               conn=g.conn,
+                                               location="/default-pool/default-vol")
+        g.installer.cdrom = True
+        g.disks.append(get_floppy())
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+        self.conn_function_wrappers(g, "install-f11-qemu", False,
+                                    conn_uri=qemu_uri)
 
     def testF11Xen(self):
         g = get_basic_fullyvirt_guest("xen")
@@ -357,7 +411,8 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self._compare(g, "install-f11-xen", False)
+        self.conn_function_wrappers(g, "install-f11-xen", False,
+                                    conn_uri=xen_uri)
 
     def testBootWindows(self):
         g = get_basic_fullyvirt_guest("kvm")
@@ -366,7 +421,8 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self._compare(g, "boot-windowsxp-kvm", False)
+        self.conn_function_wrappers(g, "boot-windowsxp-kvm", False,
+                                    conn_uri=qemu_uri)
 
     def testInstallWindowsKVM(self):
         g = get_basic_fullyvirt_guest("kvm")
@@ -376,7 +432,9 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
         g.add_device(VirtualAudio())
-        self._compare(g, "install-windowsxp-kvm", True)
+
+        self.conn_function_wrappers(g, "install-windowsxp-kvm", True,
+                                    conn_uri=qemu_uri)
 
     def testInstallWindowsXenNew(self):
         orig_ver_func = libvirt.getVersion
@@ -400,13 +458,12 @@ class TestXMLConfig(unittest.TestCase):
         g.nics.append(get_virtual_network())
         g.add_device(VirtualAudio())
 
-        try:
-            for f, xml in [(old_xen_ver, "install-windowsxp-xenold"),
-                           (new_xen_ver, "install-windowsxp-xennew")]:
-                libvirt.getVersion = f
-                self._compare(g, xml, True)
-        finally:
-            libvirt.getVersion = orig_ver_func
+        for f, xml in [(old_xen_ver, "install-windowsxp-xenold"),
+                       (new_xen_ver, "install-windowsxp-xennew")]:
+
+            self.conn_function_wrappers(g, xml, True,
+                                        libvirt_version=f,
+                                        conn_uri=xen_uri)
 
 
     # Device heavy configurations

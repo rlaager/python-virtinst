@@ -18,10 +18,12 @@
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <disk type='file' device='disk'>
+      <driver name='qemu' type='raw'/>
       <source file='/tmp/test.img'/>
       <target dev='vda' bus='virtio'/>
     </disk>
     <disk type='block' device='disk'>
+      <driver name='qemu'/>
       <source dev='/dev/loop0'/>
       <target dev='vdb' bus='virtio'/>
     </disk>
