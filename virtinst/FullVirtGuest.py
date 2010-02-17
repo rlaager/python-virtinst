@@ -79,8 +79,10 @@ class FullVirtGuest(Guest):
 
 
     def _get_input_device(self):
-        typ = self._lookup_device_param("input", "type")
-        bus = self._lookup_device_param("input", "bus")
+        inputtype = VirtualDevice.VIRTUAL_DEV_INPUT
+
+        typ = self._lookup_device_param(inputtype, "type")
+        bus = self._lookup_device_param(inputtype, "bus")
         dev = VirtualInputDevice(self.conn)
         dev.type = typ
         dev.bus = bus
@@ -94,14 +96,17 @@ class FullVirtGuest(Guest):
         return (emu_xml + Guest._get_device_xml(self, install))
 
     def _set_defaults(self, devlist_func):
-        disk_bus  = self._lookup_device_param("disk", "bus")
-        net_model = self._lookup_device_param("net", "model")
+        disktype = VirtualDevice.VIRTUAL_DEV_DISK
+        nettype = VirtualDevice.VIRTUAL_DEV_NET
+        disk_bus  = self._lookup_device_param(disktype, "bus")
+        net_model = self._lookup_device_param(nettype, "model")
 
         # Only overwrite params if they weren't already specified
-        for net in devlist_func(VirtualDevice.VIRTUAL_DEV_NET):
+        for net in devlist_func(nettype):
             if net_model and not net.model:
                 net.model = net_model
-        for disk in devlist_func(VirtualDevice.VIRTUAL_DEV_DISK):
+
+        for disk in devlist_func(disktype):
             if (disk_bus and not disk.bus and
                 disk.device == VirtualDisk.DEVICE_DISK):
                 disk.bus = disk_bus

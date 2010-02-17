@@ -22,12 +22,19 @@
 import libvirt
 
 import _util
+from VirtualDevice import VirtualDevice
 from virtinst import _virtinst as _
+
 
 """
 Default values for OS_TYPES keys. Can be overwritten at os_type or
 variant level
 """
+
+NET   = VirtualDevice.VIRTUAL_DEV_NET
+DISK  = VirtualDevice.VIRTUAL_DEV_DISK
+INPUT = VirtualDevice.VIRTUAL_DEV_INPUT
+
 DEFAULTS = { \
     "acpi": True,
     "apic": True,
@@ -39,7 +46,7 @@ DEFAULTS = { \
     "devices" : {
      #  "devname" : { "attribute" : [( ["applicable", "hv-type", list"],
      #                               "recommended value for hv-types" ),]},
-        "input"   : {
+        INPUT   : {
             "type" : [
                 (["all"], "mouse")
             ],
@@ -48,13 +55,13 @@ DEFAULTS = { \
             ],
         },
 
-        "disk"    : {
+        DISK    : {
             "bus"  : [
                 (["all"], None)
             ],
         },
 
-        "net"     : {
+        NET     : {
             "model": [
                 (["all"], None)
             ],
@@ -188,14 +195,14 @@ OS_TYPES = {
         "rhel5.4": { "label": "Red Hat Enterprise Linux 5.4 or later",
                      "distro": "rhel",
                       "devices" : {
-                        "disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
                       },},
         "rhel6": { "label": "Red Hat Enterprise Linux 6", "distro": "rhel",
                    "devices" : {
-                        "disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
-                        "input": USB_TABLET,
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
+                        INPUT: USB_TABLET,
                    }},
         "fedora5": { "sortby": "fedora05",
                      "label": "Fedora Core 5", "distro": "fedora" },
@@ -211,82 +218,82 @@ OS_TYPES = {
                         # Apparently F9 has selinux errors when installing
                         # with virtio:
                         # https://bugzilla.redhat.com/show_bug.cgi?id=470386
-                        #"disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
+                        #DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
                       }},
         "fedora10": { "label": "Fedora 10", "distro": "fedora",
                       "devices" : {
-                        "disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
                       }},
         "fedora11": { "label": "Fedora 11", "distro": "fedora",
                       "devices" : {
-                        "disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
-                        "input": USB_TABLET,
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
+                        INPUT: USB_TABLET,
                      }},
         "fedora12": { "label": "Fedora 12", "distro": "fedora",
                       "devices" : {
-                        "disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
-                        "input": USB_TABLET,
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
+                        INPUT: USB_TABLET,
                      }},
         "fedora13": { "label": "Fedora 13", "distro": "fedora",
                       "devices" : {
-                        "disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
-                        "input": USB_TABLET,
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
+                        INPUT: USB_TABLET,
                      }},
         "sles10": { "label": "Suse Linux Enterprise Server",
                     "distro": "suse" },
         "sles11": { "label": "Suse Linux Enterprise Server 11",
                     "distro": "suse",
                       "devices" : {
-                        "disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
                       },
                   },
         "debianetch": { "label": "Debian Etch", "distro": "debian" },
         "debianlenny": { "label": "Debian Lenny", "distro": "debian",
                       "devices" : {
-                        "disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
                       }},
         "debiansqueeze": { "label": "Debian Squeeze", "distro": "debian",
                       "devices" : {
-                        "disk" : VIRTIO_DISK,
-                        "net"  : VIRTIO_NET,
-                        "input": USB_TABLET,
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
+                        INPUT: USB_TABLET,
                      }},
         "ubuntuhardy": { "label": "Ubuntu 8.04 LTS (Hardy Heron)",
                          "distro": "ubuntu",
                          "devices" : {
-                            "net"  : VIRTIO_NET,
+                            NET  : VIRTIO_NET,
                          }},
         "ubuntuintrepid": { "label": "Ubuntu 8.10 (Intrepid Ibex)",
                             "distro": "ubuntu",
                             "devices" : {
-                              "net"  : VIRTIO_NET,
+                              NET  : VIRTIO_NET,
                            }},
         "ubuntujaunty": { "label": "Ubuntu 9.04 (Jaunty Jackalope)",
                           "distro": "ubuntu",
                           "devices" : {
-                            "disk" : VIRTIO_DISK,
-                            "net"  : VIRTIO_NET,
+                            DISK : VIRTIO_DISK,
+                            NET  : VIRTIO_NET,
                         }},
         "ubuntukarmic": { "label": "Ubuntu 9.10 (Karmic Koala)",
                           "distro": "ubuntu",
                           "devices" : {
-                            "disk" : VIRTIO_DISK,
-                            "net"  : VIRTIO_NET,
+                            DISK : VIRTIO_DISK,
+                            NET  : VIRTIO_NET,
                         }},
         "generic24": { "label": "Generic 2.4.x kernel" },
         "generic26": { "label": "Generic 2.6.x kernel" },
         "virtio26": { "sortby": "genericvirtio26",
                       "label": "Generic 2.6.25 or later kernel with virtio",
                       "devices" : {
-                            "disk" : VIRTIO_DISK,
-                            "net"  : VIRTIO_NET,
+                            DISK : VIRTIO_DISK,
+                            NET  : VIRTIO_NET,
                     }},
 
     },
@@ -297,7 +304,7 @@ OS_TYPES = {
     "clock": "localtime",
     "continue": True,
     "devices" : {
-        "input" : USB_TABLET,
+        INPUT : USB_TABLET,
     },
     "variants": {
         "winxp":{ "label": "Microsoft Windows XP (x86)",
@@ -326,12 +333,12 @@ OS_TYPES = {
         "solaris9": { "label": "Sun Solaris 9", },
         "solaris10": { "label": "Sun Solaris 10",
                        "devices" : {
-                        "input" : USB_TABLET,
+                            INPUT : USB_TABLET,
                          },
                        },
         "opensolaris": { "label": "Sun OpenSolaris",
                        "devices" : {
-                           "input" : USB_TABLET,
+                            INPUT : USB_TABLET,
                          },
                        },
     },
@@ -343,17 +350,17 @@ OS_TYPES = {
         "freebsd6": { "label": "Free BSD 6.x" ,
                       # http://www.nabble.com/Re%3A-Qemu%3A-bridging-on-FreeBSD-7.0-STABLE-p15919603.html
                       "devices" : {
-                        "net" : { "model" : [ (["all"], "ne2k_pci") ] }
+                        NET : { "model" : [ (["all"], "ne2k_pci") ] }
                       }},
         "freebsd7": { "label": "Free BSD 7.x" ,
                       "devices" : {
-                        "net" : { "model" : [ (["all"], "ne2k_pci") ] }
+                        NET : { "model" : [ (["all"], "ne2k_pci") ] }
                       }},
         "openbsd4": { "label": "Open BSD 4.x" ,
                       # http://calamari.reverse-dns.net:980/cgi-bin/moin.cgi/OpenbsdOnQemu
                       # https://www.redhat.com/archives/et-mgmt-tools/2008-June/msg00018.html
                       "devices" : {
-                        "net"  : { "model" : [ (["all"], "pcnet") ] }
+                        NET  : { "model" : [ (["all"], "pcnet") ] }
                     }},
     },
 },
