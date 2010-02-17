@@ -35,6 +35,27 @@ DISK  = VirtualDevice.VIRTUAL_DEV_DISK
 INPUT = VirtualDevice.VIRTUAL_DEV_INPUT
 SOUND = VirtualDevice.VIRTUAL_DEV_AUDIO
 
+VIRTIO_DISK = {
+    "bus" : [
+        (support.SUPPORT_CONN_HV_VIRTIO, "virtio"),
+    ]
+}
+
+VIRTIO_NET = {
+    "model" : [
+        (support.SUPPORT_CONN_HV_VIRTIO, "virtio"),
+    ]
+}
+
+USB_TABLET = {
+    "type" : [
+        (HV_ALL, "tablet"),
+    ],
+    "bus"  : [
+        (HV_ALL, "usb"),
+    ]
+}
+
 DEFAULTS = {
     "acpi":             True,
     "apic":             True,
@@ -70,6 +91,7 @@ DEFAULTS = {
 
         SOUND : {
             "model": [
+                (support.SUPPORT_CONN_HV_SOUND_AC97, "ac97"),
                 (HV_ALL, "es1370"),
             ]
         }
@@ -158,26 +180,6 @@ def lookup_device_param(conn, hv_type, os_type, var, device_key, param):
     raise RuntimeError(_("Invalid dictionary entry for device '%s %s'" %
                        (device_key, param)))
 
-VIRTIO_DISK = {
-    "bus" : [
-        (support.SUPPORT_CONN_HV_VIRTIO, "virtio"),
-    ]
-}
-
-VIRTIO_NET = {
-    "model" : [
-        (support.SUPPORT_CONN_HV_VIRTIO, "virtio"),
-    ]
-}
-
-USB_TABLET = {
-    "type" : [
-        (HV_ALL, "tablet"),
-    ],
-    "bus"  : [
-        (HV_ALL, "usb"),
-    ]
-}
 
 # NOTE: keep variant keys using only lowercase so we can do case
 #       insensitive checks on user passed input

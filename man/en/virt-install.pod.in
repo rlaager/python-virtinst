@@ -179,7 +179,8 @@ Parameters specific only to fully virtualized guest installs.
 
 =item --sound
 
-Attach a virtual audio device to the guest.
+Attach a virtual audio device to the guest. The device model will be AC97
+if the hypervisor supports it, otherwise will be ES1370
 
 =item --parallel=CHAROPTS
 

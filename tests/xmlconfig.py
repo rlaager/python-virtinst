@@ -108,18 +108,23 @@ class TestXMLConfig(unittest.TestCase):
                                libvirt_version=None):
         testconn = guest.conn
 
-        def set_func(newfunc, funcname, obj):
-            if newfunc and hasattr(obj, funcname):
-                orig = getattr(obj, funcname)
-                setattr(obj, funcname, newfunc)
-                return orig
+        def set_func(newfunc, funcname, obj, force=False):
+            if newfunc or force:
+                orig = None
+                if hasattr(obj, funcname):
+                    orig = getattr(obj, funcname)
 
-        def set_version(newfunc):
-            return set_func(newfunc, "getVersion", testconn)
-        def set_uri(newfunc):
-            return set_func(newfunc, "getURI", testconn)
-        def set_libvirt_version(newfunc):
-            return set_func(newfunc, "getVersion", libvirt)
+                setattr(obj, funcname, newfunc)
+                return orig, True
+
+            return None, False
+
+        def set_version(newfunc, force=False):
+            return set_func(newfunc, "getVersion", testconn, force)
+        def set_uri(newfunc, force=False):
+            return set_func(newfunc, "getURI", testconn, force)
+        def set_libvirt_version(newfunc, force=False):
+            return set_func(newfunc, "getVersion", libvirt, force)
 
         old_version = None
         old_uri = None
@@ -130,9 +135,9 @@ class TestXMLConfig(unittest.TestCase):
             old_libvirt_version = set_libvirt_version(libvirt_version)
             self._compare(guest, filename, do_boot)
         finally:
-            set_version(old_version)
-            set_uri(old_uri)
-            set_libvirt_version(old_libvirt_version)
+            set_version(*old_version)
+            set_uri(*old_uri)
+            set_libvirt_version(*old_libvirt_version)
 
     def testBootParavirtDiskFile(self):
         g = get_basic_paravirt_guest()
@@ -326,30 +331,20 @@ class TestXMLConfig(unittest.TestCase):
         self._compare(g, "install-paravirt-import", False)
 
     def testQEMUDriverName(self):
-        # Swap out _util.get_uri_driver for a fake method that always
-        # returns a qemu driver, to trick VirtualDisk into giving us what we
-        # want
-        def new_get_uri(ignore):
-            return "qemu:///system"
+        g = get_basic_fullyvirt_guest()
+        g.disks.append(get_blkdisk())
+        self.conn_function_wrappers(g, "misc-qemu-driver-name", True,
+                                    conn_uri=qemu_uri)
 
-        oldgetdriver = VirtualDisk._get_uri
-        try:
-            VirtualDisk._get_uri = new_get_uri
-            g = get_basic_fullyvirt_guest()
-            g.disks.append(get_blkdisk())
-            self._compare(g, "misc-qemu-driver-name", True)
+        g = get_basic_fullyvirt_guest()
+        g.disks.append(get_filedisk())
+        self.conn_function_wrappers(g, "misc-qemu-driver-type", True,
+                                    conn_uri=qemu_uri)
 
-            VirtualDisk._get_uri = new_get_uri
-            g = get_basic_fullyvirt_guest()
-            g.disks.append(get_filedisk())
-            self._compare(g, "misc-qemu-driver-type", True)
-
-            VirtualDisk._get_uri = new_get_uri
-            g = get_basic_fullyvirt_guest()
-            g.disks.append(get_filedisk("/default-pool/iso-vol"))
-            self._compare(g, "misc-qemu-iso-disk", True)
-        finally:
-            VirtualDisk._get_uri = oldgetdriver
+        g = get_basic_fullyvirt_guest()
+        g.disks.append(get_filedisk("/default-pool/iso-vol"))
+        self.conn_function_wrappers(g, "misc-qemu-iso-disk", True,
+                                    conn_uri=qemu_uri)
 
     def testXMLEscaping(self):
         g = get_basic_fullyvirt_guest()
@@ -383,6 +378,49 @@ class TestXMLConfig(unittest.TestCase):
         g.nics.append(get_virtual_network())
         self.conn_function_wrappers(g, "install-f11", False,
                                     conn_uri=qemu_uri)
+
+    def testF11AC97(self):
+        def build_guest():
+            g = get_basic_fullyvirt_guest("kvm")
+            g.os_type = "linux"
+            g.os_variant = "fedora11"
+            g.installer = virtinst.DistroInstaller(type="kvm", os_type="hvm",
+                            conn=g.conn, location="/default-pool/default-vol")
+            g.installer.cdrom = True
+            g.disks.append(get_floppy())
+            g.disks.append(get_filedisk())
+            g.disks.append(get_blkdisk())
+            g.nics.append(get_virtual_network())
+            g.add_device(VirtualAudio())
+            return g
+
+        def libvirt_nosupport_ac97(drv=None):
+            libver = 5000
+            if drv:
+                return (libver, libver)
+            return libver
+
+        def conn_nosupport_ac97(drv=None):
+            return 10000
+
+        def conn_support_ac97():
+            return 11000
+
+        g = build_guest()
+        self.conn_function_wrappers(g, "install-f11-ac97", False,
+                                    conn_uri=qemu_uri,
+                                    conn_version=conn_support_ac97)
+
+        g = build_guest()
+        self.conn_function_wrappers(g, "install-f11-noac97", False,
+                                    libvirt_version=libvirt_nosupport_ac97,
+                                    conn_uri=qemu_uri)
+
+        g = build_guest()
+        self.conn_function_wrappers(g, "install-f11-noac97", False,
+                                    conn_version=conn_nosupport_ac97,
+                                    conn_uri=qemu_uri)
+
 
     def testF11Qemu(self):
         g = get_basic_fullyvirt_guest("qemu")
@@ -437,18 +475,12 @@ class TestXMLConfig(unittest.TestCase):
                                     conn_uri=qemu_uri)
 
     def testInstallWindowsXenNew(self):
-        orig_ver_func = libvirt.getVersion
-        def old_xen_ver(drv=None):
-            libver = orig_ver_func()
-            if drv:
-                return (libver, 3000001)
-            return orig_ver_func(drv)
+        def old_xen_ver():
+            return 3000001
 
         def new_xen_ver(drv=None):
-            libver = orig_ver_func()
-            if drv:
-                return (libver, 3100000)
-            return orig_ver_func(drv)
+            return 3100000
+
 
         g = get_basic_fullyvirt_guest("xen")
         g.os_type = "windows"
@@ -462,7 +494,7 @@ class TestXMLConfig(unittest.TestCase):
                        (new_xen_ver, "install-windowsxp-xennew")]:
 
             self.conn_function_wrappers(g, xml, True,
-                                        libvirt_version=f,
+                                        conn_version=f,
                                         conn_uri=xen_uri)
 
 
