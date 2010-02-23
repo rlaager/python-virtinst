@@ -165,7 +165,7 @@ urls = {
     # CentOS Distros
     "centos-5-latest" : {
         'i386' : CURCENTOS_BASEURL % ("5", "i386"),
-        #'x86_64' : CURCENTOS_BASEURL % ("5", "x86_64"),  # No .treeinfo
+        'x86_64' : CURCENTOS_BASEURL % ("5", "x86_64"),  # No .treeinfo
         'distro': ("linux", "rhel5.4")
     },
     "centos-4-latest" : {
@@ -249,7 +249,7 @@ urls = {
 
 
 testconn = libvirt.open("test:///default")
-testguest = virtinst.Guest(connection=testconn, installer=virtinst.DistroInstaller())
+testguest = virtinst.FullVirtGuest(connection=testconn, installer=virtinst.DistroInstaller())
 
 class TestURLFetch(unittest.TestCase):
 
