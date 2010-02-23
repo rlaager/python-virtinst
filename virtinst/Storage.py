@@ -290,7 +290,10 @@ class StoragePool(StorageObject):
 
     def get_pool_type_desc(pool_type):
         """Return human readable description for passed pool type"""
-        return StoragePool._types[pool_type]
+        if StoragePool._types.has_key(pool_type):
+            return StoragePool._types[pool_type]
+        else:
+            return "%s pool" % pool_type
     get_pool_type_desc = staticmethod(get_pool_type_desc)
 
     def pool_list_from_sources(conn, name, pool_type, host=None):
