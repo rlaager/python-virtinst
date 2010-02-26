@@ -91,6 +91,7 @@ class Interface(object):
         self._macaddr = None
         self._start_mode = None
         self._protocols = []
+        self._protocol_xml = None
 
         if conn is not None:
             self.conn = conn
@@ -160,6 +161,16 @@ class Interface(object):
     protocols = property(_get_protocols, _set_protocols,
                          doc=_("Network protocol configuration"))
 
+    def _get_protocol_xml(self):
+        return self._protocol_xml
+    def _set_protocol_xml(self, val):
+        self._protocol_xml = val
+    protocol_xml = property(_get_protocol_xml, _set_protocol_xml,
+                            doc="String of XML to use in place of "
+                                "generated protocol XML. This can be "
+                                "parsed from an existing interface for "
+                                "example.")
+
     def _check_name_collision(self, name):
         pool = None
         try:
@@ -175,6 +186,8 @@ class Interface(object):
         """
         Returns IP protocol XML
         """
+        if self.protocol_xml != None:
+            return self.protocol_xml
         xml = ""
         for p in self.protocols:
             xml += p.get_xml_config()

@@ -201,6 +201,20 @@ class TestInterfaces(unittest.TestCase):
         except:
             assert(False)
 
+    # protocol_xml test
+    def testEthernetInterface(self):
+        filename = "ethernet-copy-proto"
+        obj = self.build_interface(Interface.INTERFACE_TYPE_ETHERNET,
+                                   "test-%s" % filename)
+
+        protoxml = ("  <protocol family='ipv6'>\n"
+                    "    <dhcp/>\n"
+                    "  </protocol>\n")
+        obj.protocol_xml = protoxml
+
+        self.define_xml(obj)
+
+
 if __name__ == "__main__":
     unittest.main()
 
