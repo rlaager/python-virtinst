@@ -36,6 +36,8 @@ SUPPORT_CONN_INTERFACE = 8
 
 # Flags for check_domain_support
 SUPPORT_DOMAIN_GETVCPUS = 1000
+SUPPORT_DOMAIN_XML_SECURE = 1001
+SUPPORT_DOMAIN_XML_INACTIVE = 1002
 
 # Flags for check_pool_support
 SUPPORT_STORAGE_CREATEVOLFROM = 2000
@@ -126,6 +128,18 @@ _support_dict = {
     SUPPORT_DOMAIN_GETVCPUS : {
         "function" : "virDomain.vcpus",
         "args" : (),
+    },
+
+    SUPPORT_DOMAIN_XML_INACTIVE : {
+        "function" : "virDomain.XMLDesc",
+        "args" : (),
+        "flag" : "VIR_DOMAIN_XML_INACTIVE",
+    },
+
+    SUPPORT_DOMAIN_XML_SECURE : {
+        "function" : "virDomain.XMLDesc",
+        "args" : (),
+        "flag" : "VIR_DOMAIN_XML_SECURE",
     },
 
     # Pool checks
