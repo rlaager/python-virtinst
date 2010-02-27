@@ -121,8 +121,8 @@ args = {
     { 'path' : 'notblock', 'type' : VirtualDisk.TYPE_BLOCK},
     { 'path' :'/dev/null', 'type' : VirtualDisk.TYPE_BLOCK},
     { 'path' : None },
-    { 'path' : "noexist", 'size' : 900000, 'sparse' : False },
-    { 'path' : "noexist", 'type' : VirtualDisk.DEVICE_CDROM},
+    { 'path' : "noexist1", 'size' : 900000, 'sparse' : False },
+    { 'path' : "noexist2", 'type' : VirtualDisk.DEVICE_CDROM},
     { 'volName' : ("default-pool", "default-vol")},
     { 'conn' : testconn, 'volName' : ("pool-noexist", "default-vol")},
     { 'conn' : testconn, 'volName' : ("default-pool", "vol-noexist")},
@@ -368,12 +368,13 @@ class TestValidation(unittest.TestCase):
             for key in defaultsdict.keys():
                 if not valuedict.has_key(key):
                     valuedict[key] = defaultsdict.get(key)
-        testclass(*(), **valuedict)
+        return testclass(*(), **valuedict)
 
     def _testInvalid(self, name, obj, testclass, paramname, paramvalue):
         try:
+            tmpobj = None
             if paramname == '__init__':
-                self._runObjInit(testclass, paramvalue)
+                tmpobj = self._runObjInit(testclass, paramvalue)
             else:
                 setattr(obj, paramname, paramvalue)
 
