@@ -841,7 +841,10 @@ class Guest(object):
                 val = False
         return val
 
-    def continue_install(self, consolecb, meter, wait=True):
+    def continue_install(self, consolecb=None, meter=None, wait=True):
+        if meter == None:
+            meter = progress.BaseMeter()
+
         cont_xml = self.get_config_xml(disk_boot = True)
         logging.debug("Continuing guest with:\n%s" % cont_xml)
         meter.start(size=None, text="Starting domain...")
