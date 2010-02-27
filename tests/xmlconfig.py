@@ -81,11 +81,12 @@ def xen_uri():
 
 class TestXMLConfig(unittest.TestCase):
 
-    def _compare(self, xenguest, filebase, install):
+    def _compare(self, xenguest, filebase, do_install, do_disk_boot=False):
         filename = os.path.join("tests/xmlconfig-xml", filebase + ".xml")
         xenguest._prepare_install(progress.BaseMeter())
         try:
-            actualXML = xenguest.get_config_xml(install=install)
+            actualXML = xenguest.get_config_xml(install=do_install,
+                                                disk_boot=do_disk_boot)
             tests.diff_compare(actualXML, filename)
             # Libvirt throws errors since we are defining domain
             # type='xen', when test driver can only handle type='test'
@@ -105,7 +106,8 @@ class TestXMLConfig(unittest.TestCase):
     def conn_function_wrappers(self, guest, filename, do_boot,
                                conn_version=None,
                                conn_uri=None,
-                               libvirt_version=None):
+                               libvirt_version=None,
+                               do_disk_boot=False):
         testconn = guest.conn
 
         def set_func(newfunc, funcname, obj, force=False):
@@ -133,7 +135,7 @@ class TestXMLConfig(unittest.TestCase):
             old_version = set_version(conn_version)
             old_uri = set_uri(conn_uri)
             old_libvirt_version = set_libvirt_version(libvirt_version)
-            self._compare(guest, filename, do_boot)
+            self._compare(guest, filename, do_boot, do_disk_boot)
         finally:
             set_version(*old_version)
             set_uri(*old_uri)
@@ -459,8 +461,20 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self.conn_function_wrappers(g, "boot-windowsxp-kvm", False,
+        self.conn_function_wrappers(g, "winxp-kvm-stage3", False,
                                     conn_uri=qemu_uri)
+
+    def testContinueWindowsKVM(self):
+        g = get_basic_fullyvirt_guest("kvm")
+        g.os_type = "windows"
+        g.os_variant = "winxp"
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+        self.conn_function_wrappers(g, "winxp-kvm-stage2", False,
+                                    conn_uri=qemu_uri,
+                                    do_disk_boot=True)
+
 
     def testInstallWindowsKVM(self):
         g = get_basic_fullyvirt_guest("kvm")
@@ -472,7 +486,7 @@ class TestXMLConfig(unittest.TestCase):
         g.add_device(VirtualAudio())
         g.add_device(VirtualVideoDevice(g.conn))
 
-        self.conn_function_wrappers(g, "install-windowsxp-kvm", True,
+        self.conn_function_wrappers(g, "winxp-kvm-stage1", True,
                                     conn_uri=qemu_uri)
 
     def testInstallWindowsXenNew(self):
