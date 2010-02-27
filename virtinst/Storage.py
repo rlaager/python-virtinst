@@ -1146,7 +1146,7 @@ class StorageVolume(StorageObject):
                 self._install_finished = False
                 t.start()
                 if meter:
-                    meter.start(size=self.allocation,
+                    meter.start(size=self.capacity,
                                 text=_("Allocating '%s'") % self.name)
 
                 if self.input_vol:
@@ -1155,7 +1155,7 @@ class StorageVolume(StorageObject):
                     vol = self.pool.createXML(xml, 0)
 
                 if meter:
-                    meter.end(self.allocation)
+                    meter.end(self.capacity)
                 logging.debug("Storage volume '%s' install complete." %
                               self.name)
                 return vol
