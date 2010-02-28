@@ -885,30 +885,11 @@ class Guest(object):
         Launched the passed console callback for the already defined
         domain. If domain isn't running, return an error.
         """
-        logging.debug("Restarted guest, looking to see if it is running")
+        (self.domain,
+         self._consolechild) = self._wait_and_connect_console(consolecb)
 
-        self.domain = _wait_for_domain(self.conn, self.name)
-
-        if self.domain is None:
-            raise RuntimeError(_("Domain has not existed.  You should be "
-                                 "able to find more information in the logs"))
-        elif self.domain.ID() == -1:
-            raise RuntimeError(_("Domain has not run yet.  You should be "
-                                 "able to find more information in the logs"))
-
-        child = None
-        if consolecb:
-            logging.debug("Launching console callback")
-            child = consolecb(self.domain)
-            self._consolechild = child
-
-        # if we connected the console, wait for it to finish
-        if child and wait:
-            try:
-                os.waitpid(child, 0)
-            except OSError, (err_no, msg):
-                raise RuntimeError("waiting console pid error: %s: %s" %
-                                   (err_no, msg))
+        # If we connected the console, wait for it to finish
+        self._waitpid_console(self._consolechild, wait)
 
     def terminate_console(self):
         """
@@ -971,60 +952,39 @@ class Guest(object):
 
         meter.end(0)
 
+        # Make sure guest is around, connect and wait on console if
+        # requested
+        logging.debug("Restarted guest, looking to see if it is running")
         self.connect_console(consolecb, wait)
-
-        # ensure there's time for the domain to finish destroying if the
-        # install has finished or the guest crashed
-        if consolecb:
-            time.sleep(1)
 
         return self.conn.lookupByName(self.name)
 
     def _do_install(self, consolecb, meter, removeOld=False, wait=True):
-        child = None
-
         # Remove existing VM if requested
         self._replace_original_vm(removeOld)
 
+        # Create devices if required (disk images, etc.)
         self._create_devices(meter)
+
         install_xml = self.get_config_xml()
+        logging.debug("Generated install XML: %s" %
+                      (install_xml and "\n" + install_xml or "None required"))
+
         if install_xml:
-            logging.debug("Creating guest from:\n%s" % install_xml)
             meter.start(size=None, text=_("Creating domain..."))
-            self.domain = self.conn.createLinux(install_xml, 0)
-            if self.domain is None:
-                raise RuntimeError(_("Unable to create domain for the guest, "
-                                     "aborting installation!"))
+            self.conn.createLinux(install_xml, 0)
             meter.end(0)
 
             logging.debug("Created guest, looking to see if it is running")
-
-            d = _wait_for_domain(self.conn, self.name)
-
-            if d is None:
-                raise RuntimeError(
-                    _("It appears that your installation has crashed.  You "
-                      "should be able to find more information in the logs"))
-
-            if consolecb:
-                logging.debug("Launching console callback")
-                child = consolecb(self.domain)
-                self._consolechild = child
+            (self.domain,
+             self._consolechild) = self._wait_and_connect_console(consolecb)
 
         boot_xml = self.get_config_xml(install = False)
         logging.debug("Saving XML boot config:\n%s" % boot_xml)
         self.conn.defineXML(boot_xml)
 
         # if we connected the console, wait for it to finish
-        if child and wait:
-            try:
-                os.waitpid(child, 0)
-            except OSError, (err_no, msg):
-                logging.debug("waitpid: %s: %s" % (err_no, msg))
-
-            # ensure there's time for the domain to finish destroying if the
-            # install has finished or the guest crashed
-            time.sleep(1)
+        self._waitpid_console(self._consolechild, wait)
 
         self.domain = self.conn.lookupByName(self.name)
 
@@ -1032,6 +992,43 @@ class Guest(object):
         self._flag_autostart()
 
         return self.domain
+
+    def _wait_and_connect_console(self, consolecb):
+        """
+        Wait for domain to appear and be running, then connect to
+        the console if necessary
+        """
+        child = None
+        dom = _wait_for_domain(self.conn, self.name)
+
+        if dom is None:
+            raise RuntimeError(_("Domain has not existed.  You should be "
+                                 "able to find more information in the logs"))
+        elif dom.ID() == -1:
+            raise RuntimeError(_("Domain has not run yet.  You should be "
+                                 "able to find more information in the logs"))
+
+        if consolecb:
+            logging.debug("Launching console callback")
+            child = consolecb(dom)
+
+        return dom, child
+
+    def _waitpid_console(self, console_child, do_wait):
+        """
+        Wait for console to close if it was launched
+        """
+        if not console_child or not do_wait:
+            return
+
+        try:
+            os.waitpid(console_child, 0)
+        except OSError, (err_no, msg):
+            logging.debug("waitpid: %s: %s" % (err_no, msg))
+
+        # ensure there's time for the domain to finish destroying if the
+        # install has finished or the guest crashed
+        time.sleep(1)
 
     def _replace_original_vm(self, removeOld):
         """
