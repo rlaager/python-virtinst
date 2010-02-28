@@ -873,10 +873,10 @@ def main():
         sys.exit(e.code)
     except Exception, e:
         logging.error(e)
-        print (_("Domain installation may not have been\n successful.  If it "
-                 "was, you can restart your domain\n by running 'virsh start "
-                 "%s'; otherwise, please\n restart your installation.") %
-                 guest.name)
+        print _("Domain installation does not appear to have been\n "
+                "successful.  If it was, you can restart your domain\n "
+                "by running 'virsh start %s'; otherwise, please\n "
+                "restart your installation.") % guest.name
         raise
 
 def domain_is_shutdown(dominfo, dom=None):
