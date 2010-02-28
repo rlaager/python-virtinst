@@ -454,29 +454,7 @@ class TestXMLConfig(unittest.TestCase):
         self.conn_function_wrappers(g, "install-f11-xen", False,
                                     conn_uri=xen_uri)
 
-    def testBootWindows(self):
-        g = get_basic_fullyvirt_guest("kvm")
-        g.os_type = "windows"
-        g.os_variant = "winxp"
-        g.disks.append(get_filedisk())
-        g.disks.append(get_blkdisk())
-        g.nics.append(get_virtual_network())
-        self.conn_function_wrappers(g, "winxp-kvm-stage3", False,
-                                    conn_uri=qemu_uri)
-
-    def testContinueWindowsKVM(self):
-        g = get_basic_fullyvirt_guest("kvm")
-        g.os_type = "windows"
-        g.os_variant = "winxp"
-        g.disks.append(get_filedisk())
-        g.disks.append(get_blkdisk())
-        g.nics.append(get_virtual_network())
-        self.conn_function_wrappers(g, "winxp-kvm-stage2", False,
-                                    conn_uri=qemu_uri,
-                                    do_disk_boot=True)
-
-
-    def testInstallWindowsKVM(self):
+    def _build_win_kvm(self):
         g = get_basic_fullyvirt_guest("kvm")
         g.os_type = "windows"
         g.os_variant = "winxp"
@@ -486,8 +464,24 @@ class TestXMLConfig(unittest.TestCase):
         g.add_device(VirtualAudio())
         g.add_device(VirtualVideoDevice(g.conn))
 
+        return g
+
+    def testInstallWindowsKVM(self):
+        g = self._build_win_kvm()
         self.conn_function_wrappers(g, "winxp-kvm-stage1", True,
                                     conn_uri=qemu_uri)
+
+    def testContinueWindowsKVM(self):
+        g = self._build_win_kvm()
+        self.conn_function_wrappers(g, "winxp-kvm-stage2", True,
+                                    conn_uri=qemu_uri,
+                                    do_disk_boot=True)
+
+    def testBootWindowsKVM(self):
+        g = self._build_win_kvm()
+        self.conn_function_wrappers(g, "winxp-kvm-stage3", False,
+                                    conn_uri=qemu_uri)
+
 
     def testInstallWindowsXenNew(self):
         def old_xen_ver():
