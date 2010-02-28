@@ -161,11 +161,11 @@ class Interface(object):
     protocols = property(_get_protocols, _set_protocols,
                          doc=_("Network protocol configuration"))
 
-    def _get_protocol_xml(self):
+    def _get_protocol_xml_attr(self):
         return self._protocol_xml
-    def _set_protocol_xml(self, val):
+    def _set_protocol_xml_attr(self, val):
         self._protocol_xml = val
-    protocol_xml = property(_get_protocol_xml, _set_protocol_xml,
+    protocol_xml = property(_get_protocol_xml_attr, _set_protocol_xml_attr,
                             doc="String of XML to use in place of "
                                 "generated protocol XML. This can be "
                                 "parsed from an existing interface for "

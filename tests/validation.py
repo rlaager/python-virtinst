@@ -372,9 +372,8 @@ class TestValidation(unittest.TestCase):
 
     def _testInvalid(self, name, obj, testclass, paramname, paramvalue):
         try:
-            tmpobj = None
             if paramname == '__init__':
-                tmpobj = self._runObjInit(testclass, paramvalue)
+                self._runObjInit(testclass, paramvalue)
             else:
                 setattr(obj, paramname, paramvalue)
 

@@ -202,7 +202,7 @@ class TestInterfaces(unittest.TestCase):
             assert(False)
 
     # protocol_xml test
-    def testEthernetInterface(self):
+    def testEthernetProtocolInterface(self):
         filename = "ethernet-copy-proto"
         obj = self.build_interface(Interface.INTERFACE_TYPE_ETHERNET,
                                    "test-%s" % filename)
