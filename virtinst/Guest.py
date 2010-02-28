@@ -135,8 +135,6 @@ class Guest(object):
         self._vcpus = 1
         self._cpuset = None
         self._graphics_dev = None
-        self._consolechild = None
-        self._os_autodetect = False
         self._autostart = False
         self._clock = Clock(self.conn)
         self._seclabel = None
@@ -146,6 +144,7 @@ class Guest(object):
 
         self._os_type = None
         self._os_variant = None
+        self._os_autodetect = False
 
         # DEPRECATED: Public device lists unaltered by install process
         self.disks = []
@@ -162,6 +161,7 @@ class Guest(object):
 
         # The libvirt virDomain object we 'Create'
         self.domain = None
+        self._consolechild = None
 
         # Default disk target prefix ('hd' or 'xvd'). Set in subclass
         self.disknode = None
@@ -177,11 +177,13 @@ class Guest(object):
         self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
 
 
+    ######################
+    # Property accessors #
+    ######################
+
     def get_installer(self):
         return self._installer
     def set_installer(self, val):
-        # FIXME: Make sure this is valid: it's pretty fundamental to
-        # working operation. Should we even allow it to be changed?
         self._installer = val
     installer = property(get_installer, set_installer)
 
@@ -358,7 +360,23 @@ class Guest(object):
     autostart = property(get_autostart, set_autostart,
                          doc="Have domain autostart when the host boots.")
 
-    # DEPRECATED PROPERTIES
+    def _get_description(self):
+        return self._description
+    def _set_description(self, val):
+        self._description = val
+    description = property(_get_description, _set_description)
+
+    def _get_replace(self):
+        return self._replace
+    def _set_replace(self, val):
+        self._replace = bool(val)
+    replace = property(_get_replace, _set_replace,
+                       doc=_("Whether we should overwrite an existing guest "
+                             "with the same name."))
+
+    #########################
+    # DEPRECATED PROPERTIES #
+    #########################
 
     # Deprecated: Should set graphics_dev.keymap directly
     def get_keymap(self):
@@ -425,29 +443,15 @@ class Guest(object):
 
     graphics = property(get_graphics, set_graphics)
 
-    def _get_description(self):
-        return self._description
-    def _set_description(self, val):
-        self._description = val
-    description = property(_get_description, _set_description)
-
-    def _get_replace(self):
-        return self._replace
-    def _set_replace(self, val):
-        self._replace = bool(val)
-    replace = property(_get_replace, _set_replace,
-                       doc=_("Whether we should overwrite an existing guest "
-                             "with the same name."))
-
-    # Properties that are mapped through to the Installer
-
     # Hypervisor name (qemu, xen, kvm, etc.)
+    # Deprecated: should be pulled directly from the installer
     def get_type(self):
         return self._installer.type
     def set_type(self, val):
         self._installer.type = val
     type = property(get_type, set_type)
 
+    # Deprecated: should be pulled directly from the installer
     def get_arch(self):
         return self.installer.arch
     def set_arch(self, val):
@@ -484,21 +488,14 @@ class Guest(object):
     def get_cdrom(self):
         return self._installer.location
     def set_cdrom(self, val):
-        if val is None or type(val) is not type("string") or len(val) == 0:
-            raise ValueError, _("You must specify a valid ISO or CD-ROM location for the installation")
-        if val.startswith("/"):
-            if not os.path.exists(val):
-                raise ValueError, _("The specified media path does not exist.")
-            self._installer.location = os.path.abspath(val)
-        else:
-            # Assume its a http/nfs/ftp style path
-            self._installer.location = val
+        self._installer.location = val
         self._installer.cdrom = True
     cdrom = property(get_cdrom, set_cdrom)
-    # END DEPRECATED PROPERTIES
 
 
-    # Device Add/Remove Public API methods
+    ########################################
+    # Device Add/Remove Public API methods #
+    ########################################
 
     def _dev_build_list(self, devtype, devlist=None):
         if not devlist:
@@ -628,7 +625,10 @@ class Guest(object):
             retlist.extend(self._get_install_devs(devtype))
         return retlist
 
-    # Private xml building methods
+
+    ################################
+    # Private xml building methods #
+    ################################
 
     def _get_input_device(self):
         """ Return a tuple of the form (devtype, bus) for the desired
@@ -743,7 +743,42 @@ class Guest(object):
         xml = _util.xml_append(xml, self._get_clock_xml())
         return xml
 
+    ############################
+    # Install Helper functions #
+    ############################
 
+    def _prepare_install(self, meter):
+        # Initialize install device list
+        self._install_devices = self.get_all_devices()[:]
+
+        # Set regular device defaults
+        self.set_defaults()
+
+        self._installer.prepare(guest = self,
+                                meter = meter)
+        if self._installer.install_disk is not None:
+            self._add_install_dev(self._installer.install_disk)
+
+        # Run 'set_defaults' after install prep, since some installers
+        # (ImageInstaller) alter the device list.
+        self._set_defaults(self._get_install_devs)
+
+    def _cleanup_install(self):
+        # Empty install dev list
+        self._install_devices = []
+
+        self._installer.cleanup()
+
+    def _create_devices(self, progresscb):
+        """
+        Ensure that devices are setup
+        """
+        for dev in self._get_all_install_devs():
+            dev.setup_dev(self.conn, progresscb)
+
+    ##############
+    # Public API #
+    ##############
 
     def get_config_xml(self, install = True, disk_boot = False):
         """
@@ -808,10 +843,92 @@ class Guest(object):
 
         return xml
 
+    def post_install_check(self):
+        """
+        Back compat mapping to installer post_install_check
+        """
+        return self.installer.post_install_check(self)
+
+    def get_continue_inst(self):
+        """
+        Return True if this guest requires a call to 'continue_install',
+        which means the OS requires a 2 stage install (windows)
+        """
+        val = self._lookup_osdict_key("continue")
+        if not val:
+            val = False
+
+        if val == True:
+            # If we are doing an 'import' or 'liveCD' install, there is
+            # no true install process, so continue install has no meaning
+            if not self.get_config_xml(install=True):
+                val = False
+        return val
+
+    def validate_parms(self):
+        """
+        Do some pre-install domain validation
+        """
+        if self.domain is not None:
+            raise RuntimeError, _("Domain has already been started!")
+
+        if self.name is None or self.memory is None:
+            raise RuntimeError(_("Name and memory must be specified for "
+                                 "all guests!"))
+
+        if _util.vm_uuid_collision(self.conn, self.uuid):
+            raise RuntimeError(_("The UUID you entered is already in "
+                                 "use by another guest!"))
+
+    def connect_console(self, consolecb, wait=True):
+        """
+        Launched the passed console callback for the already defined
+        domain. If domain isn't running, return an error.
+        """
+        logging.debug("Restarted guest, looking to see if it is running")
+
+        self.domain = _wait_for_domain(self.conn, self.name)
+
+        if self.domain is None:
+            raise RuntimeError(_("Domain has not existed.  You should be "
+                                 "able to find more information in the logs"))
+        elif self.domain.ID() == -1:
+            raise RuntimeError(_("Domain has not run yet.  You should be "
+                                 "able to find more information in the logs"))
+
+        child = None
+        if consolecb:
+            logging.debug("Launching console callback")
+            child = consolecb(self.domain)
+            self._consolechild = child
+
+        # if we connected the console, wait for it to finish
+        if child and wait:
+            try:
+                os.waitpid(child, 0)
+            except OSError, (err_no, msg):
+                raise RuntimeError("waiting console pid error: %s: %s" %
+                                   (err_no, msg))
+
+    def terminate_console(self):
+        """
+        Kill guest console if it is open (and actually exists), otherwise
+        do nothing
+        """
+        if self._consolechild:
+            try:
+                os.kill(self._consolechild, signal.SIGKILL)
+            except:
+                pass
+
+    ##########################
+    # Actual install methods #
+    ##########################
+
     def start_install(self, consolecb=None, meter=None, removeOld=None,
                       wait=True):
         """
-        Do the startup of the guest installation.
+        Begin the guest install (stage1).
         """
         if removeOld == None:
             removeOld = self.replace
@@ -829,19 +946,12 @@ class Guest(object):
         finally:
             self._cleanup_install()
 
-    def get_continue_inst(self):
-        val = self._lookup_osdict_key("continue")
-        if not val:
-            val = False
-
-        if val == True:
-            # If we are doing an 'import' or 'liveCD' install, there is
-            # no true install process, so continue install has no meaning
-            if not self.get_config_xml(install=True):
-                val = False
-        return val
-
     def continue_install(self, consolecb=None, meter=None, wait=True):
+        """
+        Continue with stage 2 of a guest install. Only required for
+        guests which have the 'continue' flag set (accessed via
+        get_continue_inst)
+        """
         if meter == None:
             meter = progress.BaseMeter()
 
@@ -873,36 +983,6 @@ class Guest(object):
         # for inactive guest, or get the still running install..
         return self.conn.lookupByName(self.name)
 
-
-    def _prepare_install(self, meter):
-        # Initialize install device list
-        self._install_devices = self.get_all_devices()[:]
-
-        # Set regular device defaults
-        self.set_defaults()
-
-        self._installer.prepare(guest = self,
-                                meter = meter)
-        if self._installer.install_disk is not None:
-            self._add_install_dev(self._installer.install_disk)
-
-        # Run 'set_defaults' after install prep, since some installers
-        # (ImageInstaller) alter the device list.
-        self._set_defaults(self._get_install_devs)
-
-    def _cleanup_install(self):
-        # Empty install dev list
-        self._install_devices = []
-
-        self._installer.cleanup()
-
-    def _create_devices(self, progresscb):
-        """
-        Ensure that devices are setup
-        """
-        for dev in self._get_all_install_devs():
-            dev.setup_dev(self.conn, progresscb)
-
     def _do_install(self, consolecb, meter, removeOld=False, wait=True):
         vm = None
         try:
@@ -916,12 +996,17 @@ class Guest(object):
                     if vm.ID() != -1:
                         logging.info("Destroying image %s" %(self.name))
                         vm.destroy()
-                    logging.info("Removing old definition for image %s" %(self.name))
+
+                    logging.info("Removing old definition for image %s" %
+                                 (self.name))
                     vm.undefine()
                 except libvirt.libvirtError, e:
-                    raise RuntimeError, _("Could not remove old vm '%s': %s") %(self.name, str(e))
+                    raise RuntimeError(_("Could not remove old vm '%s': %s") %
+                                       (self.name, str(e)))
+
             else:
-                raise RuntimeError, _("Domain named %s already exists!") %(self.name,)
+                raise RuntimeError(_("Domain named %s already exists!") %
+                                   (self.name,))
 
         child = None
         self._create_devices(meter)
@@ -931,7 +1016,8 @@ class Guest(object):
             meter.start(size=None, text=_("Creating domain..."))
             self.domain = self.conn.createLinux(install_xml, 0)
             if self.domain is None:
-                raise RuntimeError, _("Unable to create domain for the guest, aborting installation!")
+                raise RuntimeError(_("Unable to create domain for the guest, "
+                                     "aborting installation!"))
             meter.end(0)
 
             logging.debug("Created guest, looking to see if it is running")
@@ -939,7 +1025,9 @@ class Guest(object):
             d = _wait_for_domain(self.conn, self.name)
 
             if d is None:
-                raise RuntimeError, _("It appears that your installation has crashed.  You should be able to find more information in the logs")
+                raise RuntimeError(
+                    _("It appears that your installation has crashed.  You "
+                      "should be able to find more information in the logs"))
 
             if consolecb:
                 logging.debug("Launching console callback")
@@ -950,11 +1038,12 @@ class Guest(object):
         logging.debug("Saving XML boot config:\n%s" % boot_xml)
         self.conn.defineXML(boot_xml)
 
-        if child and wait: # if we connected the console, wait for it to finish
+        # if we connected the console, wait for it to finish
+        if child and wait:
             try:
                 os.waitpid(child, 0)
             except OSError, (err_no, msg):
-                print __name__, "waitpid: %s: %s" % (err_no, msg)
+                logging.debug("waitpid: %s: %s" % (err_no, msg))
 
             # ensure there's time for the domain to finish destroying if the
             # install has finished or the guest crashed
@@ -976,43 +1065,10 @@ class Guest(object):
 
         return self.domain
 
-    def post_install_check(self):
-        return self.installer.post_install_check(self)
 
-    def connect_console(self, consolecb, wait=True):
-        logging.debug("Restarted guest, looking to see if it is running")
-
-        self.domain = _wait_for_domain(self.conn, self.name)
-
-        if self.domain is None:
-            raise RuntimeError, _("Domain has not existed.  You should be able to find more information in the logs")
-        elif self.domain.ID() == -1:
-            raise RuntimeError, _("Domain has not run yet.  You should be able to find more information in the logs")
-
-        child = None
-        if consolecb:
-            logging.debug("Launching console callback")
-            child = consolecb(self.domain)
-            self._consolechild = child
-
-        if child and wait: # if we connected the console, wait for it to finish
-            try:
-                os.waitpid(child, 0)
-            except OSError, (err_no, msg):
-                raise RuntimeError, \
-                      "waiting console pid error: %s: %s" % (err_no, msg)
-
-    def validate_parms(self):
-        if self.domain is not None:
-            raise RuntimeError, _("Domain has already been started!")
-
-        if self.name is None or self.memory is None:
-            raise RuntimeError(_("Name and memory must be specified for "
-                                 "all guests!"))
-
-        if _util.vm_uuid_collision(self.conn, self.uuid):
-            raise RuntimeError(_("The UUID you entered is already in "
-                                 "use by another guest!"))
+    ###################
+    # Device defaults #
+    ###################
 
     def _set_default_input_dev(self):
         # This is called at init time, but also whenever the OS changes,
@@ -1071,7 +1127,9 @@ class Guest(object):
                 break
 
 
-    # Guest Dictionary Helper methods
+    ###################################
+    # Guest Dictionary Helper methods #
+    ###################################
 
     def _lookup_osdict_key(self, key):
         """
@@ -1089,12 +1147,6 @@ class Guest(object):
         return osdict.lookup_device_param(self.conn, self.type, self.os_type,
                                           self.os_variant, device_key, param)
 
-    def terminate_console(self):
-        if self._consolechild:
-            try:
-                os.kill(self._consolechild, signal.SIGKILL)
-            except:
-                pass
 
 def _wait_for_domain(conn, name):
     # sleep in .25 second increments until either a) we get running
