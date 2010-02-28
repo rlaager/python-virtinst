@@ -957,6 +957,7 @@ class Guest(object):
 
         cont_xml = self.get_config_xml(disk_boot = True)
         logging.debug("Continuing guest with:\n%s" % cont_xml)
+
         meter.start(size=None, text="Starting domain...")
 
         # As of libvirt 0.5.1 we can't 'create' over an defined VM.
@@ -968,8 +969,6 @@ class Guest(object):
         self.domain.create()
         self.conn.defineXML(finalxml)
 
-        if self.domain is None:
-            raise RuntimeError, _("Unable to start domain for guest, aborting installation!")
         meter.end(0)
 
         self.connect_console(consolecb, wait)
@@ -979,36 +978,14 @@ class Guest(object):
         if consolecb:
             time.sleep(1)
 
-        # This should always work, because it'll lookup a config file
-        # for inactive guest, or get the still running install..
         return self.conn.lookupByName(self.name)
 
     def _do_install(self, consolecb, meter, removeOld=False, wait=True):
-        vm = None
-        try:
-            vm = self.conn.lookupByName(self.name)
-        except libvirt.libvirtError:
-            pass
-
-        if vm is not None:
-            if removeOld :
-                try:
-                    if vm.ID() != -1:
-                        logging.info("Destroying image %s" %(self.name))
-                        vm.destroy()
-
-                    logging.info("Removing old definition for image %s" %
-                                 (self.name))
-                    vm.undefine()
-                except libvirt.libvirtError, e:
-                    raise RuntimeError(_("Could not remove old vm '%s': %s") %
-                                       (self.name, str(e)))
-
-            else:
-                raise RuntimeError(_("Domain named %s already exists!") %
-                                   (self.name,))
-
         child = None
+
+        # Remove existing VM if requested
+        self._replace_original_vm(removeOld)
+
         self._create_devices(meter)
         install_xml = self.get_config_xml()
         if install_xml:
@@ -1049,21 +1026,58 @@ class Guest(object):
             # install has finished or the guest crashed
             time.sleep(1)
 
-        # This should always work, because it'll lookup a config file
-        # for inactive guest, or get the still running install..
         self.domain = self.conn.lookupByName(self.name)
 
-        if self.autostart:
-            try:
-                self.domain.setAutostart(True)
-            except libvirt.libvirtError, e:
-                if support.is_error_nosupport(e):
-                    logging.warn("Could not set autostart flag: libvirt "
-                                 "connection does not support autostart.")
-                else:
-                    raise e
+        # Set domain autostart flag if requested
+        self._flag_autostart()
 
         return self.domain
+
+    def _replace_original_vm(self, removeOld):
+        """
+        Remove the existing VM with the same name if requested, or error
+        if there is a collision.
+        """
+        vm = None
+        try:
+            vm = self.conn.lookupByName(self.name)
+        except libvirt.libvirtError:
+            pass
+
+        if vm is None:
+            return
+
+        if not removeOld:
+            raise RuntimeError(_("Domain named %s already exists!") %
+                               self.name)
+
+        try:
+            if vm.ID() != -1:
+                logging.info("Destroying image %s" % self.name)
+                vm.destroy()
+
+            logging.info("Removing old definition for image %s" % self.name)
+            vm.undefine()
+        except libvirt.libvirtError, e:
+            raise RuntimeError(_("Could not remove old vm '%s': %s") %
+                               (self.name, str(e)))
+
+
+    def _flag_autostart(self):
+        """
+        Set the autostart flag for self.domain if the user requested it
+        """
+        if not self.autostart:
+            return
+
+        try:
+            self.domain.setAutostart(True)
+        except libvirt.libvirtError, e:
+            if support.is_error_nosupport(e):
+                logging.warn("Could not set autostart flag: libvirt "
+                             "connection does not support autostart.")
+            else:
+                raise e
 
 
     ###################
