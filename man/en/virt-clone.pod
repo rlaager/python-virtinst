@@ -111,7 +111,9 @@ See L<virt-install(1)> for more details on sparse vs. nonsparse.
 
 =item --preserve-data
 
-Preserve a new file to use as the disk image for the new guest.
+No storage is cloned: disk images specific by --file are preserved as is,
+and referenced in the new clone XML. This is useful if you want to clone
+a VM XML template, but not the storage contents.
 
 =back
 
