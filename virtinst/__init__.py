@@ -16,7 +16,7 @@
 
 import gettext
 
-gettext_dir = "/usr/share/locale"
+gettext_dir = "::LOCALEDIR::"
 gettext_app = "virtinst"
 
 gettext.bindtextdomain(gettext_app, gettext_dir)
