@@ -879,26 +879,6 @@ def main():
                 "restart your installation.") % guest.name
         raise
 
-def domain_is_shutdown(dominfo, dom=None):
-    if dom:
-        dominfo = dom.info()
-
-    state    = dominfo[0]
-    cpu_time = dominfo[4]
-
-    if state == libvirt.VIR_DOMAIN_SHUTOFF:
-        return True
-
-    # If --wait was specified, the dom object we have was looked up
-    # before initially shutting down, which seems to bogus up the
-    # info data (all 0's). So, if it is bogus, assume the domain is
-    # shutdown. We will catch the error later.
-    return state == libvirt.VIR_DOMAIN_NOSTATE and cpu_time == 0
-
-def domain_is_crashed(dominfo):
-    state = dominfo[0]
-
-    return state == libvirt.VIR_DOMAIN_CRASHED
 
 def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
                install_func):
@@ -910,11 +890,11 @@ def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
         dominfo = dom.info()
         state = dominfo[0]
 
-        if domain_is_crashed(dominfo):
+        if guest.domain_is_crashed():
             print _("Domain has crashed.")
             sys.exit(1)
 
-        if domain_is_shutdown(dominfo):
+        if guest.domain_is_shutdown():
             return dom, state
 
         return None, state
@@ -950,7 +930,7 @@ def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
 
         # Wait loop
         while True:
-            if domain_is_shutdown(None, dom):
+            if guest.domain_is_shutdown():
                 print _("Domain has shutdown. Continuing.")
                 try:
                     # Lookup a new domain object incase current

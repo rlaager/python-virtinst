@@ -902,6 +902,40 @@ class Guest(object):
             except:
                 pass
 
+    def domain_is_shutdown(self):
+        """
+        Return True if the created domain object is shutdown
+        """
+        dom = self.domain
+        if not dom:
+            return False
+
+        dominfo = dom.info()
+
+        state    = dominfo[0]
+        cpu_time = dominfo[4]
+
+        if state == libvirt.VIR_DOMAIN_SHUTOFF:
+            return True
+
+        # If 'wait' was specified, the dom object we have was looked up
+        # before initially shutting down, which seems to bogus up the
+        # info data (all 0's). So, if it is bogus, assume the domain is
+        # shutdown. We will catch the error later.
+        return state == libvirt.VIR_DOMAIN_NOSTATE and cpu_time == 0
+
+    def domain_is_crashed(self):
+        """
+        Return True if the created domain object is in a crashed state
+        """
+        if not self.domain:
+            return False
+
+        dominfo = self.domain.info()
+        state = dominfo[0]
+
+        return state == libvirt.VIR_DOMAIN_CRASHED
+
     ##########################
     # Actual install methods #
     ##########################
