@@ -31,7 +31,9 @@ remoteuri = "__virtinst_test_remote__test:///`pwd`/tests/testdriver.xml"
 xmldir = "tests/cli-test-xml"
 treedir = "%s/faketree" % xmldir
 vcdir = "%s/virtconv" % xmldir
-ro_img = "cli_exist3ro.img"
+ro_dir = "clitest_rodir"
+ro_img = "%s/cli_exist3ro.img" % ro_dir
+ro_noexist_img = "%s/idontexist.img" % ro_dir
 virtconv_out = "virtconv-outdir"
 
 # Images that will be created by virt-install/virt-clone, and removed before
@@ -54,7 +56,7 @@ virtconv_dirs = [virtconv_out]
 exist_files = exist_images + virtimage_exist
 new_files   = new_images + virtimage_new + virtconv_dirs
 clean_files = (new_images + exist_images +
-               virtimage_exist + virtimage_new + virtconv_dirs)
+               virtimage_exist + virtimage_new + virtconv_dirs + [ro_dir])
 
 test_files = {
     'TESTURI'           : testuri,
@@ -69,6 +71,7 @@ test_files = {
     'EXISTIMG1'         : exist_images[0],
     'EXISTIMG2'         : exist_images[1],
     'ROIMG'             : ro_img,
+    'ROIMGNOEXIST'      : ro_noexist_img,
     'POOL'              : "default-pool",
     'VOL'               : "testvol1.img",
     'DIR'               : os.getcwd(),
@@ -500,6 +503,10 @@ args_dict = {
         "--original-xml %(CLONE_STORAGE_XML)s --file /tmp/clonevol",
         # XML w/ non-existent storage, WITHOUT --preserve
         "--original-xml %(CLONE_NOEXIST_XML)s --file %(EXISTIMG1)s",
+        # XML w/ managed storage, specify RO image without preserve
+        "--original-xml %(CLONE_DISK_XML)s --file %(ROIMG)s --file %(ROIMG)s --force",
+        # XML w/ managed storage, specify RO non existent
+        "--original-xml %(CLONE_DISK_XML)s --file %(ROIMG)s --file %(ROIMGNOEXIST)s --force",
       ]
      }, # category "general"
 
@@ -767,18 +774,26 @@ def main():
         if os.path.exists(i):
             raise ValueError("'%s' will be used by testsuite, can not already"
                              " exist." % i)
+
+    os.system("mkdir %s" % ro_dir)
+
     for i in exist_files:
         os.system("touch %s" % i)
 
     # Set ro_img to readonly
     os.system("chmod 444 %s" % ro_img)
+    os.system("chmod 555 %s" % ro_dir)
 
     try:
         run_tests(do_app)
     finally:
-        # Cleanup files
-        for i in clean_files:
-            os.system("rm -rf %s > /dev/null 2>&1" % i)
+        cleanup()
+
+def cleanup():
+    # Cleanup files
+    for i in clean_files:
+        os.system("chmod 777 %s > /dev/null 2>&1" % i)
+        os.system("rm -rf %s > /dev/null 2>&1" % i)
 
 if __name__ == "__main__":
     main()

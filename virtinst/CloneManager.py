@@ -211,7 +211,6 @@ class CloneDesign(object):
         is_list, pathlist = _listify(devpath)
 
         # Check path is valid
-        # XXX: What if disk is being preserved, and storage is readonly?
         for path in pathlist:
             try:
                 device = VirtualDisk.DEVICE_DISK
