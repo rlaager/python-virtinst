@@ -260,6 +260,7 @@ OS_TYPES = {
                         NET  : VIRTIO_NET,
                         INPUT: USB_TABLET,
                      }},
+
         "sles10": { "label": "Suse Linux Enterprise Server",
                     "distro": "suse" },
         "sles11": { "label": "Suse Linux Enterprise Server 11",
@@ -268,6 +269,26 @@ OS_TYPES = {
                         DISK : VIRTIO_DISK,
                         NET  : VIRTIO_NET,
                       },
+                  },
+
+        "mandriva2009": { "label": "Mandriva Linux 2009 and earlier",
+                          "distro": "mandriva" },
+        "mandriva2010": { "label": "Mandriva Linux 2010 and later",
+                          "distro": "mandriva",
+                          "devices" : {
+                            DISK : VIRTIO_DISK,
+                            NET  : VIRTIO_NET,
+                        },
+                  },
+
+        "mes5": { "label": "Mandriva Enterprise Server 5.0",
+                    "distro": "mandriva" },
+        "mes5.1": { "label": "Mandriva Enterprise Server 5.1 and later",
+                    "distro": "mandriva",
+                    "devices" : {
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
+                    },
                   },
         "debianetch": { "label": "Debian Etch", "distro": "debian" },
         "debianlenny": { "label": "Debian Lenny", "distro": "debian",

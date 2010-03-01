@@ -504,7 +504,7 @@ def validate_install_media(guest, location, cdpath, cdinstall=False):
 ### Option parsing
 def parse_args():
     usage = "%prog --name NAME --ram RAM STORAGE INSTALL [options]"
-    parser = cli.VirtOptionParser(usage=usage,
+    parser = optparse.OptionParser(usage=usage,
                                   formatter=cli.VirtHelpFormatter(),
                                   version=virtinst.__version__)
 
