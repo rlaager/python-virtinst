@@ -378,7 +378,8 @@ def graphics_option_group(parser):
 # Specific function for disk prompting. Returns a validated VirtualDisk
 # device.
 #
-def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True):
+def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
+                path_to_clone=None):
 
     retry_path = True
     conn = arg_dict.get("conn")
@@ -396,6 +397,10 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True):
 
         msg = None
         patherr = _("A disk path must be specified.")
+        if path_to_clone:
+            patherr = (_("A disk path must be specified to clone '%s'.") %
+                       path_to_clone)
+
         if not prompt_txt:
             msg = _("What would you like to use as the disk (file path)?")
             if not size is None:
