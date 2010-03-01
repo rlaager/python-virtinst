@@ -292,7 +292,8 @@ class VirtualDisk(VirtualDevice):
                  device=DEVICE_DISK, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
                  volInstall=None, volName=None, bus=None, shareable=False,
-                 driverCache=None, selinuxLabel=None, format=None):
+                 driverCache=None, selinuxLabel=None, format=None,
+                 validate=True):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -331,6 +332,10 @@ class VirtualDisk(VirtualDevice):
         @type selinuxLabel: C{str}
         @param format: Storage volume format to use when creating storage
         @type format: C{str}
+        @param validate: Whether to validate passed parameters against the
+                         local system. Omitting this may cause issues, be
+                         warned!
+        @type validate: C{bool}
         """
 
         VirtualDevice.__init__(self, conn=conn)
@@ -349,6 +354,7 @@ class VirtualDisk(VirtualDevice):
         self._selinux_label = None
         self._clone_path = None
         self._format = None
+        self._validate = validate
 
         # XXX: No property methods for these
         self.transient = transient
@@ -853,6 +859,8 @@ class VirtualDisk(VirtualDevice):
         function to validate all the complex interaction between the various
         disk parameters.
         """
+        if not self._validate:
+            return
 
         if self.__no_storage():
             # No storage specified for a removable device type (CDROM, floppy)
