@@ -428,9 +428,19 @@ class CloneDesign(object):
         # changing mac
         count = ctx.xpathEval("count(/domain/devices/interface/mac)")
         for i in range(1, int(count+1)):
-            node = ctx.xpathEval("/domain/devices/interface[%d]/mac/@address" % i)
+            base_xpath = "/domain/devices/interface[%d]" % i
+            base_node = ctx.xpathEval(base_xpath)[0]
+            node = ctx.xpathEval(base_xpath + "/mac/@address")
+            node = node and node[0] or None
+
+            if not node:
+                node = base_node.newChild(None, "mac", None)
+                node.setProp("address", "tmp")
+                node = ctx.xpathEval(base_xpath + "/mac/@address")[0]
+
+            mac = None
             try:
-                node[0].setContent(self._clone_mac[i-1])
+                mac = self._clone_mac[i-1]
             except Exception:
                 while 1:
                     mac = _util.randomMAC(typ)
@@ -439,7 +449,8 @@ class CloneDesign(object):
                         continue
                     else:
                         break
-                node[0].setContent(mac)
+
+            node.setContent(mac)
 
         if len(self.clone_virtual_disks) < len(self.original_virtual_disks):
             raise ValueError(_("More disks to clone that new paths specified. "
