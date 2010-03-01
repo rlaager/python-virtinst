@@ -45,6 +45,29 @@ def check_if_test_uri_remote(uri):
         _util.is_uri_remote = lambda uri_: True
     return uri
 
+class VirtStreamHandler(logging.StreamHandler):
+
+    def emit(self, record):
+        """
+        Based on the StreamHandler code from python 2.6: ripping out all
+        the unicode handling and just uncoditionally logging seems to fix
+        logging backtraces with unicode locales (for me at least).
+
+        No doubt this is atrocious, but it WORKSFORME!
+        """
+        try:
+            msg = self.format(record)
+            stream = self.stream
+            fs = "%s\n"
+
+            stream.write(fs % msg)
+
+            self.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
+
 class VirtOptionParser(OptionParser):
     '''Subclass to get print_help to work properly with non-ascii text'''
 
@@ -57,9 +80,18 @@ class VirtOptionParser(OptionParser):
     def print_help(self, file=None):
         if file is None:
             file = sys.stdout
+
         encoding = self._get_encoding(file)
-        helpstr = self.format_help().encode(encoding, "replace")
-        file.write(helpstr)
+        helpstr = self.format_help()
+        try:
+            encodedhelp = helpstr.encode(encoding, "replace")
+        except UnicodeError:
+            # I don't know why the above fails hard, unicode makes my head
+            # spin. Just printing the format_help() output seems to work
+            # quite fine, with the occasional character ?.
+            encodedhelp = helpstr
+
+        file.write(encodedhelp)
 
 class VirtHelpFormatter(optparse.IndentedHelpFormatter):
     """
@@ -90,15 +122,17 @@ class VirtHelpFormatter(optparse.IndentedHelpFormatter):
 #
 
 def setupParser(usage=None):
-    parser = VirtOptionParser(usage=usage,
-                              formatter=VirtHelpFormatter(),
-                              version=virtinst.__version__)
+    parse_class = VirtOptionParser
+
+    parser = parse_class(usage=usage,
+                         formatter=VirtHelpFormatter(),
+                         version=virtinst.__version__)
     return parser
 
 def setupGettext():
     locale.setlocale(locale.LC_ALL, '')
     gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
-    gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
+    gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
 
 def setupLogging(appname, debug=False):
     # set up logging
@@ -129,7 +163,7 @@ def setupLogging(appname, debug=False):
                                                dateFormat))
     rootLogger.addHandler(fileHandler)
 
-    streamHandler = logging.StreamHandler(sys.stderr)
+    streamHandler = VirtStreamHandler(sys.stderr)
     if debug:
         streamHandler.setLevel(logging.DEBUG)
         streamHandler.setFormatter(logging.Formatter(streamDebugFormat,
