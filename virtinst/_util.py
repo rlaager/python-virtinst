@@ -210,6 +210,7 @@ def log_exception(msg=""):
 
     @param msg: Option message to log before the backtrace
     """
+    msg = str(msg)
     tb = "".join(traceback.format_exc()).strip()
     if tb != "None":
         if msg:

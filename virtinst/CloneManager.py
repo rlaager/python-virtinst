@@ -328,6 +328,14 @@ class CloneDesign(object):
     preserve = property(get_preserve, set_preserve,
                         doc="If true, preserve ALL original disk devices.")
 
+    def get_preserve_dest_disks(self):
+        return not self.preserve
+    preserve_dest_disks = property(get_preserve_dest_disks,
+                           doc="It true, preserve ALL disk devices for the "
+                               "NEW guest. This means no storage cloning. "
+                               "This is a convenience access for "
+                               "(not CloneManager.preserve)")
+
     def set_force_target(self, dev):
         if type(dev) is list:
             self._force_target = dev[:]
@@ -452,17 +460,20 @@ class CloneDesign(object):
 
             # Setup proper cloning inputs for the new virtual disks
             if orig_disk.vol_object and clone_disk.vol_install:
+
                 # Source and dest are managed. If they share the same pool,
                 # replace vol_install with a CloneVolume instance, otherwise
                 # simply set input_vol on the dest vol_install
                 if (clone_disk.vol_install.pool.name() ==
                     orig_disk.vol_object.storagePoolLookupByVolume().name()):
                     newname = clone_disk.vol_install.name
-                    clone_disk.vol_install = Storage.CloneVolume(newname, orig_disk.vol_object)
+                    clone_disk.vol_install = Storage.CloneVolume(newname,
+                                                        orig_disk.vol_object)
+
                 else:
                     clone_disk.vol_install.input_vol = orig_disk.vol_object
 
-            else:
+            elif not self.preserve_dest_disks:
                 clone_disk.clone_path = orig_disk.path
 
         # Save altered clone xml
@@ -532,9 +543,8 @@ class CloneDesign(object):
         source_node.setProp(prop, clone_disk.path)
 
     # Parse disk paths that need to be cloned from the original guest's xml
-    # Return a tuple of lists:
-    # ([list of VirtualDisk instances of the source paths to clone]
-    #  [indices in the original xml of those disks])
+    # Return a list of VirtualDisk instances pointing to the original
+    # storage
     def _get_original_devices_info(self, xml):
 
         disks   = []
@@ -551,8 +561,9 @@ class CloneDesign(object):
         # Set up virtual disk to encapsulate all relevant path info
         for path, target in lst:
             d = None
+            validate = not self.preserve_dest_disks
             try:
-                if (path and
+                if (path and validate and
                     not VirtualDisk.path_exists(self._hyper_conn, path)):
                     raise ValueError(_("Disk '%s' does not exist.") %
                                      path)
@@ -562,9 +573,11 @@ class CloneDesign(object):
                     # Tell VirtualDisk we are a cdrom to allow empty media
                     device = VirtualDisk.DEVICE_CDROM
 
-                d = VirtualDisk(path, conn=self._hyper_conn, device=device)
+                d = VirtualDisk(path, conn=self._hyper_conn, device=device,
+                                validate=validate)
                 d.target = target
             except Exception, e:
+                _util.log_exception(e)
                 raise ValueError(_("Could not determine original disk "
                                    "information: %s" % str(e)))
             disks.append(d)

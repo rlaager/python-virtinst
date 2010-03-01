@@ -61,6 +61,7 @@ test_files = {
     'REMOTEURI'         : remoteuri,
     'CLONE_DISK_XML'    : "%s/clone-disk.xml" % xmldir,
     'CLONE_STORAGE_XML' : "%s/clone-disk-managed.xml" % xmldir,
+    'CLONE_NOEXIST_XML' : "%s/clone-disk-noexist.xml" % xmldir,
     'IMAGE_XML'         : "%s/image.xml" % xmldir,
     'NEWIMG1'           : new_images[0],
     'NEWIMG2'           : new_images[1],
@@ -478,6 +479,8 @@ args_dict = {
         "--original-xml %(CLONE_STORAGE_XML)s --file %(MANAGEDNEW1)s",
         # XML w/ managed storage, specify managed path across pools
         "--original-xml %(CLONE_STORAGE_XML)s --file /cross-pool/clonevol",
+        # XML w/ non-existent storage, with --preserve
+        "--original-xml %(CLONE_NOEXIST_XML)s --file %(EXISTIMG1)s --preserve",
       ],
 
       "invalid": [
@@ -495,6 +498,8 @@ args_dict = {
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s --force-copy=hdc",
         # XML w/ managed storage, specify unmanaged path (should fail)
         "--original-xml %(CLONE_STORAGE_XML)s --file /tmp/clonevol",
+        # XML w/ non-existent storage, WITHOUT --preserve
+        "--original-xml %(CLONE_NOEXIST_XML)s --file %(EXISTIMG1)s",
       ]
      }, # category "general"
 
