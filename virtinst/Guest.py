@@ -917,10 +917,6 @@ class Guest(object):
         self.validate_parms()
         self._consolechild = None
 
-        if meter is None:
-            # BaseMeter does nothing, but saves a lot of null checking
-            meter = progress.BaseMeter()
-
         self._prepare_install(meter)
         try:
             return self._do_install(consolecb, meter, removeOld, wait)
@@ -933,29 +929,49 @@ class Guest(object):
         guests which have the 'continue' flag set (accessed via
         get_continue_inst)
         """
+        return self._create_guest(consolecb, meter, wait,
+                                  _("Starting domain..."), "continue",
+                                  disk_boot=True,
+                                  first_create=False)
+
+    def _create_guest(self, consolecb, meter, wait,
+                      meter_label, log_label,
+                      disk_boot=False,
+                      first_create=True):
+        """
+        Actually do the XML logging, guest defining/creating, console
+        launching and waiting
+        """
         if meter == None:
             meter = progress.BaseMeter()
 
-        cont_xml = self.get_config_xml(disk_boot = True)
-        logging.debug("Continuing guest with:\n%s" % cont_xml)
+        start_xml = self.get_config_xml(install=True, disk_boot=disk_boot)
+        final_xml = self.get_config_xml(install=False)
+        logging.debug("Generated %s XML: %s" %
+                      (log_label,
+                      (start_xml and ("\n" + start_xml) or "None required")))
 
-        meter.start(size=None, text="Starting domain...")
+        if start_xml:
+            meter.start(size=None, text=meter_label)
 
-        # As of libvirt 0.5.1 we can't 'create' over an defined VM.
-        # So, redefine the existing domain (which should be shutoff at
-        # this point), and start it.
-        finalxml = self.domain.XMLDesc(0)
+            if first_create:
+                dom = self.conn.createLinux(start_xml, 0)
+            else:
+                dom = self.conn.defineXML(start_xml)
+                dom.create()
 
-        self.domain = self.conn.defineXML(cont_xml)
-        self.domain.create()
-        self.conn.defineXML(finalxml)
+            self.domain = dom
+            meter.end(0)
 
-        meter.end(0)
+            logging.debug("Started guest, looking to see if it is running")
+            (self.domain,
+             self._consolechild) = self._wait_and_connect_console(consolecb)
 
-        # Make sure guest is around, connect and wait on console if
-        # requested
-        logging.debug("Restarted guest, looking to see if it is running")
-        self.connect_console(consolecb, wait)
+        logging.debug("Generated boot XML: \n%s" % final_xml)
+        self.domain = self.conn.defineXML(final_xml)
+
+        # if we connected the console, wait for it to finish
+        self._waitpid_console(self._consolechild, wait)
 
         return self.conn.lookupByName(self.name)
 
@@ -966,27 +982,9 @@ class Guest(object):
         # Create devices if required (disk images, etc.)
         self._create_devices(meter)
 
-        install_xml = self.get_config_xml()
-        logging.debug("Generated install XML: %s" %
-                      (install_xml and "\n" + install_xml or "None required"))
-
-        if install_xml:
-            meter.start(size=None, text=_("Creating domain..."))
-            self.conn.createLinux(install_xml, 0)
-            meter.end(0)
-
-            logging.debug("Created guest, looking to see if it is running")
-            (self.domain,
-             self._consolechild) = self._wait_and_connect_console(consolecb)
-
-        boot_xml = self.get_config_xml(install = False)
-        logging.debug("Saving XML boot config:\n%s" % boot_xml)
-        self.conn.defineXML(boot_xml)
-
-        # if we connected the console, wait for it to finish
-        self._waitpid_console(self._consolechild, wait)
-
-        self.domain = self.conn.lookupByName(self.name)
+        self.domain = self._create_guest(consolecb, meter, wait,
+                                         _("Creating domain..."),
+                                         "install")
 
         # Set domain autostart flag if requested
         self._flag_autostart()
