@@ -58,12 +58,15 @@ class VirtOptionParser(OptionParser):
         if file is None:
             file = sys.stdout
         encoding = self._get_encoding(file)
-        file.write(self.format_help().encode(encoding, "replace"))
+        helpstr = self.format_help().encode(encoding, "replace")
+        file.write(helpstr)
 
 class VirtHelpFormatter(optparse.IndentedHelpFormatter):
     """
     Subclass the default help formatter to allow printing newline characters
     in --help output. The way we do this is a huge hack :(
+
+    Inspiration: http://groups.google.com/group/comp.lang.python/browse_thread/thread/6df6e6b541a15bc2/09f28e26af0699b1
     """
     oldwrap = None
 
@@ -81,8 +84,6 @@ class VirtHelpFormatter(optparse.IndentedHelpFormatter):
         ret = []
         for line in text.split("\n"):
             ret.extend(self.oldwrap(line, width))
-        if ret:
-            print "\n".join(ret)
         return ret
 #
 # Setup helpers
