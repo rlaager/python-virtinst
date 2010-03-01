@@ -22,7 +22,7 @@
 import os, sys
 import logging
 import logging.handlers
-import locale
+import gettext, locale
 import optparse
 from optparse import OptionValueError, OptionParser
 
@@ -88,6 +88,17 @@ class VirtHelpFormatter(optparse.IndentedHelpFormatter):
 #
 # Setup helpers
 #
+
+def setupParser(usage=None):
+    parser = VirtOptionParser(usage=usage,
+                              formatter=VirtHelpFormatter(),
+                              version=virtinst.__version__)
+    return parser
+
+def setupGettext():
+    locale.setlocale(locale.LC_ALL, '')
+    gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
+    gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
 
 def setupLogging(appname, debug=False):
     # set up logging

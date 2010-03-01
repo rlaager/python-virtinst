@@ -22,20 +22,15 @@
 
 import sys
 import logging
-import virtinst
 import virtinst.CloneManager as clmgr
 import urlgrabber.progress as progress
 
 from optparse import OptionGroup
-import gettext
-import locale
 import virtinst.cli as cli
 from virtinst.cli import fail
 from virtinst.User import User
 
-locale.setlocale(locale.LC_ALL, '')
-gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
-gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
+cli.setupGettext()
 
 ### General input gathering functions
 def get_clone_name(new_name, auto_clone, design):
@@ -127,7 +122,7 @@ def get_force_target(target, design):
         design.set_force_target(i)
 
 def parse_args():
-    parser = cli.VirtOptionParser(version=virtinst.__version__)
+    parser = cli.setupParser()
 
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=cli.check_before_store,

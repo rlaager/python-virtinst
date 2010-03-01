@@ -32,12 +32,8 @@ from virtinst.cli import fail
 
 import optparse
 from optparse import OptionGroup
-import gettext
-import locale
 
-locale.setlocale(locale.LC_ALL, '')
-gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
-gettext.install(virtinst.gettext_app, virtinst.gettext_dir, unicode=1)
+cli.setupGettext()
 
 ### General input gathering functions
 
@@ -70,9 +66,7 @@ def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
 ### Option parsing
 def parse_args():
     usage = "%prog [options] image.xml"
-    parser = cli.VirtOptionParser(usage=usage,
-                                  formatter=cli.VirtHelpFormatter(),
-                                  version=virtinst.__version__)
+    parser = cli.setupParser(usage)
 
     parser.add_option("", "--connect", type="string", dest="connect",
                       action="callback", callback=cli.check_before_store,
