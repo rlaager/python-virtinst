@@ -328,6 +328,20 @@ class VirtualDisk(VirtualDevice):
 
         return names
 
+    @staticmethod
+    def stat_local_path(path):
+        """
+        Return tuple (storage type, storage size) for the passed path on
+        the local machine. This is a best effort attempt.
+
+        @return: tuple of
+                 (True if regular file, False otherwise, default is True,
+                  max size of storage, default is 0)
+        """
+        try:
+            return _util.stat_disk(path)
+        except:
+            return (True, 0)
 
     def __init__(self, path=None, size=None, transient=False, type=None,
                  device=DEVICE_DISK, driverName=None, driverType=None,
