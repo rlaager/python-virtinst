@@ -287,6 +287,47 @@ class VirtualDisk(VirtualDevice):
 
         return errdict
 
+    @staticmethod
+    def path_in_use_by(conn, path, check_conflict=False):
+        """
+        Return a list of VM names that are using the passed path.
+
+        @param conn: virConnect to check VMs
+        @param path: Path to check for
+        @param check_conflict: Only return names that are truly conflicting:
+                               this will omit guests that are using the disk
+                               with the 'shareable' flag, and possible other
+                               heuristics
+        """
+        if not path:
+            return
+
+        active, inactive = _util.fetch_all_guests(conn)
+        vms = active + inactive
+
+        def count_cb(ctx):
+            c = 0
+
+            template = "count(/domain/devices/disk["
+            if check_conflict:
+                template += "not(shareable) and "
+            template += "source/@%s='%s'])"
+
+            for dtype in ["dev", "file", "dir"]:
+                xpath = template % (dtype, path)
+                c += ctx.xpathEval(xpath)
+
+            return c
+
+        names = []
+        for vm in vms:
+            xml = vm.XMLDesc(0)
+            tmpcount = _util.get_xml_path(xml, func = count_cb)
+            if tmpcount:
+                names.append(vm.name())
+
+        return names
+
 
     def __init__(self, path=None, size=None, transient=False, type=None,
                  device=DEVICE_DISK, driverName=None, driverType=None,
@@ -1228,9 +1269,6 @@ class VirtualDisk(VirtualDevice):
                  return_names passed)
         @rtype: C{bool}
         """
-        active, inactive = _util.fetch_all_guests(conn)
-        vms = active + inactive
-
         if self.vol_object:
             path = self.vol_object.path()
         else:
@@ -1239,31 +1277,12 @@ class VirtualDisk(VirtualDevice):
         if not path:
             return False
 
-        def count_cb(ctx):
-            c = 0
-
-            template = "count(/domain/devices/disk["
-            if self.shareable:
-                template += "not(shareable) and "
-            template += "source/@%s='%s'])"
-
-            for dtype in ["dev", "file", "dir"]:
-                xpath = template % (dtype, path)
-                c += ctx.xpathEval(xpath)
-
-            return c
-
-        count = 0
-        names = []
-        for vm in vms:
-            xml = vm.XMLDesc(0)
-            tmpcount = _util.get_xml_path(xml, func = count_cb)
-            if tmpcount:
-                count += tmpcount
-                names.append(vm.name())
+        check_conflict = self.shareable
+        names = self.path_in_use_by(self.conn, path,
+                                    check_conflict=check_conflict)
 
         ret = False
-        if count > 0:
+        if names:
             ret = True
         if return_names:
             ret = names
