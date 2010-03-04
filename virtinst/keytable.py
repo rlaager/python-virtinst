@@ -13,7 +13,7 @@ keytable = {
     "fo":"fo",
     "fr":"fr",
     "fr-be":"fr-be", "be":"fr-be",
-    "fr-ca":"fr-ca",
+    "fr-ca":"fr-ca", "ca":"fr-ca",
     "fr-ch":"fr-ch", "fr_ch":"fr-ch",
     "hr":"hr",
     "hu":"hu",
