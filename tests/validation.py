@@ -50,6 +50,9 @@ volinst = virtinst.Storage.StorageVolume(conn=testconn,
                                          name="val-vol",
                                          capacity=1)
 
+tmppool = testconn.storagePoolLookupByName("inactive-pool")
+tmppool.destroy()
+
 iface_proto1 = Interface.InterfaceProtocol.protocol_class_for_family(
                 Interface.InterfaceProtocol.INTERFACE_PROTOCOL_FAMILY_IPV4)()
 iface_proto2 = Interface.InterfaceProtocol.protocol_class_for_family(
@@ -130,6 +133,8 @@ args = {
     { 'path' : 'valid', 'size' : 1, 'driverCache' : 'invalid' },
     { 'conn' : testconn, "path" : "/full-pool/newvol.img", "size" : 1,
       'sparse' : False },
+    # Inactive pool w/ volume
+    { 'conn' : testconn, "path" : "/inactive-pool/inactive-vol"},
    ],
 
    'valid' : [
