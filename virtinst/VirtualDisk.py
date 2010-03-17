@@ -794,69 +794,85 @@ class VirtualDisk(VirtualDevice):
         """
         vol = None
         verr = None
+
+        def lookup_vol_by_path():
+            try:
+                return self.conn.storageVolLookupByPath(self.path)
+            except:
+                return None
+
         pool = _util.lookup_pool_by_path(self.conn,
                                          os.path.dirname(self.path))
-        if pool:
-            # Is pool running?
-            if pool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
-                pool = None
+        vol = lookup_vol_by_path()
 
+
+        # Is pool running?
+        if pool and pool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
+            pool = None
+
+        # Attempt to lookup path as a storage volume
+        try:
+            if vol:
+                vol.info()
+        except:
             try:
+                try:
+                    # Pool may need to be refreshed, but if it errors,
+                    # invalidate it
+                    if pool:
+                        pool.refresh(0)
+                except:
+                    pool = None
+                    raise
+
                 vol = self.conn.storageVolLookupByPath(self.path)
                 vol.info()
             except Exception, e:
                 vol = None
+                verr = str(e)
 
-                try:
-                    try:
-                        # Pool may need to be refreshed, but if it errors,
-                        # invalidate it
-                        pool.refresh(0)
-                    except:
-                        pool = None
-                        raise
-                    vol = self.conn.storageVolLookupByPath(self.path)
-                    vol.info()
-                except Exception, e:
-                    vol = None
-                    verr = str(e)
-
-        if not vol:
-            # Path wasn't a volume. See if base of path is a managed
-            # pool, and if so, setup a StorageVolume object
-            if pool:
-                if self.size == None:
-                    raise ValueError(_("Size must be specified for non "
-                                       "existent volume path '%s'" % \
-                                        self.path))
-                logging.debug("Path '%s' is target for pool '%s'. "
-                              "Creating volume '%s'." % \
-                              (os.path.dirname(self.path), pool.name(),
-                               os.path.basename(self.path)))
-                volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
-                cap = (self.size * 1024 * 1024 * 1024)
-                if self.sparse:
-                    alloc = 0
-                else:
-                    alloc = cap
-                vol = volclass(name=os.path.basename(self.path),
-                               capacity=cap, allocation=alloc, pool=pool)
-                self._set_vol_install(vol, validate=False)
-            elif self._is_remote():
-
-                if not verr:
-                    # Since there is no error, no pool was ever found
-                    err = (_("Cannot use storage '%(path)s': '%(rootdir)s' is "
-                             "not managed on the remote host.") %
-                             { 'path' : self.path,
-                               'rootdir' : os.path.dirname(self.path)})
-                else:
-                    err = (_("Cannot use storage %(path)s: %(err)s") %
-                           { 'path' : self.path, 'err' : verr })
-
-                raise ValueError(err)
-        else:
+        if vol:
             self._set_vol_object(vol, validate=False)
+            return
+
+        if not pool:
+            if not self._is_remote():
+                # Building local disk
+                return
+
+            if not verr:
+                # Since there is no error, no pool was ever found
+                err = (_("Cannot use storage '%(path)s': '%(rootdir)s' is "
+                         "not managed on the remote host.") %
+                         { 'path' : self.path,
+                           'rootdir' : os.path.dirname(self.path)})
+            else:
+                err = (_("Cannot use storage %(path)s: %(err)s") %
+                        { 'path' : self.path, 'err' : verr })
+
+            raise ValueError(err)
+
+        # Path wasn't a volume. See if base of path is a managed
+        # pool, and if so, setup a StorageVolume object
+        if self.size == None:
+            raise ValueError(_("Size must be specified for non "
+                               "existent volume path '%s'" % self.path))
+
+        logging.debug("Path '%s' is target for pool '%s'. "
+                      "Creating volume '%s'." %
+                      (os.path.dirname(self.path), pool.name(),
+                       os.path.basename(self.path)))
+
+        volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
+        cap = (self.size * 1024 * 1024 * 1024)
+        if self.sparse:
+            alloc = 0
+        else:
+            alloc = cap
+
+        vol = volclass(name=os.path.basename(self.path),
+                       capacity=cap, allocation=alloc, pool=pool)
+        self._set_vol_install(vol, validate=False)
 
 
     def __sync_params(self):
