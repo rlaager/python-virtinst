@@ -299,6 +299,7 @@
   <allocation>3000</allocation>
   <available>0</available>
   <source>
+    <device path='/dev/hda'/>
   </source>
   <target>
     <path>/halffull-pool</path>
