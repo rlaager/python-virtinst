@@ -797,6 +797,9 @@ class Guest(object):
         @type disk_boot: C{bool}
         """
 
+        # Set device defaults so we can validly generate XML
+        self._set_defaults(self.get_devices)
+
         if install:
             action = "destroy"
         else:

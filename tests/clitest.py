@@ -358,6 +358,8 @@ args_dict = {
         "--hvm --nodisks --pxe --autostart",
         # --description
         "--hvm --nodisks --pxe --description \"foobar & baz\"",
+        # HVM windows install with disk
+        "--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0",
       ],
 
       "invalid": [
