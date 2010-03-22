@@ -711,6 +711,13 @@ class Guest(object):
 
         return ret + "  </features>"
 
+    def _get_cpu_xml(self):
+        """
+        Return <cpu> XML
+        """
+        # Just a stub for now
+        return ""
+
     def _get_clock_xml(self):
         """
         Return <clock/> xml
@@ -739,8 +746,6 @@ class Guest(object):
 
         xml = _util.xml_append(xml,
                                self.installer.get_install_xml(self, install))
-        xml = _util.xml_append(xml, self._get_features_xml())
-        xml = _util.xml_append(xml, self._get_clock_xml())
         return xml
 
     ############################
@@ -834,6 +839,9 @@ class Guest(object):
         xml = add("  <uuid>%s</uuid>" % self.uuid)
         xml = add(desc_xml)
         xml = add("  %s" % osblob)
+        xml = add(self._get_features_xml())
+        xml = add(self._get_cpu_xml())
+        xml = add(self._get_clock_xml())
         xml = add("  <on_poweroff>destroy</on_poweroff>")
         xml = add("  <on_reboot>%s</on_reboot>" % action)
         xml = add("  <on_crash>%s</on_crash>" % action)
