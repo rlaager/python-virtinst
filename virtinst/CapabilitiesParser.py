@@ -100,21 +100,73 @@ class CapabilityFeatures(Features):
             else:
                 d[feature] |= FEATURE_ON
 
-class Host(object):
-    def __init__(self, node = None):
+class CPU(object):
+    def __init__(self, node=None):
         # e.g. "i686" or "x86_64"
         self.arch = None
-
+        self.model = None
+        self.sockets = 1
+        self.cores = 1
+        self.threads = 1
         self.features = CapabilityFeatures()
+
+        if not node is None:
+            self.parseXML(node)
+
+    def parseXML(self, node):
+        newstyle_features = False
+
+        child = node.children
+        while child:
+            # Do a first pass to try and detect new style features
+            if child.name == "feature":
+                newstyle_features = True
+                break
+            child = child.next
+
+        if newstyle_features:
+            self.features = CapabilityFeatures(node)
+
+        child = node.children
+        while child:
+            if child.name == "arch":
+                self.arch = child.content
+            elif child.name == "model":
+                self.model = child.content
+            elif child.name == "topology":
+                self.sockets = xpathString(child, "@sockets") or 1
+                self.cores = xpathString(child, "@cores") or 1
+                self.threads = xpathString(child, "@threads") or 1
+
+            elif child.name == "features" and not newstyle_features:
+                self.features = CapabilityFeatures(child)
+
+            child = child.next
+
+class Host(object):
+    def __init__(self, node = None):
+        self.cpu = CPU()
         self.topology = None
         self.secmodel = None
 
         if not node is None:
             self.parseXML(node)
 
+    # Back compat for CPU class
+    def get_arch(self):
+        return self.cpu.arch
+    def set_arch(self, val):
+        self.cpu.arch = val
+    arch = property(get_arch, set_arch)
+
+    def get_features(self):
+        return self.cpu.features
+    def set_features(self, val):
+        self.cpu.features = val
+    features = property(get_features, set_features)
+
     def parseXML(self, node):
         child = node.children
-        newstyle_features = False
         while child:
             if child.name == "topology":
                 self.topology = Topology(child)
@@ -122,28 +174,8 @@ class Host(object):
             if child.name == "secmodel":
                 self.secmodel = SecurityModel(child)
 
-            if child.name != "cpu":
-                child = child.next
-                continue
-
-            # Do a first pass to try and detect new style features
-            n = child.children
-            while n:
-                if n.name == "feature":
-                    newstyle_features = True
-                    break
-                n = n.next
-
-            if newstyle_features:
-                self.features = CapabilityFeatures(child)
-
-            n = child.children
-            while n:
-                if n.name == "arch":
-                    self.arch = n.content
-                elif n.name == "features" and not newstyle_features:
-                    self.features = CapabilityFeatures(n)
-                n = n.next
+            if child.name == "cpu":
+                self.cpu = CPU(child)
 
             child = child.next
 

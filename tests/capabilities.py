@@ -157,6 +157,11 @@ class TestCapabilities(unittest.TestCase):
         for f in feature_dict.keys():
             self.assertEquals(caps.host.features[f], feature_dict[f])
 
+        self.assertEquals(caps.host.cpu.model, "core2duo")
+        self.assertEquals(caps.host.cpu.threads, "3")
+        self.assertEquals(caps.host.cpu.cores, "5")
+        self.assertEquals(caps.host.cpu.sockets, "7")
+
     def testCapsUtilFuncs(self):
         new_caps = self._buildCaps("libvirt-0.7.6-qemu-caps.xml")
         new_caps_no_kvm = self._buildCaps(

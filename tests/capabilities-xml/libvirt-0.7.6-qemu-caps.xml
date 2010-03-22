@@ -4,7 +4,7 @@
     <cpu>
       <arch>x86_64</arch>
       <model>core2duo</model>
-      <topology sockets='1' cores='2' threads='1'/>
+      <topology sockets='7' cores='5' threads='3'/>
       <feature name='lahf_lm'/>
       <feature name='xtpr'/>
       <feature name='cx16'/>
