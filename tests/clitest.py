@@ -360,10 +360,14 @@ args_dict = {
         "--hvm --nodisks --pxe --description \"foobar & baz\"",
         # HVM windows install with disk
         "--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0",
-        # Watchdog dev default
+        # --watchdog dev default
         "--hvm --nodisks --pxe --watchdog default",
-        # Watchdog opts
+        # --watchdog opts
         "--hvm --nodisks --pxe --watchdog ib700,action=pause",
+        # --sound option
+        "--hvm --nodisks --pxe --sound",
+        # --soundhw option
+        "--hvm --nodisks --pxe --soundhw default --soundhw ac97",
       ],
 
       "invalid": [
@@ -371,8 +375,10 @@ args_dict = {
         "--nodisks --pxe --nonetworks",
         # Colliding name
         "--nodisks --pxe --name test",
-        # Busted watchdog
+        # Busted --watchdog
         "--hvm --nodisks --pxe --watchdog default,action=foobar",
+        # Busted --soundhw
+        "--hvm --nodisks --pxe --soundhw default --soundhw foobar",
       ],
      }, # category "misc"
 

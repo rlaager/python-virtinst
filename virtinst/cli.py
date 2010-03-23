@@ -794,11 +794,18 @@ def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
 
         guest.graphics_dev.keymap = use_keymap
 
-def get_sound(sound, guest):
+def get_sound(old_sound_bool, sound_opts, guest):
+    if not sound_opts:
+        if old_sound_bool:
+            # Use os default
+            guest.sound_devs.append(VirtualAudio(conn=guest.conn))
+        return
 
-    # Use os default
-    if sound:
-        guest.sound_devs.append(VirtualAudio(conn=guest.conn))
+    for model in listify(sound_opts):
+        dev = VirtualAudio(conn=guest.conn)
+        dev.model = model
+        guest.add_device(dev)
+
 
 def get_hostdevs(hostdevs, guest):
     if not hostdevs:
