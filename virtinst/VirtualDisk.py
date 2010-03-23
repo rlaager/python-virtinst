@@ -1079,7 +1079,7 @@ class VirtualDisk(VirtualDevice):
 
         try:
             try:
-                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
+                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_DSYNC)
                 if self.sparse:
                     os.ftruncate(fd, size_bytes)
                     progresscb.update(self.size)
