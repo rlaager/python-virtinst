@@ -636,31 +636,43 @@ class Guest(object):
         raise NotImplementedError
 
     def _get_device_xml(self, install=True):
-        change_disks = []
-        for d in self._get_install_devs(VirtualDevice.VIRTUAL_DEV_DISK):
-            if (d.device == VirtualDisk.DEVICE_CDROM
-                and d.transient
-                and not install):
-                # Keep cdrom around, but with no media attached,
-                # But only if we are a distro that doesn't have a multi
-                # stage install (aka not Windows)
-                if not self.get_continue_inst():
-                    change_disks.append((d, d.path))
-                    d.path = None
+        # If install hasn't been prepared yet, make sure we use
+        # the regular device list
+        inst_devs = self._get_all_install_devs()
+        reg_devs = self.get_all_devices()
+        if len(inst_devs) >= len(reg_devs):
+            devs = inst_devs[:]
+        else:
+            devs = reg_devs[:]
+
+        def do_remove_media(d):
+            # Keep cdrom around, but with no media attached,
+            # But only if we are a distro that doesn't have a multi
+            # stage install (aka not Windows)
+            return (d.virtual_device_type == VirtualDevice.VIRTUAL_DEV_DISK and
+                    d.device == VirtualDisk.DEVICE_CDROM
+                    and d.transient
+                    and not install and
+                    not self.get_continue_inst())
+
+        # Wrapper for building disk XML, handling transient CDROMs
+        def get_dev_xml(dev):
+            origpath = None
+            try:
+                if do_remove_media(dev):
+                    origpath = dev.path
+                    dev.path = None
+
+                return dev.get_xml_config()
+            finally:
+                if origpath:
+                    dev.path = origpath
 
         xml = ""
         try:
-            # If install hasn't been prepared yet, make sure we use
-            # the regular device list
-            inst_devs = self._get_all_install_devs()
-            reg_devs = self.get_all_devices()
-            if len(inst_devs) >= len(reg_devs):
-                devs = inst_devs
-            else:
-                devs = reg_devs
-
+            # Build XML
             for dev in devs:
-                xml = _util.xml_append(xml, dev.get_xml_config())
+                xml = _util.xml_append(xml, get_dev_xml(dev))
         finally:
             try:
                 for disk, path in change_disks:
