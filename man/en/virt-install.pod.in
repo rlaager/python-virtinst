@@ -103,11 +103,6 @@ mind if manually specifying a UUID
 Number of virtual cpus to configure for the guest. Not all hypervisors support
 SMP guests, in which case this argument will be silently ignored
 
-=item --check-cpu
-
-Check that the number virtual cpus requested does not exceed physical CPUs and
-warn if they do.
-
 =item --cpuset=CPUSET
 
 Set which physical cpus the guest can use. C<CPUSET> is a comma separated list of numbers, which can also be specified in ranges. Example:
@@ -117,6 +112,99 @@ Set which physical cpus the guest can use. C<CPUSET> is a comma separated list o
 
 If the value 'auto' is passed, virt-install attempts to automatically determine
 an optimal cpu pinning using NUMA data, if available.
+
+=item --description
+
+Human readable text description of the virtual machine. This will be stored
+in the guests XML configuration for access by other applications.
+
+=back
+
+
+
+
+
+=head2 Installation Method options
+
+=over 2
+
+=item  -c CDROM, --cdrom=CDROM
+
+File or device use as a virtual CD-ROM device for fully virtualized guests.
+It can be path to an ISO image, or to a CDROM device. It can also be a URL
+from which to fetch/access a minimal boot ISO image. The URLs take the same
+format as described for the C<--location> argument. If a cdrom has been
+specified via the C<--disk> option, and neither C<--cdrom> nor any other
+install option is specified, the C<--disk> cdrom is used as the install media.
+
+=item  -l LOCATION, --location=LOCATION
+
+Installation source for guest virtual machine kernel+initrd pair.
+The C<LOCATION> can take one of the following forms:
+
+=over 4
+
+=item DIRECTORY
+
+Path to a local directory containing an installable distribution image
+
+=item nfs:host:/path or nfs://host/path
+
+An NFS server location containing an installable distribution image
+
+=item http://host/path
+
+An HTTP server location containing an installable distribution image
+
+=item ftp://host/path
+
+An FTP server location containing an installable distribution image
+
+=back
+
+Some distro specific url samples:
+
+=over 4
+
+=item Fedora/Red Hat Based
+
+http://download.fedoraproject.org/pub/fedora/linux/releases/10/Fedora/i386/os/
+
+=item Debian/Ubuntu
+
+http://ftp.us.debian.org/debian/dists/etch/main/installer-amd64/
+
+=item Suse
+
+http://download.opensuse.org/distribution/11.0/repo/oss/
+
+=item Mandriva
+
+ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2009.0/i586/
+
+=back
+
+=item  --pxe
+
+Use the PXE boot protocol to load the initial ramdisk and kernel for starting
+the guest installation process.
+
+=item  --import
+
+Skip the OS installation process, and build a guest around an existing
+disk image. The device used for booting is the first device specified via
+C<--disk> or C<--file>.
+
+=item  --livecd
+
+Specify that the installation media is a live CD and thus the guest
+needs to be configured to boot off the CDROM device permanently. It
+may be desirable to also use the C<--nodisks> flag in combination.
+
+=item  -x EXTRA, --extra-args=EXTRA
+
+Additional kernel command line arguments to pass to the installer when
+performing a guest install from C<--location>.
 
 =item  --os-type=OS_TYPE
 
@@ -145,6 +233,322 @@ Valid values are:
 
 ::VARIANT VALUES::
 
+=back
+
+
+
+
+
+=head2 Storage Configuration
+
+=over 2
+
+=item --disk=DISKOPTS
+
+Specifies media to use as storage for the guest, with various options. The
+general format of a disk string is
+
+    --disk opt1=val1,opt2=val2,...
+
+To specify media, the command can either be:
+
+    --disk /some/storage/path,opt1=val1
+
+or explicitly specify one of the following arguments:
+
+=over 4
+
+=item B<path>
+
+A path to some storage media to use, existing or not. Existing media can be
+a file or block device. If installing on a remote host, the existing media
+must be shared as a libvirt storage volume.
+
+Specifying a non-existent path implies attempting to create the new storage,
+and will require specifyng a 'size' value. If the base directory of the path
+is a libvirt storage pool on the host, the new storage will be created as a
+libvirt storage volume. For remote hosts, the base directory is required to be
+a storage pool if using this method.
+
+=item B<pool>
+
+An existing libvirt storage pool name to create new storage on. Requires
+specifying a 'size' value.
+
+=item B<vol>
+
+An existing libvirt storage volume to use. This is specified as
+'poolname/volname'.
+
+=back
+
+Other available options:
+
+=over 4
+
+=item B<device>
+
+Disk device type. Value can be 'cdrom', 'disk', or 'floppy'. Default is
+'disk'. If a 'cdrom' is specified, and no install method is chosen, the
+cdrom is used as the install media.
+
+=item B<bus>
+
+Disk bus type. Value can be 'ide', 'scsi', 'usb', 'virtio' or 'xen'.  The
+default is hypervisor dependent since not all hypervisors support all bus
+types.
+
+=item B<perms>
+
+Disk permissions. Value can be 'rw' (Read/Write), 'ro' (Readonly),
+or 'sh' (Shared Read/Write). Default is 'rw'
+
+=item B<size>
+
+size (in GB) to use if creating new storage
+
+=item B<sparse>
+
+whether to skip fully allocating newly created storage. Value is 'true' or
+'false'. Default is 'true' (do not fully allocate).
+
+The initial time taken to fully-allocate the guest virtual disk (spare=false)
+will be usually by balanced by faster install times inside the guest. Thus
+use of this option is recommended to ensure consistently high performance
+and to avoid I/O errors in the guest should the host filesystem fill up.
+
+=item B<cache>
+
+The cache mode to be used. The host pagecache provides cache memory.
+The cache value can be 'none', 'writethrough', or 'writeback'.
+'writethrough' provides read caching. 'writeback' provides
+read and write caching.
+
+=item B<format>
+
+Image format to be used if creating managed storage. For file volumes, this
+can be 'raw', 'qcow2', 'vmdk', etc. See format types in
+L<http://libvirt.org/storage.html> for possible values.
+
+=back
+
+See the examples section for some uses. This option deprecates C<--file>,
+C<--file-size>, and C<--nonsparse>.
+
+=item --nodisks
+
+Request a virtual machine without any local disk storage, typically used for
+running 'Live CD' images or installing to network storage (iSCSI or NFS root).
+
+=item -f DISKFILE, --file=DISKFILE
+
+This option is deprecated in favor of C<--disk path=DISKFILE>.
+
+=item -s DISKSIZE, --file-size=DISKSIZE
+
+This option is deprecated in favor of C<--disk ...,size=DISKSIZE,...>
+
+=item --nonsparse
+
+This option is deprecated in favor of C<--disk ...,sparse=false,...>
+
+=back
+
+
+
+
+
+=head2 Networking Configuration
+
+=over 2
+
+=item -w NETWORK, --network=NETWORK,opt1=val1,opt2=val2
+
+Connect the guest to the host network. The value for C<NETWORK> can take
+one of 3 formats:
+
+=over 4
+
+=item bridge=BRIDGE
+
+Connect to a bridge device in the host called C<BRIDGE>. Use this option if
+the host has static networking config & the guest requires full outbound
+and inbound connectivity  to/from the LAN. Also use this if live migration
+will be used with this guest.
+
+=item network=NAME
+
+Connect to a virtual network in the host called C<NAME>. Virtual networks
+can be listed, created, deleted using the C<virsh> command line tool. In
+an unmodified install of C<libvirt> there is usually a virtual network
+with a name of C<default>. Use a virtual network if the host has dynamic
+networking (eg NetworkManager), or using wireless. The guest will be 
+NATed to the LAN by whichever connection is active.
+
+=item user
+
+Connect to the LAN using SLIRP. Only use this if running a QEMU guest as
+an unprivileged user. This provides a very limited form of NAT.
+
+=back
+
+If this option is omitted a single NIC will be created in the guest. If
+there is a bridge device in the host with a physical interface enslaved,
+that will be used for connectivity. Failing that, the virtual network
+called C<default> will be used. This option can be specified multiple
+times to setup more than one NIC.
+
+Other available options are:
+
+=over 4
+
+=item B<model>
+
+Network device model as seen by the guest. Value can be any nic model supported
+by the hypervisor, e.g.: 'e1000', 'rtl8139', 'virtio', ...
+
+=item B<mac>
+
+Fixed MAC address for the guest; If this parameter is omitted, or the value
+C<RANDOM> is specified a suitable address will be randomly generated. For
+Xen virtual machines it is required that the first 3 pairs in the MAC address
+be the sequence '00:16:3e', while for QEMU or KVM virtual machines it must
+be '52:54:00'.
+
+=back
+
+=item --nonetworks
+
+Request a virtual machine without any network interfaces.
+
+=item -b BRIDGE, --bridge=BRIDGE
+
+This parameter is deprecated in favour of
+C<--network bridge=bridge_name>.
+
+=item -m MAC, --mac=MAC
+
+This parameter is deprecated in favour of C<--network NETWORK,mac=12:34...>
+
+=back
+
+
+
+
+
+=head2 Graphics Configuration
+
+If no graphics option is specified, C<virt-install> will default to --vnc
+if the DISPLAY environment variable is set, otherwise --nographics is used.
+
+=over 2
+
+=item  --vnc
+
+Setup a virtual console in the guest and export it as a VNC server in
+the host. Unless the C<--vncport> parameter is also provided, the VNC
+server will run on the first free port number at 5900 or above. The
+actual VNC display allocated can be obtained using the C<vncdisplay>
+command to C<virsh> (or L<virt-viewer(1)> can be used which handles this
+detail for the use).
+
+=item  --vncport=VNCPORT
+
+Request a permanent, statically assigned port number for the guest VNC
+console. Use of this option is discouraged as other guests may automatically
+choose to run on this port causing a clash.
+
+=item --vnclisten=VNCLISTEN
+
+Address to listen on for VNC connections. Default is typically 127.0.0.1
+(localhost only), but some hypervisors allow changing this globally (for
+example, the qemu driver default can be changed in /etc/libvirt/qemu.conf).
+Use 0.0.0.0 to allow access from other machines.
+
+=item  -k KEYMAP, --keymap=KEYMAP
+
+Request that the virtual VNC console be configured to run with a specific
+keyboard layout. If the special value 'local' is specified, virt-install
+will attempt to configure to use the same keymap as the local system. A value
+of 'none' specifically defers to the hypervisor. Default behavior is
+hypervisor specific, but typically is the same as 'local'.
+
+=item  --sdl
+
+Setup a virtual console in the guest and display an SDL window in the
+host to render the output. If the SDL window is closed the guest may
+be unconditionally terminated.
+
+=item  --nographics
+
+No graphical console will be allocated for the guest. Fully virtualized guests
+(Xen FV or QEmu/KVM) will need to have a text console configured on the first
+serial port in the guest (this can be done via the --extra-args option). Xen
+PV will set this up automatically. The command 'virsh console NAME' can be
+used to connect to the serial device.
+
+=item  --noautoconsole
+
+Don't automatically try to connect to the guest console. The default behaviour
+is to launch a VNC client to display the graphical console, or to run the
+C<virsh> C<console> command to display the text console. Use of this parameter
+will disable this behaviour.
+
+=back
+
+
+
+
+=head2 Virtualization Type options
+
+Options to override the default virtualization type choices.
+
+=over 2
+
+=item  -v, --hvm
+
+Request the use of full virtualization, if both para & full virtualization are
+available on the host. This parameter may not be available if connecting to a
+Xen hypervisor on a machine without hardware virtualization support. This
+parameter is implied if connecting to a QEMU based hypervisor.
+
+=item  -p, --paravirt
+
+This guest should be a paravirtualized guest. If the host supports both
+para & full virtualization, and neither this parameter nor the C<--hvm>
+are specified, this will be assumed.
+
+=item --virt-type
+
+The hypervisor to install on. Example choices are kvm, qemu, xen, or kqemu.
+Availabile options are listed via 'virsh capabilities' in the <domain> tags.
+
+=item  --accelerate
+
+Prefer KVM or KQEMU (in that order) if installing a QEMU guest. This behavior
+is now the default, and this option is deprecated. To install a plain QEMU
+guest, use '--virt-type qemu'
+
+=item  --noapic
+
+Override the OS type / variant to disables the APIC setting for fully
+virtualized guest.
+
+=item  --noacpi
+
+Override the OS type / variant to disables the ACPI setting for fully
+virtualized guest.
+
+=back
+
+
+
+
+
+=head2 Device Options
+
+=over 2
+
 =item --host-device=HOSTDEV
 
 Attach a physical host device to the guest. Some example values for HOSTDEV:
@@ -168,14 +572,6 @@ USB by vendor, product (via lsusb).
 PCI device (via lspci).
 
 =back
-
-=back
-
-=head2 Full Virtualization specific options
-
-Parameters specific only to fully virtualized guest installs.
-
-=over 2
 
 =item --sound
 
@@ -301,403 +697,21 @@ Unix socket (see unix(7). MODE has similar behavior and defaults as 'tcp'.
 
 =back
 
-=item --description
-
-Human readable text description of the virtual machine. This will be stored
-in the guests XML configuration for access by other applications.
-
-=item  --noapic
-
-Override the OS type / variant to disables the APIC setting for fully
-virtualized guest.
-
-=item  --noacpi
-
-Override the OS type / variant to disables the ACPI setting for fully
-virtualized guest.
-
-=back
-
-=head2 Virtualization Type options
-
-Options to override the default virtualization type choices.
-
-=over 2
-
-=item  -v, --hvm
-
-Request the use of full virtualization, if both para & full virtualization are
-available on the host. This parameter may not be available if connecting to a
-Xen hypervisor on a machine without hardware virtualization support. This
-parameter is implied if connecting to a QEMU based hypervisor.
-
-=item  -p, --paravirt
-
-This guest should be a paravirtualized guest. If the host supports both
-para & full virtualization, and neither this parameter nor the C<--hvm>
-are specified, this will be assumed.
-
-=item --virt-type
-
-The hypervisor to install on. Example choices are kvm, qemu, xen, or kqemu.
-Availabile options are listed via 'virsh capabilities' in the <domain> tags.
-
-=item  --accelerate
-
-Prefer KVM or KQEMU (in that order) if installing a QEMU guest. This behavior
-is now the default, and this option is deprecated. To install a plain QEMU
-guest, use '--virt-type qemu'
-
-=back
-
-=head2 Installation Method options
-
-=over 2
-
-=item  -c CDROM, --cdrom=CDROM
-
-File or device use as a virtual CD-ROM device for fully virtualized guests.
-It can be path to an ISO image, or to a CDROM device. It can also be a URL
-from which to fetch/access a minimal boot ISO image. The URLs take the same
-format as described for the C<--location> argument. If a cdrom has been
-specified via the C<--disk> option, and neither C<--cdrom> nor any other
-install option is specified, the C<--disk> cdrom is used as the install media.
-
-=item  -l LOCATION, --location=LOCATION
-
-Installation source for guest virtual machine kernel+initrd pair.
-The C<LOCATION> can take one of the following forms:
-
-=over 4
-
-=item DIRECTORY
-
-Path to a local directory containing an installable distribution image
-
-=item nfs:host:/path or nfs://host/path
-
-An NFS server location containing an installable distribution image
-
-=item http://host/path
-
-An HTTP server location containing an installable distribution image
-
-=item ftp://host/path
-
-An FTP server location containing an installable distribution image
-
-=back
-
-Some distro specific url samples:
-
-=over 4
-
-=item Fedora/Red Hat Based
-
-http://download.fedoraproject.org/pub/fedora/linux/releases/10/Fedora/i386/os/
-
-=item Debian/Ubuntu
-
-http://ftp.us.debian.org/debian/dists/etch/main/installer-amd64/
-
-=item Suse
-
-http://download.opensuse.org/distribution/11.0/repo/oss/
-
-=item Mandriva
-
-ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/2009.0/i586/
-
-=back
-
-=item  --pxe
-
-Use the PXE boot protocol to load the initial ramdisk and kernel for starting
-the guest installation process.
-
-=item  --import
-
-Skip the OS installation process, and build a guest around an existing
-disk image. The device used for booting is the first device specified via
-C<--disk> or C<--file>.
-
-=item  --livecd
-
-Specify that the installation media is a live CD and thus the guest
-needs to be configured to boot off the CDROM device permanently. It
-may be desirable to also use the C<--nodisks> flag in combination.
-
-=item  -x EXTRA, --extra-args=EXTRA
-
-Additional kernel command line arguments to pass to the installer when
-performing a guest install from C<--location>.
-
-=back
-
-=head2 Storage Configuration
-
-=over 2
-
-=item --disk=DISKOPTS
-
-Specifies media to use as storage for the guest, with various options. The
-general format of a disk string is
-
-    --disk opt1=val1,opt2=val2,...
-
-To specify media, the command can either be:
-
-    --disk /some/storage/path,opt1=val1
-
-or explicitly specify one of the following arguments:
-
-=over 4
-
-=item B<path>
-
-A path to some storage media to use, existing or not. Existing media can be
-a file or block device. If installing on a remote host, the existing media
-must be shared as a libvirt storage volume.
-
-Specifying a non-existent path implies attempting to create the new storage,
-and will require specifyng a 'size' value. If the base directory of the path
-is a libvirt storage pool on the host, the new storage will be created as a
-libvirt storage volume. For remote hosts, the base directory is required to be
-a storage pool if using this method.
-
-=item B<pool>
-
-An existing libvirt storage pool name to create new storage on. Requires
-specifying a 'size' value.
-
-=item B<vol>
-
-An existing libvirt storage volume to use. This is specified as
-'poolname/volname'.
-
-=back
-
-Other available options:
-
-=over 4
-
-=item B<device>
-
-Disk device type. Value can be 'cdrom', 'disk', or 'floppy'. Default is
-'disk'. If a 'cdrom' is specified, and no install method is chosen, the
-cdrom is used as the install media.
-
-=item B<bus>
-
-Disk bus type. Value can be 'ide', 'scsi', 'usb', 'virtio' or 'xen'.  The
-default is hypervisor dependent since not all hypervisors support all bus
-types.
-
-=item B<perms>
-
-Disk permissions. Value can be 'rw' (Read/Write), 'ro' (Readonly),
-or 'sh' (Shared Read/Write). Default is 'rw'
-
-=item B<size>
-
-size (in GB) to use if creating new storage
-
-=item B<sparse>
-
-whether to skip fully allocating newly created storage. Value is 'true' or
-'false'. Default is 'true' (do not fully allocate).
-
-The initial time taken to fully-allocate the guest virtual disk (spare=false)
-will be usually by balanced by faster install times inside the guest. Thus
-use of this option is recommended to ensure consistently high performance
-and to avoid I/O errors in the guest should the host filesystem fill up.
-
-=item B<cache>
-
-The cache mode to be used. The host pagecache provides cache memory.
-The cache value can be 'none', 'writethrough', or 'writeback'.
-'writethrough' provides read caching. 'writeback' provides
-read and write caching.
-
-=item B<format>
-
-Image format to be used if creating managed storage. For file volumes, this
-can be 'raw', 'qcow2', 'vmdk', etc. See format types in
-L<http://libvirt.org/storage.html> for possible values.
-
-=back
-
-See the examples section for some uses. This option deprecates C<--file>,
-C<--file-size>, and C<--nonsparse>.
-
-=item --nodisks
-
-Request a virtual machine without any local disk storage, typically used for
-running 'Live CD' images or installing to network storage (iSCSI or NFS root).
-
-=item -f DISKFILE, --file=DISKFILE
-
-This option is deprecated in favor of C<--disk path=DISKFILE>.
-
-=item -s DISKSIZE, --file-size=DISKSIZE
-
-This option is deprecated in favor of C<--disk ...,size=DISKSIZE,...>
-
-=item --nonsparse
-
-This option is deprecated in favor of C<--disk ...,sparse=false,...>
-
-=back
-
-=head2 Networking Configuration
-
-=over 2
-
-=item -w NETWORK, --network=NETWORK,opt1=val1,opt2=val2
-
-Connect the guest to the host network. The value for C<NETWORK> can take
-one of 3 formats:
-
-=over 4
-
-=item bridge=BRIDGE
-
-Connect to a bridge device in the host called C<BRIDGE>. Use this option if
-the host has static networking config & the guest requires full outbound
-and inbound connectivity  to/from the LAN. Also use this if live migration
-will be used with this guest.
-
-=item network=NAME
-
-Connect to a virtual network in the host called C<NAME>. Virtual networks
-can be listed, created, deleted using the C<virsh> command line tool. In
-an unmodified install of C<libvirt> there is usually a virtual network
-with a name of C<default>. Use a virtual network if the host has dynamic
-networking (eg NetworkManager), or using wireless. The guest will be 
-NATed to the LAN by whichever connection is active.
-
-=item user
-
-Connect to the LAN using SLIRP. Only use this if running a QEMU guest as
-an unprivileged user. This provides a very limited form of NAT.
-
-=back
-
-If this option is omitted a single NIC will be created in the guest. If
-there is a bridge device in the host with a physical interface enslaved,
-that will be used for connectivity. Failing that, the virtual network
-called C<default> will be used. This option can be specified multiple
-times to setup more than one NIC.
-
-Other available options are:
-
-=over 4
-
-=item B<model>
-
-Network device model as seen by the guest. Value can be any nic model supported
-by the hypervisor, e.g.: 'e1000', 'rtl8139', 'virtio', ...
-
-=item B<mac>
-
-Fixed MAC address for the guest; If this parameter is omitted, or the value
-C<RANDOM> is specified a suitable address will be randomly generated. For
-Xen virtual machines it is required that the first 3 pairs in the MAC address
-be the sequence '00:16:3e', while for QEMU or KVM virtual machines it must
-be '52:54:00'.
-
-=back
-
-=item --nonetworks
-
-Request a virtual machine without any network interfaces.
-
-=item -b BRIDGE, --bridge=BRIDGE
-
-This parameter is deprecated in favour of
-C<--network bridge=bridge_name>.
-
-=item -m MAC, --mac=MAC
-
-This parameter is deprecated in favour of C<--network NETWORK,mac=12:34...>
-
-=back
-
-=head2 Graphics Configuration
-
-If no graphics option is specified, C<virt-install> will default to --vnc
-if the DISPLAY environment variable is set, otherwise --nographics is used.
-
-=over 2
-
-=item  --vnc
-
-Setup a virtual console in the guest and export it as a VNC server in
-the host. Unless the C<--vncport> parameter is also provided, the VNC
-server will run on the first free port number at 5900 or above. The
-actual VNC display allocated can be obtained using the C<vncdisplay>
-command to C<virsh> (or L<virt-viewer(1)> can be used which handles this
-detail for the use).
-
-=item  --vncport=VNCPORT
-
-Request a permanent, statically assigned port number for the guest VNC
-console. Use of this option is discouraged as other guests may automatically
-choose to run on this port causing a clash.
-
-=item --vnclisten=VNCLISTEN
-
-Address to listen on for VNC connections. Default is typically 127.0.0.1
-(localhost only), but some hypervisors allow changing this globally (for
-example, the qemu driver default can be changed in /etc/libvirt/qemu.conf).
-Use 0.0.0.0 to allow access from other machines.
-
-=item  -k KEYMAP, --keymap=KEYMAP
-
-Request that the virtual VNC console be configured to run with a specific
-keyboard layout. If the special value 'local' is specified, virt-install
-will attempt to configure to use the same keymap as the local system. A value
-of 'none' specifically defers to the hypervisor. Default behavior is
-hypervisor specific, but typically is the same as 'local'.
-
-=item  --sdl
-
-Setup a virtual console in the guest and display an SDL window in the
-host to render the output. If the SDL window is closed the guest may
-be unconditionally terminated.
-
 =item --video=VIDEO
 
 Specify what video device model will be attached to the guest. Valid values
 for VIDEO are hypervisor specific, but some options for recent kvm are
 cirrus, vga, or vmvga (vmware).
 
-=item  --nographics
-
-No graphical console will be allocated for the guest. Fully virtualized guests
-(Xen FV or QEmu/KVM) will need to have a text console configured on the first
-serial port in the guest (this can be done via the --extra-args option). Xen
-PV will set this up automatically. The command 'virsh console NAME' can be
-used to connect to the serial device.
-
-=item  --noautoconsole
-
-Don't automatically try to connect to the guest console. The default behaviour
-is to launch a VNC client to display the graphical console, or to run the
-C<virsh> C<console> command to display the text console. Use of this parameter
-will disable this behaviour.
-
 =back
+
+
+
+
 
 =head2 Miscellaneous Options
 
 =over 2
-
-=item  -d, --debug
-
-Print debugging information to the terminal when running the install process.
-The debugging information is also stored in C<$HOME/.virtinst/virt-install.log>
-even if this parameter is omitted.
 
 =item --autostart
 
@@ -729,13 +743,24 @@ say yes. For any other prompts, the application will exit.
 Specifically enable prompting for required information. Default prompting
 is off (as of virtinst 0.400.0)
 
+=item --check-cpu
+
+Check that the number virtual cpus requested does not exceed physical CPUs and
+warn if they do.
+
+=item  -d, --debug
+
+Print debugging information to the terminal when running the install process.
+The debugging information is also stored in C<$HOME/.virtinst/virt-install.log>
+even if this parameter is omitted.
+
 =back
 
 =head1 EXAMPLES
 
 Install a KVM guest (assuming proper host support), creating a new
-+storage file, virtual networking, booting from the host CDROM, using
-+VNC server/viewer.
+storage file, virtual networking, booting from the host CDROM, using
+VNC server/viewer.
 
   # virt-install \
        --connect qemu:///system \
