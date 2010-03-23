@@ -26,6 +26,7 @@ from virtinst import VirtualNetworkInterface
 from virtinst import VirtualHostDeviceUSB, VirtualHostDevicePCI
 from virtinst import VirtualCharDevice
 from virtinst import VirtualVideoDevice
+from virtinst import VirtualController
 import tests
 
 conn = tests.open_testdriver()
@@ -628,6 +629,15 @@ class TestXMLConfig(unittest.TestCase):
         d3 = VirtualDisk(conn=g.conn, path="/default-pool/testvol1.img",
                          bus="scsi", driverName="qemu")
         g.disks.append(d3)
+
+        # Controller devices
+        c1 = VirtualController.get_class_for_type(VirtualController.CONTROLLER_TYPE_IDE)(g.conn)
+        c1.index = "3"
+        c2 = VirtualController.get_class_for_type(VirtualController.CONTROLLER_TYPE_VIRTIOSERIAL)(g.conn)
+        c2.ports = "32"
+        c2.vectors = "17"
+        g.add_device(c1)
+        g.add_device(c2)
 
         # Network devices
         net1 = get_virtual_network()

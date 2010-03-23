@@ -38,6 +38,8 @@
       <source file='/default-pool/testvol1.img'/>
       <target dev='sdb' bus='scsi'/>
     </disk>
+    <controller type='ide' index='3'/>
+    <controller type='virtio-serial' index='0' ports='32' vectors='17'/>
     <interface type='network'>
       <source network='default'/>
       <mac address='11:22:33:44:55:66'/>

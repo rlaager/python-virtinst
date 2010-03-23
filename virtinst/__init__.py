@@ -41,6 +41,7 @@ from VirtualHostDevice import (VirtualHostDevice, VirtualHostDeviceUSB,
                                VirtualHostDevicePCI)
 from VirtualCharDevice import VirtualCharDevice
 from VirtualVideoDevice import VirtualVideoDevice
+from VirtualController import VirtualController
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
 from DistroInstaller import DistroInstaller
@@ -65,4 +66,5 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "Storage", "Interface",
            "User", "util", "support", "VirtualDevice", "Clock", "Seclabel",
            "VirtualHostDevice", "VirtualHostDeviceUSB", "VirtualVideoDevice",
-           "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice"]
+           "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice",
+           "VirtualController"]
