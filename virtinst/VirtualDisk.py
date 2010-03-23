@@ -1307,8 +1307,11 @@ class VirtualDisk(VirtualDevice):
         if not path:
             return False
 
+        if not conn:
+            conn = self.conn
+
         check_conflict = self.shareable
-        names = self.path_in_use_by(self.conn, path,
+        names = self.path_in_use_by(conn, path,
                                     check_conflict=check_conflict)
 
         ret = False
