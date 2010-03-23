@@ -177,6 +177,40 @@ def get_watchdog(watchdogs, guest):
         except Exception, e:
             fail(_("Error in watchdog device parameters: %s") % str(e))
 
+def get_security(security, guest):
+    seclist = cli.listify(security)
+    secopts = seclist and seclist[0] or None
+    if not secopts:
+        return
+
+    # Parse security opts
+    opts = cli.parse_optstr(secopts)
+    secmodel = virtinst.Seclabel(guest.conn)
+
+    def get_and_clear(dictname):
+        val = None
+        if opts.has_key(dictname):
+            val = opts[dictname]
+            del(opts[dictname])
+        return val
+
+    mode = get_and_clear("type")
+    label = get_and_clear("label")
+
+    if label:
+        secmodel.label = label
+        if not mode:
+            mode = secmodel.SECLABEL_TYPE_STATIC
+    if mode:
+        secmodel.type = mode
+
+    # If extra parameters, then user passed some garbage param
+    if opts:
+        raise ValueError(_("Unknown option(s) %s") % opts.keys())
+
+    secmodel.get_xml_config()
+    guest.seclabel = secmodel
+
 def parse_disk_option(guest, path, size):
     """helper to properly parse --disk options"""
     abspath = None
@@ -554,6 +588,9 @@ def parse_args():
                     action="callback", callback=cli.check_before_store,
                     help=_("Human readable description of the VM to store in "
                            "the generated XML."))
+    geng.add_option("", "--security", type="string", dest="security",
+                    action="callback", callback=cli.check_before_store,
+                    help=_("Set domain security driver configuration."))
     parser.add_option_group(geng)
 
     insg = OptionGroup(parser, _("Installation Method Options"))
@@ -790,6 +827,7 @@ def main():
     cli.get_uuid(options.uuid, guest)
     cli.get_vcpus(options.vcpus, options.check_cpu, guest, conn)
     cli.get_cpuset(options.cpuset, guest.memory, guest, conn)
+    get_security(options.security, guest)
 
     get_watchdog(options.watchdog, guest)
     cli.get_sound(options.sound, options.soundhw, guest)

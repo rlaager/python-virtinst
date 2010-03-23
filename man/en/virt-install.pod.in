@@ -118,6 +118,12 @@ an optimal cpu pinning using NUMA data, if available.
 Human readable text description of the virtual machine. This will be stored
 in the guests XML configuration for access by other applications.
 
+=item --security type=TYPE[,label=LABEL]
+
+Configure domain security driver settings. Type can be either 'static' or
+'dynamic'. 'static' configuration requires a security LABEL. Specifying
+LABEL without TYPE implies static configuration.
+
 =back
 
 

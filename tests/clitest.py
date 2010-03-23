@@ -368,6 +368,10 @@ args_dict = {
         "--hvm --nodisks --pxe --sound",
         # --soundhw option
         "--hvm --nodisks --pxe --soundhw default --soundhw ac97",
+        # --security dynamic
+        "--hvm --nodisks --pxe --security type=dynamic",
+        # --security implicit static
+        "--hvm --nodisks --pxe --security label=foobar.label",
       ],
 
       "invalid": [
@@ -379,6 +383,8 @@ args_dict = {
         "--hvm --nodisks --pxe --watchdog default,action=foobar",
         # Busted --soundhw
         "--hvm --nodisks --pxe --soundhw default --soundhw foobar",
+        # Busted --security
+        "--hvm --nodisks --pxe --security type=foobar",
       ],
      }, # category "misc"
 
