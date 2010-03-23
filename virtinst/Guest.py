@@ -669,16 +669,9 @@ class Guest(object):
                     dev.path = origpath
 
         xml = ""
-        try:
-            # Build XML
-            for dev in devs:
-                xml = _util.xml_append(xml, get_dev_xml(dev))
-        finally:
-            try:
-                for disk, path in change_disks:
-                    disk.path = path
-            except:
-                pass
+        # Build XML
+        for dev in devs:
+            xml = _util.xml_append(xml, get_dev_xml(dev))
 
         return xml
 
