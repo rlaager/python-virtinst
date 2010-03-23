@@ -27,16 +27,11 @@ class PXEInstaller(Installer.Installer):
         pass
 
     def get_install_xml(self, guest, isinstall):
-        if isinstall:
-            bootdev = "network"
-        else:
-            # TODO: This can be smarter, take into account different
-            #       disk types, media availability, etc. Probably relevant
-            #       for other installers as well.
-            if len(guest.disks) == 0:
-                bootdev = "network"
-            else:
-                bootdev = "hd"
+        bootdev = "network"
+        if (not isinstall and
+            filter(lambda d: d.device == d.DEVICE_DISK, guest.disks)):
+            # If doing post-install boot and guest has an HD attached
+            bootdev = "hd"
 
         return self._get_osblob_helper(isinstall=isinstall, guest=guest,
                                        kernel=None, bootdev=bootdev)
