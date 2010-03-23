@@ -182,6 +182,49 @@ Parameters specific only to fully virtualized guest installs.
 Attach a virtual audio device to the guest. The device model will be AC97
 if the hypervisor supports it, otherwise will be ES1370
 
+=item --watchdog MODEL[,action=ACTION]
+
+Attach a virtual hardware watchdog device to the guest. This requires a
+daemon and device driver in the guest. The watchdog fires a signal when
+the virtual machine appears to hung. ACTION specifies what libvirt will do
+when the watchdog fires. Values are
+
+=over 4
+
+=item B<reset>
+
+Forcefully reset the guest (the default)
+
+=item B<poweroff>
+
+Forcefully power off the guest
+
+=item B<pause>
+
+Pause the guest
+
+=item B<none>
+
+Do nothing
+
+=item B<shutdown>
+
+Gracefully shutdown the guest (not recommended, since a hung guest probably
+won't respond to a graceful shutdown)
+
+=back
+
+MODEL is the emulated device model: either i6300esb (the default) or ib700.
+Some examples:
+
+Use the recommended settings:
+
+--watchdog default
+
+Use the i6300esb with the 'poweroff' action
+
+--watchdog i6300esb,action=poweroff
+
 =item --parallel=CHAROPTS
 
 =item --serial=CHAROPTS

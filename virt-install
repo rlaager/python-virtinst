@@ -144,6 +144,38 @@ def get_chardevs(char_type, opts, guest):
             fail(_("Error in %(chartype)s device parameters: %(err)s") %
                  {"chartype": char_type, "err": str(e) })
 
+def parse_watchdog(guest, optstring):
+    # Peel the model type off the front
+    model, ignore, optstring = partition(optstring, ",")
+    opts = cli.parse_optstr(optstring)
+    dev = virtinst.VirtualWatchdog(guest.conn)
+
+    def set_param(paramname, dictname, val=None):
+        if not val:
+            if opts.has_key(dictname):
+                val = opts[dictname]
+                del(opts[dictname])
+            else:
+                return
+
+        setattr(dev, paramname, val)
+
+    set_param("model", "model", model)
+    set_param("action", "action")
+
+    # If extra parameters, then user passed some garbage param
+    if opts:
+        raise ValueError(_("Unknown option(s) %s") % opts.keys())
+
+    return dev
+
+def get_watchdog(watchdogs, guest):
+    for optstr in cli.listify(watchdogs):
+        try:
+            dev = parse_watchdog(guest, optstr)
+            guest.add_device(dev)
+        except Exception, e:
+            fail(_("Error in watchdog device parameters: %s") % str(e))
 
 def parse_disk_option(guest, path, size):
     """helper to properly parse --disk options"""
@@ -553,6 +585,9 @@ def parse_args():
     fulg = OptionGroup(parser, _("Full Virtualization specific options"))
     fulg.add_option("", "--sound", action="store_true", dest="sound",
                     default=False, help=_("Use sound device emulation"))
+    fulg.add_option("", "--watchdog", type="string", dest="watchdog",
+                    action="callback", callback=cli.check_before_append,
+                    help=_("Add a watchdog device to the domain."))
     fulg.add_option("", "--noapic", action="store_true", dest="noapic",
                     default=False,
                     help=_("Disables APIC for fully virtualized guest "
@@ -751,6 +786,7 @@ def main():
     cli.get_vcpus(options.vcpus, options.check_cpu, guest, conn)
     cli.get_cpuset(options.cpuset, guest.memory, guest, conn)
     if ishvm:
+        get_watchdog(options.watchdog, guest)
         cli.get_sound(options.sound, guest)
         get_chardevs(VirtualDevice.VIRTUAL_DEV_SERIAL, options.serials, guest)
         get_chardevs(VirtualDevice.VIRTUAL_DEV_PARALLEL, options.parallels,

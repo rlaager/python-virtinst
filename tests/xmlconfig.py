@@ -27,6 +27,7 @@ from virtinst import VirtualHostDeviceUSB, VirtualHostDevicePCI
 from virtinst import VirtualCharDevice
 from virtinst import VirtualVideoDevice
 from virtinst import VirtualController
+from virtinst import VirtualWatchdog
 import tests
 
 conn = tests.open_testdriver()
@@ -671,6 +672,11 @@ class TestXMLConfig(unittest.TestCase):
         g.add_device(vdev1)
         g.add_device(vdev2)
         g.add_device(vdev3)
+
+        wdev2 = VirtualWatchdog(g.conn)
+        wdev2.model = "ib700"
+        wdev2.action = "none"
+        g.add_device(wdev2)
 
         g.clock.offset = "localtime"
 

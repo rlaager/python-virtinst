@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2010-02-08" "" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2010-03-22" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -299,6 +299,18 @@ Generic 2.6.x kernel
 .IP "virtio26" 4
 .IX Item "virtio26"
 Generic 2.6.25 or later kernel with virtio
+.IP "mandriva2009" 4
+.IX Item "mandriva2009"
+Mandriva Linux 2009 and earlier
+.IP "mandriva2010" 4
+.IX Item "mandriva2010"
+Mandriva Linux 2010 and later
+.IP "mes5" 4
+.IX Item "mes5"
+Mandriva Enterprise Server 5.0
+.IP "mes5.1" 4
+.IX Item "mes5.1"
+Mandriva Enterprise Server 5.1 and later
 .IP "rhel2.1" 4
 .IX Item "rhel2.1"
 Red Hat Enterprise Linux 2.1
@@ -454,7 +466,45 @@ A node device name via libvirt, as shown by 'virsh nodedev\-list'
 Parameters specific only to fully virtualized guest installs.
 .IP "\-\-sound" 2
 .IX Item "--sound"
-Attach a virtual audio device to the guest.
+Attach a virtual audio device to the guest. The device model will be \s-1AC97\s0
+if the hypervisor supports it, otherwise will be \s-1ES1370\s0
+.IP "\-\-watchdog MODEL[,action=ACTION]" 2
+.IX Item "--watchdog MODEL[,action=ACTION]"
+Attach a virtual hardware watchdog device to the guest. This requires a
+daemon and device driver in the guest. The watchdog fires a signal when
+the virtual machine appears to hung. \s-1ACTION\s0 specifies what libvirt will do
+when the watchdog fires. Values are
+.RS 2
+.IP "\fBreset\fR" 4
+.IX Item "reset"
+Forcefully reset the guest (the default)
+.IP "\fBpoweroff\fR" 4
+.IX Item "poweroff"
+Forcefully power off the guest
+.IP "\fBpause\fR" 4
+.IX Item "pause"
+Pause the guest
+.IP "\fBnone\fR" 4
+.IX Item "none"
+Do nothing
+.IP "\fBshutdown\fR" 4
+.IX Item "shutdown"
+Gracefully shutdown the guest (not recommended, since a hung guest probably
+won't respond to a graceful shutdown)
+.RE
+.RS 2
+.Sp
+\&\s-1MODEL\s0 is the emulated device model: either i6300esb (the default) or ib700.
+Some examples:
+.Sp
+Use the recommended settings:
+.Sp
+\&\-\-watchdog default
+.Sp
+Use the i6300esb with the 'poweroff' action
+.Sp
+\&\-\-watchdog i6300esb,action=poweroff
+.RE
 .IP "\-\-parallel=CHAROPTS" 2
 .IX Item "--parallel=CHAROPTS"
 .PD 0
@@ -527,6 +577,10 @@ Unix socket (see \fIunix\fR\|(7). \s-1MODE\s0 has similar behavior and defaults 
 .RE
 .RS 2
 .RE
+.IP "\-\-description" 2
+.IX Item "--description"
+Human readable text description of the virtual machine. This will be stored
+in the guests \s-1XML\s0 configuration for access by other applications.
 .IP "\-\-noapic" 2
 .IX Item "--noapic"
 Override the \s-1OS\s0 type / variant to disables the \s-1APIC\s0 setting for fully

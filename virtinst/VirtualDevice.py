@@ -41,6 +41,7 @@ class VirtualDevice(object):
     VIRTUAL_DEV_CONSOLE         = "console"
     VIRTUAL_DEV_VIDEO           = "video"
     VIRTUAL_DEV_CONTROLLER      = "controller"
+    VIRTUAL_DEV_WATCHDOG        = "watchdog"
 
     # Ordering in this list is important: it will be the order the
     # Guest class outputs XML. So changing this may upset the test suite
@@ -49,7 +50,8 @@ class VirtualDevice(object):
                             VIRTUAL_DEV_INPUT, VIRTUAL_DEV_GRAPHICS,
                             VIRTUAL_DEV_SERIAL, VIRTUAL_DEV_PARALLEL,
                             VIRTUAL_DEV_CONSOLE, VIRTUAL_DEV_AUDIO,
-                            VIRTUAL_DEV_VIDEO, VIRTUAL_DEV_HOSTDEV ]
+                            VIRTUAL_DEV_VIDEO, VIRTUAL_DEV_HOSTDEV,
+                            VIRTUAL_DEV_WATCHDOG ]
 
     # General device type (disk, interface, etc.)
     _virtual_device_type = None

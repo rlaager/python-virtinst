@@ -71,6 +71,7 @@
         <product id='0x1234'/>
       </source>
     </hostdev>
+    <watchdog model='ib700' action='none'/>
   </devices>
   <seclabel type='static' model='selinux'>
     <label>foolabel</label>
