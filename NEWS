@@ -1,6 +1,15 @@
    Virtinst News
    =================
 
+Release 0.500.3 (March 24, 2010)
+--------------------------------
+- virt-install: New --watchdog option: configure a virtual watchdog device
+- virt-install: New --soundhw option: More flexible sound configuration
+                deprecates --sound, though back compat is maintained
+- virt-install: New --security option: configure VM security driver settings
+- virt-install: New --description option: set a human readable description
+- Better OS defaults: Use <video> VGA and <sound> AC97 if supported
+
 Release 0.500.2 (February 8, 2010)
 ----------------------------------
  - virt-install: New option --autostart for setting domain autostart flag

@@ -1,10 +1,420 @@
+2010-03-23  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualWatchdog.py:
+	VirtualWatchdog: Better handle unexpected action type
+	[dde964594888] [tip]
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-install,
+	virtinst/Seclabel.py:
+	virt-install: Add --security option for specifying <seclabel> XML
+	[f2310407fadc]
+
+	* virt-install:
+	virt-install: Enable all devices for non-HVM
+
+	While things like sound devs and watchdogs are HVM only, encoding
+	this info into virt-install is kind of useless: having these devices
+	in the XML is misleading, but not harmful. This will save bug
+	reports like 'hey why doesn't --soundhw work for PV'
+	[239d00a076d6]
+
+	* virtinst/PXEInstaller.py:
+	PXEInstaller: Fix a TODO item
+	[031b206cf871]
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-install,
+	virtinst/cli.py:
+	virt-install: Add more flexible --soundhw option, deprecate --sound
+	[b810c30160b3]
+
+	* man/en/virt-install.pod.in, virt-install:
+	virt-install: Reorganize --help and man page option listing
+	[485c276bc69d]
+
+2010-03-23  Jiri Denemark  <jdenemar@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Use O_DSYNC when allocating storage
+
+	Otherwise xen can get racy on some machines since the page cache is
+	full
+	[8943e9ebd4d2]
+
+2010-03-22  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/capabilities-xml/libvirt-0.7.6-qemu-caps.xml,
+	tests/capabilities.py, virtinst/CapabilitiesParser.py:
+	CapabilitiesParser: Break out CPU into its own class
+	[c7852c45007a]
+
+	* man/en/virt-clone.1, man/en/virt-install.1, man/en/virt-
+	install.pod.in, tests/clitest.py, tests/xmlconfig-xml/boot-many-
+	devices.xml, tests/xmlconfig.py, virt-install,
+	virtinst/VirtualDevice.py, virtinst/VirtualWatchdog.py,
+	virtinst/__init__.py:
+	virt-install: Add --watchdog support
+	[d99785145f5e]
+
+	* virtinst/Guest.py:
+	Remove now-dead code
+	[12f97f825d66]
+
+	* virtinst/Guest.py:
+	Guest: Refactor device building to be a bit safer
+	[c783c6a46a40]
+
+	* tests/xmlconfig-xml/boot-many-devices.xml, tests/xmlconfig.py,
+	virtinst/VirtualController.py, virtinst/VirtualDevice.py,
+	virtinst/__init__.py:
+	Add VirtualControll module
+	[6196436742fc]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Fix use of conn in is_conflict_disk
+	[409e12593983]
+
+	* virtinst/Guest.py:
+	Guest: Stub out <cpu> XML building, refactor a bit
+	[7e12751d7521]
+
+2010-03-22  mvdz  <mvdz@fedoraproject.org>
+
+	* po/uk.po:
+	l10n: Added Ukrainian translation
+
+	Transmitted-via: Transifex (translate.fedoraproject.org)
+	[e3d3f31c2314]
+
+2010-03-19  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clitest.py, virtinst/Guest.py:
+	Fix windows installs, add a test to prevent regression
+	[241a387c9bc7]
+
+2010-03-17  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/testdriver.xml, tests/validation.py:
+	tests: Add inactive pool VirtualDisk validation
+	[1206822d2ef3]
+
+	* tests/testdriver.xml:
+	Fix test driver to work with latest libvirt
+	[e71403154609]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: No op refactor of storage lookup code
+	[2237f1d84261]
+
+2010-03-04  Marc Deslauriers  <marc.deslauriers@ubuntu.com>
+
+	* virtinst/keytable.py:
+	keytable: Add 'ca' mapping
+	[d7b354eef058]
+
+2010-03-03  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Add helper function stat_local_path
+	[b866a69f59ae]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Add static path_in_use_by function
+	[a0cb48ed7bfd]
+
+2010-03-01  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/__init__.py:
+	Revert debugging change used in previous commit
+	[79371fd73f9c]
+
+	* virtinst/__init__.py, virtinst/cli.py:
+	Hopefully fix unicode locale use once and for all!
+	[4cc206766cce]
+
+	* virt-clone, virt-convert, virt-image, virt-install, virtinst/cli.py:
+	Move some common code into cli.py
+	[3eae7ab7e457]
+
+	* virt-install:
+	Revert inadvertent change.
+	[c49ba925d158]
+
+2010-03-01  Michael Scherer  <misc@zarb.org>
+
+	* virt-install, virtinst/osdict.py:
+	osdict: Add some mandriva distro options
+	[0b6e0ee55b4b]
+
+2010-03-01  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/cli.py:
+	Clean up virt-* --help formatting.
+	[ea001987710b]
+
+	* virt-clone, virtinst/cli.py:
+	virt-clone: Better error message if not enough --file passed
+	[9cca9e335962]
+
+	* tests/clitest.py, virtinst/CloneManager.py:
+	testcli: Test cloning with --preserve and read only images
+	[dd46c7c67354]
+
+	* tests/cli-test-xml/clone-disk-noexist.xml, virtinst/CloneManager.py:
+	virt-clone: Handle interfaces without mac addresses
+
+	This can come up using --original-xml
+	[6ad24daf76ca]
+
+	* tests/cli-test-xml/clone-disk-noexist.xml, tests/clitest.py,
+	virtinst/CloneManager.py, virtinst/_util.py:
+	virt-clone: Fix --preserve-data with non-existent disks
+
+	Useful for using an XML file template, but not doing storage
+	cloning.
+	[b039ba64b818]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Add a 'validate' property, which tells us to skip
+	validation.
+	[252cfac9e681]
+
+	* man/en/virt-clone.pod, virt-clone:
+	virt-clone: Improve doc for --preserve-data
+	[9fb018a78a97]
+
+2010-02-28  Cole Robinson  <crobinso@redhat.com>
+
+	* virt-install, virtinst/Guest.py:
+	Guest: Move some virt-install logic into Guest class
+	[a35e45be3572]
+
+	* virtinst/Guest.py:
+	Guest: Largely combine the start_install/continue_install logic
+	[3cf7c6919c20]
+
+	* virt-install:
+	virt-install: Combine 2 diagnostic messages
+	[798826d437e7]
+
+	* tests/xmlconfig-xml/winxp-kvm-stage2.xml, tests/xmlconfig-xml/winxp-
+	kvm-stage3.xml, tests/xmlconfig.py:
+	tests: xmlconfig: Make sure continue install test functions properly
+	[eb6bd195d19d]
+
+	* virtinst/Guest.py:
+	Guest: Factor out some duplicate install routines
+	[ed46cf3b42c1]
+
+	* virtinst/Guest.py:
+	Guest: Break out some start_install functionality for readability
+	[6b01a52fea6e]
+
+	* tests/interface.py, tests/validation.py, virtinst/Interface.py:
+	Fix some pylint
+	[1933a7c2dd18]
+
+	* virtinst/Guest.py:
+	Guest: Reorganize some code placement and add some documentation
+	[6b7c631a3350]
+
+2010-02-27  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig-xml/winxp-kvm-stage1.xml, tests/xmlconfig-xml/winxp-
+	kvm-stage2.xml, tests/xmlconfig-xml/winxp-kvm-stage3.xml,
+	tests/xmlconfig.py:
+	tests: xmlconfig: Make sure we test all phases of a windows install
+	[13d8f6a7b0c3]
+
+	* tests/validation.py:
+	Fix a test error.
+	[ecb17ad55f79]
+
+	* virtinst/Guest.py:
+	Guest: Use default arguments for continue_install
+	[a6fdf0146d09]
+
+2010-02-26  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Storage.py:
+	clone: Show storage progress capped at capacity, rather than
+	allocation.
+	[cb28868d9213]
+
+	* tests/interface-xml/test-ethernet-copy-proto.xml,
+	tests/interface.py, virtinst/Interface.py:
+	Interface: Allow passing in a chunk of protocol XML
+
+	This allows users to easily copy a protocol chunk from an existing
+	interface.
+	[aaa7c90ac600]
+
+	* virtinst/support.py:
+	support: Add checks for DOMAIN_XML flags
+	[3fc3bcdcf45a]
+
+2010-02-23  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Storage.py:
+	Storage: Don't error if asked about unknown pool type
+	[5f0c99d904b1]
+
+	* tests/xmlconfig-xml/install-f11-ac97.xml, tests/xmlconfig-
+	xml/install-f11-noac97.xml:
+	Actually add intended test files.
+	[2f72dc2de7d9]
+
+	* tests/urltest.py:
+	urltest: Use FullVirtGuest to avoid error
+	[cd04b97517e9]
+
+2010-02-17  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig-xml/install-windowsxp-kvm.xml, tests/xmlconfig.py,
+	virtinst/Guest.py, virtinst/osdict.py:
+	Default to 'vga' video model for windows guests.
+	[07fa54fea9d5]
+
+	* tests/xmlconfig-xml/boot-many-devices.xml, tests/xmlconfig-xml
+	/install-windowsxp-kvm.xml, tests/xmlconfig.py, virt-image, virt-
+	install, virtinst/VirtualVideoDevice.py, virtinst/cli.py:
+	virt-install: Auto add a <video> device if graphics are specified
+	[20c49ae86e9f]
+
+	* man/en/virt-install.pod.in, tests/xmlconfig.py, virtinst/osdict.py:
+	Use the AC97 sound model by default (if hypervisor supports it).
+	[8162633af36b]
+
+	* virtinst/osdict.py, virtinst/support.py:
+	osdict: Use 'support' module for all heavy lifting
+	[226e2e78aed1]
+
+	* tests/xmlconfig-xml/boot-windowsxp-kvm.xml, tests/xmlconfig-
+	xml/install-f10.xml, tests/xmlconfig-xml/install-f11-qemu.xml, tests
+	/xmlconfig-xml/install-f11.xml, tests/xmlconfig-xml/install-
+	windowsxp-kvm.xml, tests/xmlconfig.py:
+	tests: xmlconfig: Add better qemu and kvm XML testing
+	[558d58173fbe]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Don't list 'driver' section is disk is empty
+	[7f73ca35abcd]
+
+	* tests/xmlconfig-xml/boot-many-sounds.xml, tests/xmlconfig-xml
+	/install-windowsxp-kvm.xml, tests/xmlconfig-xml/install-windowsxp-
+	xennew.xml, tests/xmlconfig-xml/install-windowsxp-xenold.xml,
+	tests/xmlconfig.py, virtinst/Guest.py, virtinst/VirtualAudio.py,
+	virtinst/cli.py, virtinst/osdict.py:
+	osdict: Allow setting a preferred sound device model
+
+	Have VirtualAudio no default to model = MODEL_DEFAULT, which can be
+	overridden by Guest.
+	[b6655d9d2648]
+
+	* virtinst/FullVirtGuest.py, virtinst/osdict.py:
+	osdict: Use VirtualDevice types as device param keys
+	[cdf0183c7c04]
+
+2010-02-16  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clitest.py, virt-install:
+	virt-install: Sanitize i.86 -> i686
+	[2bc50993e225]
+
+	* virtinst/Interface.py, virtinst/Storage.py,
+	virtinst/VirtualCharDevice.py:
+	Prefer use of local xml_escape over saxutils
+
+	Ours actually escapes single quotes.
+	[e29f2fd9b3f9]
+
+	* tests/clitest.py:
+	tests: Add name collision CLI test
+	[2be871be8d95]
+
+2010-02-15  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clitest.py, virt-image, virtinst/Guest.py:
+	virt-image: Fix --replace
+	[2124b339253f]
+
+	* tests/clitest.py, tests/testdriver.xml, virtinst/VirtualDisk.py:
+	VirtualDisk: Don't warn about collisions for shareable disks
+	[7a550b1accf0]
+
+	* virtconv/__init__.py:
+	virtconf: Add ovf to parsers list.
+	[9ce77a734d82]
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Don't bomb if getfacl isn't available
+	[e5350e422918]
+
+	* autobuild.sh:
+	autobuild: Remove coverage specific files
+
+	We now use the system installed coverage rather than a locally
+	stored one, so drop these files.
+	[53c60b45ccf5]
+
+2010-02-10  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/capabilities-xml/libvirt-0.7.6-qemu-no-kvmcaps.xml,
+	tests/capabilities.py, virtinst/CapabilitiesParser.py:
+	Capabilities: Add a xenner util func
+	[ae6ca033e8c5]
+
+	* tests/capabilities-xml/empty-caps.xml, tests/capabilities-
+	xml/rhel5.4-kvm-caps.xml, tests/capabilities-xml/rhel5.4-xen-caps-
+	virt-disabled.xml, tests/capabilities-xml/rhel5.4-xen-caps-virt-
+	enabled.xml, tests/capabilities.py, virtinst/CapabilitiesParser.py:
+	CapabilitiesParser: Add various utility functions for detecting HVM
+	[8749718b7afe]
+
+	* tests/capabilities-xml/empty-caps.xml, tests/capabilities-
+	xml/libvirt-0.7.6-qemu-caps.xml, tests/capabilities-xml/rhel5.4-xen-
+	caps-virt-disabled.xml, tests/capabilities-xml/rhel5.4-xen-caps.xml,
+	tests/capabilities.py, virtinst/CapabilitiesParser.py:
+	capabilities: Learn to parse new style CPU caps
+	[096b2bcc1460]
+
+	* man/en/virt-install.pod.in, tests/clitest.py, tests/xmlconfig-xml
+	/boot-many-devices.xml, tests/xmlconfig.py, virt-install,
+	virtinst/Guest.py:
+	virt-install: Add --description option
+
+	This sets the <description> field in the guest XML.
+	[7f0b8d435886]
+
+2010-02-09  raven  <raven@fedoraproject.org>
+
+	* po/pl.po:
+	Sending translation for Polish
+	[76d3d96bcd53]
+
+2010-02-09  logan  <logan@fedoraproject.org>
+
+	* po/es.po:
+	Sending translation for Spanish
+	[4622509f6f6d]
+
 2010-02-08  Cole Robinson  <crobinso@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_500_2 for changeset a703a003f903
+	[4895e2ed852f]
+
+	* .hgtags, ChangeLog, NEWS, po/es.po, po/fr.po, po/it.po, po/ja.po,
+	po/pl.po, po/pt_BR.po, po/ru.po, po/sr.po, po/sr@latin.po,
+	po/virtinst.pot, po/zh_CN.po, python-virtinst.spec.in,
+	virtinst/version.py:
+	Prep for release.
+	[a703a003f903] [virtinst-0_500_2]
 
 	* man/en/virt-install.1, man/en/virt-install.pod.in, tests/clitest.py,
 	tests/testdriver.xml, virtinst/NodeDeviceParser.py,
 	virtinst/VirtualHostDevice.py:
 	virt-install: Allow specifying --host-device by lsusb, lspci output
-	[612458530e0b] [tip]
+	[612458530e0b]
 
 	* tests/clitest.py, tests/xmlconfig-xml/boot-many-devices.xml,
 	tests/xmlconfig.py, virtinst/VirtualDisk.py:

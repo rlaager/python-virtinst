@@ -77,6 +77,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-convert
 
 %changelog
+* Wed Mar 24 2010 Cole Robinson <crobinso@redhat.com> - 0.500.3-1
+- virt-install: New --watchdog option: configure a virtual watchdog device
+- virt-install: New --soundhw option: More flexible sound configuration
+                deprecates --sound, though back compat is maintained
+- virt-install: New --security option: configure VM security driver settings
+- virt-install: New --description option: set a human readable description
+- Better OS defaults: Use <video> VGA and <sound> AC97 if supported
+
 * Mon Feb  8 2010 Cole Robinson <crobinso@redhat.com> - 0.500.2-1
 - virt-install --autostart option for setting domain autostart flag
 - virt-install --host-device now supports values via lsusb and lspci

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-08 22:44-0500\n"
+"POT-Creation-Date: 2010-03-24 11:46-0400\n"
 "PO-Revision-Date: 2010-03-22 14:51+0300\n"
 "Last-Translator: Maxim V. Dziumanenko <dziumanenko@gmail.com>\n"
 "Language-Team: Ukrainian <uk@li.org>\n"
@@ -15,183 +15,190 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: virtinst/CapabilitiesParser.py:172
+#: virtinst/CapabilitiesParser.py:230
 #, python-format
 msgid "No domains available for virt type '%(type)s', arch %(arch)s."
-msgstr "Немає доступних доменів для типу віртуалізації '%(type)s', архітектура %(arch)s."
+msgstr ""
+"Немає доступних доменів для типу віртуалізації '%(type)s', архітектура %"
+"(arch)s."
 
-#: virtinst/CapabilitiesParser.py:386
+#: virtinst/CapabilitiesParser.py:545
 #, python-format
 msgid "for arch '%s'"
 msgstr "для архітектури '%s'"
 
-#: virtinst/CapabilitiesParser.py:390
+#: virtinst/CapabilitiesParser.py:549
 #, python-format
 msgid "virtualization type '%s'"
 msgstr "тип віртуалізації '%s'"
 
-#: virtinst/CapabilitiesParser.py:392
+#: virtinst/CapabilitiesParser.py:551
 msgid "any virtualization options"
 msgstr "будь-які параметри віртуалізації"
 
-#: virtinst/CapabilitiesParser.py:394
+#: virtinst/CapabilitiesParser.py:553
 #, python-format
 msgid "Host does not support %(virttype)s %(arch)s"
 msgstr "Хост не підтримує %(virttype)s %(arch)s"
 
-#: virtinst/CapabilitiesParser.py:407
+#: virtinst/CapabilitiesParser.py:566
 #, python-format
 msgid ""
 "Host does not support domain type '%(domain)s' for virtualization type '%"
 "(virttype)s' arch '%(arch)s'"
 msgstr ""
-"Хост не підтримує тип домену '%(domain)s' для віртуалізації типу '%"
-"(virttype)s' архітектура '%(arch)s'"
+"Хост не підтримує тип домену '%(domain)s' для віртуалізації типу '%(virttype)"
+"s' архітектура '%(arch)s'"
 
-#: virtinst/cli.py:157
+#: virtinst/cli.py:204
 msgid "Exiting at user request."
 msgstr "Перервано за запитом користувача."
 
-#: virtinst/cli.py:164
+#: virtinst/cli.py:211
 msgid "Must be root to create Xen guests"
 msgstr "Для запуску гостьових доменів Xen потрібні права адміністратора"
 
-#: virtinst/cli.py:302
+#: virtinst/cli.py:349
 msgid "(use --prompt to run interactively)"
 msgstr "(використовуйте --prompt для інтерактивного запуску)"
 
-#: virtinst/cli.py:322
+#: virtinst/cli.py:369
 msgid " (Use --prompt or --force to override)"
 msgstr " (Використовуйте --prompt чи --force для перевизначення)"
 
-#: virtinst/cli.py:361
+#: virtinst/cli.py:408
 msgid "Graphics Configuration"
 msgstr "Конфігурація графічної системи"
 
-#: virtinst/cli.py:363
+#: virtinst/cli.py:410
 msgid "Use VNC for graphics support"
 msgstr "Використовувати VNC для графічної системи"
 
-#: virtinst/cli.py:365
+#: virtinst/cli.py:412
 msgid "Port to use for VNC"
 msgstr "Номер порту для VNC"
 
-#: virtinst/cli.py:367
+#: virtinst/cli.py:414
 msgid "Address to listen on for VNC connections."
 msgstr "Адреса для прослуховування з'єднань типу VNC."
 
-#: virtinst/cli.py:370
+#: virtinst/cli.py:417
 msgid "set up keymap for the VNC console"
 msgstr "налаштовування розкладки клавіатури для VNC"
 
-#: virtinst/cli.py:372
+#: virtinst/cli.py:419
 msgid "Use SDL for graphics support"
 msgstr "Використовувати SDL для графічної консолі"
 
-#: virtinst/cli.py:374
+#: virtinst/cli.py:421
 msgid "Don't set up a graphical console for the guest."
 msgstr "Не налаштовувати графічну консоль для гості."
 
-#: virtinst/cli.py:397
+#: virtinst/cli.py:445
 msgid "A disk path must be specified."
 msgstr "Необхідно вказати шлях до диску."
 
-#: virtinst/cli.py:399
+#: virtinst/cli.py:447
+#, fuzzy, python-format
+msgid "A disk path must be specified to clone '%s'."
+msgstr "Необхідно вказати шлях до диску."
+
+#: virtinst/cli.py:451
 msgid "What would you like to use as the disk (file path)?"
 msgstr "Що хочете використати у якості диску (шлях до файлу)?"
 
-#: virtinst/cli.py:401
+#: virtinst/cli.py:453
 #, python-format
 msgid ""
 "Please enter the path to the file you would like to use for storage. It will "
 "have size %sGB."
 msgstr ""
 
-#: virtinst/cli.py:410
+#: virtinst/cli.py:462
 msgid "A size must be specified for non-existent disks."
 msgstr ""
 
-#: virtinst/cli.py:412
+#: virtinst/cli.py:464
 #, python-format
 msgid "How large would you like the disk (%s) to be (in gigabytes)?"
 msgstr ""
 
-#: virtinst/cli.py:433 virt-install:283
+#: virtinst/cli.py:485 virt-install:346
 #, fuzzy, python-format
 msgid "Error with storage parameters: %s"
 msgstr "Пристрої зі знімними носіями"
 
-#: virtinst/cli.py:435
+#: virtinst/cli.py:487
 msgid "Do you really want to use this disk (yes or no)"
 msgstr ""
 
-#: virtinst/cli.py:439
+#: virtinst/cli.py:491
 #, fuzzy, python-format
 msgid "This will overwrite the existing path '%s'!\n"
 msgstr "Замінювати наявний файл"
 
-#: virtinst/cli.py:446
+#: virtinst/cli.py:498
 #, fuzzy, python-format
 msgid "Disk %s is already in use by another guest!\n"
 msgstr ""
 "Розширення %s уже використовується для файлів типу %s. Виберіть інше "
 "розширення."
 
-#: virtinst/cli.py:473
+#: virtinst/cli.py:525
 msgid "What is the name of your virtual machine?"
 msgstr ""
 
-#: virtinst/cli.py:474
+#: virtinst/cli.py:526
 msgid "A name is required for the virtual machine."
 msgstr ""
 
-#: virtinst/cli.py:481
+#: virtinst/cli.py:533
 msgid "How much RAM should be allocated (in megabytes)?"
 msgstr ""
 
-#: virtinst/cli.py:482
+#: virtinst/cli.py:534
 msgid "Memory amount is required for the virtual machine."
 msgstr ""
 
-#: virtinst/cli.py:486
+#: virtinst/cli.py:538
 #, python-format
 msgid "Installs currently require %d megs of RAM."
 msgstr ""
 
-#: virtinst/cli.py:507
+#: virtinst/cli.py:559
 #, python-format
 msgid ""
 "You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
 "on the host. This will work, but performance will be poor. "
 msgstr ""
 
-#: virtinst/cli.py:510
+#: virtinst/cli.py:562
 msgid "Are you sure? (yes or no)"
 msgstr ""
 
-#: virtinst/cli.py:632
+#: virtinst/cli.py:684
 #, fuzzy, python-format
 msgid "Unknown network option '%s'"
 msgstr "Невідомий параметр %c у %s(%s)\n"
 
-#: virtinst/cli.py:650
+#: virtinst/cli.py:702
 msgid "Cannot mix both --bridge and --network arguments"
 msgstr ""
 
-#: virtinst/cli.py:665
+#: virtinst/cli.py:717
 msgid "Cannot pass more mac addresses than networks."
 msgstr ""
 
-#: virtinst/cli.py:692
+#: virtinst/cli.py:747
 msgid "Can't specify more than one of VNC, SDL, or --nographics"
 msgstr ""
 
-#: virtinst/cli.py:727
+#: virtinst/cli.py:792
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
 msgstr ""
 
-#: virtinst/cli.py:761 virtinst/cli.py:766
+#: virtinst/cli.py:822 virtinst/cli.py:827
 #, fuzzy, python-format
 msgid "%s option requires an argument"
 msgstr "%s: параметр потребує вказування аргументу -- %s\n"
@@ -225,41 +232,41 @@ msgstr ""
 msgid "UUID '%s' is in use by another guest."
 msgstr "Інтерфейс конфігурації користувача використовується іншим процесом"
 
-#: virtinst/CloneManager.py:226
+#: virtinst/CloneManager.py:225
 #, fuzzy, python-format
 msgid "Could not use path '%s' for cloning: %s"
 msgstr "Не вдається визначити коректний шлях для \"%s\""
 
-#: virtinst/CloneManager.py:356
+#: virtinst/CloneManager.py:363
 msgid "Cloning policy must be a list of rules."
 msgstr ""
 
-#: virtinst/CloneManager.py:373
+#: virtinst/CloneManager.py:380
 msgid "Original guest name or xml is required."
 msgstr ""
 
-#: virtinst/CloneManager.py:391
+#: virtinst/CloneManager.py:398
 msgid "Domain with devices to clone must be paused or shutoff."
 msgstr ""
 
-#: virtinst/CloneManager.py:437
+#: virtinst/CloneManager.py:455
 #, python-format
 msgid ""
 "More disks to clone that new paths specified. (%(passed)d specified, %(need)"
 "d needed"
 msgstr ""
 
-#: virtinst/CloneManager.py:557
+#: virtinst/CloneManager.py:578
 #, python-format
 msgid "Disk '%s' does not exist."
 msgstr "Диск '%s' не існує."
 
-#: virtinst/CloneManager.py:568
+#: virtinst/CloneManager.py:591
 #, fuzzy, python-format
 msgid "Could not determine original disk information: %s"
 msgstr "Не вдалось зчитати з диска інформацію про багатосеансовий запис."
 
-#: virtinst/CloneManager.py:613
+#: virtinst/CloneManager.py:636
 #, fuzzy, python-format
 msgid "Domain '%s' was not found."
 msgstr "пакет %s не існує"
@@ -315,143 +322,129 @@ msgstr ""
 msgid "Unable to connect to hypervisor, aborting installation!"
 msgstr ""
 
-#: virtinst/Guest.py:206
+#: virtinst/Guest.py:210
 #, fuzzy
 msgid "Guest"
 msgstr "Провідний комп'ютер"
 
-#: virtinst/Guest.py:213
+#: virtinst/Guest.py:222
 #, fuzzy, python-format
 msgid "Guest name '%s' is already in use."
 msgstr "Назва стилю вже використовується"
 
-#: virtinst/Guest.py:221
+#: virtinst/Guest.py:232
 #, fuzzy
 msgid "Memory value must be an integer greater than 0"
 msgstr "Максимальне значення має бути більше за мінімальне.\n"
 
-#: virtinst/Guest.py:233
+#: virtinst/Guest.py:244
 msgid "Max Memory value must be an integer greater than 0"
 msgstr ""
 
-#: virtinst/Guest.py:252
+#: virtinst/Guest.py:263
 msgid "Number of vcpus must be a postive integer."
 msgstr ""
 
-#: virtinst/Guest.py:254
+#: virtinst/Guest.py:265
 #, python-format
 msgid "Number of vcpus must be no greater than %d for this vm type."
 msgstr ""
 
-#: virtinst/Guest.py:286
+#: virtinst/Guest.py:297
 #, fuzzy
 msgid "OS type must be a string."
 msgstr "Рядок заміни не може бути порожнім."
 
-#: virtinst/Guest.py:295
+#: virtinst/Guest.py:306
 #, python-format
 msgid "OS type '%s' does not exist in our dictionary"
 msgstr ""
 
-#: virtinst/Guest.py:306
+#: virtinst/Guest.py:317
 #, fuzzy
 msgid "OS variant must be a string."
 msgstr "Рядок заміни не може бути порожнім."
 
-#: virtinst/Guest.py:313
+#: virtinst/Guest.py:324
 #, python-format
 msgid ""
 "OS variant '%(var)s' does not exist in our dictionary for OS type '%(ty)s'"
 msgstr ""
 
-#: virtinst/Guest.py:328
+#: virtinst/Guest.py:339
 #, fuzzy, python-format
 msgid "Unknown OS variant '%s'"
 msgstr "Встановлення варіанту шрифту"
 
-#: virtinst/Guest.py:384
+#: virtinst/Guest.py:374
+msgid "Whether we should overwrite an existing guest with the same name."
+msgstr ""
+
+#: virtinst/Guest.py:411
 msgid "Must specify whether graphics are enabled"
 msgstr ""
 
-#: virtinst/Guest.py:407
+#: virtinst/Guest.py:434
 #, fuzzy
 msgid "Graphics enabled must be True or False"
 msgstr "Логічні значення повинні бути \"true\" або \"false\", а не \"%s\""
 
-#: virtinst/Guest.py:466
-msgid "You must specify a valid ISO or CD-ROM location for the installation"
-msgstr ""
-
-#: virtinst/Guest.py:469
-#, fuzzy
-msgid "The specified media path does not exist."
-msgstr "Вказаний шліх не існує."
-
-#: virtinst/Guest.py:498
+#: virtinst/Guest.py:517
 #, fuzzy
 msgid "Must pass a VirtualDevice instance."
 msgstr "Темні пропускають хід, світлі ходять"
 
-#: virtinst/Guest.py:583
+#: virtinst/Guest.py:602
 #, fuzzy, python-format
 msgid "Did not find device %s"
 msgstr ""
 "Не вдалось знайти додатковий пристрій на\n"
 "%1"
 
-#: virtinst/Guest.py:826
-msgid "Unable to start domain for guest, aborting installation!"
+#: virtinst/Guest.py:889
+#, fuzzy
+msgid "Domain has already been started!"
+msgstr "Компакт-диск вже був записаний."
+
+#: virtinst/Guest.py:892
+msgid "Name and memory must be specified for all guests!"
 msgstr ""
 
-#: virtinst/Guest.py:886
-#, fuzzy, python-format
-msgid "Could not remove old vm '%s': %s"
-msgstr "Не вдається видалити старий архів."
+#: virtinst/Guest.py:896
+msgid "The UUID you entered is already in use by another guest!"
+msgstr ""
 
-#: virtinst/Guest.py:888
-#, fuzzy, python-format
-msgid "Domain named %s already exists!"
-msgstr "Каталог з іменем %s вже існує."
+#: virtinst/Guest.py:983
+#, fuzzy
+msgid "Starting domain..."
+msgstr "--check-domain"
 
-#: virtinst/Guest.py:895
+#: virtinst/Guest.py:1036
 #, fuzzy
 msgid "Creating domain..."
 msgstr "--check-domain"
 
-#: virtinst/Guest.py:898
-msgid "Unable to create domain for the guest, aborting installation!"
-msgstr ""
-
-#: virtinst/Guest.py:906
-msgid ""
-"It appears that your installation has crashed.  You should be able to find "
-"more information in the logs"
-msgstr ""
-
-#: virtinst/Guest.py:952
+#: virtinst/Guest.py:1053
 msgid ""
 "Domain has not existed.  You should be able to find more information in the "
 "logs"
 msgstr ""
 
-#: virtinst/Guest.py:954
+#: virtinst/Guest.py:1056
 msgid ""
 "Domain has not run yet.  You should be able to find more information in the "
 "logs"
 msgstr ""
 
-#: virtinst/Guest.py:971
-#, fuzzy
-msgid "Domain has already been started!"
-msgstr "Компакт-диск вже був записаний."
+#: virtinst/Guest.py:1096
+#, fuzzy, python-format
+msgid "Domain named %s already exists!"
+msgstr "Каталог з іменем %s вже існує."
 
-#: virtinst/Guest.py:974
-msgid "Name and memory must be specified for all guests!"
-msgstr ""
-
-#: virtinst/Guest.py:978
-msgid "The UUID you entered is already in use by another guest!"
-msgstr ""
+#: virtinst/Guest.py:1107
+#, fuzzy, python-format
+msgid "Could not remove old vm '%s': %s"
+msgstr "Не вдається видалити старий архів."
 
 #: virtinst/ImageFetcher.py:86
 #, fuzzy, python-format
@@ -609,108 +602,108 @@ msgstr ""
 msgid "Network protocol configuration"
 msgstr "_Змінити конфігурацію мережі..."
 
-#: virtinst/Interface.py:171
+#: virtinst/Interface.py:181
 #, fuzzy, python-format
 msgid "Name '%s' already in use by another interface."
 msgstr "Це ім'я посвідчення вже використовується. Виберіть інше ім'я."
 
-#: virtinst/Interface.py:230
+#: virtinst/Interface.py:242
 #, fuzzy, python-format
 msgid "Could not define interface: %s"
 msgstr "Не вдається додати інтерфейс %s"
 
-#: virtinst/Interface.py:237
+#: virtinst/Interface.py:249
 #, fuzzy, python-format
 msgid "Could not create interface: %s"
 msgstr "Не вдається створити інтерфейс для %s"
 
-#: virtinst/Interface.py:322
+#: virtinst/Interface.py:334
 msgid "Whether STP is enabled on the bridge"
 msgstr ""
 
-#: virtinst/Interface.py:329
+#: virtinst/Interface.py:341
 msgid "Delay in seconds before forwarding begins when joining a network."
 msgstr ""
 
-#: virtinst/Interface.py:390
+#: virtinst/Interface.py:402
 #, fuzzy
 msgid "Mode of operation of the bonding device"
 msgstr "Режим роботи вікна вибору шрифту"
 
-#: virtinst/Interface.py:401
+#: virtinst/Interface.py:413
 msgid "Availability monitoring mode for the bond device"
 msgstr ""
 
-#: virtinst/Interface.py:410
+#: virtinst/Interface.py:422
 msgid "ARP monitoring interval in milliseconds"
 msgstr ""
 
-#: virtinst/Interface.py:417
+#: virtinst/Interface.py:429
 msgid "IP target used in ARP monitoring packets"
 msgstr ""
 
-#: virtinst/Interface.py:425
+#: virtinst/Interface.py:437
 msgid "ARP monitor validation mode"
 msgstr ""
 
-#: virtinst/Interface.py:433
+#: virtinst/Interface.py:445
 #, fuzzy
 msgid "MII monitoring method."
 msgstr "Параметри особливі для методу:"
 
-#: virtinst/Interface.py:440
+#: virtinst/Interface.py:452
 msgid "MII monitoring interval in milliseconds"
 msgstr ""
 
-#: virtinst/Interface.py:447
+#: virtinst/Interface.py:459
 msgid ""
 "Time in milliseconds to wait before enabling a slave after link recovery "
 msgstr ""
 
-#: virtinst/Interface.py:455
+#: virtinst/Interface.py:467
 msgid ""
 "Time in milliseconds to wait before disabling a slave after link failure"
 msgstr ""
 
-#: virtinst/Interface.py:535
+#: virtinst/Interface.py:547
 #, fuzzy
 msgid "VLAN device tag number"
 msgstr "використання: sfdisk --id пристрій номер_пристрою [ідентиф.]\n"
 
-#: virtinst/Interface.py:547
+#: virtinst/Interface.py:559
 msgid "Parent interface to create VLAN on"
 msgstr ""
 
-#: virtinst/Interface.py:551
+#: virtinst/Interface.py:563
 msgid "Tag and parent interface are required."
 msgstr ""
 
-#: virtinst/Interface.py:625
+#: virtinst/Interface.py:637
 #, fuzzy
 msgid "Whether to enable DHCP"
 msgstr "Чи слід розставляти відступи автоматично"
 
-#: virtinst/Interface.py:638
+#: virtinst/Interface.py:650
 #, fuzzy
 msgid "Network gateway address"
 msgstr "Адреса _шлюзу:"
 
-#: virtinst/Interface.py:645
+#: virtinst/Interface.py:657
 #, fuzzy
 msgid "Static IP addresses"
 msgstr "Встановлювати IP адресу статично:"
 
-#: virtinst/Interface.py:686
+#: virtinst/Interface.py:698
 #, fuzzy
 msgid "Whether to enable IPv6 autoconfiguration"
 msgstr "Чи слід розставляти відступи автоматично"
 
-#: virtinst/Interface.py:707
+#: virtinst/Interface.py:719
 #, fuzzy
 msgid "IPv6 address prefix"
 msgstr "Фільтр адрес IPV6"
 
-#: virtinst/Interface.py:714
+#: virtinst/Interface.py:726
 #, fuzzy
 msgid "IP address"
 msgstr "IP адреса"
@@ -743,7 +736,7 @@ msgstr "не вдається визначити поточний тип фор�
 msgid "Did not find a matching node device for '%s'"
 msgstr ""
 
-#: virtinst/osdict.py:150
+#: virtinst/osdict.py:193
 #, fuzzy, python-format
 msgid "Invalid dictionary entry for device '%s %s'"
 msgstr "Невірний запис розміру розділу"
@@ -871,245 +864,245 @@ msgstr "Додати пристрій _iSCSI"
 msgid "SCSI host adapter"
 msgstr "Живлення від електромережі підключено"
 
-#: virtinst/Storage.py:263 virtinst/Storage.py:346
+#: virtinst/Storage.py:263 virtinst/Storage.py:349
 #, fuzzy, python-format
 msgid "Unknown storage pool type: %s"
 msgstr "Невідомий тип файлу %s"
 
-#: virtinst/Storage.py:370
+#: virtinst/Storage.py:373
 msgid "Storage device type the pool will represent."
 msgstr ""
 
-#: virtinst/Storage.py:389
+#: virtinst/Storage.py:392
 #, fuzzy
 msgid "Host name must be a string"
 msgstr "Рядок заміни не може бути порожнім."
 
-#: virtinst/Storage.py:408
+#: virtinst/Storage.py:411
 #, fuzzy, python-format
 msgid "Name '%s' already in use by another pool."
 msgstr "Це ім'я посвідчення вже використовується. Виберіть інше ім'я."
 
-#: virtinst/Storage.py:446
+#: virtinst/Storage.py:449
 #, fuzzy, python-format
 msgid "Could not define storage pool: %s"
 msgstr "Не вдається відкрити банк макросів."
 
-#: virtinst/Storage.py:456
+#: virtinst/Storage.py:459
 #, fuzzy, python-format
 msgid "Could not build storage pool: %s"
 msgstr "Не вдається відкрити банк макросів."
 
-#: virtinst/Storage.py:465
+#: virtinst/Storage.py:468
 #, fuzzy, python-format
 msgid "Could not start storage pool: %s"
 msgstr "Не вдається відкрити банк макросів."
 
-#: virtinst/Storage.py:492
+#: virtinst/Storage.py:495
 msgid "Directory to use for the storage pool."
 msgstr ""
 
-#: virtinst/Storage.py:528
+#: virtinst/Storage.py:531
 msgid "The existing device to mount for the pool."
 msgstr ""
 
-#: virtinst/Storage.py:531 virtinst/Storage.py:589
+#: virtinst/Storage.py:534 virtinst/Storage.py:592
 #, fuzzy
 msgid "Location to mount the source device."
 msgstr "Опублікувати у вихідному розташуванні"
 
-#: virtinst/Storage.py:549
+#: virtinst/Storage.py:552
 #, fuzzy, python-format
 msgid "Unknown Filesystem format: %s"
 msgstr "Невідомий формат файла"
 
-#: virtinst/Storage.py:552
+#: virtinst/Storage.py:555
 #, fuzzy
 msgid "Filesystem type of the source device."
 msgstr "Нове з'єднання"
 
-#: virtinst/Storage.py:565
+#: virtinst/Storage.py:568
 #, fuzzy
 msgid "Device path is required"
 msgstr "Вимагається ім'я списку розсилки."
 
-#: virtinst/Storage.py:584 virtinst/Storage.py:827
+#: virtinst/Storage.py:587 virtinst/Storage.py:830
 msgid "Path on the host that is being shared."
 msgstr ""
 
-#: virtinst/Storage.py:586 virtinst/Storage.py:799
+#: virtinst/Storage.py:589 virtinst/Storage.py:802
 #, fuzzy
 msgid "Name of the host sharing the storage."
 msgstr "Ім'я носія знімного сховища"
 
-#: virtinst/Storage.py:607
+#: virtinst/Storage.py:610
 #, fuzzy, python-format
 msgid "Unknown Network Filesystem format: %s"
 msgstr "Малюнок у форматі PNG (*.png)"
 
-#: virtinst/Storage.py:610
+#: virtinst/Storage.py:613
 #, fuzzy
 msgid "Type of network filesystem."
 msgstr "  t          Змінити тип файлової системи"
 
-#: virtinst/Storage.py:622 virtinst/Storage.py:838
+#: virtinst/Storage.py:625 virtinst/Storage.py:841
 #, fuzzy
 msgid "Hostname is required"
 msgstr "необхідно вказати назву списку розсилки"
 
-#: virtinst/Storage.py:624 virtinst/Storage.py:776 virtinst/Storage.py:840
+#: virtinst/Storage.py:627 virtinst/Storage.py:779 virtinst/Storage.py:843
 #, fuzzy
 msgid "Host path is required"
 msgstr "Вимагається ім'я списку розсилки."
 
-#: virtinst/Storage.py:642
+#: virtinst/Storage.py:645
 #, fuzzy
 msgid "Location of the existing LVM volume group."
 msgstr "Цей розділ є частиною пристрою групи томів LVM '%s'."
 
-#: virtinst/Storage.py:672
+#: virtinst/Storage.py:675
 msgid "Optional device(s) to build new LVM volume on."
 msgstr ""
 
-#: virtinst/Storage.py:695
+#: virtinst/Storage.py:698
 #, fuzzy
 msgid "Name of the Volume Group"
 msgstr "Назва групи томів:   "
 
-#: virtinst/Storage.py:726
+#: virtinst/Storage.py:729
 msgid "Must explicitly specify source path if building' pool"
 msgstr ""
 
-#: virtinst/Storage.py:742
+#: virtinst/Storage.py:745
 #, fuzzy
 msgid "Path to the existing disk device."
 msgstr "Введіть шлях до блочного пристрою"
 
-#: virtinst/Storage.py:745 virtinst/Storage.py:802 virtinst/Storage.py:852
+#: virtinst/Storage.py:748 virtinst/Storage.py:805 virtinst/Storage.py:855
 msgid "Root location for identifying new storage volumes."
 msgstr ""
 
-#: virtinst/Storage.py:762
+#: virtinst/Storage.py:765
 #, fuzzy, python-format
 msgid "Unknown Disk format: %s"
 msgstr "Невідомий формат файла"
 
-#: virtinst/Storage.py:765
+#: virtinst/Storage.py:768
 msgid "Format of the source device's partition table."
 msgstr ""
 
-#: virtinst/Storage.py:788
+#: virtinst/Storage.py:791
 msgid "Must explicitly specify disk format if formatting disk device."
 msgstr ""
 
-#: virtinst/Storage.py:806
+#: virtinst/Storage.py:809
 msgid "iSCSI volume creation is not implemented."
 msgstr ""
 
-#: virtinst/Storage.py:856
+#: virtinst/Storage.py:859
 msgid "SCSI volume creation is not implemented."
 msgstr ""
 
-#: virtinst/Storage.py:875
+#: virtinst/Storage.py:878
 msgid "Name of the scsi adapter (ex. host2)"
 msgstr ""
 
-#: virtinst/Storage.py:886
+#: virtinst/Storage.py:889
 #, fuzzy
 msgid "Adapter name is required"
 msgstr "Вимагається ім'я списку розсилки."
 
-#: virtinst/Storage.py:918
+#: virtinst/Storage.py:921
 msgid "One of pool or pool_name must be specified."
 msgstr ""
 
-#: virtinst/Storage.py:921 virtinst/Storage.py:990
+#: virtinst/Storage.py:924 virtinst/Storage.py:993
 msgid "'conn' must be specified with 'pool_name'"
 msgstr ""
 
-#: virtinst/Storage.py:986
+#: virtinst/Storage.py:989
 msgid "Must specify pool_object or pool_name"
 msgstr ""
 
-#: virtinst/Storage.py:992
+#: virtinst/Storage.py:995
 #, fuzzy
 msgid "Connection does not support storage management."
 msgstr "Сервер не підтримує безпечні з'єднання (SSL)."
 
-#: virtinst/Storage.py:997
+#: virtinst/Storage.py:1000
 #, fuzzy, python-format
 msgid "Couldn't find storage pool '%s': %s"
 msgstr "Неможливо знайти цю етикетку"
 
-#: virtinst/Storage.py:1001
+#: virtinst/Storage.py:1004
 #, fuzzy
 msgid "pool_object must be a virStoragePool"
 msgstr ""
 "Перетворення зв'язаного об'єкта повинно бути виконано у вихідному файлі."
 
-#: virtinst/Storage.py:1015
+#: virtinst/Storage.py:1018
 #, fuzzy
 msgid "Capacity must be a positive number"
 msgstr "Ідентифікатор групи повинен бути додатнім числом"
 
-#: virtinst/Storage.py:1036
+#: virtinst/Storage.py:1039
 #, fuzzy
 msgid "Allocation must be a non-negative number"
 msgstr "Індекс в списку не може мати від'ємне значення.\n"
 
-#: virtinst/Storage.py:1056
+#: virtinst/Storage.py:1059
 msgid "'pool' must be a virStoragePool instance."
 msgstr ""
 
-#: virtinst/Storage.py:1058
+#: virtinst/Storage.py:1061
 #, fuzzy, python-format
 msgid "pool '%s' must be active."
 msgstr "Посилання має вказувати на поточний аркуш."
 
-#: virtinst/Storage.py:1070 virtinst/Storage.py:1309
+#: virtinst/Storage.py:1073 virtinst/Storage.py:1312
 msgid "input_vol must be a virStorageVol"
 msgstr ""
 
-#: virtinst/Storage.py:1072
+#: virtinst/Storage.py:1075
 msgid ""
 "Creating storage from an existing volume is not supported by this libvirt "
 "version."
 msgstr ""
 
-#: virtinst/Storage.py:1076
+#: virtinst/Storage.py:1079
 msgid "virStorageVolume pointer to clone/use as input."
 msgstr ""
 
-#: virtinst/Storage.py:1084
+#: virtinst/Storage.py:1087
 #, fuzzy, python-format
 msgid "'%s' is not a valid format."
 msgstr "Формат файлу неприпустимий."
 
-#: virtinst/Storage.py:1094
+#: virtinst/Storage.py:1097
 #, fuzzy, python-format
 msgid "Name '%s' already in use by another volume."
 msgstr "Це ім'я посвідчення вже використовується. Виберіть інше ім'я."
 
-#: virtinst/Storage.py:1147
+#: virtinst/Storage.py:1150
 #, fuzzy, python-format
 msgid "Allocating '%s'"
 msgstr "Помилка при розподілі пам'яті.\n"
 
-#: virtinst/Storage.py:1211
+#: virtinst/Storage.py:1214
 #, python-format
 msgid ""
 "There is not enough free space on the storage pool to create the volume. (%d "
 "M requested allocation > %d M available)"
 msgstr ""
 
-#: virtinst/Storage.py:1217
+#: virtinst/Storage.py:1220
 #, python-format
 msgid ""
 "The requested volume capacity will exceed the available pool space when the "
 "volume is fully allocated. (%d M requested capacity > %d M available)"
 msgstr ""
 
-#: virtinst/support.py:262 virtinst/VirtualDevice.py:86
+#: virtinst/support.py:306 virtinst/VirtualDevice.py:90
 msgid "'conn' must be a virConnect instance."
 msgstr ""
 
@@ -1148,7 +1141,7 @@ msgstr "Рядок заміни не може бути порожнім."
 msgid "MAC address must be of the format AA:BB:CC:DD:EE:FF"
 msgstr ""
 
-#: virtinst/_util.py:288
+#: virtinst/_util.py:289
 #, fuzzy
 msgid "Name generation range exceeded."
 msgstr "''|'' буде використовуватися як ім'я діапазону. Продовжити?"
@@ -1168,12 +1161,12 @@ msgstr "Виберіть підключення, які слід зв'язати
 msgid "'path' or 'func' is required."
 msgstr "Потрібен протокол udp чи tcp"
 
-#: virtinst/VirtualAudio.py:40
+#: virtinst/VirtualAudio.py:43 virtinst/VirtualWatchdog.py:67
 #, fuzzy, python-format
 msgid "'model' must be a string,  was '%s'."
 msgstr "Рядок заміни не може бути порожнім."
 
-#: virtinst/VirtualAudio.py:43
+#: virtinst/VirtualAudio.py:46
 #, fuzzy, python-format
 msgid "Unsupported sound model '%s'"
 msgstr "Winbook Model XP5"
@@ -1330,209 +1323,209 @@ msgstr "Порт для з'єднання з вузлом бази даних"
 msgid "A connection port must be specified."
 msgstr "Необхідно вказати назву групи"
 
-#: virtinst/VirtualDevice.py:63
+#: virtinst/VirtualDevice.py:67
 msgid "Virtual device type must be set in subclass."
 msgstr ""
 
-#: virtinst/VirtualDevice.py:66
+#: virtinst/VirtualDevice.py:70
 #, fuzzy, python-format
 msgid "Unknown virtual device type '%s'."
 msgstr "Нове з'єднання"
 
-#: virtinst/VirtualDevice.py:71
+#: virtinst/VirtualDevice.py:75
 msgid "'conn' must be a virConnect instance"
 msgstr ""
 
-#: virtinst/VirtualDevice.py:104
+#: virtinst/VirtualDevice.py:108
 #, fuzzy, python-format
 msgid "'%s' must be True or False"
 msgstr "Припустимі значення: TRUE (Істина) і FALSE (Хибність)."
 
-#: virtinst/VirtualDevice.py:108
+#: virtinst/VirtualDevice.py:112
 #, fuzzy, python-format
 msgid "'%s' must be a string, not '%s'."
 msgstr "Рядок пошуку не може бути порожнім."
 
-#: virtinst/VirtualDisk.py:414
+#: virtinst/VirtualDisk.py:479
 #, fuzzy, python-format
 msgid "Error validating clone path: %s"
 msgstr "Помилка доступу до шляху або файлу"
 
-#: virtinst/VirtualDisk.py:423
+#: virtinst/VirtualDisk.py:488
 #, fuzzy
 msgid "'size' must be a number greater than 0."
 msgstr "Число має бути більшим за нуль."
 
-#: virtinst/VirtualDisk.py:433
+#: virtinst/VirtualDisk.py:498
 #, fuzzy, python-format
 msgid "Unknown storage type '%s'"
 msgstr "Невідомий тип піктограми: %s\n"
 
-#: virtinst/VirtualDisk.py:442
+#: virtinst/VirtualDisk.py:507
 #, fuzzy, python-format
 msgid "Unknown device type '%s'"
 msgstr "Невідомий тип пристрою"
 
-#: virtinst/VirtualDisk.py:476
+#: virtinst/VirtualDisk.py:541
 msgid "vol_object must be a virStorageVol instance"
 msgstr ""
 
-#: virtinst/VirtualDisk.py:484
+#: virtinst/VirtualDisk.py:549
 msgid "vol_install must be a StorageVolume  instance."
 msgstr ""
 
-#: virtinst/VirtualDisk.py:510
+#: virtinst/VirtualDisk.py:575
 #, fuzzy, python-format
 msgid "Unknown cache mode '%s'"
 msgstr "Невідомий піксельний режим %d.\n"
 
-#: virtinst/VirtualDisk.py:525
+#: virtinst/VirtualDisk.py:590
 #, fuzzy, python-format
 msgid "SELinux label '%s' is not valid."
 msgstr "Указано неправильну назву."
 
-#: virtinst/VirtualDisk.py:564
+#: virtinst/VirtualDisk.py:629
 msgid "Storage type does not support format parameter."
 msgstr ""
 
-#: virtinst/VirtualDisk.py:570
+#: virtinst/VirtualDisk.py:635
 msgid "Format cannot be specified for unmanaged storage."
 msgstr ""
 
-#: virtinst/VirtualDisk.py:611
+#: virtinst/VirtualDisk.py:676
 #, fuzzy
 msgid "Unknown storage volume type."
 msgstr "Невідомий тип файлу %s"
 
-#: virtinst/VirtualDisk.py:629
+#: virtinst/VirtualDisk.py:694
 #, python-format
 msgid "Passed type '%s' does not match detected storage type '%s'"
 msgstr ""
 
-#: virtinst/VirtualDisk.py:685
+#: virtinst/VirtualDisk.py:750
 msgid "volName must be a tuple of the form ('poolname', 'volname')"
 msgstr ""
 
-#: virtinst/VirtualDisk.py:688
+#: virtinst/VirtualDisk.py:753
 #, fuzzy
 msgid "'volName' requires a passed connection."
 msgstr "“%s” вимагає безпечного з'єднання"
 
-#: virtinst/VirtualDisk.py:690
+#: virtinst/VirtualDisk.py:755
 #, fuzzy
 msgid "Connection does not support storage lookup."
 msgstr "Сервер не підтримує безпечні з'єднання (SSL)."
 
-#: virtinst/VirtualDisk.py:696
+#: virtinst/VirtualDisk.py:761
 #, fuzzy, python-format
 msgid "Couldn't lookup volume object: %s"
 msgstr "Не вдається ідентифікувати FIG об'єкт: %s\n"
 
-#: virtinst/VirtualDisk.py:721
+#: virtinst/VirtualDisk.py:786
 #, fuzzy, python-format
 msgid "Device type '%s' requires a path"
 msgstr "Нове з'єднання"
 
-#: virtinst/VirtualDisk.py:764
-#, python-format
-msgid "Size must be specified for non existent volume path '%s'"
-msgstr ""
-
-#: virtinst/VirtualDisk.py:784
+#: virtinst/VirtualDisk.py:845
 #, python-format
 msgid ""
 "Cannot use storage '%(path)s': '%(rootdir)s' is not managed on the remote "
 "host."
 msgstr ""
 
-#: virtinst/VirtualDisk.py:789
+#: virtinst/VirtualDisk.py:850
 #, python-format
 msgid "Cannot use storage %(path)s: %(err)s"
 msgstr ""
 
-#: virtinst/VirtualDisk.py:867
+#: virtinst/VirtualDisk.py:858
+#, python-format
+msgid "Size must be specified for non existent volume path '%s'"
+msgstr ""
+
+#: virtinst/VirtualDisk.py:950
 msgid "Connection doesn't support remote storage."
 msgstr ""
 
-#: virtinst/VirtualDisk.py:870
+#: virtinst/VirtualDisk.py:953
 msgid "Must specify libvirt managed storage if on a remote connection"
 msgstr ""
 
-#: virtinst/VirtualDisk.py:908
+#: virtinst/VirtualDisk.py:991
 #, python-format
 msgid "The path '%s' must be a file or a device, not a directory"
 msgstr ""
 
-#: virtinst/VirtualDisk.py:916
+#: virtinst/VirtualDisk.py:999
 #, fuzzy, python-format
 msgid "Cannot create storage for %s device."
 msgstr "не вдається відкрити пристрій %s для запису\n"
 
-#: virtinst/VirtualDisk.py:921
+#: virtinst/VirtualDisk.py:1004
 #, python-format
 msgid "Local block device path '%s' must exist."
 msgstr ""
 
-#: virtinst/VirtualDisk.py:929
+#: virtinst/VirtualDisk.py:1012
 #, python-format
 msgid "size is required for non-existent disk '%s'"
 msgstr ""
 
-#: virtinst/VirtualDisk.py:932
+#: virtinst/VirtualDisk.py:1015
 #, fuzzy, python-format
 msgid "No write access to directory '%s'"
 msgstr "Немає доступу запису до пристрою %1"
 
-#: virtinst/VirtualDisk.py:954
+#: virtinst/VirtualDisk.py:1037
 #, fuzzy, python-format
 msgid "Cloning %(srcfile)s"
 msgstr "Клонування КД"
 
-#: virtinst/VirtualDisk.py:957
+#: virtinst/VirtualDisk.py:1040
 #, fuzzy, python-format
 msgid "Creating storage file %s"
 msgstr "Створення файла штампа"
 
-#: virtinst/VirtualDisk.py:970
+#: virtinst/VirtualDisk.py:1053
 msgid "copying to an existing vdisk is not supported"
 msgstr ""
 
-#: virtinst/VirtualDisk.py:973
+#: virtinst/VirtualDisk.py:1056
 #, fuzzy
 msgid "failed to clone disk"
 msgstr "Помилка підключення диску драйверів."
 
-#: virtinst/VirtualDisk.py:984
+#: virtinst/VirtualDisk.py:1067
 #, fuzzy, python-format
 msgid "Error creating vdisk %s"
 msgstr "Помилка створення каталогу %s: %s"
 
-#: virtinst/VirtualDisk.py:1009
+#: virtinst/VirtualDisk.py:1092
 #, fuzzy, python-format
 msgid "Error creating diskimage %s: %s"
 msgstr "Помилка створення каталогу %s: %s"
 
-#: virtinst/VirtualDisk.py:1064
+#: virtinst/VirtualDisk.py:1147
 #, fuzzy, python-format
 msgid "Error cloning diskimage %s to %s: %s"
 msgstr "Файлова помилка вводу/виводу"
 
-#: virtinst/VirtualDisk.py:1120
+#: virtinst/VirtualDisk.py:1203
 msgid "'disknode' or self.target must be set!"
 msgstr ""
 
-#: virtinst/VirtualDisk.py:1191
+#: virtinst/VirtualDisk.py:1274
 msgid ""
 "The filesystem will not have enough free space to fully allocate the sparse "
 "file when the guest is running."
 msgstr ""
 
-#: virtinst/VirtualDisk.py:1196
+#: virtinst/VirtualDisk.py:1279
 #, fuzzy
 msgid "There is not enough free space to create the disk."
 msgstr "Недостатньо пам'яті, щоб <i>"
 
-#: virtinst/VirtualDisk.py:1200
+#: virtinst/VirtualDisk.py:1283
 #, fuzzy, python-format
 msgid " %d M requested > %d M available"
 msgstr ""
@@ -1541,12 +1534,12 @@ msgstr ""
 "\n"
 "  "
 
-#: virtinst/VirtualDisk.py:1365
+#: virtinst/VirtualDisk.py:1436
 #, fuzzy
 msgid "Cannot determine device bus/type."
 msgstr "Пристрій типу %s не можна редагувати!"
 
-#: virtinst/VirtualDisk.py:1387
+#: virtinst/VirtualDisk.py:1458
 #, python-format
 msgid "No more space for disks of type '%s'"
 msgstr ""
@@ -1674,6 +1667,36 @@ msgid ""
 "machine."
 msgstr ""
 
+#: virtinst/VirtualWatchdog.py:43
+msgid "Forcefully reset the guest"
+msgstr ""
+
+#: virtinst/VirtualWatchdog.py:45
+msgid "Gracefully shutdown the guest"
+msgstr ""
+
+#: virtinst/VirtualWatchdog.py:47
+msgid "Forcefully power off the guest"
+msgstr ""
+
+#: virtinst/VirtualWatchdog.py:49
+#, fuzzy
+msgid "Pause the guest"
+msgstr "Нова назва принтера"
+
+#: virtinst/VirtualWatchdog.py:51
+msgid "No action"
+msgstr ""
+
+#: virtinst/VirtualWatchdog.py:53
+msgid "Hypervisor default"
+msgstr ""
+
+#: virtinst/VirtualWatchdog.py:70
+#, fuzzy, python-format
+msgid "Unsupported watchdog model '%s'"
+msgstr "Winbook Model XP5"
+
 #: virtconv/diskcfg.py:264
 #, fuzzy, python-format
 msgid "Cannot convert to disk format %s"
@@ -1761,195 +1784,197 @@ msgstr "Синтаксична помилка в рядку %d. Проіґнор
 msgid "No displayName defined in \"%s\""
 msgstr "%s вже визначено у трансляції"
 
-#: virt-clone:47
+#: virt-clone:42
 msgid "What is the name for the cloned virtual machine?"
 msgstr ""
 
-#: virt-clone:48
+#: virt-clone:43
 msgid "A name is required for the new virtual machine."
 msgstr ""
 
-#: virt-clone:65
+#: virt-clone:60
 msgid "What is the name of the original virtual machine?"
 msgstr ""
 
-#: virt-clone:66
+#: virt-clone:61
 msgid "An original machine name or xml file is required."
 msgstr ""
 
-#: virt-clone:112
+#: virt-clone:107
 #, python-format
 msgid "What would you like to use as the cloned disk (file path) for '%s'?"
 msgstr ""
 
-#: virt-clone:134 virt-image:79 virt-install:508
+#: virt-clone:129 virt-image:73 virt-install:572
 #, fuzzy
 msgid "Connect to hypervisor with URI"
 msgstr "Спроба зв'язатися зі здавачем..."
 
-#: virt-clone:137 virt-image:82 virt-install:511
+#: virt-clone:132 virt-image:76 virt-install:575
 #, fuzzy
 msgid "General Options"
 msgstr "Загальні параметри"
 
-#: virt-clone:140
+#: virt-clone:135
 msgid "Name of the original guest; The status must be shut off or paused."
 msgstr ""
 
-#: virt-clone:145
+#: virt-clone:140
 msgid "XML file to use as the original guest."
 msgstr ""
 
-#: virt-clone:147
+#: virt-clone:142
 msgid ""
 "Auto generate clone name and storage paths from the original guest "
 "configuration."
 msgstr ""
 
-#: virt-clone:151
+#: virt-clone:146
 #, fuzzy
 msgid "Name for the new guest"
 msgstr "Нова назва принтера"
 
-#: virt-clone:155
+#: virt-clone:150
 msgid "New UUID for the clone guest; Default is a randomly generated UUID"
 msgstr ""
 
-#: virt-clone:159 virt-install:597
+#: virt-clone:154 virt-install:624
 #, fuzzy
 msgid "Storage Configuration"
 msgstr "_Додаткові параметри накопичувачів"
 
-#: virt-clone:163
+#: virt-clone:158
 msgid "New file to use as the disk image for the new guest"
 msgstr ""
 
-#: virt-clone:168
+#: virt-clone:163
 msgid ""
 "Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-"
 "copy=hdc)"
 msgstr ""
 
-#: virt-clone:172
+#: virt-clone:167
 msgid "Do not use a sparse file for the clone's disk image"
 msgstr ""
 
-#: virt-clone:176
-msgid "Preserve a new file to use as the disk image for the new guest"
+#: virt-clone:171
+msgid ""
+"Do not clone storage, new disk images specified via --file are preserved "
+"unchanged"
 msgstr ""
 
-#: virt-clone:180 virt-image:119 virt-install:619
+#: virt-clone:175 virt-image:113 virt-install:646
 #, fuzzy
 msgid "Networking Configuration"
 msgstr "Конфігурація GTK"
 
-#: virt-clone:184
+#: virt-clone:179
 msgid ""
 "New fixed MAC address for the clone guest. Default is a randomly generated "
 "MAC"
 msgstr ""
 
-#: virt-clone:188 virt-image:139 virt-install:648
+#: virt-clone:183 virt-image:133 virt-install:724
 #, fuzzy
 msgid "Miscellaneous Options"
 msgstr "Інші параметри"
 
-#: virt-clone:190 virt-convert:93 virt-image:153 virt-install:650
+#: virt-clone:185 virt-convert:87 virt-image:147 virt-install:744
 #, fuzzy
 msgid "Print debugging information"
 msgstr "Увімкнути налагоджувальну інформацію"
 
-#: virt-clone:192 virt-install:664
+#: virt-clone:187 virt-install:738
 msgid "Request user input for ambiguous situations or required options."
 msgstr ""
 
-#: virt-clone:195 virt-image:157
+#: virt-clone:190 virt-image:151
 msgid ""
 "Do not prompt for input. Answers yes where applicable, terminates for all "
 "other prompts"
 msgstr ""
 
-#: virt-clone:214
+#: virt-clone:209
 msgid "Must be privileged to clone Xen guests"
 msgstr ""
 
-#: virt-clone:243
+#: virt-clone:238
 #, fuzzy, python-format
 msgid ""
 "\n"
 "Clone '%s' created successfully."
 msgstr "Файл Cache успішно створено.\n"
 
-#: virt-clone:258 virt-image:264 virt-install:976
+#: virt-clone:253 virt-image:259 virt-install:1037
 msgid "Installation aborted at user request"
 msgstr ""
 
-#: virt-convert:52
+#: virt-convert:46
 #, fuzzy
 msgid "Input format, e.g. 'vmx'"
 msgstr "Неправильний формат файлу вводу \"%s\"."
 
-#: virt-convert:55
+#: virt-convert:49
 #, fuzzy
 msgid "Output format, e.g. 'virt-image'"
 msgstr "PCX: формат не підтримується"
 
-#: virt-convert:57
+#: virt-convert:51
 #, fuzzy
 msgid "Output disk format"
 msgstr "Формат виводу на ТБ"
 
-#: virt-convert:62 virt-install:566
+#: virt-convert:56 virt-install:699
 msgid "This guest should be a fully virtualized guest"
 msgstr ""
 
-#: virt-convert:64 virt-install:568
+#: virt-convert:58 virt-install:701
 #, fuzzy
 msgid "This guest should be a paravirtualized guest"
 msgstr "Текст у цій рамці має бути ^0."
 
-#: virt-convert:70
+#: virt-convert:64
 msgid "Machine Architecture Type (i686/x86_64/ppc)"
 msgstr ""
 
-#: virt-convert:73 virt-install:534
+#: virt-convert:67
 msgid ""
 "The OS type for fully virtualized guests, e.g. 'linux', 'unix', 'windows'"
 msgstr ""
 
-#: virt-convert:77
+#: virt-convert:71
 msgid ""
 "The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
 "'solaris10', 'win2k', 'vista'"
 msgstr ""
 
-#: virt-convert:80 virt-install:556
+#: virt-convert:74 virt-install:713
 msgid ""
 "Disables APIC for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
 msgstr ""
 
-#: virt-convert:84 virt-install:560
+#: virt-convert:78 virt-install:717
 msgid ""
 "Disables ACPI for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
 msgstr ""
 
-#: virt-convert:91
+#: virt-convert:85
 #, fuzzy
 msgid "Don't be verbose"
 msgstr "Увімкнути докладний вивід"
 
-#: virt-convert:102
+#: virt-convert:96
 msgid "You need to provide an input VM definition"
 msgstr ""
 
-#: virt-convert:104
+#: virt-convert:98
 #, fuzzy
 msgid "Too many arguments provided"
 msgstr "bind: дуже багато аргументів"
 
-#: virt-convert:108
+#: virt-convert:102
 #, fuzzy, python-format
 msgid "Unknown output disk format \"%s\""
 msgstr ""
@@ -1958,133 +1983,133 @@ msgstr ""
 "\t-p : pid\n"
 "\t-c : власник\n"
 
-#: virt-convert:123
+#: virt-convert:117
 #, fuzzy, python-format
 msgid "Unknown output format \"%s\")"
 msgstr "Формат виводу на ТБ"
 
-#: virt-convert:125
+#: virt-convert:119
 #, fuzzy, python-format
 msgid "No output handler for format \"%s\")"
 msgstr "Відсутній обробний для схеми URL"
 
-#: virt-convert:129
+#: virt-convert:123
 #, fuzzy, python-format
 msgid "Couldn't access input argument \"%s\"\n"
 msgstr ""
 "ПОПЕРЕДЖЕННЯ: не вдається прочитати аргумент порядку слідування байт \"%s\"\n"
 
-#: virt-convert:136
+#: virt-convert:130
 #, fuzzy, python-format
 msgid "Couldn't determine input format for \"%s\": %s"
 msgstr "Не вдається розпізнати формат зображення у файлі \"%s\""
 
-#: virt-convert:141
+#: virt-convert:135
 #, fuzzy, python-format
 msgid "Unknown input format \"%s\")"
 msgstr "Невідомий формат файла"
 
-#: virt-convert:143
+#: virt-convert:137
 #, fuzzy, python-format
 msgid "No input handler for format \"%s\""
 msgstr "Відсутній обробний для схеми URL"
 
-#: virt-convert:178
+#: virt-convert:172
 #, python-format
 msgid "Couldn't clean up output directory \"%s\": %s"
 msgstr ""
 
-#: virt-convert:194 virt-convert:197
+#: virt-convert:188 virt-convert:191
 #, fuzzy, python-format
 msgid "Couldn't import file \"%s\": %s"
 msgstr "Не вдається імпортувати файл."
 
-#: virt-convert:234
+#: virt-convert:228
 #, fuzzy, python-format
 msgid "Generating output in '%(format)s' format to %(dir)s/"
 msgstr "mount: каталог для підключення не у форматі вузол:каталог\n"
 
-#: virt-convert:255
+#: virt-convert:249
 #, python-format
 msgid "Converting disk '%(path)s' to type %(format)s..."
 msgstr ""
 
-#: virt-convert:262 virt-convert:265
+#: virt-convert:256 virt-convert:259
 #, fuzzy, python-format
 msgid "Couldn't convert disks: %s"
 msgstr "Не вдається перетворити назву файлу"
 
-#: virt-convert:271
+#: virt-convert:265
 #, fuzzy, python-format
 msgid "Couldn't export to file \"%s\": %s"
 msgstr "Експортувати закладки у файл"
 
-#: virt-convert:283
+#: virt-convert:277
 #, fuzzy
 msgid "Aborted at user request"
 msgstr "Перервано за запитом користувача"
 
-#: virt-image:50
+#: virt-image:46
 #, python-format
 msgid ""
 "Warning: more networks were provided [%i] then nics required [%i]. All "
 "extras are ignored."
 msgstr ""
 
-#: virt-image:55
+#: virt-image:51
 #, fuzzy, python-format
 msgid "The image requires %i network interface."
 msgstr "Мережний інтерфейс, що контролюється монітором мережі."
 
-#: virt-image:85 virt-install:514
+#: virt-image:79 virt-install:578
 #, fuzzy
 msgid "Name of the guest instance"
 msgstr "Замінити цей примірник?"
 
-#: virt-image:87 virt-install:516
+#: virt-image:81 virt-install:580
 msgid "Memory to allocate for guest instance in megabytes"
 msgstr ""
 
-#: virt-image:91 virt-install:523
+#: virt-image:85 virt-install:721
 #, fuzzy
 msgid "UUID for the guest."
 msgstr "Немає гостьового облікового запису"
 
-#: virt-image:93 virt-install:525
+#: virt-image:87 virt-install:583
 msgid "Number of vcpus to configure for your guest"
 msgstr ""
 
-#: virt-image:95 virt-install:527
+#: virt-image:89 virt-install:741
 msgid "Check that vcpus do not exceed physical CPUs and warn if they do."
 msgstr ""
 
-#: virt-image:99 virt-install:531
+#: virt-image:93 virt-install:586
 msgid "Set which physical CPUs Domain can use."
 msgstr ""
 
-#: virt-image:102
+#: virt-image:96 virt-install:616
 msgid "The OS type being installed, e.g. 'linux', 'unix', 'windows'"
 msgstr ""
 
-#: virt-image:106
+#: virt-image:100
 msgid ""
 "The OS variant being installed, e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k'"
 msgstr ""
 
-#: virt-image:110 virt-install:551
+#: virt-image:104
 #, fuzzy
 msgid "Full Virtualization specific options"
 msgstr "Сторінка власних параметрів учасника"
 
-#: virt-image:113
+#: virt-image:107
 msgid "Disables APIC for fully virtualized guest"
 msgstr ""
 
-#: virt-image:116
+#: virt-image:110
 msgid "Disables ACPI for fully virtualized guest"
 msgstr ""
 
-#: virt-image:122
+#: virt-image:116
 msgid ""
 "Specify a network interface. Ex:\n"
 "--network bridge=mybr0\n"
@@ -2092,37 +2117,37 @@ msgid ""
 "--network network=mynet,model=e1000,mac=00:11..."
 msgstr ""
 
-#: virt-image:141
+#: virt-image:135
 msgid "Print the libvirt XML, but do not start the domain"
 msgstr ""
 
-#: virt-image:144
+#: virt-image:138
 msgid "The zero-based index of the boot record to use"
 msgstr ""
 
-#: virt-image:146
+#: virt-image:140
 msgid "Overwrite, or destroy, an existing image with the same name"
 msgstr ""
 
-#: virt-image:151
+#: virt-image:145
 msgid "Skip disk checksum verification process"
 msgstr ""
 
-#: virt-image:165
+#: virt-image:159
 msgid "You need to provide an image XML descriptor"
 msgstr ""
 
-#: virt-image:184
+#: virt-image:178
 #, fuzzy
 msgid "Cannot parse"
 msgstr "Не вдалося проаналізувати:"
 
-#: virt-image:189
+#: virt-image:183
 #, fuzzy, python-format
 msgid "The index for --boot must be between 0 and %d"
 msgstr "Для цього формату значення в полі ''Почати з'' має бути між %s і %s."
 
-#: virt-image:242
+#: virt-image:237
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2130,12 +2155,12 @@ msgid ""
 "Creating guest %s..."
 msgstr "Г_остьовий запис:"
 
-#: virt-image:246
+#: virt-image:241
 #, fuzzy
 msgid "Guest creation failed"
 msgstr "Помилка створення потоку вводу-виводу"
 
-#: virt-image:252
+#: virt-image:247
 #, python-format
 msgid ""
 "Domain creation may not have been\n"
@@ -2144,213 +2169,193 @@ msgid ""
 "restart your installation."
 msgstr ""
 
-#: virt-install:84
+#: virt-install:81
 #, python-format
 msgid "Couldn't create default storage pool '%s': %s"
 msgstr ""
 
-#: virt-install:107
+#: virt-install:104
 #, python-format
 msgid "%(chartype)s type %(devtype)s does not support '%(optname)s' option."
 msgstr ""
 
-#: virt-install:133
+#: virt-install:130 virt-install:168 virt-install:209
 #, fuzzy, python-format
 msgid "Unknown option(s) %s"
 msgstr "Невідома опція '%s'"
 
-#: virt-install:147
+#: virt-install:144
 #, python-format
 msgid "Error in %(chartype)s device parameters: %(err)s"
 msgstr ""
 
-#: virt-install:182
+#: virt-install:178
+#, fuzzy, python-format
+msgid "Error in watchdog device parameters: %s"
+msgstr "Пристрої зі знімними носіями"
+
+#: virt-install:245
 #, fuzzy, python-format
 msgid "Unknown --disk option '%s'."
 msgstr "Невідомий параметр %c у %s(%s)\n"
 
-#: virt-install:190 virt-install:202
+#: virt-install:253 virt-install:265
 #, fuzzy, python-format
 msgid "Unknown '%s' value '%s'"
 msgstr "Невідоме значення"
 
-#: virt-install:195
+#: virt-install:258
 #, fuzzy, python-format
 msgid "Improper value for 'size': %s"
 msgstr "Розмір шрифту надпису"
 
-#: virt-install:219
+#: virt-install:282
 msgid "Size must be specified with all 'pool='"
 msgstr ""
 
-#: virt-install:232
+#: virt-install:295
 msgid "Format attribute not supported for this volume type"
 msgstr ""
 
-#: virt-install:241
+#: virt-install:304
 msgid "Storage volume must be specified as vol=poolname/volname"
 msgstr ""
 
-#: virt-install:290
+#: virt-install:353
 msgid "Cannot use --file, --file-size, or --disk with --nodisks"
 msgstr ""
 
-#: virt-install:293
+#: virt-install:356
 msgid ""
 "Cannot mix --file, --nonsparse, or --file-size with --disk options. Please "
 "see the manual for --disk syntax."
 msgstr ""
 
-#: virt-install:296
+#: virt-install:359
 msgid "A disk must be specified (use --nodisks to override)"
 msgstr ""
 
-#: virt-install:304
+#: virt-install:367
 msgid "Need to pass size for each disk"
 msgstr ""
 
-#: virt-install:319
+#: virt-install:382
 #, fuzzy
 msgid "Cannot use --mac with --nonetworks"
 msgstr "Неможливо використовувати ім'я файлу для вказаного пристрою."
 
-#: virt-install:321
+#: virt-install:384
 #, fuzzy
 msgid "Cannot use --bridges with --nonetworks"
 msgstr "Неможливо використовувати ім'я файлу для вказаного пристрою."
 
-#: virt-install:323
+#: virt-install:386
 #, fuzzy
 msgid "Cannot use --network with --nonetworks"
 msgstr "Неможливо використовувати ім'я файлу для вказаного пристрою."
 
-#: virt-install:350
+#: virt-install:413
 msgid ""
 "Would you like a fully virtualized guest (yes or no)? This will allow you to "
 "run unmodified operating systems."
 msgstr ""
 
-#: virt-install:375
+#: virt-install:438
 #, python-format
 msgid "Would you like to use %s acceleration? (yes or no)"
 msgstr ""
 
-#: virt-install:387
+#: virt-install:450
 msgid "Can't do both --hvm and --paravirt"
 msgstr ""
 
-#: virt-install:409 virt-install:410
+#: virt-install:472 virt-install:473
 #, fuzzy
 msgid "default"
 msgstr "типово"
 
-#: virt-install:431
+#: virt-install:497
 #, python-format
 msgid "Only one install method (%s) can be used"
 msgstr ""
 
-#: virt-install:437
+#: virt-install:503
 msgid "Network PXE boot is not supported for paravirtualized guests"
 msgstr ""
 
-#: virt-install:440
+#: virt-install:506
 msgid "Paravirtualized guests cannot install off cdrom media."
 msgstr ""
 
-#: virt-install:443
+#: virt-install:509
 msgid "--location can not be specified for remote connections."
 msgstr ""
 
-#: virt-install:452
+#: virt-install:518
 #, python-format
 msgid "One of %s, or cdrom media must be specified."
 msgstr ""
 
-#: virt-install:465
+#: virt-install:531
 #, fuzzy, python-format
 msgid "Error creating cdrom disk: %s"
 msgstr "Створення дискети скидання пароля"
 
-#: virt-install:470
+#: virt-install:536
 msgid "What is the install CD-ROM/ISO or URL?"
 msgstr ""
 
-#: virt-install:472
+#: virt-install:538
 #, fuzzy
 msgid "What is the install URL?"
 msgstr "URL - %s, альтернативний текст %s"
 
-#: virt-install:520
-#, fuzzy
-msgid "The CPU architecture to simulate"
-msgstr "Не вдається встановити імітацію клацання: %d."
-
-#: virt-install:538
-msgid ""
-"The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
-"'solaris10', 'win2k'"
+#: virt-install:589
+msgid "Human readable description of the VM to store in the generated XML."
 msgstr ""
 
-#: virt-install:542
-#, fuzzy
-msgid "Add a serial device to the domain."
-msgstr "Додати домен до списку надійних відправників"
-
-#: virt-install:545
-#, fuzzy
-msgid "Add a parallel device to the domain."
-msgstr "Додати домен до списку надійних відправників"
-
-#: virt-install:548
-msgid "Physical host device to attach to the domain."
+#: virt-install:593
+msgid "Set domain security driver configuration."
 msgstr ""
 
-#: virt-install:553
-#, fuzzy
-msgid "Use sound device emulation"
-msgstr "Використовувати вказаний пристрій вводу"
-
-#: virt-install:564
-#, fuzzy
-msgid "Virtualization Type Options"
-msgstr "Параметри типу ключа"
-
-#: virt-install:571
-msgid "Hypervisor name to use (kvm, qemu, xen, ...)"
-msgstr ""
-
-#: virt-install:577
+#: virt-install:596
 #, fuzzy
 msgid "Installation Method Options"
 msgstr "Параметри особливі для методу:"
 
-#: virt-install:580
+#: virt-install:599
 #, fuzzy
 msgid "CD-ROM installation media"
 msgstr "Пошук на знімних носіях (дискетах, компакт-дисках...)"
 
-#: virt-install:583
+#: virt-install:602
 msgid ""
 "Installation source (eg, nfs:host:/path, http://host/path, ftp://host/path)"
 msgstr ""
 
-#: virt-install:586
+#: virt-install:605
 msgid "Boot from the network using the PXE protocol"
 msgstr ""
 
-#: virt-install:588
+#: virt-install:607
 msgid "Build guest around an existing disk image"
 msgstr ""
 
-#: virt-install:590
+#: virt-install:609
 msgid "Treat the CD-ROM media as a Live CD"
 msgstr ""
 
-#: virt-install:593
+#: virt-install:612
 msgid "Additional arguments to pass to the kernel booted from --location"
 msgstr ""
 
-#: virt-install:600
+#: virt-install:620
+msgid ""
+"The OS variant being installed guests, e.g. 'fedora6', 'rhel5', 'solaris10', "
+"'win2k'"
+msgstr ""
+
+#: virt-install:627
 msgid ""
 "Specify storage with various options. Ex.\n"
 "--disk path=/my/existing/disk\n"
@@ -2358,11 +2363,11 @@ msgid ""
 "--disk vol=poolname:volname,device=cdrom,bus=scsi,..."
 msgstr ""
 
-#: virt-install:605
+#: virt-install:632
 msgid "Don't set up any disks for the guest."
 msgstr ""
 
-#: virt-install:622
+#: virt-install:649
 msgid ""
 "Specify a network interface. Ex:\n"
 "--network bridge=mybr0\n"
@@ -2370,47 +2375,90 @@ msgid ""
 "--network network=mynet,model=virtio,mac=00:11..."
 msgstr ""
 
-#: virt-install:627
+#: virt-install:654
 msgid "Don't create network interfaces for the guest."
 msgstr ""
 
-#: virt-install:641
+#: virt-install:668
+msgid "Don't automatically try to connect to the guest console"
+msgstr ""
+
+#: virt-install:672
+#, fuzzy
+msgid "Device Options"
+msgstr "Загальні параметри"
+
+#: virt-install:675
+#, fuzzy
+msgid "Add a serial device to the domain."
+msgstr "Додати домен до списку надійних відправників"
+
+#: virt-install:678
+#, fuzzy
+msgid "Add a parallel device to the domain."
+msgstr "Додати домен до списку надійних відправників"
+
+#: virt-install:681
+msgid "Physical host device to attach to the domain."
+msgstr ""
+
+#: virt-install:684
+#, fuzzy
+msgid "Use sound device emulation"
+msgstr "Використовувати вказаний пристрій вводу"
+
+#: virt-install:687
+#, fuzzy
+msgid "Add a watchdog device to the domain."
+msgstr "Додати домен до списку надійних відправників"
+
+#: virt-install:690
 #, fuzzy
 msgid "Specify video hardware type."
 msgstr "Виберіть тип апаратного пристрою"
 
-#: virt-install:644
-msgid "Don't automatically try to connect to the guest console"
+#: virt-install:697
+#, fuzzy
+msgid "Virtualization Platform Options"
+msgstr "Параметри типу ключа"
+
+#: virt-install:704
+msgid "Hypervisor name to use (kvm, qemu, xen, ...)"
 msgstr ""
 
-#: virt-install:653
+#: virt-install:710
+#, fuzzy
+msgid "The CPU architecture to simulate"
+msgstr "Не вдається встановити імітацію клацання: %d."
+
+#: virt-install:727
 msgid "Have domain autostart on host boot up."
 msgstr ""
 
-#: virt-install:655
+#: virt-install:729
 msgid "Disables the automatic rebooting when the installation is complete."
 msgstr ""
 
-#: virt-install:658
+#: virt-install:732
 #, fuzzy
 msgid "Time to wait (in minutes)"
 msgstr "Відображає час у форматі від 00.00 до 24.00."
 
-#: virt-install:660
+#: virt-install:734
 msgid "Forces 'yes' for any applicable prompts, terminates for all others"
 msgstr ""
 
-#: virt-install:683
+#: virt-install:762
 msgid ""
 "Unable to connect to graphical console: virt-viewer not installed. Please "
 "install the 'virt-viewer' package."
 msgstr ""
 
-#: virt-install:725
+#: virt-install:804
 msgid "Can't use --pxe with --nonetworks"
 msgstr ""
 
-#: virt-install:827
+#: virt-install:908
 #, fuzzy
 msgid ""
 "\n"
@@ -2418,7 +2466,7 @@ msgid ""
 "Starting install..."
 msgstr "встановити документацію"
 
-#: virt-install:838
+#: virt-install:919 virt-install:947
 #, python-format
 msgid ""
 "Domain installation does not appear to have been\n"
@@ -2427,14 +2475,14 @@ msgid ""
 " restart your installation."
 msgstr ""
 
-#: virt-install:849
+#: virt-install:930
 #, python-format
 msgid ""
 "Guest installation complete... you can restart your domain\n"
 "by running 'virsh start %s'"
 msgstr ""
 
-#: virt-install:853
+#: virt-install:934
 #, fuzzy
 msgid "Guest installation complete... restarting guest."
 msgstr ""
@@ -2442,53 +2490,48 @@ msgstr ""
 "\n"
 "%s%s"
 
-#: virt-install:859
+#: virt-install:940
 #, fuzzy
 msgid "Guest install interrupted."
 msgstr "“%s” перервав з'єднання."
 
-#: virt-install:866
-#, python-format
-msgid ""
-"Domain installation may not have been\n"
-" successful.  If it was, you can restart your domain\n"
-" by running 'virsh start %s'; otherwise, please\n"
-" restart your installation."
-msgstr ""
-
-#: virt-install:904
+#: virt-install:965
 #, fuzzy
 msgid "Domain has crashed."
 msgstr "Цей комп'ютер не приєднаний до домену. "
 
-#: virt-install:936
+#: virt-install:997
 #, fuzzy, python-format
 msgid "%d minutes "
 msgstr "Хвилини"
 
-#: virt-install:938
+#: virt-install:999
 #, python-format
 msgid ""
 "Domain installation still in progress. Waiting %sfor installation to "
 "complete."
 msgstr ""
 
-#: virt-install:944
+#: virt-install:1005
 #, fuzzy
 msgid "Domain has shutdown. Continuing."
 msgstr "Після закінчення програвання вимкнути комп'ютер"
 
-#: virt-install:951
+#: virt-install:1012
 #, python-format
 msgid "Could not lookup domain after install: %s"
 msgstr ""
 
-#: virt-install:958
+#: virt-install:1019
 msgid "Installation has exceeded specified time limit. Exiting application."
 msgstr ""
 
-#: virt-install:964
+#: virt-install:1025
 msgid ""
 "Domain installation still in progress. You can reconnect to \n"
 "the console to complete the installation process."
 msgstr ""
+
+#, fuzzy
+#~ msgid "The specified media path does not exist."
+#~ msgstr "Вказаний шліх не існує."
