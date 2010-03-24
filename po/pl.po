@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-03-24 11:46-0400\n"
-"PO-Revision-Date: 2010-02-09 17:17+0100\n"
+"PO-Revision-Date: 2010-03-24 18:21+0100\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <trans-pl@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
@@ -97,9 +97,9 @@ msgid "A disk path must be specified."
 msgstr "Ścieżka dysku musi zostać podana."
 
 #: virtinst/cli.py:447
-#, fuzzy, python-format
+#, python-format
 msgid "A disk path must be specified to clone '%s'."
-msgstr "Ścieżka dysku musi zostać podana."
+msgstr "Ścieżka dysku musi zostać podana, aby sklonować \"%s\"."
 
 #: virtinst/cli.py:451
 msgid "What would you like to use as the disk (file path)?"
@@ -383,9 +383,8 @@ msgid "Unknown OS variant '%s'"
 msgstr "Nieznany wariant systemu operacyjnego \"%s\""
 
 #: virtinst/Guest.py:374
-#, fuzzy
 msgid "Whether we should overwrite an existing guest with the same name."
-msgstr "Zastępuje lub usuwa istniejący obraz o tej samej nazwie"
+msgstr "Czy zastąpić istniejącego gościa o tej samej nazwie."
 
 #: virtinst/Guest.py:411
 msgid "Must specify whether graphics are enabled"
@@ -417,9 +416,8 @@ msgid "The UUID you entered is already in use by another guest!"
 msgstr "Podany UUID jest już używany przez innego gościa."
 
 #: virtinst/Guest.py:983
-#, fuzzy
 msgid "Starting domain..."
-msgstr "Tworzenie domeny..."
+msgstr "Uruchamianie domeny..."
 
 #: virtinst/Guest.py:1036
 msgid "Creating domain..."
@@ -1611,33 +1609,32 @@ msgstr ""
 
 #: virtinst/VirtualWatchdog.py:43
 msgid "Forcefully reset the guest"
-msgstr ""
+msgstr "Wymuszone ponowne uruchomienie gościa"
 
 #: virtinst/VirtualWatchdog.py:45
 msgid "Gracefully shutdown the guest"
-msgstr ""
+msgstr "Normalne wyłączenie gościa"
 
 #: virtinst/VirtualWatchdog.py:47
 msgid "Forcefully power off the guest"
-msgstr ""
+msgstr "Wymuszone wyłączenie gościa"
 
 #: virtinst/VirtualWatchdog.py:49
-#, fuzzy
 msgid "Pause the guest"
-msgstr "Nazwa nowego gościa"
+msgstr "Wstrzymanie gościa"
 
 #: virtinst/VirtualWatchdog.py:51
 msgid "No action"
-msgstr ""
+msgstr "Brak czynności"
 
 #: virtinst/VirtualWatchdog.py:53
 msgid "Hypervisor default"
-msgstr ""
+msgstr "Domyślne nadzorcy"
 
 #: virtinst/VirtualWatchdog.py:70
-#, fuzzy, python-format
+#, python-format
 msgid "Unsupported watchdog model '%s'"
-msgstr "Nieobsługiwany model dźwięku \"%s\""
+msgstr "Nieobsługiwany model watchdoga \"%s\""
 
 #: virtconv/diskcfg.py:264
 #, python-format
@@ -1801,6 +1798,8 @@ msgid ""
 "Do not clone storage, new disk images specified via --file are preserved "
 "unchanged"
 msgstr ""
+"Bez klonowania pamięci masowej, nowe obrazy dysków podane przez --file są "
+"zachowane niezmienione"
 
 #: virt-clone:175 virt-image:113 virt-install:646
 msgid "Networking Configuration"
@@ -2142,9 +2141,9 @@ msgid "Error in %(chartype)s device parameters: %(err)s"
 msgstr "Błąd parametrów urządzenia %(chartype)s: %(err)s"
 
 #: virt-install:178
-#, fuzzy, python-format
+#, python-format
 msgid "Error in watchdog device parameters: %s"
-msgstr "Błąd parametrów urządzenia %(chartype)s: %(err)s"
+msgstr "Błąd parametrów urządzenia watchdog: %s"
 
 #: virt-install:245
 #, python-format
@@ -2266,10 +2265,12 @@ msgstr "Jaki jest adres URL instalacji?"
 #: virt-install:589
 msgid "Human readable description of the VM to store in the generated XML."
 msgstr ""
+"Czytelny dla człowieka opis maszyny wirtualnej do przechowywania w "
+"utworzonym XML."
 
 #: virt-install:593
 msgid "Set domain security driver configuration."
-msgstr ""
+msgstr "Ustawia konfigurację sterownika bezpieczeństwa domeny."
 
 #: virt-install:596
 msgid "Installation Method Options"
@@ -2303,13 +2304,12 @@ msgid "Additional arguments to pass to the kernel booted from --location"
 msgstr "Dodatkowe parametry do przekazania do jądra uruchomionego z --location"
 
 #: virt-install:620
-#, fuzzy
 msgid ""
 "The OS variant being installed guests, e.g. 'fedora6', 'rhel5', 'solaris10', "
 "'win2k'"
 msgstr ""
-"Wariant instalowanego systemu operacyjnego, np. \"fedora6\", \"rhel5\", "
-"\"solaris10\", \"win2k\""
+"Wariant systemu operacyjnego instalowanego gościa, np. \"fedora6\", "
+"\"rhel5\", \"solaris10\", \"win2k\""
 
 #: virt-install:627
 msgid ""
@@ -2348,9 +2348,8 @@ msgid "Don't automatically try to connect to the guest console"
 msgstr "Nie próbuje automatycznie łączyć się z konsolą gościa"
 
 #: virt-install:672
-#, fuzzy
 msgid "Device Options"
-msgstr "Ogólne opcje"
+msgstr "Opcje urządzenia"
 
 #: virt-install:675
 msgid "Add a serial device to the domain."
@@ -2369,18 +2368,16 @@ msgid "Use sound device emulation"
 msgstr "Używa emulacji urządzenia dźwiękowego"
 
 #: virt-install:687
-#, fuzzy
 msgid "Add a watchdog device to the domain."
-msgstr "Dodaje urządzenie szeregowe do domeny."
+msgstr "Dodaje urządzenie watchdog do domeny."
 
 #: virt-install:690
 msgid "Specify video hardware type."
 msgstr "Podaje typ sprzętu graficznego."
 
 #: virt-install:697
-#, fuzzy
 msgid "Virtualization Platform Options"
-msgstr "Opcje typu wirtualizacji"
+msgstr "Opcje platformy wirtualizacji"
 
 #: virt-install:704
 msgid "Hypervisor name to use (kvm, qemu, xen, ...)"
@@ -2498,43 +2495,3 @@ msgid ""
 msgstr ""
 "Trwa instalacja domeny. Można ponownie połączyć się z \n"
 "konsolą, aby ukończyć proces instalacji."
-
-#~ msgid "You must specify a valid ISO or CD-ROM location for the installation"
-#~ msgstr "Należy podać prawidłowe położenie ISO lub CD-ROM dla instalacji"
-
-#~ msgid "The specified media path does not exist."
-#~ msgstr "Podana ścieżka do nośnika nie istnieje."
-
-#~ msgid "Unable to start domain for guest, aborting installation!"
-#~ msgstr "Nie można uruchomić domeny dla gościa, przerywanie instalacji."
-
-#~ msgid "Unable to create domain for the guest, aborting installation!"
-#~ msgstr "Nie można utworzyć domeny dla gościa, przerywanie instalacji."
-
-#~ msgid ""
-#~ "It appears that your installation has crashed.  You should be able to "
-#~ "find more information in the logs"
-#~ msgstr ""
-#~ "Wygląda na to, że instalacja zawiesiła się. Można odnaleźć więcej "
-#~ "informacji w dziennikach"
-
-#~ msgid "Preserve a new file to use as the disk image for the new guest"
-#~ msgstr "Zachowuje nowy plik do użycia jako obraz dysku dla nowego gościa"
-
-#~ msgid ""
-#~ "The OS variant for fully virtualized guests, e.g. 'fedora6', 'rhel5', "
-#~ "'solaris10', 'win2k'"
-#~ msgstr ""
-#~ "Wariant systemu operacyjnego dla w pełni wirtualizowanych gości, np. "
-#~ "\"fedora6\", \"rhel5\", \"solaris10\", \"win2k\""
-
-#~ msgid ""
-#~ "Domain installation may not have been\n"
-#~ " successful.  If it was, you can restart your domain\n"
-#~ " by running 'virsh start %s'; otherwise, please\n"
-#~ " restart your installation."
-#~ msgstr ""
-#~ "Instalacja domeny chyba się nie powiodła. Jeśli jednak\n"
-#~ " powiodła się, można ponownie uruchomić domenę\n"
-#~ " wykonując \"virsh start %s\"; w innym przypadku\n"
-#~ " proszę ponownie uruchomić instalację."
