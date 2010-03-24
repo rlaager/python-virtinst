@@ -49,8 +49,10 @@ class VirtualWatchdog(VirtualDevice.VirtualDevice):
             return _("Pause the guest")
         if action == VirtualWatchdog.ACTION_NONE:
             return _("No action")
-
-        raise ValueError("Unknown watchdog action '%s'." % action)
+        if action == VirtualWatchdog.ACTION_DEFAULT:
+            return _("Hypervisor default")
+        else:
+            return action
 
     def __init__(self, conn):
         VirtualDevice.VirtualDevice.__init__(self, conn)
