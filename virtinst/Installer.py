@@ -81,6 +81,7 @@ class Installer(object):
                  extraargs = None, os_type = None, conn = None):
         self._type = None
         self._location = None
+        self._initrd_injections = []
         self._extraargs = None
         self._boot = None
         self._cdrom = False
@@ -175,6 +176,12 @@ class Installer(object):
     def set_location(self, val):
         self._location = val
     location = property(get_location, set_location)
+
+    def get_initrd_injections(self):
+        return self._initrd_injections
+    def set_initrd_injections(self, val):
+        self._initrd_injections = val
+    initrd_injections = property(get_initrd_injections, set_initrd_injections)
 
     # kernel + initrd pair to use for installing as opposed to using a location
     def get_boot(self):

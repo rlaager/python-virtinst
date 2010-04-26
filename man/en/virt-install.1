@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2010-03-24" "" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2010-04-26" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -302,6 +302,13 @@ may be desirable to also use the \f(CW\*(C`\-\-nodisks\*(C'\fR flag in combinati
 .IX Item "-x EXTRA, --extra-args=EXTRA"
 Additional kernel command line arguments to pass to the installer when
 performing a guest install from \f(CW\*(C`\-\-location\*(C'\fR.
+.IP "\-\-initrd\-inject=PATH" 2
+.IX Item "--initrd-inject=PATH"
+Add \s-1PATH\s0 to the root of the initrd fetched with \f(CW\*(C`\-\-location\*(C'\fR. This can be
+used to run an automated install without requiring a network hosted kickstart
+file:
+.Sp
+\&\-\-initrd\-injections=/path/to/my.ks \-\-extra\-args \*(L"ks=file:/my.ks\*(R"
 .IP "\-\-os\-type=OS_TYPE" 2
 .IX Item "--os-type=OS_TYPE"
 Optimize the guest configuration for a type of operating system (ex. 'linux',

@@ -19,6 +19,10 @@
 
 import logging
 import os
+import sys
+import shutil
+import subprocess
+import tempfile
 
 import _util
 import Installer
@@ -177,6 +181,45 @@ class DistroInstaller(Installer.Installer):
                                          readOnly=True,
                                          transient=True)
 
+    def _perform_initrd_injections(self):
+        """
+        Insert files into the root directory of the initial ram disk
+        """
+        logging.debug("Unpacking initrd.")
+        tempdir = tempfile.mkdtemp(dir=self.scratchdir)
+        os.chmod(tempdir, 0775)
+
+        gzip_proc = subprocess.Popen(['gzip', '-dc', self.install["initrd"]],
+                                     stdout=subprocess.PIPE, stderr=sys.stderr)
+        cpio_proc = subprocess.Popen(['cpio', '-i', '-d', '--quiet'],
+                                     stdin=gzip_proc.stdout,
+                                     stderr=sys.stderr, cwd=tempdir)
+        cpio_proc.wait()
+        gzip_proc.wait()
+
+        for filename in self._initrd_injections:
+            logging.debug("Copying %s to the initrd." % filename)
+            shutil.copy(filename, tempdir)
+
+        logging.debug("Repacking the initrd.")
+        find_proc = subprocess.Popen(['find', '.', '-print0'],
+                                     stdout=subprocess.PIPE,
+                                     stderr=sys.stderr, cwd=tempdir)
+        cpio_proc = subprocess.Popen(['cpio', '-o', '--null', '-c', '--quiet'],
+                                     stdin=find_proc.stdout,
+                                     stdout=subprocess.PIPE,
+                                     stderr=sys.stderr, cwd=tempdir)
+        new_initrd = self.install["initrd"] + '.new'
+        f = open(new_initrd, 'w')
+        gzip_proc = subprocess.Popen(['gzip'], stdin=cpio_proc.stdout,
+                                     stdout=f, stderr=sys.stderr)
+        f.close()
+        cpio_proc.wait()
+        find_proc.wait()
+        gzip_proc.wait()
+        os.rename(new_initrd, self.install["initrd"])
+        shutil.rmtree(tempdir)
+
     def _prepare_kernel_and_initrd(self, guest, distro, meter):
         if self.boot is not None:
             # Got a local kernel/initrd already
@@ -210,6 +253,9 @@ class DistroInstaller(Installer.Installer):
             self._tmpfiles.append(kernelfn)
             if initrdfn:
                 self._tmpfiles.append(initrdfn)
+
+            if self._initrd_injections:
+                self._perform_initrd_injections()
 
         # If they're installing off a local file/device, we map it
         # through to a virtual CD or disk

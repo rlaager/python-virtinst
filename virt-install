@@ -611,6 +611,10 @@ def parse_args():
                     default="",
                     help=_("Additional arguments to pass to the kernel "
                            "booted from --location"))
+    insg.add_option("", "--initrd-inject", type="string",
+                    dest="initrd_injections", action="callback",
+                    callback=cli.check_before_append,
+                    help=_("Add given file to root of initrd from --location"))
     insg.add_option("", "--os-type", type="string", dest="distro_type",
                     action="callback", callback=cli.check_before_store,
                     help=_("The OS type being installed, e.g. "
@@ -808,9 +812,10 @@ def main():
         instclass = virtinst.ImportInstaller
     else:
         instclass = virtinst.DistroInstaller
+
     installer = instclass(type=hv_name, os_type=virt_type, conn=conn)
     installer.arch = capsguest.arch
-
+    installer.initrd_injections = options.initrd_injections
 
     # Get Guest instance from installer parameters.
     guest = installer.guest_from_installer()
