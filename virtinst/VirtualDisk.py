@@ -797,13 +797,15 @@ class VirtualDisk(VirtualDevice):
 
         def lookup_vol_by_path():
             try:
-                return self.conn.storageVolLookupByPath(self.path)
-            except:
-                return None
+                vol = self.conn.storageVolLookupByPath(self.path)
+                vol.info()
+                return vol, None
+            except Exception, e:
+                return None, e
 
         pool = _util.lookup_pool_by_path(self.conn,
                                          os.path.dirname(self.path))
-        vol = lookup_vol_by_path()
+        vol = lookup_vol_by_path()[0]
 
 
         # Is pool running?
@@ -811,24 +813,17 @@ class VirtualDisk(VirtualDevice):
             pool = None
 
         # Attempt to lookup path as a storage volume
-        try:
-            if vol:
-                vol.info()
-        except:
+        if pool and not vol:
             try:
-                try:
-                    # Pool may need to be refreshed, but if it errors,
-                    # invalidate it
-                    if pool:
-                        pool.refresh(0)
-                except:
-                    pool = None
-                    raise
+                # Pool may need to be refreshed, but if it errors,
+                # invalidate it
+                if pool:
+                    pool.refresh(0)
 
-                vol = self.conn.storageVolLookupByPath(self.path)
-                vol.info()
+                vol, verr = lookup_vol_by_path()
             except Exception, e:
                 vol = None
+                pool = None
                 verr = str(e)
 
         if vol:
