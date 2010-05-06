@@ -274,7 +274,10 @@ class DistroInstaller(Installer.Installer):
     # General Installer methods
 
     def scratchdir_required(self):
-        return bool(not self._location_is_path)
+        is_url = not self._location_is_path
+        mount_dvd = self._location_is_path and not self.cdrom
+
+        return bool(is_url or mount_dvd)
 
     def prepare(self, guest, meter, distro = None):
         self.cleanup()
