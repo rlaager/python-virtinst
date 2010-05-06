@@ -655,10 +655,20 @@ class Guest(object):
                     and not install and
                     not self.get_continue_inst())
 
+        def do_skip_disk(d):
+            # Skip transient labeled non-media disks
+            return (d.virtual_device_type == VirtualDevice.VIRTUAL_DEV_DISK and
+                    d.device == VirtualDisk.DEVICE_DISK
+                    and d.transient
+                    and not install)
+
         # Wrapper for building disk XML, handling transient CDROMs
         def get_dev_xml(dev):
             origpath = None
             try:
+                if do_skip_disk(dev):
+                    return ""
+
                 if do_remove_media(dev):
                     origpath = dev.path
                     dev.path = None
