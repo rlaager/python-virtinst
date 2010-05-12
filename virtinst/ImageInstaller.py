@@ -94,7 +94,7 @@ class ImageInstaller(Installer.Installer):
 
     # General Installer methods
 
-    def prepare(self, guest, meter, distro = None):
+    def prepare(self, guest, meter):
         self._make_disks(guest)
 
         for f in ['pae', 'acpi', 'apic']:

@@ -59,7 +59,7 @@ class LiveCDInstaller(Installer.Installer):
 
     # General Installer methods
 
-    def prepare(self, guest, meter, distro = None):
+    def prepare(self, guest, meter):
         self.cleanup()
 
         if not self._install_disk:

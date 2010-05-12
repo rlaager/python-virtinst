@@ -164,13 +164,12 @@ class DistroInstaller(Installer.Installer):
 
     # Private helper methods
 
-    def _prepare_cdrom(self, guest, distro, meter):
+    def _prepare_cdrom(self, guest, meter):
         if not self._location_is_path:
             # Xen needs a boot.iso if its a http://, ftp://, or nfs: url
             cdrom = OSDistro.acquireBootDisk(self.location,
                                              meter, guest.arch,
-                                             scratchdir = self.scratchdir,
-                                             distro = distro)
+                                             scratchdir = self.scratchdir)
             self._tmpfiles.append(cdrom)
         else:
             cdrom = self.location
@@ -220,21 +219,21 @@ class DistroInstaller(Installer.Installer):
         os.rename(new_initrd, self.install["initrd"])
         shutil.rmtree(tempdir)
 
-    def _prepare_kernel_and_initrd(self, guest, distro, meter):
+    def _prepare_kernel_and_initrd(self, guest, meter):
         if self.boot is not None:
             # Got a local kernel/initrd already
             self.install["kernel"] = self.boot["kernel"]
             self.install["initrd"] = self.boot["initrd"]
             if not self.extraargs is None:
                 self.install["extraargs"] = self.extraargs
+
         else:
             # Need to fetch the kernel & initrd from a remote site, or
             # out of a loopback mounted disk image/device
-
             ((kernelfn, initrdfn, args),
              os_type, os_variant) = OSDistro.acquireKernel(guest,
                 self.location, meter, guest.arch, scratchdir=self.scratchdir,
-                type=self.os_type, distro=distro)
+                type=self.os_type)
 
             if guest.get_os_autodetect():
                 if os_type:
@@ -279,7 +278,7 @@ class DistroInstaller(Installer.Installer):
 
         return bool(is_url or mount_dvd)
 
-    def prepare(self, guest, meter, distro = None):
+    def prepare(self, guest, meter):
         self.cleanup()
 
         self.install = {
@@ -290,12 +289,12 @@ class DistroInstaller(Installer.Installer):
 
         if self.cdrom:
             if self.location:
-                self._prepare_cdrom(guest, distro, meter)
+                self._prepare_cdrom(guest, meter)
             else:
                 # Booting from a cdrom directly allocated to the guest
                 pass
         else:
-            self._prepare_kernel_and_initrd(guest, distro, meter)
+            self._prepare_kernel_and_initrd(guest, meter)
 
     def get_install_xml(self, guest, isinstall):
         if isinstall:

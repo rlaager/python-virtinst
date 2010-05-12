@@ -110,7 +110,7 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
                         baseuri)
 
 def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
-                  scratchdir="/var/tmp", _type=None, distro=None):
+                  scratchdir="/var/tmp", _type=None):
     fetcher = _fetcherForURI(baseuri, scratchdir)
 
     try:
@@ -120,8 +120,8 @@ def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
 
     try:
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=_type,
-                                progresscb=progresscb, distro=distro,
-                                scratchdir=scratchdir, arch=arch)
+                                progresscb=progresscb, scratchdir=scratchdir,
+                                arch=arch)
 
         if iskernel is True:
             # FIXME: We should probably do this for both kernel and boot
@@ -138,16 +138,14 @@ def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
         fetcher.cleanupLocation()
 
 # Helper method to lookup install media distro and fetch an install kernel
-def acquireKernel(guest, baseuri, progresscb, arch,
-                  scratchdir="/var/tmp", type=None, distro=None):
+def acquireKernel(guest, baseuri, progresscb, arch, scratchdir, type=None):
     return _acquireMedia(True, guest, baseuri, progresscb, arch,
-                         scratchdir, type, distro)
+                         scratchdir, type)
 
 # Helper method to lookup install media distro and fetch a boot iso
-def acquireBootDisk(baseuri, progresscb, arch, scratchdir="/var/tmp",
-                    type=None, distro=None):
+def acquireBootDisk(baseuri, progresscb, arch, scratchdir, type=None):
     return _acquireMedia(False, None, baseuri, progresscb, arch,
-                         scratchdir, type, distro)
+                         scratchdir, type)
 
 def _check_ostype_valid(os_type):
     return bool(os_type in Guest.list_os_types())

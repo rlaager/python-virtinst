@@ -23,7 +23,7 @@ class PXEInstaller(Installer.Installer):
 
     # General Installer methods
 
-    def prepare(self, guest, meter, distro = None):
+    def prepare(self, guest, meter):
         pass
 
     def get_install_xml(self, guest, isinstall):

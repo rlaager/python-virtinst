@@ -32,7 +32,7 @@ class ImportInstaller(Installer.Installer):
 
     # General Installer methods
 
-    def prepare(self, guest, meter, distro = None):
+    def prepare(self, guest, meter):
         if len(guest.disks) == 0:
             raise ValueError(_("A disk device must be specified."))
 

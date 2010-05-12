@@ -300,15 +300,13 @@ class Installer(object):
             os.unlink(f)
         self._tmpfiles = []
 
-    def prepare(self, guest, meter, distro=None):
+    def prepare(self, guest, meter):
         """
         Fetch any files needed for installation.
         @param guest: guest instance being installed
         @type L{Guest}
         @param meter: progress meter
         @type Urlgrabber ProgressMeter
-        @param distro: Name of distro being installed
-        @type C{str} name from Guest os dictionary
         """
         raise NotImplementedError("Must be implemented in subclass")
 
