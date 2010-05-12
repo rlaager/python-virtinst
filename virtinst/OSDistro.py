@@ -109,8 +109,8 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
     raise ValueError, _("Could not find an installable distribution at '%s'" %
                         baseuri)
 
-def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
-                  scratchdir="/var/tmp", _type=None):
+def _locationCheckWrapper(guest, baseuri, progresscb,
+                          scratchdir, _type, callback):
     fetcher = _fetcherForURI(baseuri, scratchdir)
 
     try:
@@ -121,30 +121,39 @@ def _acquireMedia(iskernel, guest, baseuri, progresscb, arch,
     try:
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=_type,
                                 progresscb=progresscb, scratchdir=scratchdir,
-                                arch=arch)
+                                arch=guest.arch)
 
-        if iskernel is True:
-            # FIXME: We should probably do this for both kernel and boot
-            # disk?
-            os_type, os_variant = store.get_osdict_info()
-            return (store.acquireKernel(guest, fetcher, progresscb),
-                    os_type, os_variant)
-        elif iskernel is False:
-            return store.acquireBootDisk(fetcher, progresscb)
-        else:
-            # Kind of a hack. Just return the store for detectDistro
-            return store
+        return callback(store, fetcher)
     finally:
         fetcher.cleanupLocation()
 
+def _acquireMedia(iskernel, guest, baseuri, progresscb,
+                  scratchdir="/var/tmp", _type=None):
+
+    def media_cb(store, fetcher):
+        os_type, os_variant = store.get_osdict_info()
+        media = None
+
+        if iskernel:
+            media = store.acquireKernel(guest, fetcher, progresscb)
+        else:
+            media = store.acquireBootDisk(guest, fetcher, progresscb)
+
+        return [store, os_type, os_variant, media]
+
+    return _locationCheckWrapper(guest, baseuri, progresscb, scratchdir, _type,
+                                 media_cb)
+
 # Helper method to lookup install media distro and fetch an install kernel
-def acquireKernel(guest, baseuri, progresscb, arch, scratchdir, type=None):
-    return _acquireMedia(True, guest, baseuri, progresscb, arch,
+def acquireKernel(guest, baseuri, progresscb, scratchdir, type=None):
+    iskernel = True
+    return _acquireMedia(iskernel, guest, baseuri, progresscb,
                          scratchdir, type)
 
 # Helper method to lookup install media distro and fetch a boot iso
-def acquireBootDisk(baseuri, progresscb, arch, scratchdir, type=None):
-    return _acquireMedia(False, None, baseuri, progresscb, arch,
+def acquireBootDisk(guest, baseuri, progresscb, scratchdir, type=None):
+    iskernel = False
+    return _acquireMedia(iskernel, guest, baseuri, progresscb,
                          scratchdir, type)
 
 def _check_ostype_valid(os_type):
@@ -157,8 +166,8 @@ def _check_osvariant_valid(os_type, os_variant):
 def detectMediaDistro(location, arch):
     import urlgrabber
     progress = urlgrabber.progress.BaseMeter()
-    store = _acquireMedia(None, None, location, progress, arch, "/var/tmp")
-    return store.get_osdict_info()
+    data = _acquireMedia(None, None, location, progress, arch, "/var/tmp")
+    return data[0].get_osdict_info()
 
 
 def distroFromTreeinfo(fetcher, progresscb, uri, arch, vmtype=None,
@@ -252,7 +261,7 @@ class Distro:
         return self._kernelFetchHelper(fetcher, guest, progresscb, kernelpath,
                                        initrdpath)
 
-    def acquireBootDisk(self, fetcher, progresscb):
+    def acquireBootDisk(self, guest, fetcher, progresscb):
         if self._hasTreeinfo(fetcher, progresscb):
             return fetcher.acquireFile(self._getTreeinfoMedia("boot.iso"),
                                        progresscb)
@@ -430,7 +439,7 @@ class GenericDistro(Distro):
                                        self._valid_kernel_path[0],
                                        self._valid_kernel_path[1])
 
-    def acquireBootDisk(self, fetcher, progresscb):
+    def acquireBootDisk(self, guest, fetcher, progresscb):
         if self._valid_iso_path == None:
             raise ValueError(_("Could not find a boot iso path for this tree."))
 
@@ -980,7 +989,7 @@ class SunDistro(Distro):
         """Determine if uri points to a tree of the store's distro"""
         raise NotImplementedError
 
-    def acquireBootDisk(self, fetcher, progresscb):
+    def acquireBootDisk(self, guest, fetcher, progresscb):
         return fetcher.acquireFile("images/solarisdvd.iso", progresscb)
 
     def process_extra_args(self, argstr):

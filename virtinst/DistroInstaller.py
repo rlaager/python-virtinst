@@ -167,9 +167,11 @@ class DistroInstaller(Installer.Installer):
     def _prepare_cdrom(self, guest, meter):
         if not self._location_is_path:
             # Xen needs a boot.iso if its a http://, ftp://, or nfs: url
-            cdrom = OSDistro.acquireBootDisk(self.location,
-                                             meter, guest.arch,
-                                             scratchdir = self.scratchdir)
+            (store_ignore, os_type_ignore, os_variant_ignore, media) = \
+             OSDistro.acquireBootDisk(guest, self.location, meter,
+                                      self.scratchdir)
+            cdrom = media
+
             self._tmpfiles.append(cdrom)
         else:
             cdrom = self.location
@@ -230,10 +232,11 @@ class DistroInstaller(Installer.Installer):
         else:
             # Need to fetch the kernel & initrd from a remote site, or
             # out of a loopback mounted disk image/device
-            ((kernelfn, initrdfn, args),
-             os_type, os_variant) = OSDistro.acquireKernel(guest,
-                self.location, meter, guest.arch, scratchdir=self.scratchdir,
-                type=self.os_type)
+            ignore, os_type, os_variant, media = OSDistro.acquireKernel(guest,
+                                                    self.location, meter,
+                                                    self.scratchdir,
+                                                    self.os_type)
+            (kernelfn, initrdfn, args) = media
 
             if guest.get_os_autodetect():
                 if os_type:

@@ -361,7 +361,7 @@ class TestURLFetch(unittest.TestCase):
                 logging.debug("Known lack of boot.iso in %s tree. Skipping." \
                               % distname)
             else:
-                boot = hvmstore.acquireBootDisk(fetcher, self.meter)
+                boot = hvmstore.acquireBootDisk(testguest, fetcher, self.meter)
                 logging.debug("acquireBootDisk: %s" % str(boot))
 
                 if boot != True:
