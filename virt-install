@@ -185,6 +185,7 @@ def get_security(security, guest):
 
     # Parse security opts
     opts = cli.parse_optstr(secopts)
+    arglist = secopts.split(",")
     secmodel = virtinst.Seclabel(guest.conn)
 
     def get_and_clear(dictname):
@@ -192,10 +193,30 @@ def get_security(security, guest):
         if opts.has_key(dictname):
             val = opts[dictname]
             del(opts[dictname])
+
         return val
 
+    # Beware, adding boolean options here could upset label comma handling
     mode = get_and_clear("type")
     label = get_and_clear("label")
+
+    # Try to fix up label if it contained commas
+    if label:
+        tmparglist = arglist[:]
+        for idx in range(len(tmparglist)):
+            arg = tmparglist[idx]
+            if not arg.split("=")[0] == "label":
+                continue
+
+            for arg in tmparglist[idx+1:]:
+                if arg.count("="):
+                    break
+
+                if arg:
+                    label += "," + arg
+                    del(opts[arg])
+
+            break
 
     if label:
         secmodel.label = label

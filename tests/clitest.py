@@ -372,6 +372,10 @@ args_dict = {
         "--hvm --nodisks --pxe --security type=dynamic",
         # --security implicit static
         "--hvm --nodisks --pxe --security label=foobar.label",
+        # --security static with commas 1
+        "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3,type=static",
+        # --security static with commas 2
+        "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3",
       ],
 
       "invalid": [
