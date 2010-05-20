@@ -48,6 +48,7 @@ General workflow for the different storage objects:
 import libvirt
 import threading
 import time
+import os
 
 import logging
 from _util import xml_escape as escape
@@ -376,14 +377,14 @@ class StoragePool(StorageObject):
         return self._target_path
     def set_target_path(self, val):
         self._validate_path(val)
-        self._target_path = val
+        self._target_path = os.path.abspath(val)
 
     # Get/Set methods for use by some pools. Will be registered when applicable
     def get_source_path(self):
         return self._source_path
     def set_source_path(self, val):
         self._validate_path(val)
-        self._source_path = val
+        self._source_path = os.path.abspath(val)
 
     def get_host(self):
         return self._host
