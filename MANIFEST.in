@@ -8,5 +8,6 @@ recursive-include tests/cli-test-xml *
 include virt-install virt-clone virt-image virt-convert
 include autobuild.sh
 include doc/*
+include man/en/Makefile
 recursive-include man *.1 *.5 *.pod *.pod.in
 recursive-include po *.po *.pot
