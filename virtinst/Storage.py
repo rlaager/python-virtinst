@@ -728,7 +728,7 @@ class LogicalPool(StoragePool):
     def install(self, meter=None, create=False, build=False):
         if build and not self.source_path:
             raise ValueError(_("Must explicitly specify source path if "
-                               "building' pool"))
+                               "building pool"))
         return StoragePool.install(self, meter=meter, create=create,
                                    build=build)
 
