@@ -97,7 +97,7 @@ _support_dict = {
     },
 
     SUPPORT_CONN_FINDPOOLSOURCES : {
-        "function" : "virConnect.findPoolSources",
+        "function" : "virConnect.findStoragePoolSources",
     },
 
     SUPPORT_CONN_KEYMAP_AUTODETECT : {
