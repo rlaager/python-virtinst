@@ -31,7 +31,7 @@ import _util
 import virtinst
 from virtinst import CapabilitiesParser, VirtualNetworkInterface, \
                      VirtualGraphics, VirtualAudio, VirtualDisk, User, \
-                     VirtualVideoDevice
+                     VirtualVideoDevice, Guest
 from virtinst import _virtinst as _
 
 MIN_RAM = 64
@@ -575,37 +575,18 @@ def get_vcpus(vcpus, check_cpu, guest, conn, image_vcpus=None):
 def get_cpuset(cpuset, mem, guest, conn):
     if cpuset and cpuset != "auto":
         guest.cpuset = cpuset
+
     elif cpuset == "auto":
-        caps = CapabilitiesParser.parse(conn.getCapabilities())
-        if caps.host.topology is None:
-            logging.debug("No topology section in caps xml. Skipping cpuset")
-            return
+        tmpset = None
+        try:
+            tmpset = Guest.generate_cpuset(conn, mem)
+        except Exception, e:
+            logging.debug("Not setting cpuset", str(e))
 
-        cells = caps.host.topology.cells
-        if len(cells) <= 1:
-            logging.debug("Capabilities only show <= 1 cell. Not NUMA capable")
-            return
+        if tmpset:
+            logging.debug("Auto cpuset is: %s" % tmpset)
+            guest.cpuset = tmpset
 
-        cell_mem = conn.getCellsFreeMemory(0, len(cells))
-        cell_id = -1
-        mem = mem * 1024
-        for i in range(len(cells)):
-            if cell_mem[i] > mem and len(cells[i].cpus) != 0:
-                # Find smallest cell that fits
-                if cell_id < 0 or cell_mem[i] < cell_mem[cell_id]:
-                    cell_id = i
-        if cell_id < 0:
-            logging.debug("Could not find any usable NUMA cell/cpu combinations. Not setting cpuset.")
-            return
-
-        # Build cpuset
-        cpustr = ""
-        for cpu in cells[cell_id].cpus:
-            if cpustr != "":
-                cpustr += ","
-            cpustr += str(cpu.id)
-        logging.debug("Auto cpuset is: %s" % cpustr)
-        guest.cpuset = cpustr
     return
 
 def get_network(net_kwargs, guest):

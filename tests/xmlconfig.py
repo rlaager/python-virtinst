@@ -32,8 +32,8 @@ import tests
 
 conn = tests.open_testdriver()
 
-def get_basic_paravirt_guest():
-    g = virtinst.ParaVirtGuest(connection=conn, type="xen")
+def get_basic_paravirt_guest(testconn=conn):
+    g = virtinst.ParaVirtGuest(connection=testconn, type="xen")
     g.name = "TestGuest"
     g.memory = int(200)
     g.maxmemory = int(400)
@@ -43,8 +43,8 @@ def get_basic_paravirt_guest():
     g.vcpus = 5
     return g
 
-def get_basic_fullyvirt_guest(typ="xen"):
-    g = virtinst.FullVirtGuest(connection=conn, type=typ,
+def get_basic_fullyvirt_guest(typ="xen", testconn=conn):
+    g = virtinst.FullVirtGuest(connection=testconn, type=typ,
                                emulator="/usr/lib/xen/bin/qemu-dm",
                                arch="i686")
     g.name = "TestGuest"
@@ -690,6 +690,16 @@ class TestXMLConfig(unittest.TestCase):
         g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
                                             conn=g.conn)
         self._compare(g, "boot-many-devices", False)
+
+    def testCpuset(self):
+        testconn = libvirt.open("test:///default")
+        g = get_basic_fullyvirt_guest(testconn=testconn)
+
+        # Cpuset
+        cpustr = g.generate_cpuset(g.conn, g.memory)
+        g.cpuset = cpustr
+
+        self._compare(g, "boot-cpuset", False)
 
 if __name__ == "__main__":
     unittest.main()
