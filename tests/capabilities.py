@@ -129,6 +129,15 @@ class TestCapabilities(unittest.TestCase):
 
         self._testCapabilities("capabilities-test.xml", host, guests)
 
+    def testCapsTopology(self):
+        filename = "capabilities-test.xml"
+        caps = self._buildCaps(filename)
+
+        self.assertTrue(bool(caps.host.topology))
+        self.assertTrue(len(caps.host.topology.cells) == 2)
+        self.assertTrue(len(caps.host.topology.cells[0].cpus) == 8)
+        self.assertTrue(len(caps.host.topology.cells[0].cpus) == 8)
+
     def testCapsCPUFeaturesOldSyntax(self):
         filename = "rhel5.4-xen-caps-virt-enabled.xml"
         host_feature_list = ["vmx"]
