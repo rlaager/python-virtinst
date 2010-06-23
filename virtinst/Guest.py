@@ -822,6 +822,10 @@ class Guest(object):
     ############################
 
     def _prepare_install(self, meter):
+        # Empty install dev list
+        # Warning: moving this to cleanup_install breaks continue_install
+        self._install_devices = []
+
         # Initialize install device list
         self._install_devices = self.get_all_devices()[:]
 
@@ -838,9 +842,6 @@ class Guest(object):
         self._set_defaults(self._get_install_devs)
 
     def _cleanup_install(self):
-        # Empty install dev list
-        self._install_devices = []
-
         self._installer.cleanup()
 
     def _create_devices(self, progresscb):
