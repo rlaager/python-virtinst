@@ -354,6 +354,8 @@ args_dict = {
         "--hvm --import --disk path=virt-install",
         # PV Import install
         "--paravirt --import --disk path=virt-install",
+        # Import a floppy disk
+        "--hvm --import --disk path=virt-install,device=floppy",
         # --autostart flag
         "--hvm --nodisks --pxe --autostart",
         # --description

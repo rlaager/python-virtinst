@@ -26,7 +26,7 @@ class ImportInstaller(Installer.Installer):
     stage.
 
     ImportInstaller sets the Guest's boot device to that of the first disk
-    attached to the Guest (so, one of 'hd', 'cdrom', or 'floppy'). All the
+    attached to the Guest (so, one of 'hd', 'cdrom', or 'fd'). All the
     user has to do is fill in the Guest object with the desired parameters.
     """
 
@@ -58,6 +58,6 @@ class ImportInstaller(Installer.Installer):
         elif disk.device == VirtualDisk.DEVICE_CDROM:
             return "cdrom"
         elif disk.device == VirtualDisk.DEVICE_FLOPPY:
-            return "floppy"
+            return "fd"
         else:
             return "hd"
