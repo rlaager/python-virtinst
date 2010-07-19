@@ -110,8 +110,10 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
                         baseuri)
 
 def _locationCheckWrapper(guest, baseuri, progresscb,
-                          scratchdir, _type, callback):
+                          scratchdir, _type, arch, callback):
     fetcher = _fetcherForURI(baseuri, scratchdir)
+    if guest:
+        arch = guest.arch
 
     try:
         fetcher.prepareLocation()
@@ -121,7 +123,7 @@ def _locationCheckWrapper(guest, baseuri, progresscb,
     try:
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=_type,
                                 progresscb=progresscb, scratchdir=scratchdir,
-                                arch=guest.arch)
+                                arch=arch)
 
         return callback(store, fetcher)
     finally:
@@ -142,7 +144,7 @@ def _acquireMedia(iskernel, guest, baseuri, progresscb,
         return [store, os_type, os_variant, media]
 
     return _locationCheckWrapper(guest, baseuri, progresscb, scratchdir, _type,
-                                 media_cb)
+                                 None, media_cb)
 
 # Helper method to lookup install media distro and fetch an install kernel
 def acquireKernel(guest, baseuri, progresscb, scratchdir, type=None):
@@ -165,9 +167,18 @@ def _check_osvariant_valid(os_type, os_variant):
 # Attempt to detect the os type + variant for the passed location
 def detectMediaDistro(location, arch):
     import urlgrabber
-    progress = urlgrabber.progress.BaseMeter()
-    data = _acquireMedia(None, None, location, progress, arch, "/var/tmp")
-    return data[0].get_osdict_info()
+    progresscb = urlgrabber.progress.BaseMeter()
+    guest = None
+    baseuri = location
+    scratchdir="/var/tmp"
+    _type = None
+    def media_cb(store, ignore):
+        return store
+
+    store =  _locationCheckWrapper(guest, baseuri, progresscb, scratchdir,
+                                   _type, arch, media_cb)
+
+    return store.get_osdict_info()
 
 
 def distroFromTreeinfo(fetcher, progresscb, uri, arch, vmtype=None,
