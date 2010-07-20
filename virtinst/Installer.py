@@ -118,10 +118,6 @@ class Installer(object):
 
         self._tmpfiles = []
 
-    def get_install_disk(self):
-        return self._install_disk
-    install_disk = property(get_install_disk)
-
     def get_conn(self):
         return self._conn
     conn = property(get_conn)

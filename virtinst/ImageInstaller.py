@@ -97,7 +97,7 @@ class ImageInstaller(Installer.Installer):
     def prepare(self, guest, meter):
         self.cleanup()
 
-        self._make_disks(guest)
+        self._make_disks()
 
         for f in ['pae', 'acpi', 'apic']:
             if self.boot_caps.features[f] & Cap.FEATURE_ON:
@@ -128,7 +128,7 @@ class ImageInstaller(Installer.Installer):
 
     # Private methods
 
-    def _make_disks(self, guest):
+    def _make_disks(self):
         for m in self.boot_caps.drives:
             p = self._abspath(m.disk.file)
             s = None

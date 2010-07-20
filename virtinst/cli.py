@@ -29,9 +29,8 @@ from optparse import OptionValueError, OptionParser
 import libvirt
 import _util
 import virtinst
-from virtinst import CapabilitiesParser, VirtualNetworkInterface, \
-                     VirtualGraphics, VirtualAudio, VirtualDisk, User, \
-                     VirtualVideoDevice, Guest
+from virtinst import VirtualNetworkInterface, VirtualVideoDevice, Guest, \
+                     VirtualGraphics, VirtualAudio, VirtualDisk, User
 from virtinst import _virtinst as _
 
 MIN_RAM = 64
