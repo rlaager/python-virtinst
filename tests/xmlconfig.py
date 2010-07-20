@@ -28,6 +28,7 @@ from virtinst import VirtualCharDevice
 from virtinst import VirtualVideoDevice
 from virtinst import VirtualController
 from virtinst import VirtualWatchdog
+from virtinst import VirtualInputDevice
 import tests
 
 conn = tests.open_testdriver()
@@ -79,7 +80,7 @@ def make_distro_installer(location="/default-pool/default-vol", gtype="xen"):
     return inst
 
 def make_live_installer(location="/dev/loop0", gtype="xen"):
-    inst = virtinst.LiveCDInstaller(type="xen", os_type="hvm",
+    inst = virtinst.LiveCDInstaller(type=gtype, os_type="hvm",
                                     conn=conn, location=location)
     return inst
 
@@ -162,10 +163,10 @@ class TestXMLConfig(unittest.TestCase):
         finally:
             guest._cleanup_install()
 
-    def _testCreate(self, conn, xml):
+    def _testCreate(self, testconn, xml):
         xml = sanitize_xml(xml)
 
-        dom = conn.defineXML(xml)
+        dom = testconn.defineXML(xml)
         try:
             dom.create()
             dom.destroy()
@@ -344,8 +345,21 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_blkdisk())
         self._compare(g, "boot-fullyvirt-disk-block", False)
 
+    def testBootFullyvirtDiskFile(self):
+        g = get_basic_fullyvirt_guest()
+        g.disks.append(get_filedisk())
 
+        inp = VirtualInputDevice(g.conn)
+        cons = VirtualCharDevice.get_dev_instance(conn,
+                                VirtualCharDevice.DEV_CONSOLE,
+                                VirtualCharDevice.CHAR_PTY)
+        g.add_device(inp)
+        g.add_device(cons)
 
+        g.remove_device(inp)
+        g.remove_device(cons)
+
+        self._compare(g, "boot-default-device-removal", False)
 
     def testInstallParavirtDiskFile(self):
         g = get_basic_paravirt_guest()
