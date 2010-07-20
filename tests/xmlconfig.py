@@ -105,11 +105,11 @@ class TestXMLConfig(unittest.TestCase):
         finally:
             xenguest._cleanup_install()
 
-    def conn_function_wrappers(self, guest, filename, do_boot,
+    def conn_function_wrappers(self, guest, funcargs,
+                               func=None,
                                conn_version=None,
                                conn_uri=None,
-                               libvirt_version=None,
-                               do_disk_boot=False):
+                               libvirt_version=None):
         testconn = guest.conn
 
         def set_func(newfunc, funcname, obj, force=False):
@@ -137,7 +137,10 @@ class TestXMLConfig(unittest.TestCase):
             old_version = set_version(conn_version)
             old_uri = set_uri(conn_uri)
             old_libvirt_version = set_libvirt_version(libvirt_version)
-            self._compare(guest, filename, do_boot, do_disk_boot)
+
+            if not func:
+                func = self._compare
+            func(*funcargs)
         finally:
             set_version(*old_version)
             set_uri(*old_uri)
@@ -337,18 +340,18 @@ class TestXMLConfig(unittest.TestCase):
     def testQEMUDriverName(self):
         g = get_basic_fullyvirt_guest()
         g.disks.append(get_blkdisk())
-        self.conn_function_wrappers(g, "misc-qemu-driver-name", True,
-                                    conn_uri=qemu_uri)
+        fargs = (g, "misc-qemu-driver-name", True)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
         g = get_basic_fullyvirt_guest()
         g.disks.append(get_filedisk())
-        self.conn_function_wrappers(g, "misc-qemu-driver-type", True,
-                                    conn_uri=qemu_uri)
+        fargs = (g, "misc-qemu-driver-type", True)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
         g = get_basic_fullyvirt_guest()
         g.disks.append(get_filedisk("/default-pool/iso-vol"))
-        self.conn_function_wrappers(g, "misc-qemu-iso-disk", True,
-                                    conn_uri=qemu_uri)
+        fargs = (g, "misc-qemu-iso-disk", True)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testXMLEscaping(self):
         g = get_basic_fullyvirt_guest()
@@ -365,8 +368,8 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self.conn_function_wrappers(g, "install-f10", True,
-                                    conn_uri=qemu_uri)
+        fargs = (g, "install-f10", True)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testF11(self):
         g = get_basic_fullyvirt_guest("kvm")
@@ -380,8 +383,8 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self.conn_function_wrappers(g, "install-f11", False,
-                                    conn_uri=qemu_uri)
+        fargs = (g, "install-f11", False)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testF11AC97(self):
         def build_guest():
@@ -411,17 +414,20 @@ class TestXMLConfig(unittest.TestCase):
             return 11000
 
         g = build_guest()
-        self.conn_function_wrappers(g, "install-f11-ac97", False,
+        fargs = (g, "install-f11-ac97", False)
+        self.conn_function_wrappers(g, fargs,
                                     conn_uri=qemu_uri,
                                     conn_version=conn_support_ac97)
 
         g = build_guest()
-        self.conn_function_wrappers(g, "install-f11-noac97", False,
+        fargs = (g, "install-f11-noac97", False)
+        self.conn_function_wrappers(g, fargs,
                                     libvirt_version=libvirt_nosupport_ac97,
                                     conn_uri=qemu_uri)
 
         g = build_guest()
-        self.conn_function_wrappers(g, "install-f11-noac97", False,
+        fargs = (g, "install-f11-noac97", False)
+        self.conn_function_wrappers(g, fargs,
                                     conn_version=conn_nosupport_ac97,
                                     conn_uri=qemu_uri)
 
@@ -438,8 +444,8 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self.conn_function_wrappers(g, "install-f11-qemu", False,
-                                    conn_uri=qemu_uri)
+        fargs = (g, "install-f11-qemu", False)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testF11Xen(self):
         g = get_basic_fullyvirt_guest("xen")
@@ -453,8 +459,8 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
-        self.conn_function_wrappers(g, "install-f11-xen", False,
-                                    conn_uri=xen_uri)
+        fargs = (g, "install-f11-xen", False)
+        self.conn_function_wrappers(g, fargs, conn_uri=xen_uri)
 
     def _build_win_kvm(self):
         g = get_basic_fullyvirt_guest("kvm")
@@ -470,19 +476,18 @@ class TestXMLConfig(unittest.TestCase):
 
     def testInstallWindowsKVM(self):
         g = self._build_win_kvm()
-        self.conn_function_wrappers(g, "winxp-kvm-stage1", True,
-                                    conn_uri=qemu_uri)
+        fargs = (g, "winxp-kvm-stage1", True)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testContinueWindowsKVM(self):
         g = self._build_win_kvm()
-        self.conn_function_wrappers(g, "winxp-kvm-stage2", True,
-                                    conn_uri=qemu_uri,
-                                    do_disk_boot=True)
+        fargs = (g, "winxp-kvm-stage2", True, True)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testBootWindowsKVM(self):
         g = self._build_win_kvm()
-        self.conn_function_wrappers(g, "winxp-kvm-stage3", False,
-                                    conn_uri=qemu_uri)
+        fargs = (g, "winxp-kvm-stage3", False)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
 
     def testInstallWindowsXenNew(self):
@@ -504,9 +509,9 @@ class TestXMLConfig(unittest.TestCase):
         for f, xml in [(old_xen_ver, "install-windowsxp-xenold"),
                        (new_xen_ver, "install-windowsxp-xennew")]:
 
-            self.conn_function_wrappers(g, xml, True,
-                                        conn_version=f,
-                                        conn_uri=xen_uri)
+            fargs = (g, xml, True)
+            self.conn_function_wrappers(g, fargs,
+                                        conn_version=f, conn_uri=xen_uri)
 
 
     # Device heavy configurations
