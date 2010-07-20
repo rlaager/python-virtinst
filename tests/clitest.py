@@ -429,7 +429,7 @@ args_dict = {
         # Mixing bridge and network
         "--network user --bridge foo0",
         # Colliding macaddr
-        "--mac 11:22:33:44:55:66",
+        "--mac 11:22:33:12:34:AB",
       ],
 
      }, # category "network"

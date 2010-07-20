@@ -31,7 +31,7 @@ from virtinst import VirtualWatchdog
 import tests
 
 conn = tests.open_testdriver()
-scratch = os.path.join(os.getcwd(), "tests", "scratch")
+scratch = os.path.join(os.getcwd(), "tests", "testscratchdir")
 
 def get_basic_paravirt_guest(testconn=conn, installer=None):
     g = virtinst.ParaVirtGuest(connection=testconn, type="xen")
@@ -87,10 +87,26 @@ def make_pxe_installer(gtype="xen"):
     inst = virtinst.PXEInstaller(type=gtype, os_type="hvm", conn=conn)
     return inst
 
-def get_floppy(path="/default-pool/testvol1.img"):
+def build_win_kvm(path=None):
+    g = get_basic_fullyvirt_guest("kvm")
+    g.os_type = "windows"
+    g.os_variant = "winxp"
+    g.disks.append(get_filedisk(path))
+    g.disks.append(get_blkdisk())
+    g.nics.append(get_virtual_network())
+    g.add_device(VirtualAudio())
+    g.add_device(VirtualVideoDevice(g.conn))
+
+    return g
+
+def get_floppy(path = None):
+    if not path:
+        path = "/default-pool/testvol1.img"
     return VirtualDisk(path, conn=conn, device=VirtualDisk.DEVICE_FLOPPY)
 
-def get_filedisk(path="/tmp/test.img"):
+def get_filedisk(path = None):
+    if not path:
+        path = "/tmp/test.img"
     return VirtualDisk(path, size=.0001, conn=conn)
 
 def get_blkdisk():
@@ -109,29 +125,113 @@ def qemu_uri():
 def xen_uri():
     return "xen:///"
 
+def build_xmlfile(filebase):
+    if not filebase:
+        return None
+    return os.path.join("tests/xmlconfig-xml", filebase + ".xml")
+
+def sanitize_xml(xml):
+    # Libvirt throws errors since we are defining domain
+    # type='xen', when test driver can only handle type='test'
+    # Sanitize the XML so we can define
+    if not xml:
+        return xml
+
+    xml = xml.replace("<domain type='xen'>",
+                      "<domain type='test'>")
+    xml = xml.replace(">linux<", ">xen<")
+
+    return xml
+
 class TestXMLConfig(unittest.TestCase):
 
-    def _compare(self, xenguest, filebase, do_install, do_disk_boot=False):
-        filename = os.path.join("tests/xmlconfig-xml", filebase + ".xml")
-        xenguest._prepare_install(progress.BaseMeter())
-        try:
-            actualXML = xenguest.get_config_xml(install=do_install,
-                                                disk_boot=do_disk_boot)
-            tests.diff_compare(actualXML, filename)
-            # Libvirt throws errors since we are defining domain
-            # type='xen', when test driver can only handle type='test'
-            # Sanitize the XML so we can define
-            actualXML = actualXML.replace("<domain type='xen'>",
-                                          "<domain type='test'>")
-            actualXML = actualXML.replace(">linux<", ">xen<")
+    def tearDown(self):
+        if os.path.exists(scratch):
+            os.rmdir(scratch)
 
-            # Should probably break this out into a separate function
-            dom = xenguest.conn.defineXML(actualXML)
+    def _compare(self, guest, filebase, do_install, do_disk_boot=False):
+        filename = build_xmlfile(filebase)
+
+        guest._prepare_install(progress.BaseMeter())
+        try:
+            actualXML = guest.get_config_xml(install=do_install,
+                                             disk_boot=do_disk_boot)
+
+            tests.diff_compare(actualXML, filename)
+            self._testCreate(guest.conn, actualXML)
+        finally:
+            guest._cleanup_install()
+
+    def _testCreate(self, conn, xml):
+        xml = sanitize_xml(xml)
+
+        dom = conn.defineXML(xml)
+        try:
             dom.create()
             dom.destroy()
             dom.undefine()
+        except:
+            try:
+                dom.destroy()
+            except:
+                pass
+            try:
+                dom.undefine()
+            except:
+                pass
+
+    def _testInstall(self, guest,
+                     instxml=None, bootxml=None, contxml=None):
+        instname = build_xmlfile(instxml)
+        bootname = build_xmlfile(bootxml)
+        contname = build_xmlfile(contxml)
+        consolecb = None
+        meter = None
+        removeOld = None
+        wait = True
+        dom = None
+
+        old_getxml = guest.get_config_xml
+        def new_getxml(install=True, disk_boot=False):
+            xml = old_getxml(install, disk_boot)
+            return sanitize_xml(xml)
+        guest.get_config_xml = new_getxml
+
+        try:
+            dom = guest.start_install(consolecb, meter, removeOld, wait)
+            dom.destroy()
+
+            # Replace kernel/initrd with known info
+            if (hasattr(guest.installer, "install") and
+                guest.installer.install["kernel"]):
+                guest.installer.install["kernel"] = "kernel"
+                guest.installer.install["initrd"] = "initrd"
+
+            xmlinst = guest.get_config_xml(True, False)
+            xmlboot = guest.get_config_xml(False, False)
+            xmlcont = guest.get_config_xml(True, True)
+
+            if instname:
+                tests.diff_compare(xmlinst, instname)
+            if contname:
+                tests.diff_compare(xmlcont, contname)
+            if bootname:
+                tests.diff_compare(xmlboot, bootname)
+
+            if guest.get_continue_inst():
+                guest.continue_install(consolecb, meter, wait)
+
         finally:
-            xenguest._cleanup_install()
+            if dom:
+                try:
+                    dom.destroy()
+                except:
+                    pass
+                try:
+                    dom.undefine()
+                except:
+                    pass
+
 
     def conn_function_wrappers(self, guest, funcargs,
                                func=None,
@@ -479,30 +579,18 @@ class TestXMLConfig(unittest.TestCase):
         fargs = (g, "install-f11-xen", False)
         self.conn_function_wrappers(g, fargs, conn_uri=xen_uri)
 
-    def _build_win_kvm(self):
-        g = get_basic_fullyvirt_guest("kvm")
-        g.os_type = "windows"
-        g.os_variant = "winxp"
-        g.disks.append(get_filedisk())
-        g.disks.append(get_blkdisk())
-        g.nics.append(get_virtual_network())
-        g.add_device(VirtualAudio())
-        g.add_device(VirtualVideoDevice(g.conn))
-
-        return g
-
     def testInstallWindowsKVM(self):
-        g = self._build_win_kvm()
+        g = build_win_kvm("/default-pool/winxp.img")
         fargs = (g, "winxp-kvm-stage1", True)
         self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testContinueWindowsKVM(self):
-        g = self._build_win_kvm()
+        g = build_win_kvm("/default-pool/winxp.img")
         fargs = (g, "winxp-kvm-stage2", True, True)
         self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testBootWindowsKVM(self):
-        g = self._build_win_kvm()
+        g = build_win_kvm("/default-pool/winxp.img")
         fargs = (g, "winxp-kvm-stage3", False)
         self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
@@ -722,6 +810,33 @@ class TestXMLConfig(unittest.TestCase):
         g.cpuset = cpustr
 
         self._compare(g, "boot-cpuset", False)
+
+
+    #
+    # Full Install tests: try to mimic virt-install as much as possible
+    #
+
+    def testFullKVMRHEL6(self):
+        i = make_distro_installer(location="tests/cli-test-xml/fakerhel6tree",
+                                  gtype="kvm")
+        g = get_basic_fullyvirt_guest("kvm", installer=i)
+        g.disks.append(get_floppy())
+        g.disks.append(get_filedisk("/default-pool/rhel6.img"))
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+        g.add_device(VirtualAudio())
+        g.add_device(VirtualVideoDevice(g.conn))
+        g.os_autodetect = True
+
+        fargs = (g, "rhel6-kvm-stage1", "rhel6-kvm-stage2")
+        self.conn_function_wrappers(g, fargs, func=self._testInstall,
+                                    conn_uri=qemu_uri)
+
+    def testFullKVMWinxp(self):
+        g = build_win_kvm("/default-pool/winxp.img")
+        fargs = (g, "winxp-kvm-stage1", "winxp-kvm-stage3", "winxp-kvm-stage2")
+        self.conn_function_wrappers(g, fargs, func=self._testInstall,
+                                    conn_uri=qemu_uri)
 
 if __name__ == "__main__":
     unittest.main()

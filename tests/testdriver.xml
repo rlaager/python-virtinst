@@ -68,7 +68,7 @@
     </disk>
     <interface type='network'>
       <source network='default'/>
-      <mac address='11:22:33:44:55:66'/>
+      <mac address='11:22:33:12:34:AB'/>
       <model type='e1000'/>
     </interface>
     <interface type='user'>
