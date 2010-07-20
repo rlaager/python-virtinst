@@ -31,8 +31,9 @@ from virtinst import VirtualWatchdog
 import tests
 
 conn = tests.open_testdriver()
+scratch = os.path.join(os.getcwd(), "tests", "scratch")
 
-def get_basic_paravirt_guest(testconn=conn):
+def get_basic_paravirt_guest(testconn=conn, installer=None):
     g = virtinst.ParaVirtGuest(connection=testconn, type="xen")
     g.name = "TestGuest"
     g.memory = int(200)
@@ -41,9 +42,14 @@ def get_basic_paravirt_guest(testconn=conn):
     g.boot = ["/boot/vmlinuz","/boot/initrd"]
     g.graphics = (True, "vnc", None, "ja")
     g.vcpus = 5
+
+    if installer:
+        g.installer = installer
+
+    g.installer._scratchdir = scratch
     return g
 
-def get_basic_fullyvirt_guest(typ="xen", testconn=conn):
+def get_basic_fullyvirt_guest(typ="xen", testconn=conn, installer=None):
     g = virtinst.FullVirtGuest(connection=testconn, type=typ,
                                emulator="/usr/lib/xen/bin/qemu-dm",
                                arch="i686")
@@ -57,7 +63,29 @@ def get_basic_fullyvirt_guest(typ="xen", testconn=conn):
     g.graphics = (True, "sdl")
     g.features['pae'] = 0
     g.vcpus = 5
+    if installer:
+        g.installer = installer
+
+    g.installer._scratchdir = scratch
     return g
+
+def make_import_installer():
+    inst = virtinst.ImportInstaller(type="xen", os_type="hvm", conn=conn)
+    return inst
+
+def make_distro_installer(location="/default-pool/default-vol", gtype="xen"):
+    inst = virtinst.DistroInstaller(type=gtype, os_type="hvm", conn=conn,
+                                    location=location)
+    return inst
+
+def make_live_installer(location="/dev/loop0", gtype="xen"):
+    inst = virtinst.LiveCDInstaller(type="xen", os_type="hvm",
+                                    conn=conn, location=location)
+    return inst
+
+def make_pxe_installer(gtype="xen"):
+    inst = virtinst.PXEInstaller(type=gtype, os_type="hvm", conn=conn)
+    return inst
 
 def get_floppy(path="/default-pool/testvol1.img"):
     return VirtualDisk(path, conn=conn, device=VirtualDisk.DEVICE_FLOPPY)
@@ -280,61 +308,53 @@ class TestXMLConfig(unittest.TestCase):
         self._compare(g, "install-fullyvirt-disk-block", True)
 
     def testInstallFVPXE(self):
-        g = get_basic_fullyvirt_guest()
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
         g.disks.append(get_filedisk())
         self._compare(g, "install-fullyvirt-pxe", True)
 
     def testBootFVPXE(self):
-        g = get_basic_fullyvirt_guest()
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
         g.disks.append(get_filedisk())
         self._compare(g, "boot-fullyvirt-pxe", False)
 
     def testInstallFVPXENoDisks(self):
-        g = get_basic_fullyvirt_guest()
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
         self._compare(g, "install-fullyvirt-pxe-nodisks", True)
 
     def testBootFVPXENoDisks(self):
-        g = get_basic_fullyvirt_guest()
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
         self._compare(g, "boot-fullyvirt-pxe-nodisks", False)
 
     def testInstallFVLiveCD(self):
-        g = get_basic_fullyvirt_guest()
-        g.installer = virtinst.LiveCDInstaller(type="xen", os_type="hvm",
-                                               conn=g.conn,
-                                               location="/dev/loop0")
+        i = make_live_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
         self._compare(g, "install-fullyvirt-livecd", False)
 
     def testDoubleInstall(self):
         # Make sure that installing twice generates the same XML, to ensure
         # we aren't polluting the device list during the install process
-        g = get_basic_fullyvirt_guest()
-        g.installer = virtinst.LiveCDInstaller(type="xen", os_type="hvm",
-                                               conn=g.conn,
-                                               location="/dev/loop0")
+        i = make_live_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
         self._compare(g, "install-fullyvirt-livecd", False)
         self._compare(g, "install-fullyvirt-livecd", False)
 
 
     def testInstallFVImport(self):
-        g = get_basic_fullyvirt_guest()
+        i = make_import_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+
         g.disks.append(get_filedisk())
-        g.installer = virtinst.ImportInstaller(type="xen", os_type="hvm",
-                                               conn=g.conn)
         self._compare(g, "install-fullyvirt-import", False)
 
     def testInstallPVImport(self):
-        g = get_basic_paravirt_guest()
+        i = make_import_installer()
+        g = get_basic_paravirt_guest(installer=i)
+
         g.disks.append(get_filedisk())
-        g.installer = virtinst.ImportInstaller(type="xen", os_type="xen",
-                                               conn=g.conn)
         self._compare(g, "install-paravirt-import", False)
 
     def testQEMUDriverName(self):
@@ -360,11 +380,11 @@ class TestXMLConfig(unittest.TestCase):
 
     # OS Type/Version configurations
     def testF10(self):
-        g = get_basic_fullyvirt_guest("kvm")
+        i = make_pxe_installer(gtype="kvm")
+        g = get_basic_fullyvirt_guest("kvm", installer=i)
+
         g.os_type = "linux"
         g.os_variant = "fedora10"
-        g.installer = virtinst.PXEInstaller(type="kvm", os_type="hvm",
-                                            conn=g.conn)
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.nics.append(get_virtual_network())
@@ -372,12 +392,11 @@ class TestXMLConfig(unittest.TestCase):
         self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testF11(self):
-        g = get_basic_fullyvirt_guest("kvm")
+        i = make_distro_installer(gtype="kvm")
+        g = get_basic_fullyvirt_guest("kvm", installer=i)
+
         g.os_type = "linux"
         g.os_variant = "fedora11"
-        g.installer = virtinst.DistroInstaller(type="kvm", os_type="hvm",
-                                               conn=g.conn,
-                                               location="/default-pool/default-vol")
         g.installer.cdrom = True
         g.disks.append(get_floppy())
         g.disks.append(get_filedisk())
@@ -388,11 +407,11 @@ class TestXMLConfig(unittest.TestCase):
 
     def testF11AC97(self):
         def build_guest():
-            g = get_basic_fullyvirt_guest("kvm")
+            i = make_distro_installer(gtype="kvm")
+            g = get_basic_fullyvirt_guest("kvm", installer=i)
+
             g.os_type = "linux"
             g.os_variant = "fedora11"
-            g.installer = virtinst.DistroInstaller(type="kvm", os_type="hvm",
-                            conn=g.conn, location="/default-pool/default-vol")
             g.installer.cdrom = True
             g.disks.append(get_floppy())
             g.disks.append(get_filedisk())
@@ -433,12 +452,11 @@ class TestXMLConfig(unittest.TestCase):
 
 
     def testF11Qemu(self):
-        g = get_basic_fullyvirt_guest("qemu")
+        i = make_distro_installer(gtype="qemu")
+        g = get_basic_fullyvirt_guest("qemu", installer=i)
+
         g.os_type = "linux"
         g.os_variant = "fedora11"
-        g.installer = virtinst.DistroInstaller(type="qemu", os_type="hvm",
-                                               conn=g.conn,
-                                               location="/default-pool/default-vol")
         g.installer.cdrom = True
         g.disks.append(get_floppy())
         g.disks.append(get_filedisk())
@@ -448,12 +466,11 @@ class TestXMLConfig(unittest.TestCase):
         self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testF11Xen(self):
-        g = get_basic_fullyvirt_guest("xen")
+        i = make_distro_installer(gtype="xen")
+        g = get_basic_fullyvirt_guest("xen", installer=i)
+
         g.os_type = "linux"
         g.os_variant = "fedora11"
-        g.installer = virtinst.DistroInstaller(type="xen", os_type="hvm",
-                                               conn=g.conn,
-                                               location="/default-pool/default-vol")
         g.installer.cdrom = True
         g.disks.append(get_floppy())
         g.disks.append(get_filedisk())
@@ -516,7 +533,9 @@ class TestXMLConfig(unittest.TestCase):
 
     # Device heavy configurations
     def testManyDisks2(self):
-        g = get_basic_fullyvirt_guest()
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
@@ -531,12 +550,12 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
                                    bus="virtio"))
 
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
         self._compare(g, "boot-many-disks2", False)
 
     def testManyNICs(self):
-        g = get_basic_fullyvirt_guest()
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+
         net1 = VirtualNetworkInterface(type="user",
                                        macaddr="11:11:11:11:11:11")
         net2 = get_virtual_network()
@@ -549,12 +568,12 @@ class TestXMLConfig(unittest.TestCase):
         g.nics.append(net2)
         g.nics.append(net3)
         g.nics.append(net4)
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
         self._compare(g, "boot-many-nics", False)
 
     def testManyHostdevs(self):
-        g = get_basic_fullyvirt_guest()
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+
         dev1 = VirtualHostDeviceUSB(g.conn)
         dev1.product = "0x1234"
         dev1.vendor = "0x4321"
@@ -566,23 +585,23 @@ class TestXMLConfig(unittest.TestCase):
 
         g.hostdevs.append(dev1)
         g.hostdevs.append(dev2)
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
         self._compare(g, "boot-many-hostdevs", False)
 
     def testManySounds(self):
-        g = get_basic_fullyvirt_guest()
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+
         g.sound_devs.append(VirtualAudio("sb16", conn=g.conn))
         g.sound_devs.append(VirtualAudio("es1370", conn=g.conn))
         g.sound_devs.append(VirtualAudio("pcspk", conn=g.conn))
         g.sound_devs.append(VirtualAudio(conn=g.conn))
 
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
         self._compare(g, "boot-many-sounds", False)
 
     def testManyChars(self):
-        g = get_basic_fullyvirt_guest()
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+
         dev1 = VirtualCharDevice.get_dev_instance(g.conn,
                                                   VirtualCharDevice.DEV_SERIAL,
                                                   VirtualCharDevice.CHAR_NULL)
@@ -608,12 +627,12 @@ class TestXMLConfig(unittest.TestCase):
         g.add_device(dev2)
         g.add_device(dev3)
         g.add_device(dev4)
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
         self._compare(g, "boot-many-chars", False)
 
     def testManyDevices(self):
-        g = get_basic_fullyvirt_guest()
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+
         g.description = "foooo barrrr \n baz && snarf. '' \"\" @@$\n"
 
         # Hostdevs
@@ -692,8 +711,6 @@ class TestXMLConfig(unittest.TestCase):
         seclabel.imagelabel = "imagelabel"
         g.seclabel = seclabel
 
-        g.installer = virtinst.PXEInstaller(type="xen", os_type="hvm",
-                                            conn=g.conn)
         self._compare(g, "boot-many-devices", False)
 
     def testCpuset(self):
