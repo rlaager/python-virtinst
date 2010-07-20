@@ -90,8 +90,8 @@ class Installer(object):
         self._conn = conn
         self._scratchdir = None
 
-        # VirtualDisk that contains install media
-        self._install_disk = None
+        # Devices created/added during the prepare() stage
+        self.install_devices = []
 
         if self.conn:
             self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
@@ -299,6 +299,7 @@ class Installer(object):
             logging.debug("Removing " + f)
             os.unlink(f)
         self._tmpfiles = []
+        self.install_devices = []
 
     def prepare(self, guest, meter):
         """

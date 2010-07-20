@@ -176,11 +176,12 @@ class DistroInstaller(Installer.Installer):
         else:
             cdrom = self.location
 
-        self._install_disk = VirtualDisk(path=cdrom,
-                                         conn=guest.conn,
-                                         device=VirtualDisk.DEVICE_CDROM,
-                                         readOnly=True,
-                                         transient=True)
+        disk = VirtualDisk(path=cdrom,
+                           conn=guest.conn,
+                           device=VirtualDisk.DEVICE_CDROM,
+                           readOnly=True,
+                           transient=True)
+        self.install_devices.append(disk)
 
     def _perform_initrd_injections(self):
         """
@@ -222,6 +223,8 @@ class DistroInstaller(Installer.Installer):
         shutil.rmtree(tempdir)
 
     def _prepare_kernel_and_initrd(self, guest, meter):
+        disk = None
+
         if self.boot is not None:
             # Got a local kernel/initrd already
             self.install["kernel"] = self.boot["kernel"]
@@ -267,11 +270,13 @@ class DistroInstaller(Installer.Installer):
             if guest._lookup_osdict_key('pv_cdrom_install'):
                 device = VirtualDisk.DEVICE_CDROM
 
-            self._install_disk = VirtualDisk(conn=guest.conn,
-                                             device=device,
-                                             path=self.location,
-                                             readOnly=True,
-                                             transient=True)
+            disk = VirtualDisk(conn=guest.conn,
+                               device=device,
+                               path=self.location,
+                               readOnly=True,
+                               transient=True)
+
+        return disk
 
     # General Installer methods
 
@@ -290,14 +295,18 @@ class DistroInstaller(Installer.Installer):
             "extraargs" : "",
         }
 
+        dev = None
         if self.cdrom:
             if self.location:
-                self._prepare_cdrom(guest, meter)
+                dev = self._prepare_cdrom(guest, meter)
             else:
                 # Booting from a cdrom directly allocated to the guest
                 pass
         else:
-            self._prepare_kernel_and_initrd(guest, meter)
+            dev = self._prepare_kernel_and_initrd(guest, meter)
+
+        if dev:
+            self.install_devices.append(dev)
 
     def get_install_xml(self, guest, isinstall):
         if isinstall:

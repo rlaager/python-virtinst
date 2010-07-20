@@ -211,7 +211,7 @@ class Guest(object):
 
         # Device list to use/alter during install process. Don't access
         # directly, use internal APIs
-        self._install_devices = []
+        self.install_devices = []
 
         # The libvirt virDomain object we 'Create'
         self.domain = None
@@ -668,10 +668,10 @@ class Guest(object):
     # These allow us to change dev defaults, add install media, etc. during
     # the install, but revert to a clean state if the install fails
     def _get_install_devs(self, devtype):
-        return self._dev_build_list(devtype, self._install_devices)
+        return self._dev_build_list(devtype, self.install_devices)
 
     def _add_install_dev(self, dev):
-        self._install_devices.append(dev)
+        self.install_devices.append(dev)
 
     def _get_all_install_devs(self):
         retlist = []
@@ -824,21 +824,19 @@ class Guest(object):
     def _prepare_install(self, meter):
         # Empty install dev list
         # Warning: moving this to cleanup_install breaks continue_install
-        self._install_devices = []
+        self.install_devices = []
 
-        # Initialize install device list
-        self._install_devices = self.get_all_devices()[:]
-
-        # Set regular device defaults
-        self.set_defaults()
-
+        # Needs to be called before setting install_devices, so we can
+        # pick up default devs if auto-setting OS type/variant
         self._installer.prepare(guest = self,
                                 meter = meter)
-        if self._installer.install_disk is not None:
-            self._add_install_dev(self._installer.install_disk)
 
-        # Run 'set_defaults' after install prep, since some installers
-        # (ImageInstaller) alter the device list.
+        # Initialize install device list
+        self.install_devices = self.get_all_devices()[:]
+
+        for dev in self._installer.install_devices:
+            self._add_install_dev(dev)
+
         self._set_defaults(self._get_install_devs)
 
     def _cleanup_install(self):

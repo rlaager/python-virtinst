@@ -30,9 +30,9 @@ class LiveCDInstallerException(Exception):
 class LiveCDInstaller(Installer.Installer):
     def __init__(self, type = "xen", location = None, os_type = None,
                  conn = None):
+        self._install_disk = None
         Installer.Installer.__init__(self, type=type, location=location,
                                      os_type=os_type, conn=conn)
-
 
     # LiveCD specific methods/overwrites
 
@@ -65,6 +65,8 @@ class LiveCDInstaller(Installer.Installer):
         if not self._install_disk:
             raise ValueError(_("CDROM media must be specified for the live "
                                "CD installer."))
+
+        self.install_devices.append(self._install_disk)
 
     def get_install_xml(self, guest, isinstall):
         if isinstall:

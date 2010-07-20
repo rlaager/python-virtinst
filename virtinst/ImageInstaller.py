@@ -95,6 +95,8 @@ class ImageInstaller(Installer.Installer):
     # General Installer methods
 
     def prepare(self, guest, meter):
+        self.cleanup()
+
         self._make_disks(guest)
 
         for f in ['pae', 'acpi', 'apic']:
@@ -149,7 +151,7 @@ class ImageInstaller(Installer.Installer):
                             type = VirtualDisk.TYPE_FILE)
             d.target = m.target
 
-            guest._add_install_dev(d)
+            self.install_devices.append(d)
 
     def _abspath(self, p):
         return self.image.abspath(p)
