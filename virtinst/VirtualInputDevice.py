@@ -26,18 +26,21 @@ class VirtualInputDevice(VirtualDevice.VirtualDevice):
 
     INPUT_TYPE_MOUSE = "mouse"
     INPUT_TYPE_TABLET = "tablet"
-    input_types = [INPUT_TYPE_MOUSE, INPUT_TYPE_TABLET]
+    INPUT_TYPE_DEFAULT = "default"
+    input_types = [INPUT_TYPE_MOUSE, INPUT_TYPE_TABLET, INPUT_TYPE_DEFAULT]
 
     INPUT_BUS_PS2 = "ps2"
     INPUT_BUS_USB = "usb"
     INPUT_BUS_XEN = "xen"
-    input_buses = [INPUT_BUS_PS2, INPUT_BUS_USB, INPUT_BUS_XEN]
+    INPUT_BUS_DEFAULT = "default"
+    input_buses = [INPUT_BUS_PS2, INPUT_BUS_USB, INPUT_BUS_XEN,
+                   INPUT_BUS_DEFAULT]
 
     def __init__(self, conn):
         VirtualDevice.VirtualDevice.__init__(self, conn)
 
-        self._type = self.INPUT_BUS_XEN
-        self._bus = self.INPUT_BUS_PS2
+        self._type = self.INPUT_TYPE_DEFAULT
+        self._bus = self.INPUT_TYPE_DEFAULT
 
     def get_type(self):
         return self._type
@@ -56,4 +59,11 @@ class VirtualInputDevice(VirtualDevice.VirtualDevice):
     bus = property(get_bus, set_bus)
 
     def get_xml_config(self):
-        return "    <input type='%s' bus='%s'/>" % (self.type, self.bus)
+        typ = self.type
+        bus = self.bus
+        if typ == self.INPUT_TYPE_DEFAULT:
+            typ = self.INPUT_TYPE_MOUSE
+        if bus == self.INPUT_BUS_DEFAULT:
+            bus = self.INPUT_BUS_XEN
+
+        return "    <input type='%s' bus='%s'/>" % (typ, bus)

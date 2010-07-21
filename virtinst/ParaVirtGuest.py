@@ -38,10 +38,7 @@ class ParaVirtGuest(Guest):
 
         self.features = {"acpi": False, "apic": False, "pae": False}
 
-        # Add default input device
-        self._set_default_input_dev()
-
-    def _get_input_device(self):
+    def _get_default_input_device(self):
         dev = VirtualInputDevice(self.conn)
         dev.type = "mouse"
         dev.bus = "xen"

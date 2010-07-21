@@ -30,6 +30,7 @@ import VirtualGraphics
 import support
 from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
+from VirtualInputDevice import VirtualInputDevice
 from Clock import Clock
 from Seclabel import Seclabel
 
@@ -223,13 +224,19 @@ class Guest(object):
         # Default bus for disks (set in subclass)
         self._diskbus = None
 
-        # Indicates that default devices have been assigned, so look for
-        # the user to overwrite
-        self._default_console_assigned = None
-        self._default_input_assigned = None
-
         self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
 
+        # Add default devices (if applicable)
+        self._default_input_device = None
+        self._default_console_device = None
+        inp = self._get_default_input_device()
+        con = self._get_default_console_device()
+        if inp:
+            self.add_device(inp)
+            self._default_input_device = inp
+        if con:
+            self.add_device(con)
+            self._default_console_device = con
 
     ######################
     # Property accessors #
@@ -360,8 +367,6 @@ class Guest(object):
             raise ValueError, _("OS type '%s' does not exist in our "
                                 "dictionary") % val
 
-        # Default may have changed with OS info
-        self._set_default_input_dev()
     os_type = property(get_os_type, set_os_type)
 
     def get_os_variant(self):
@@ -392,8 +397,6 @@ class Guest(object):
             if not found:
                 raise ValueError, _("Unknown OS variant '%s'" % val)
 
-        # Default may have changed with OS info
-        self._set_default_input_dev()
     os_variant = property(get_os_variant, set_os_variant)
 
     def set_os_autodetect(self, val):
@@ -571,21 +574,17 @@ class Guest(object):
             raise ValueError(_("Must pass a VirtualDevice instance."))
         devtype = dev.virtual_device_type
 
-        # Handling for back compat default device behavior
-        if ((devtype == VirtualDevice.VIRTUAL_DEV_CONSOLE or
-             devtype == VirtualDevice.VIRTUAL_DEV_SERIAL) and
-            self._default_console_assigned == True):
-
-            rmdev = self.get_devices(VirtualDevice.VIRTUAL_DEV_CONSOLE)[0]
-            self.remove_device(rmdev)
-            self._default_console_assigned = False
-
-        if (devtype == VirtualDevice.VIRTUAL_DEV_INPUT and
-            self._default_input_assigned == True):
-
-            rmdev = self.get_devices(VirtualDevice.VIRTUAL_DEV_INPUT)[0]
-            self.remove_device(rmdev)
-            self._default_input_assigned = False
+        # If user adds a device conflicting with a default assigned device
+        # remove the default
+        if (dev.virtual_device_type == VirtualDevice.VIRTUAL_DEV_INPUT and
+            self._default_input_device):
+            self.remove_device(self._default_input_device)
+            self._default_input_device = None
+        if (dev.virtual_device_type in [VirtualDevice.VIRTUAL_DEV_CONSOLE,
+                                        VirtualDevice.VIRTUAL_DEV_SERIAL] and
+            self._default_console_device):
+            self.remove_device(self._default_console_device)
+            self._default_console_device = None
 
         # Actually add the device
         if   devtype == VirtualDevice.VIRTUAL_DEV_DISK:
@@ -655,14 +654,6 @@ class Guest(object):
         if not found:
             raise ValueError(_("Did not find device %s") % str(dev))
 
-        if (dev.virtual_device_type == VirtualDevice.VIRTUAL_DEV_INPUT and
-            self._default_input_assigned == True):
-            self._default_input_assigned = False
-        if (dev.virtual_device_type in [VirtualDevice.VIRTUAL_DEV_CONSOLE,
-                                        VirtualDevice.VIRTUAL_DEV_SERIAL] and
-            self._default_console_assigned == True):
-            self._default_console_assigned = False
-
 
     # Device fetching functions used internally during the install process.
     # These allow us to change dev defaults, add install media, etc. during
@@ -684,10 +675,18 @@ class Guest(object):
     # Private xml building methods #
     ################################
 
-    def _get_input_device(self):
-        """ Return a tuple of the form (devtype, bus) for the desired
-            input device. (Must be implemented in subclass) """
-        raise NotImplementedError
+    def _get_default_input_device(self):
+        """
+        Return a VirtualInputDevice.
+        """
+        dev = VirtualInputDevice(self.conn)
+        return dev
+
+    def _get_default_console_device(self):
+        """
+        Only implemented for FullVirtGuest
+        """
+        return None
 
     def _get_device_xml(self, install=True):
         # If install hasn't been prepared yet, make sure we use
@@ -1192,20 +1191,6 @@ class Guest(object):
     # Device defaults #
     ###################
 
-    def _set_default_input_dev(self):
-        # This is called at init time, but also whenever the OS changes,
-        # since the input dev maybe be dependent on OS
-        if self._default_input_assigned == False:
-            return
-
-        for d in self.get_devices(VirtualDevice.VIRTUAL_DEV_INPUT):
-            self.remove_device(d)
-
-        # Add default input device
-        self._default_input_assigned = False
-        self.add_device(self._get_input_device())
-        self._default_input_assigned = True
-
     def set_defaults(self):
         """
         Public function to set guest defaults. Things like preferred
@@ -1217,6 +1202,16 @@ class Guest(object):
     def _set_defaults(self, devlist_func):
         soundtype = VirtualDevice.VIRTUAL_DEV_AUDIO
         videotype = VirtualDevice.VIRTUAL_DEV_VIDEO
+        inputtype = VirtualDevice.VIRTUAL_DEV_INPUT
+
+        # Set default input values
+        input_type = self._lookup_device_param(inputtype, "type")
+        input_bus = self._lookup_device_param(inputtype, "bus")
+        for inp in devlist_func(inputtype):
+            if (inp.type == inp.INPUT_TYPE_DEFAULT and
+                inp.bus  == inp.INPUT_BUS_DEFAULT):
+                inp.type = input_type
+                inp.bus  = input_bus
 
         # Generate disk targets, and set preferred disk bus
         used_targets = []

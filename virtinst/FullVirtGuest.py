@@ -25,7 +25,6 @@ import DistroInstaller
 from Guest import Guest
 from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
-from VirtualInputDevice import VirtualInputDevice
 from VirtualCharDevice import VirtualCharDevice
 
 class FullVirtGuest(Guest):
@@ -68,24 +67,10 @@ class FullVirtGuest(Guest):
         if (not self.loader) and self.type == "xen":
             self.loader = "/usr/lib/xen/boot/hvmloader"
 
-        # Add a default console device
+    def _get_default_console_device(self):
         dev = VirtualCharDevice.get_dev_instance(self.conn,
                                                  VirtualCharDevice.DEV_CONSOLE,
                                                  VirtualCharDevice.CHAR_PTY)
-        self.add_device(dev)
-        self._default_console_assigned = True
-
-        self._set_default_input_dev()
-
-
-    def _get_input_device(self):
-        inputtype = VirtualDevice.VIRTUAL_DEV_INPUT
-
-        typ = self._lookup_device_param(inputtype, "type")
-        bus = self._lookup_device_param(inputtype, "bus")
-        dev = VirtualInputDevice(self.conn)
-        dev.type = typ
-        dev.bus = bus
         return dev
 
     def _get_device_xml(self, install=True):
