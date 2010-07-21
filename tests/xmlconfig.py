@@ -345,21 +345,7 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_blkdisk())
         self._compare(g, "boot-fullyvirt-disk-block", False)
 
-    def testBootFullyvirtDiskFile(self):
-        g = get_basic_fullyvirt_guest()
-        g.disks.append(get_filedisk())
 
-        inp = VirtualInputDevice(g.conn)
-        cons = VirtualCharDevice.get_dev_instance(conn,
-                                VirtualCharDevice.DEV_CONSOLE,
-                                VirtualCharDevice.CHAR_PTY)
-        g.add_device(inp)
-        g.add_device(cons)
-
-        g.remove_device(inp)
-        g.remove_device(cons)
-
-        self._compare(g, "boot-default-device-removal", False)
 
     def testInstallParavirtDiskFile(self):
         g = get_basic_paravirt_guest()
@@ -455,6 +441,22 @@ class TestXMLConfig(unittest.TestCase):
         g = get_basic_fullyvirt_guest(installer=i)
         self._compare(g, "install-fullyvirt-livecd", False)
         self._compare(g, "install-fullyvirt-livecd", False)
+
+    def testDefaultDeviceRemoval(self):
+        g = get_basic_fullyvirt_guest()
+        g.disks.append(get_filedisk())
+
+        inp = VirtualInputDevice(g.conn)
+        cons = VirtualCharDevice.get_dev_instance(conn,
+                                VirtualCharDevice.DEV_CONSOLE,
+                                VirtualCharDevice.CHAR_PTY)
+        g.add_device(inp)
+        g.add_device(cons)
+
+        g.remove_device(inp)
+        g.remove_device(cons)
+
+        self._compare(g, "boot-default-device-removal", False)
 
 
     def testInstallFVImport(self):
