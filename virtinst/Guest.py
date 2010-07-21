@@ -711,7 +711,7 @@ class Guest(object):
                 if origpath:
                     dev.path = origpath
 
-        xml = ""
+        xml = self._get_emulator_xml()
         # Build XML
         for dev in devs:
             xml = _util.xml_append(xml, get_dev_xml(dev))
@@ -734,6 +734,9 @@ class Guest(object):
             if features.get(f) == None:
                 features[f] = val
         return features
+
+    def _get_emulator_xml(self):
+        return ""
 
     def _get_features_xml(self):
         """
