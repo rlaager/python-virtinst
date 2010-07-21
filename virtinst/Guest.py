@@ -212,7 +212,7 @@ class Guest(object):
 
         # Device list to use/alter during install process. Don't access
         # directly, use internal APIs
-        self.install_devices = []
+        self._install_devices = []
 
         # The libvirt virDomain object we 'Create'
         self.domain = None
@@ -609,17 +609,20 @@ class Guest(object):
                         VirtualDevice.virtual_device_types)
         """
         if   devtype == VirtualDevice.VIRTUAL_DEV_DISK:
-            return self.disks[:]
+            devlist = self.disks[:]
         elif devtype == VirtualDevice.VIRTUAL_DEV_NET:
-            return self.nics[:]
+            devlist = self.nics[:]
         elif devtype == VirtualDevice.VIRTUAL_DEV_AUDIO:
-            return self.sound_devs[:]
+            devlist = self.sound_devs[:]
         elif devtype == VirtualDevice.VIRTUAL_DEV_GRAPHICS:
-            return self._graphics_dev and [self._graphics_dev] or []
+            devlist = self._graphics_dev and [self._graphics_dev] or []
         elif devtype == VirtualDevice.VIRTUAL_DEV_HOSTDEV:
-            return self.hostdevs[:]
+            devlist = self.hostdevs[:]
         else:
-            return self._dev_build_list(devtype)
+            devlist = self._dev_build_list(devtype)
+
+        devlist.extend(self._install_devices)
+        return self._dev_build_list(devtype, devlist)
 
     def get_all_devices(self):
         """
@@ -642,7 +645,7 @@ class Guest(object):
             found = True
 
         for devlist in [self.disks, self.nics, self.sound_devs, self.hostdevs,
-                        self._devices]:
+                        self._devices, self._install_devices]:
             if found:
                 break
 
@@ -653,22 +656,6 @@ class Guest(object):
 
         if not found:
             raise ValueError(_("Did not find device %s") % str(dev))
-
-
-    # Device fetching functions used internally during the install process.
-    # These allow us to change dev defaults, add install media, etc. during
-    # the install, but revert to a clean state if the install fails
-    def _get_install_devs(self, devtype):
-        return self._dev_build_list(devtype, self.install_devices)
-
-    def _add_install_dev(self, dev):
-        self.install_devices.append(dev)
-
-    def _get_all_install_devs(self):
-        retlist = []
-        for devtype in VirtualDevice.virtual_device_types:
-            retlist.extend(self._get_install_devs(devtype))
-        return retlist
 
 
     ################################
@@ -689,14 +676,7 @@ class Guest(object):
         return None
 
     def _get_device_xml(self, install=True):
-        # If install hasn't been prepared yet, make sure we use
-        # the regular device list
-        inst_devs = self._get_all_install_devs()
-        reg_devs = self.get_all_devices()
-        if len(inst_devs) >= len(reg_devs):
-            devs = inst_devs[:]
-        else:
-            devs = reg_devs[:]
+        devs = self.get_all_devices()
 
         def do_remove_media(d):
             # Keep cdrom around, but with no media attached,
@@ -821,22 +801,15 @@ class Guest(object):
     ############################
 
     def _prepare_install(self, meter):
-        # Empty install dev list
-        # Warning: moving this to cleanup_install breaks continue_install
-        self.install_devices = []
+        self._install_devices = []
 
-        # Needs to be called before setting install_devices, so we can
-        # pick up default devs if auto-setting OS type/variant
+        # Fetch install media, prepare installer devices
         self._installer.prepare(guest = self,
                                 meter = meter)
 
         # Initialize install device list
-        self.install_devices = self.get_all_devices()[:]
-
         for dev in self._installer.install_devices:
-            self._add_install_dev(dev)
-
-        self._set_defaults(self._get_install_devs)
+            self._install_devices.append(dev)
 
     def _cleanup_install(self):
         self._installer.cleanup()
@@ -845,7 +818,7 @@ class Guest(object):
         """
         Ensure that devices are setup
         """
-        for dev in self._get_all_install_devs():
+        for dev in self.get_all_devices():
             dev.setup_dev(self.conn, progresscb)
 
     ##############
