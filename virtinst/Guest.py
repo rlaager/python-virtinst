@@ -22,9 +22,14 @@
 import os, os.path
 import time
 import re
+import logging
+import signal
+import copy
+
 import urlgrabber.progress as progress
-import _util
 import libvirt
+
+import _util
 import CapabilitiesParser
 import VirtualGraphics
 import support
@@ -36,8 +41,6 @@ from Seclabel import Seclabel
 
 import osdict
 from virtinst import _virtinst as _
-import logging
-import signal
 
 def _validate_cpuset(conn, val):
     if val is None or val == "":
@@ -675,8 +678,7 @@ class Guest(object):
         """
         return None
 
-    def _get_device_xml(self, install=True):
-        devs = self.get_all_devices()
+    def _get_device_xml(self, devs, install=True):
 
         def do_remove_media(d):
             # Keep cdrom around, but with no media attached,
@@ -844,9 +846,20 @@ class Guest(object):
                           this.)
         @type disk_boot: C{bool}
         """
+        # We do a shallow copy of the device list here, and set the defaults.
+        # This way, default changes aren't persistent, and we don't need
+        # to worry about when to call set_defaults
+        origdevs = self.get_all_devices()
+        devs = []
+        for dev in origdevs:
+            newdev = copy.copy(dev)
+            devs.append(newdev)
+
+        def get_transient_devices(devtype):
+            return self._dev_build_list(devtype, devs)
 
         # Set device defaults so we can validly generate XML
-        self._set_defaults(self.get_devices)
+        self._set_defaults(get_transient_devices)
 
         if install:
             action = "destroy"
@@ -890,7 +903,7 @@ class Guest(object):
         xml = add("  <on_crash>%s</on_crash>" % action)
         xml = add("  <vcpu%s>%d</vcpu>" % (cpuset, self.vcpus))
         xml = add("  <devices>")
-        xml = add(self._get_device_xml(install))
+        xml = add(self._get_device_xml(devs, install))
         xml = add("  </devices>")
         xml = add(self._get_seclabel_xml())
         xml = add("</domain>\n")
@@ -1170,8 +1183,9 @@ class Guest(object):
     def set_defaults(self):
         """
         Public function to set guest defaults. Things like preferred
-        disk bus (unless one is specified). This will be called by the
-        install process, but can be called earlier if needed
+        disk bus (unless one is specified). These changes are persistent.
+        The install process will call a non-persistent version, so calling
+        this manually isn't required.
         """
         self._set_defaults(self.get_devices)
 

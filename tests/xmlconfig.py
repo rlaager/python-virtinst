@@ -59,8 +59,6 @@ def get_basic_fullyvirt_guest(typ="xen", testconn=conn, installer=None):
     g.maxmemory = int(400)
     g.uuid = "12345678-1234-1234-1234-123456789012"
     g.cdrom = "/dev/loop0"
-    g.set_os_type("other")
-    g.set_os_variant("generic")
     g.graphics = (True, "sdl")
     g.features['pae'] = 0
     g.vcpus = 5
@@ -458,6 +456,30 @@ class TestXMLConfig(unittest.TestCase):
 
         self._compare(g, "boot-default-device-removal", False)
 
+    def testOSDeviceDefaultChange(self):
+        """
+        Make sure device defaults are properly changed if we change OS
+        distro/variant mid process
+        """
+        i = make_distro_installer(gtype="kvm")
+        g = get_basic_fullyvirt_guest("kvm", installer=i)
+
+        do_install = False
+        g.installer.cdrom = True
+        g.disks.append(get_floppy())
+        g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk())
+        g.nics.append(get_virtual_network())
+
+        # Call get_config_xml to set first round of defaults without an
+        # os_variant set
+        fargs = (do_install,)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri,
+                                    func=g.get_config_xml)
+
+        g.os_variant = "fedora11"
+        fargs = (g, "install-f11", do_install)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
     def testInstallFVImport(self):
         i = make_import_installer()
