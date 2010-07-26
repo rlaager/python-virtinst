@@ -400,6 +400,10 @@ OS_TYPES = {
                       "devices" : {
                         NET : { "model" : [ (HV_ALL, "ne2k_pci") ] }
                       }},
+        "freebsd8": { "label": "FreeBSD 8.x" ,
+                      "devices" : {
+                        NET : { "model" : [ (HV_ALL, "e1000") ] }
+                      }},
         "openbsd4": { "label": "OpenBSD 4.x" ,
                       # http://calamari.reverse-dns.net:980/cgi-bin/moin.cgi/OpenbsdOnQemu
                       # https://www.redhat.com/archives/et-mgmt-tools/2008-June/msg00018.html
