@@ -391,16 +391,16 @@ OS_TYPES = {
 "unix": {
     "label": "UNIX",
     "variants": {
-        "freebsd6": { "label": "Free BSD 6.x" ,
+        "freebsd6": { "label": "FreeBSD 6.x" ,
                       # http://www.nabble.com/Re%3A-Qemu%3A-bridging-on-FreeBSD-7.0-STABLE-p15919603.html
                       "devices" : {
                         NET : { "model" : [ (HV_ALL, "ne2k_pci") ] }
                       }},
-        "freebsd7": { "label": "Free BSD 7.x" ,
+        "freebsd7": { "label": "FreeBSD 7.x" ,
                       "devices" : {
                         NET : { "model" : [ (HV_ALL, "ne2k_pci") ] }
                       }},
-        "openbsd4": { "label": "Open BSD 4.x" ,
+        "openbsd4": { "label": "OpenBSD 4.x" ,
                       # http://calamari.reverse-dns.net:980/cgi-bin/moin.cgi/OpenbsdOnQemu
                       # https://www.redhat.com/archives/et-mgmt-tools/2008-June/msg00018.html
                       "devices" : {
