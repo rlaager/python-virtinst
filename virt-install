@@ -709,6 +709,10 @@ def parse_args():
     geng.add_option("", "--channel", type="string", dest="channels",
                     action="callback", callback=cli.check_before_append,
                     help=_("Add a guest communication channel."))
+    geng.add_option("", "--console", type="string", dest="consoles",
+                    action="callback", callback=cli.check_before_append,
+                    help=_("Add a text console connection between the guest "
+                           "and host."))
     devg.add_option("", "--host-device", type="string", dest="hostdevs",
                     action="callback", callback=cli.check_before_append,
                     help=_("Physical host device to attach to the domain."))
@@ -868,6 +872,7 @@ def main():
     get_chardevs(VirtualDevice.VIRTUAL_DEV_SERIAL, options.serials, guest)
     get_chardevs(VirtualDevice.VIRTUAL_DEV_PARALLEL, options.parallels, guest)
     get_chardevs(VirtualDevice.VIRTUAL_DEV_CHANNEL, options.channels, guest)
+    get_chardevs(VirtualDevice.VIRTUAL_DEV_CONSOLE, options.consoles, guest)
 
     guest.autostart = options.autostart
     guest.description = options.description

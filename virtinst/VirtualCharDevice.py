@@ -55,9 +55,15 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     CHAR_PROTOCOL_TELNET = "telnet"
     char_protocols = [ CHAR_PROTOCOL_RAW, CHAR_PROTOCOL_TELNET ]
 
-    CHAR_TARGET_GUESTFWD = "guestfwd"
-    CHAR_TARGET_VIRTIO = "virtio"
-    target_types = [ CHAR_TARGET_GUESTFWD, CHAR_TARGET_VIRTIO ]
+    CHAR_CHANNEL_TARGET_GUESTFWD = "guestfwd"
+    CHAR_CHANNEL_TARGET_VIRTIO = "virtio"
+    target_types = [ CHAR_CHANNEL_TARGET_GUESTFWD,
+                     CHAR_CHANNEL_TARGET_VIRTIO ]
+
+    CHAR_CONSOLE_TARGET_SERIAL = "serial"
+    CHAR_CONSOLE_TARGET_UML = "uml"
+    CHAR_CONSOLE_TARGET_XEN = "xen"
+    CHAR_CONSOLE_TARGET_VIRTIO = "virtio"
 
     def get_char_type_desc(char_type):
         """
@@ -289,20 +295,21 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
 
         xml = "      <target type='%s'" % self.target_type
 
-        if self.target_type == self.CHAR_TARGET_GUESTFWD:
-            if not self.target_address and not self.target_port:
-                raise RuntimeError("A target address and port must be "
-                                   "specified for '%s'" % self.target_type)
+        if self._dev_type == self.DEV_CHANNEL:
+            if self.target_type == self.CHAR_CHANNEL_TARGET_GUESTFWD:
+                if not self.target_address and not self.target_port:
+                    raise RuntimeError("A target address and port must be "
+                                       "specified for '%s'" % self.target_type)
 
-            xml += " address='%s'" % self.target_address
-            xml += " port='%s'" % self.target_port
+                xml += " address='%s'" % self.target_address
+                xml += " port='%s'" % self.target_port
 
-        elif self.target_type == self.CHAR_TARGET_VIRTIO:
-            if self.target_name:
-                xml += " name='%s'" % self.target_name
+            elif self.target_type == self.CHAR_CHANNEL_TARGET_VIRTIO:
+                if self.target_name:
+                    xml += " name='%s'" % self.target_name
+
 
         xml += "/>\n"
-
         return xml
 
 
@@ -310,9 +317,10 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         xml  = "    <%s type='%s'" % (self._dev_type, self._char_type)
         char_xml = self._char_xml()
         target_xml = self._get_target_xml()
-        is_channel = self._dev_type == self.DEV_CHANNEL
+        has_target = (self._dev_type == self.DEV_CHANNEL or
+                      self._dev_type == self.DEV_CONSOLE)
 
-        if target_xml and not is_channel:
+        if target_xml and not has_target:
             raise RuntimeError(
                 "Target parameters not used with '%s' devices, only '%s'" %
                 (self._dev_type, self.DEV_CHANNEL))
@@ -338,6 +346,11 @@ class VirtualConsoleDevice(VirtualCharDevice):
 
     def __init__(self, conn):
         VirtualCharDevice.__init__(self, conn, VirtualCharDevice.DEV_CONSOLE)
+
+        self.target_types = [self.CHAR_CONSOLE_TARGET_SERIAL,
+                             self.CHAR_CONSOLE_TARGET_VIRTIO,
+                             self.CHAR_CONSOLE_TARGET_XEN,
+                             self.CHAR_CONSOLE_TARGET_UML]
 
 # Classes for each device 'type'
 

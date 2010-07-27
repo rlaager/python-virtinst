@@ -32,6 +32,9 @@
       <source mode='bind' host='my.bind.host' service='1111'/>
       <source mode='connect' host='my.source.host' service='2222'/>
     </parallel>
+    <console type='pty'>
+      <target type='virtio'/>
+    </console>
     <channel type='pty'>
       <target type='virtio' name='foo.bar.frob'/>
     </channel>

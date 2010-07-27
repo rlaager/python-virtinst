@@ -309,6 +309,10 @@ args_dict = {
         "--channel pty,target_type=virtio,name=org.linux-kvm.port1",
         # --channel virtio without name=
         "--channel pty,target_type=virtio",
+        # --console virtio
+        "--console pty,target_type=virtio",
+        # --console xen
+        "--console pty,target_type=xen",
      ],
      "invalid" : [
         # Bogus device type
@@ -321,6 +325,8 @@ args_dict = {
         "--serial udp,host=:1234,frob=baz",
         # --channel guestfwd without target_address
         "--channel pty,target_type=guestfwd",
+        # --console unknown type
+        "--console pty,target_type=abcd",
      ],
 
      }, # category 'char'

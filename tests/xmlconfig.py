@@ -752,14 +752,20 @@ class TestXMLConfig(unittest.TestCase):
         dev5 = VirtualCharDevice.get_dev_instance(g.conn,
                                                   VirtualCharDevice.DEV_CHANNEL,
                                                   VirtualCharDevice.CHAR_PTY)
-        dev5.target_type = dev5.CHAR_TARGET_VIRTIO
+        dev5.target_type = dev5.CHAR_CHANNEL_TARGET_VIRTIO
         dev5.target_name = "foo.bar.frob"
+
+        dev6 = VirtualCharDevice.get_dev_instance(g.conn,
+                                                  VirtualCharDevice.DEV_CONSOLE,
+                                                  VirtualCharDevice.CHAR_PTY)
+        dev6.target_type = dev5.CHAR_CONSOLE_TARGET_VIRTIO
 
         g.add_device(dev1)
         g.add_device(dev2)
         g.add_device(dev3)
         g.add_device(dev4)
         g.add_device(dev5)
+        g.add_device(dev6)
         self._compare(g, "boot-many-chars", False)
 
     def testManyDevices(self):
