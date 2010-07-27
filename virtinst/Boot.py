@@ -28,6 +28,8 @@ class Boot(object):
     BOOT_DEVICE_CDROM = "cdrom"
     BOOT_DEVICE_FLOPPY = "fd"
     BOOT_DEVICE_NETWORK = "network"
+    boot_devices = [BOOT_DEVICE_HARDDISK, BOOT_DEVICE_CDROM,
+                    BOOT_DEVICE_FLOPPY, BOOT_DEVICE_NETWORK]
 
     def __init__(self, conn):
         self.conn = conn

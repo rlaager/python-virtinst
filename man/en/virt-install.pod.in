@@ -247,6 +247,34 @@ Valid values are:
 
 ::VARIANT VALUES::
 
+=item --boot=BOOTOPTS
+
+Optionally specify the post-install VM boot configuration. This option allows
+specifying a boot device order, permanently booting off kernel/initrd with
+option kernel arguments, and enabling a BIOS boot menu (requires libvirt
+0.8.3 or later)
+
+--boot can be specified in addition to other install options
+(such as --location, --cdrom, etc.) or can be specified on it's own. In
+the latter case, behavior is similar to the --import install option: there
+is no 'install' phase, the guest is just created and launched as specified.
+
+Some examples:
+
+=over 2
+
+=item B<--boot cdrom,fd,hd,network,menu=on>
+
+Set the boot device priority as first cdrom, first floppy, first harddisk,
+network PXE boot. Additionally enable BIOS boot menu prompt.
+
+=item B<--boot kernel=KERNEL,initrd=INITRD,kernel_args="console=/dev/ttyS0">
+
+Have guest permanently boot off a local kernel/initrd pair, with the
+specified kernel options.
+
+=back
+
 =back
 
 
@@ -896,6 +924,16 @@ the rest of the options.
        --ram 512
        --disk /home/user/VMs/mydisk.img
        --import
+
+Test a custom kernel/initrd using an existing disk image, manually
+specifying a serial device hooked to a PTY on the host machine.
+
+  # virt-install \
+       --name mykernel
+       --ram 512
+       --disk /home/user/VMs/mydisk.img
+       --boot kernel=/tmp/mykernel,initrd=/tmp/myinitrd,kernel_args="console ttyS0"
+       --serial pty
 
 =head1 AUTHORS
 

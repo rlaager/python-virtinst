@@ -351,13 +351,19 @@ def prompt_for_input(noprompt_err, prompt = "", val = None, failed=False):
     print prompt + " ",
     return sys.stdin.readline().strip()
 
-def yes_or_no(s):
+def yes_or_no_convert(s):
     s = s.lower()
     if s in ("y", "yes", "1", "true", "t"):
         return True
     elif s in ("n", "no", "0", "false", "f"):
         return False
-    raise ValueError, "A yes or no response is required"
+    return None
+
+def yes_or_no(s):
+    ret = yes_or_no_convert(s)
+    if ret == None:
+        raise ValueError, "A yes or no response is required"
+    return ret
 
 def prompt_for_yes_or_no(warning, question):
     """catches yes_or_no errors and ensures a valid bool return"""
@@ -603,18 +609,9 @@ def set_os_variant(guest, distro_type, distro_variant):
         if (distro_variant and str(distro_variant).lower() != "none"):
             guest.set_os_variant(distro_variant)
 
-
-def parse_optstr(optstr, basedict=None):
-    """
-    Helper function for parsing opt strings of the form
-    opt1=val1,opt2=val2,...
-    'basedict' is a starting dictionary, so the caller can easily set
-    default values, etc.
-
-    Returns a dictionary of {'opt1': 'val1', 'opt2': 'val2'}
-    """
+def parse_optstr_tuples(optstr):
     optstr = str(optstr or "")
-    optdict = basedict or {}
+    optlist = []
 
     args = optstr.split(",")
     for opt in args:
@@ -625,9 +622,26 @@ def parse_optstr(optstr, basedict=None):
         opt_val = None
         if opt.count("="):
             opt_type, opt_val = opt.split("=", 1)
-            optdict[opt_type.lower()] = opt_val.lower()
+            optlist.append((opt_type.lower(), opt_val.lower()))
         else:
-            optdict[opt.lower()] = None
+            optlist.append((opt.lower(), None))
+
+    return optlist
+
+def parse_optstr(optstr, basedict=None):
+    """
+    Helper function for parsing opt strings of the form
+    opt1=val1,opt2=val2,...
+    'basedict' is a starting dictionary, so the caller can easily set
+    default values, etc.
+
+    Returns a dictionary of {'opt1': 'val1', 'opt2': 'val2'}
+    """
+    optlist = parse_optstr_tuples(optstr)
+    optdict = basedict or {}
+
+    for opt, val in optlist:
+        optdict[opt] = val
 
     return optdict
 

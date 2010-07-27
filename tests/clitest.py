@@ -242,6 +242,14 @@ args_dict = {
         "--paravirt --location %s --os-variant none" % treedir,
         # URL install with manual os-variant
         "--hvm --location %s --os-variant fedora12" % treedir,
+        # Boot menu
+        "--hvm --pxe --boot menu=on",
+        # Kernel params
+        """--hvm --pxe --boot kernel=/tmp/foo1.img,initrd=/tmp/foo2.img,kernel_args="ro quiet console=/dev/ttyS0" """,
+        # Boot order
+        "--hvm --pxe --boot cdrom,fd,hd,network,menu=off",
+        # Boot w/o other install option
+        "--hvm --boot network,hd,menu=on",
       ],
 
       "invalid": [
@@ -257,6 +265,8 @@ args_dict = {
         "--livecd",
         # Bogus --os-variant
         "--hvm --pxe --os-variant farrrrrrrge"
+        # Boot menu w/ bogus value
+        "--hvm --pxe --boot menu=foobar",
       ],
      }, # category "install"
 
