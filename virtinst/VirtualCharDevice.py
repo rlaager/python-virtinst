@@ -31,7 +31,8 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     DEV_SERIAL   = "serial"
     DEV_PARALLEL = "parallel"
     DEV_CONSOLE  = "console"
-    dev_types    = [ DEV_SERIAL, DEV_PARALLEL, DEV_CONSOLE ]
+    DEV_CHANNEL  = "channel"
+    dev_types    = [ DEV_SERIAL, DEV_PARALLEL, DEV_CONSOLE, DEV_CHANNEL]
 
     CHAR_PTY    = "pty"
     CHAR_DEV    = "dev"
@@ -53,6 +54,10 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     CHAR_PROTOCOL_RAW = "raw"
     CHAR_PROTOCOL_TELNET = "telnet"
     char_protocols = [ CHAR_PROTOCOL_RAW, CHAR_PROTOCOL_TELNET ]
+
+    CHAR_TARGET_GUESTFWD = "guestfwd"
+    CHAR_TARGET_VIRTIO = "virtio"
+    target_types = [ CHAR_TARGET_GUESTFWD, CHAR_TARGET_VIRTIO ]
 
     def get_char_type_desc(char_type):
         """
@@ -162,6 +167,10 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         self._source_mode = self.CHAR_MODE_BIND
         self._source_host = "127.0.0.1"
         self._source_port = None
+        self._target_type = None
+        self._target_address = None
+        self._target_port = None
+        self._target_name = None
         self._bind_host = None
         self._bind_port = None
         self._protocol = self.CHAR_PROTOCOL_RAW
@@ -213,6 +222,38 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
             raise ValueError(_("Unknown protocol '%s'.") % val)
         self._protocol = val
 
+    # GuestFWD target properties
+    def get_target_type(self):
+        return self._target_type
+    def set_target_type(self, val):
+        if val not in self.target_types:
+            raise ValueError(_("Unknown target type '%s'. Must be in: ") % val,
+                             self.target_types)
+        self._target_type = val
+    target_type = property(get_target_type, set_target_type,
+                           doc=_("Channel type as exposed in the guest."))
+
+    def set_target_address(self, val):
+        self._target_address = val
+    def get_target_address(self):
+        return self._target_address
+    target_address = property(get_target_address, set_target_address,
+                        doc=_("Guest forward channel address in the guest."))
+
+    def set_target_port(self, val):
+        self._target_port = val
+    def get_target_port(self):
+        return self._target_port
+    target_port = property(get_target_port, set_target_port,
+                           doc=_("Guest forward channel port in the guest."))
+
+    def set_target_name(self, val):
+        self._target_name = val
+    def get_target_name(self):
+        return self._target_name
+    target_name = property(get_target_name, set_target_name,
+                           _("Sysfs Name of virtio port in the guest"))
+
     # XML building helpers
     def _char_empty_xml(self):
         """
@@ -241,14 +282,53 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     def _char_xml(self):
         raise NotImplementedError("Must be implemented in subclass.")
 
+    def _get_target_xml(self):
+        xml = ""
+        if not self.target_type:
+            return xml
+
+        xml = "      <target type='%s'" % self.target_type
+
+        if self.target_type == self.CHAR_TARGET_GUESTFWD:
+            if not self.target_address and not self.target_port:
+                raise RuntimeError("A target address and port must be "
+                                   "specified for '%s'" % self.target_type)
+
+            xml += " address='%s'" % self.target_address
+            xml += " port='%s'" % self.target_port
+
+        elif self.target_type == self.CHAR_TARGET_VIRTIO:
+            if self.target_name:
+                xml += " name='%s'" % self.target_name
+
+        xml += "/>\n"
+
+        return xml
+
+
     def get_xml_config(self):
         xml  = "    <%s type='%s'" % (self._dev_type, self._char_type)
         char_xml = self._char_xml()
-        if char_xml:
-            xml += ">\n%s" % char_xml
+        target_xml = self._get_target_xml()
+        is_channel = self._dev_type == self.DEV_CHANNEL
+
+        if target_xml and not is_channel:
+            raise RuntimeError(
+                "Target parameters not used with '%s' devices, only '%s'" %
+                (self._dev_type, self.DEV_CHANNEL))
+
+        if char_xml or target_xml:
+            xml += ">"
+            if char_xml:
+                xml += "\n%s" % char_xml
+
+            if target_xml:
+                xml += "\n%s" % target_xml
+
             xml += "    </%s>" % self._dev_type
         else:
             xml += "/>"
+
         return xml
 
 # Back compat class for building a simple PTY 'console' element

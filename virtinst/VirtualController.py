@@ -93,8 +93,8 @@ class VirtualControllerSATA(VirtualController):
 
 class VirtualControllerVirtioSerial(VirtualController):
     _controller_type = VirtualController.CONTROLLER_TYPE_VIRTIOSERIAL
-    _ports = 0
-    _vectors = 0
+    _ports = None
+    _vectors = None
 
     def get_vectors(self):
         return self._vectors

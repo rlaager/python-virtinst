@@ -303,6 +303,12 @@ args_dict = {
         "--parallel unix,path=/tmp/foo-socket",
         # TCP w/ telnet
         "--serial tcp,host=:1234,protocol=telnet",
+        # --channel guestfwd
+        "--channel pty,target_type=guestfwd,target_address=127.0.0.1:10000",
+        # --channel virtio
+        "--channel pty,target_type=virtio,name=org.linux-kvm.port1",
+        # --channel virtio without name=
+        "--channel pty,target_type=virtio",
      ],
      "invalid" : [
         # Bogus device type
@@ -313,6 +319,8 @@ args_dict = {
         "--serial null,path=/tmp/foo",
         # Nonexistent argument
         "--serial udp,host=:1234,frob=baz",
+        # --channel guestfwd without target_address
+        "--channel pty,target_type=guestfwd",
      ],
 
      }, # category 'char'

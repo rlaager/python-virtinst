@@ -116,6 +116,7 @@ def parse_char_option(guest, char_type, optstring):
 
     host, port = parse_host("host")
     bind_host, bind_port = parse_host("bind_host")
+    target_addr, target_port = parse_host("target_address")
 
     set_param("source_path", "path")
     set_param("source_mode", "mode")
@@ -124,6 +125,10 @@ def parse_char_option(guest, char_type, optstring):
     set_param("source_port", "host", port)
     set_param("bind_host", "bind_host", bind_host)
     set_param("bind_port", "bind_host", bind_port)
+    set_param("target_name", "name")
+    set_param("target_type", "target_type")
+    set_param("target_address", "target_address", target_addr)
+    set_param("target_port", "target_address", target_port)
 
     # If extra parameters, then user passed some garbage param
     if opts:
@@ -701,6 +706,9 @@ def parse_args():
     devg.add_option("", "--parallel", type="string", dest="parallels",
                     action="callback", callback=cli.check_before_append,
                     help=_("Add a parallel device to the domain."))
+    geng.add_option("", "--channel", type="string", dest="channels",
+                    action="callback", callback=cli.check_before_append,
+                    help=_("Add a guest communication channel."))
     devg.add_option("", "--host-device", type="string", dest="hostdevs",
                     action="callback", callback=cli.check_before_append,
                     help=_("Physical host device to attach to the domain."))
@@ -859,6 +867,7 @@ def main():
     cli.get_sound(options.sound, options.soundhw, guest)
     get_chardevs(VirtualDevice.VIRTUAL_DEV_SERIAL, options.serials, guest)
     get_chardevs(VirtualDevice.VIRTUAL_DEV_PARALLEL, options.parallels, guest)
+    get_chardevs(VirtualDevice.VIRTUAL_DEV_CHANNEL, options.channels, guest)
 
     guest.autostart = options.autostart
     guest.description = options.description

@@ -716,6 +716,33 @@ Unix socket (see unix(7). MODE has similar behavior and defaults as 'tcp'.
 
 =back
 
+=item --channel
+
+Specifies a communication channel device to connect the guest and host
+machine. This option uses the same options as --serial and --parallel
+for specifying the host/source end of the channel. Extra 'target' options
+are used to specify how the guest machine sees the channel.
+
+Some of the types of character device redirection are:
+
+=over 4
+
+=item B<--channel target_type=guestfwd,target_address=HOST:PORT>
+
+Communication channel using QEMU usermode networking stack. The guest can
+connect to the channel using the specified HOST:PORT combination.
+
+=item B<--channel target_type=virtio[,name=NAME]>
+
+Communication channel using virtio serial (requires 2.6.34 or later host and
+guest). Each instance of a virtio --channel line is exposed in the
+guest as /dev/vport0p1, /dev/vport0p2, etc. NAME is optional metadata, and
+can be any string, such as org.linux-kvm.virtioport1.
+If specified, this will be exposed in the guest at
+/sys/class/virtio-ports/vport0p1/NAME
+
+=back
+
 =item --video=VIDEO
 
 Specify what video device model will be attached to the guest. Valid values
