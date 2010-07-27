@@ -758,7 +758,8 @@ Example:
 
 Connect a virtio console to the guest, redirected to a PTY on the host.
 For supported guests, this exposes /dev/hvc0 in the guest. See
-http://fedoraproject.org/wiki/Features/VirtioSerial for more info.
+http://fedoraproject.org/wiki/Features/VirtioSerial for more info. virtio
+console requires libvirt 0.8.3 or later.
 
 =back
 
