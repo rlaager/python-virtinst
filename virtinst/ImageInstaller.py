@@ -106,19 +106,15 @@ class ImageInstaller(Installer.Installer):
                 guest.features[f] = False
 
     def get_install_xml(self, guest, isinstall):
+        if isinstall:
+            return None
 
         kernel = { "kernel" : self.boot_caps.kernel,
                    "initrd" : self.boot_caps.initrd,
-                   "extrargs" : self.boot_caps.cmdline }
+                   "extraargs" : self.boot_caps.cmdline }
 
-        if self.boot_caps.kernel:
-            isinstall = True
-        else:
-            isinstall = False
-
-        # FYI: self.boot_caps.loader is _not_ analagous to guest loader tag
-
-        return self._get_osblob_helper(guest, isinstall=isinstall,
+        return self._get_osblob_helper(guest,
+                                       isinstall=bool(self.boot_caps.kernel),
                                        kernel=kernel,
                                        bootdev=self.boot_caps.bootdev)
 

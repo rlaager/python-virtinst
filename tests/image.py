@@ -58,20 +58,14 @@ class TestImageParser(unittest.TestCase):
         virtinst.ImageInstaller(image, self.caps, 0)
         self.assertTrue(True)
 
-    # Build libvirt XML from the image xml
-    # XXX: This doesn't set up devices, so the guest xml will be pretty
-    # XXX: sparse. There should really be a helper in the Image classes
-    # XXX: that turns virt-image xml into a minimal Guest object, but
-    # XXX: maybe that's just falling into the realm of virt-convert
-    def testImage2XML(self):
+    def _image2XMLhelper(self, image_xml, output_xmls):
         image2guestdir = self.basedir + "image2guest/"
-        image = virtinst.ImageParser.parse_file(self.basedir + "image.xml")
+        image = virtinst.ImageParser.parse_file(self.basedir + image_xml)
+        if type(output_xmls) is not list:
+            output_xmls = [output_xmls]
 
-        # ( boot index from virt-image xml, filename to compare against)
-        matrix = [ (0, "image-xenpv32.xml"),
-                   (1, "image-xenfv32.xml") ]
-
-        for idx, fname in matrix:
+        for idx in range(len(output_xmls)):
+            fname = output_xmls[idx]
             inst = virtinst.ImageInstaller(image, self.caps, boot_index=idx)
 
             if inst.is_hvm():
@@ -84,8 +78,20 @@ class TestImageParser(unittest.TestCase):
 
             expect_out = tests.read_file(image2guestdir + fname)
             expect_out = expect_out.replace("REPLACEME", os.getcwd())
-            tests.diff_compare(g.get_config_xml(install=True),
+
+            tests.diff_compare(g.get_config_xml(install=False),
                                image2guestdir + fname, expect_out=expect_out)
+
+
+    # Build libvirt XML from the image xml
+    # XXX: This doesn't set up devices, so the guest xml will be pretty
+    # XXX: sparse. There should really be a helper in the Image classes
+    # XXX: that turns virt-image xml into a minimal Guest object, but
+    # XXX: maybe that's just falling into the realm of virt-convert
+    def testImage2XML(self):
+        self._image2XMLhelper("image.xml", ["image-xenpv32.xml",
+                                            "image-xenfv32.xml"])
+        self._image2XMLhelper("image-kernel.xml", ["image-xenpv32-kernel.xml"])
 
 if __name__ == "__main__":
     unittest.main()
