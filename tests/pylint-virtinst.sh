@@ -50,7 +50,7 @@ URLTEST_ACCESS="TestURLFetch.*Access to a protected member"
 TEST_HACKS="TestClone.*protected member _util|testQEMUDriverName.*protected member _get_uri|Access to a protected member _util"
 
 # Scattered examples of legitimately unused arguments
-UNUSED_ARGS="(SuseDistro|SolarisDistro|NetWareDistro).isValidStore.*Unused argument 'progresscb'|.*Installer.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'"
+UNUSED_ARGS="(SuseDistro|SolarisDistro|NetWareDistro).isValidStore.*Unused argument 'progresscb'|.*Installer.prepare.*Unused argument|post_install_check.*Unused argument 'guest'|Guest.__init__.*Unused argument 'type'|_get_bootdev"
 
 # Outside __init__ checks throw false positives with distutils custom commands
 # tests.storage also invokes false positives using hasattr
@@ -67,7 +67,7 @@ ACCESS__CONN="Access to a protected member _conn"
 
 # There isn't a clean API way to access this functions from the API, but
 # they provide info that is needed. These need need to be fixed.
-PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_cleanup_install)|'virtinst.FullVirtGuest' has no '_OS_TYPES'"
+PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_cleanup_install)|'virtinst.FullVirtGuest' has no '_OS_TYPES'|_install_bootconfig"
 
 DMSG=""
 addmsg() {

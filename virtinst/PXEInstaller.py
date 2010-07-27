@@ -22,16 +22,16 @@ import Installer
 class PXEInstaller(Installer.Installer):
 
     # General Installer methods
-
     def prepare(self, guest, meter):
         pass
 
-    def get_install_xml(self, guest, isinstall):
-        bootdev = "network"
+    # Internal methods
+    def _get_bootdev(self, isinstall, guest):
+        bootdev = self.bootconfig.BOOT_DEVICE_NETWORK
+
         if (not isinstall and
             filter(lambda d: d.device == d.DEVICE_DISK, guest.disks)):
             # If doing post-install boot and guest has an HD attached
-            bootdev = "hd"
+            bootdev = self.bootconfig.BOOT_DEVICE_HARDDISK
 
-        return self._get_osblob_helper(isinstall=isinstall, guest=guest,
-                                       kernel=None, bootdev=bootdev)
+        return bootdev

@@ -70,16 +70,9 @@ class DistroInstaller(Installer.Installer):
         Installer.Installer.__init__(self, type, location, boot, extraargs,
                                  os_type, conn=conn)
 
-        self.install = {
-            "kernel" : "",
-            "initrd" : "",
-            "extraargs" : "",
-        }
-
         # True == location is a filesystem path
         # False == location is a url
         self._location_is_path = True
-
 
     # DistroInstaller specific methods/overwrites
 
@@ -188,10 +181,11 @@ class DistroInstaller(Installer.Installer):
         Insert files into the root directory of the initial ram disk
         """
         logging.debug("Unpacking initrd.")
+        initrd = self._install_bootconfig.initrd
         tempdir = tempfile.mkdtemp(dir=self.scratchdir)
         os.chmod(tempdir, 0775)
 
-        gzip_proc = subprocess.Popen(['gzip', '-dc', self.install["initrd"]],
+        gzip_proc = subprocess.Popen(['gzip', '-dc', initrd],
                                      stdout=subprocess.PIPE, stderr=sys.stderr)
         cpio_proc = subprocess.Popen(['cpio', '-i', '-d', '--quiet'],
                                      stdin=gzip_proc.stdout,
@@ -211,7 +205,7 @@ class DistroInstaller(Installer.Installer):
                                      stdin=find_proc.stdout,
                                      stdout=subprocess.PIPE,
                                      stderr=sys.stderr, cwd=tempdir)
-        new_initrd = self.install["initrd"] + '.new'
+        new_initrd = initrd + '.new'
         f = open(new_initrd, 'w')
         gzip_proc = subprocess.Popen(['gzip'], stdin=cpio_proc.stdout,
                                      stdout=f, stderr=sys.stderr)
@@ -219,53 +213,16 @@ class DistroInstaller(Installer.Installer):
         cpio_proc.wait()
         find_proc.wait()
         gzip_proc.wait()
-        os.rename(new_initrd, self.install["initrd"])
+        os.rename(new_initrd, initrd)
         shutil.rmtree(tempdir)
 
     def _prepare_kernel_and_initrd(self, guest, meter):
         disk = None
 
-        if self.boot is not None:
-            # Got a local kernel/initrd already
-            self.install["kernel"] = self.boot["kernel"]
-            self.install["initrd"] = self.boot["initrd"]
-            if not self.extraargs is None:
-                self.install["extraargs"] = self.extraargs
-
-        else:
-            # Need to fetch the kernel & initrd from a remote site, or
-            # out of a loopback mounted disk image/device
-            ignore, os_type, os_variant, media = OSDistro.acquireKernel(guest,
-                                                    self.location, meter,
-                                                    self.scratchdir,
-                                                    self.os_type)
-            (kernelfn, initrdfn, args) = media
-
-            if guest.get_os_autodetect():
-                if os_type:
-                    logging.debug("Auto detected OS type as: %s" % os_type)
-                    guest.os_type = os_type
-
-                if (os_variant and guest.os_type == os_type):
-                    logging.debug("Auto detected OS variant as: %s" %
-                                  os_variant)
-                    guest.os_variant = os_variant
-
-            self.install["kernel"] = kernelfn
-            self.install["initrd"] = initrdfn
-            self.install["extraargs"] = args
-
-            self._tmpfiles.append(kernelfn)
-            if initrdfn:
-                self._tmpfiles.append(initrdfn)
-
-            if self._initrd_injections:
-                self._perform_initrd_injections()
-
-        # If they're installing off a local file/device, we map it
-        # through to a virtual CD or disk
-        if (self.location is not None and self._location_is_path
-           and not os.path.isdir(self.location)):
+        # If installing off a local path, map it through to a virtual CD/disk
+        if (self.location is not None and
+            self._location_is_path and
+            not os.path.isdir(self.location)):
             device = VirtualDisk.DEVICE_DISK
             if guest._lookup_osdict_key('pv_cdrom_install'):
                 device = VirtualDisk.DEVICE_CDROM
@@ -276,7 +233,45 @@ class DistroInstaller(Installer.Installer):
                                readOnly=True,
                                transient=True)
 
+        if self._install_bootconfig.kernel:
+            return disk
+
+        # Need to fetch the kernel & initrd from a remote site, or
+        # out of a loopback mounted disk image/device
+        ignore, os_type, os_variant, media = OSDistro.acquireKernel(guest,
+                                                self.location, meter,
+                                                self.scratchdir,
+                                                self.os_type)
+        (kernelfn, initrdfn, args) = media
+
+        if guest.get_os_autodetect():
+            if os_type:
+                logging.debug("Auto detected OS type as: %s" % os_type)
+                guest.os_type = os_type
+
+            if (os_variant and guest.os_type == os_type):
+                logging.debug("Auto detected OS variant as: %s" % os_variant)
+                guest.os_variant = os_variant
+
+        self._install_bootconfig.kernel = kernelfn
+        self._install_bootconfig.initrd = initrdfn
+        self._install_bootconfig.kernel_args = args
+
+        self._tmpfiles.append(kernelfn)
+        if initrdfn:
+            self._tmpfiles.append(initrdfn)
+
+        if self._initrd_injections:
+            self._perform_initrd_injections()
+
         return disk
+
+    def _get_bootdev(self, isinstall, guest):
+        if isinstall:
+            bootdev = self.bootconfig.BOOT_DEVICE_CDROM
+        else:
+            bootdev = self.bootconfig.BOOT_DEVICE_HARDDISK
+        return bootdev
 
     # General Installer methods
 
@@ -288,12 +283,6 @@ class DistroInstaller(Installer.Installer):
 
     def prepare(self, guest, meter):
         self.cleanup()
-
-        self.install = {
-            "kernel" : "",
-            "initrd" : "",
-            "extraargs" : "",
-        }
 
         dev = None
         if self.cdrom:
@@ -307,15 +296,6 @@ class DistroInstaller(Installer.Installer):
 
         if dev:
             self.install_devices.append(dev)
-
-    def get_install_xml(self, guest, isinstall):
-        if isinstall:
-            bootdev = "cdrom"
-        else:
-            bootdev = "hd"
-
-        return self._get_osblob_helper(isinstall=isinstall, guest=guest,
-                                       kernel=self.install, bootdev=bootdev)
 
     def detect_distro(self):
         try:

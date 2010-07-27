@@ -201,10 +201,10 @@ class TestXMLConfig(unittest.TestCase):
             dom.destroy()
 
             # Replace kernel/initrd with known info
-            if (hasattr(guest.installer, "install") and
-                guest.installer.install["kernel"]):
-                guest.installer.install["kernel"] = "kernel"
-                guest.installer.install["initrd"] = "initrd"
+            if (guest.installer._install_bootconfig and
+                guest.installer._install_bootconfig.kernel):
+                guest.installer._install_bootconfig.kernel = "kernel"
+                guest.installer._install_bootconfig.initrd = "initrd"
 
             xmlinst = guest.get_config_xml(True, False)
             xmlboot = guest.get_config_xml(False, False)
@@ -417,6 +417,17 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         self._compare(g, "boot-fullyvirt-pxe", False)
 
+    def testBootFVPXEAlways(self):
+        i = make_pxe_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+        g.disks.append(get_filedisk())
+
+        g.installer.bootconfig.bootorder = [
+            g.installer.bootconfig.BOOT_DEVICE_NETWORK]
+        g.installer.bootconfig.enable_bootmenu = True
+
+        self._compare(g, "boot-fullyvirt-pxe-always", False)
+
     def testInstallFVPXENoDisks(self):
         i = make_pxe_installer()
         g = get_basic_fullyvirt_guest(installer=i)
@@ -487,6 +498,26 @@ class TestXMLConfig(unittest.TestCase):
 
         g.disks.append(get_filedisk())
         self._compare(g, "install-fullyvirt-import", False)
+
+    def testInstallFVImportKernel(self):
+        i = make_import_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+
+        g.disks.append(get_filedisk())
+        g.installer.bootconfig.kernel = "kernel"
+        g.installer.bootconfig.initrd = "initrd"
+        g.installer.bootconfig.kernel_args = "my kernel args"
+
+        self._compare(g, "install-fullyvirt-import-kernel", False)
+
+    def testInstallFVImportMulti(self):
+        i = make_import_installer()
+        g = get_basic_fullyvirt_guest(installer=i)
+
+        g.installer.bootconfig.enable_bootmenu = False
+        g.installer.bootconfig.bootorder = ["hd", "fd", "cdrom", "network"]
+        g.disks.append(get_filedisk())
+        self._compare(g, "install-fullyvirt-import-multiboot", False)
 
     def testInstallPVImport(self):
         i = make_import_installer()

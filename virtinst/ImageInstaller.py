@@ -105,24 +105,18 @@ class ImageInstaller(Installer.Installer):
             elif self.boot_caps.features[f] & Cap.FEATURE_OFF:
                 guest.features[f] = False
 
-    def get_install_xml(self, guest, isinstall):
-        if isinstall:
-            return None
-
-        kernel = { "kernel" : self.boot_caps.kernel,
-                   "initrd" : self.boot_caps.initrd,
-                   "extraargs" : self.boot_caps.cmdline }
-
-        return self._get_osblob_helper(guest,
-                                       isinstall=bool(self.boot_caps.kernel),
-                                       kernel=kernel,
-                                       bootdev=self.boot_caps.bootdev)
+        self.bootconfig.kernel = self.boot_caps.kernel
+        self.bootconfig.initrd = self.boot_caps.initrd
+        self.bootconfig.kernel_args = self.boot_caps.cmdline
 
     def post_install_check(self, guest):
         return True
 
-
     # Private methods
+    def _get_bootdev(self, isinstall, guest):
+        if isinstall:
+            return None
+        return self.boot_caps.bootdev
 
     def _make_disks(self):
         for m in self.boot_caps.drives:

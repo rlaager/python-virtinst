@@ -58,7 +58,6 @@ class LiveCDInstaller(Installer.Installer):
 
 
     # General Installer methods
-
     def prepare(self, guest, meter):
         self.cleanup()
 
@@ -68,13 +67,11 @@ class LiveCDInstaller(Installer.Installer):
 
         self.install_devices.append(self._install_disk)
 
-    def get_install_xml(self, guest, isinstall):
-        if isinstall:
-            # Signifies to the 'Guest' that there is no 'install' phase
-            return None
-
-        return self._get_osblob_helper(isinstall=isinstall, guest=guest,
-                                       kernel=None, bootdev="cdrom")
-
     def post_install_check(self, guest):
         return True
+
+    # Internal methods
+    def _get_bootdev(self, isinstall, guest):
+        if isinstall:
+            return None
+        return self.bootconfig.BOOT_DEVICE_CDROM

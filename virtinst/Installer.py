@@ -23,12 +23,14 @@ import os, errno
 import struct
 import platform
 import logging
+import copy
 
 import _util
 import virtinst
 from virtinst import CapabilitiesParser
 from virtinst import _virtinst as _
 from VirtualDisk import VirtualDisk
+from Boot import Boot
 
 XEN_SCRATCH="/var/lib/xen"
 LIBVIRT_SCRATCH="/var/lib/libvirt/boot"
@@ -82,13 +84,15 @@ class Installer(object):
         self._type = None
         self._location = None
         self._initrd_injections = []
-        self._extraargs = None
-        self._boot = None
         self._cdrom = False
         # XXX: We should set this default based on capabilities?
         self._os_type = "xen"
         self._conn = conn
         self._scratchdir = None
+        self._caps = None
+        self._arch = None
+        self._install_bootconfig = Boot(self.conn)
+        self._bootconfig = Boot(self.conn)
 
         # Devices created/added during the prepare() stage
         self.install_devices = []
@@ -99,9 +103,6 @@ class Installer(object):
             # FIXME: Better solution? Skip validating this since we may not be
             # able to install a VM of the host arch
             self._arch = self._caps.host.arch
-        else:
-            self._caps = None
-            self._arch = None
 
         if type is None:
             type = "xen"
@@ -111,16 +112,20 @@ class Installer(object):
             self.os_type = os_type
         if not location is None:
             self.location = location
+
         if not boot is None:
             self.boot = boot
-        if not extraargs is None:
-            self.extraargs = extraargs
+        self.extraargs = extraargs
 
         self._tmpfiles = []
 
     def get_conn(self):
         return self._conn
     conn = property(get_conn)
+
+    def _get_bootconfig(self):
+        return self._bootconfig
+    bootconfig = property(_get_bootconfig)
 
     # Hypervisor name (qemu, kvm, xen, lxc, etc.)
     def get_type(self):
@@ -181,31 +186,41 @@ class Installer(object):
 
     # kernel + initrd pair to use for installing as opposed to using a location
     def get_boot(self):
-        return self._boot
+        return {"kernel" : self._install_bootconfig.kernel,
+                "initrd" : self._install_bootconfig.initrd}
     def set_boot(self, val):
         self.cdrom = False
+        boot = {}
         if type(val) == tuple:
             if len(val) != 2:
                 raise ValueError, _("Must pass both a kernel and initrd")
             (k, i) = val
-            self._boot = {"kernel": k, "initrd": i}
+            boot = {"kernel": k, "initrd": i}
+
         elif type(val) == dict:
             if not val.has_key("kernel") or not val.has_key("initrd"):
                 raise ValueError, _("Must pass both a kernel and initrd")
-            self._boot = val
+            boot = val
+
         elif type(val) == list:
             if len(val) != 2:
                 raise ValueError, _("Must pass both a kernel and initrd")
-            self._boot = {"kernel": val[0], "initrd": val[1]}
+            boot = {"kernel": val[0], "initrd": val[1]}
+
         else:
-            raise ValueError, _("Kernel and initrd must be specified by a list, dict, or tuple.")
+            raise ValueError, _("Kernel and initrd must be specified by "
+                                "a list, dict, or tuple.")
+
+        self._install_bootconfig.kernel = boot.get("kernel")
+        self._install_bootconfig.initrd = boot.get("initrd")
+
     boot = property(get_boot, set_boot)
 
     # extra arguments to pass to the guest installer
     def get_extra_args(self):
-        return self._extraargs
+        return self._install_bootconfig.kernel_args
     def set_extra_args(self, val):
-        self._extraargs = val
+        self._install_bootconfig.kernel_args = val
     extraargs = property(get_extra_args, set_extra_args)
 
 
@@ -219,28 +234,21 @@ class Installer(object):
         return False
 
     # Private methods
+    def _get_bootdev(self, isinstall, guest):
+        raise NotImplementedError
 
-    def _get_osblob_helper(self, guest, isinstall, kernel=None, bootdev=None):
-
-        # TODO: kernel should go away: we should be able to pull this
-        #       directly from the installer. This may mean deprecating
-        #       extraargs or something
-
+    def _get_osblob_helper(self, guest, isinstall, bootconfig):
         def get_param(obj, paramname):
             if hasattr(obj, paramname):
                 return getattr(obj, paramname)
             return None
 
-        ishvm = False
-        if isinstance(guest, virtinst.FullVirtGuest):
-            ishvm = True
-
+        ishvm = bool(isinstance(guest, virtinst.FullVirtGuest))
         conn = guest.conn
         arch = self.arch
         loader = get_param(guest, "loader")
 
-        osblob = ""
-        if not isinstall and not ishvm:
+        if not isinstall and not ishvm and not self.bootconfig.kernel:
             return "<bootloader>%s</bootloader>" % _util.pygrub_path(conn)
 
         osblob = "<os>\n"
@@ -251,22 +259,16 @@ class Installer(object):
         if os_type == "xen" and self.type == "xen":
             os_type = "linux"
 
+        osblob += "    <type"
         if arch:
-            osblob += "    <type arch='%s'>%s</type>\n" % (arch, os_type)
-        else:
-            osblob += "    <type>%s</type>\n" % os_type
+            osblob += " arch='%s'" % arch
+        osblob += ">%s</type>\n" % os_type
 
         if loader:
             osblob += "    <loader>%s</loader>\n" % loader
 
-        if isinstall and kernel and kernel["kernel"]:
-            osblob += "    <kernel>%s</kernel>\n"   % _util.xml_escape(kernel["kernel"])
-            osblob += "    <initrd>%s</initrd>\n"   % _util.xml_escape(kernel["initrd"])
-            osblob += "    <cmdline>%s</cmdline>\n" % _util.xml_escape(kernel["extraargs"])
-        elif bootdev is not None:
-            osblob += "    <boot dev='%s'/>\n" % bootdev
-
-        osblob += "  </os>"
+        osblob += bootconfig.get_xml_config()
+        osblob = _util.xml_append(osblob, "  </os>")
 
         return osblob
 
@@ -284,8 +286,21 @@ class Installer(object):
                           'post-install' phase.
         @type isinstall: C{bool}
         """
-        # Must be implemented in sub class
-        raise NotImplementedError
+        bootdev = self._get_bootdev(isinstall, guest)
+        if isinstall:
+            bootconfig = self._install_bootconfig
+        else:
+            bootconfig = self.bootconfig
+
+        if isinstall and not bootdev:
+            # No install phase
+            return
+
+        bootconfig = copy.copy(bootconfig)
+        if not bootconfig.bootorder:
+            bootconfig.bootorder = [bootdev]
+
+        return self._get_osblob_helper(guest, isinstall, bootconfig)
 
     def cleanup(self):
         """

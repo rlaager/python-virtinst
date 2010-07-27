@@ -31,33 +31,27 @@ class ImportInstaller(Installer.Installer):
     """
 
     # General Installer methods
-
     def prepare(self, guest, meter):
         if len(guest.disks) == 0:
             raise ValueError(_("A disk device must be specified."))
 
-    def get_install_xml(self, guest, isinstall):
-        if isinstall:
-            # Signifies to the 'Guest' that there is no 'install' phase
-            return None
-        else:
-            bootdev = self._disk_to_bootdev(guest.disks[0])
-
-        return self._get_osblob_helper(isinstall=isinstall, guest=guest,
-                                       kernel=None, bootdev=bootdev)
-
     def post_install_check(self, guest):
         return True
 
-
     # Private methods
+    def _get_bootdev(self, isinstall, guest):
+        if isinstall:
+            return None
+        if not guest.disks:
+            return self.bootconfig.BOOT_DEVICE_HARDDISK
+        return self._disk_to_bootdev(guest.disks[0])
 
     def _disk_to_bootdev(self, disk):
         if disk.device == VirtualDisk.DEVICE_DISK:
-            return "hd"
+            return self.bootconfig.BOOT_DEVICE_HARDDISK
         elif disk.device == VirtualDisk.DEVICE_CDROM:
-            return "cdrom"
+            return self.bootconfig.BOOT_DEVICE_CDROM
         elif disk.device == VirtualDisk.DEVICE_FLOPPY:
-            return "fd"
+            return self.bootconfig.BOOT_DEVICE_FLOPPY
         else:
-            return "hd"
+            return self.bootconfig.BOOT_DEVICE_HARDDISK
