@@ -542,6 +542,12 @@ class TestXMLConfig(unittest.TestCase):
         fargs = (g, "misc-qemu-iso-disk", True)
         self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
+        g = get_basic_fullyvirt_guest()
+        g.disks.append(get_filedisk("/default-pool/iso-vol"))
+        g.disks[0].driver_type = "qcow2"
+        fargs = (g, "misc-qemu-driver-overwrite", True)
+        self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
+
     def testXMLEscaping(self):
         g = get_basic_fullyvirt_guest()
         g.disks.append(get_filedisk("/tmp/ISO&'&s"))

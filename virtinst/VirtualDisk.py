@@ -713,7 +713,11 @@ class VirtualDisk(VirtualDevice):
             if driver.lower() == "qemu":
                 drvname = self.DRIVER_QEMU
 
-        if self.vol_object:
+        if self.format:
+            if drvname == self.DRIVER_QEMU:
+                drvtype = _qemu_sanitize_drvtype(self.type, self.format)
+
+        elif self.vol_object:
             fmt = _util.get_xml_path(self.vol_object.XMLDesc(0),
                                      "/volume/target/format/@type")
             if drvname == self.DRIVER_QEMU:
@@ -734,11 +738,13 @@ class VirtualDisk(VirtualDevice):
                 drvname = self.DRIVER_TAP
                 drvtype = self.DRIVER_TAP_VDISK
 
+        # User already set driverName to a different value, respect that
         if self._driverName and self._driverName != drvname:
-            # User already set driverName to a different value, respect that
             return
-
         self._driverName = drvname or None
+
+        if self._driverType and self._driverType != drvtype:
+            return
         self._driverType = drvtype or None
 
     def __lookup_vol_name(self, name_tuple):

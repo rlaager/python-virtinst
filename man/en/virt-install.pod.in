@@ -370,7 +370,14 @@ read and write caching.
 
 Image format to be used if creating managed storage. For file volumes, this
 can be 'raw', 'qcow2', 'vmdk', etc. See format types in
-L<http://libvirt.org/storage.html> for possible values.
+L<http://libvirt.org/storage.html> for possible values. This is often
+mapped to the B<driver_type> value as well.
+
+With libvirt 0.8.3 and later, this option should be specified if reusing
+and existing disk image, since libvirt does not autodetect storage format
+as it is a potential security issue. For example, if reusing and existing
+qcow2 image, you will want to specify format=qcow2, otherwise the hypervisor
+may not be able to read your disk image.
 
 =item B<driver_name>
 
