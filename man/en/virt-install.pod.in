@@ -372,6 +372,16 @@ Image format to be used if creating managed storage. For file volumes, this
 can be 'raw', 'qcow2', 'vmdk', etc. See format types in
 L<http://libvirt.org/storage.html> for possible values.
 
+=item B<driver_name>
+
+Driver name the hypervisor should use when accessing the specified
+storage. Typically does not need to be set by the user.
+
+=item B<driver_type>
+
+Driver format/type the hypervisor should use when accessing the specified
+storage. Typically does not need to be set by the user.
+
 =back
 
 See the examples section for some uses. This option deprecates C<--file>,

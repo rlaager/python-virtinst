@@ -176,6 +176,10 @@ args_dict = {
         "--disk path=%(EXISTIMG1)s,device=cdrom --disk path=%(EXISTIMG1)s,device=cdrom",
         # Dir with a floppy dev
         "--disk %(DIR)s,device=floppy",
+        # Driver name and type options
+        "--disk %(EXISTIMG1)s,driver_name=qemu,driver_type=qcow2",
+        # Unknown driver name and type options
+        "--disk %(EXISTIMG1)s,driver_name=foobar,driver_type=foobaz",
       ],
 
       "invalid": [
