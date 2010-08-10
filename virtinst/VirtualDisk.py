@@ -63,7 +63,7 @@ def _qemu_sanitize_drvtype(phystype, fmt):
     """
     raw_list = [ "iso" ]
 
-    if phystype == VirtualDisk.TYPE_BLOCK:
+    if phystype == VirtualDisk.TYPE_BLOCK and not fmt:
         return VirtualDisk.DRIVER_QEMU_RAW
 
     if fmt in raw_list:

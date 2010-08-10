@@ -704,6 +704,9 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
                                    device=VirtualDisk.DEVICE_CDROM,
                                    driverType="raw"))
+        g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
+                                   device=VirtualDisk.DEVICE_DISK,
+                                   driverName="qemu", format="qcow2"))
         g.disks.append(VirtualDisk(conn=g.conn, path=None,
                                    device=VirtualDisk.DEVICE_CDROM,
                                    bus="scsi"))
