@@ -702,16 +702,19 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(get_filedisk())
         g.disks.append(get_blkdisk())
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
-                                   device=VirtualDisk.DEVICE_CDROM))
+                                   device=VirtualDisk.DEVICE_CDROM,
+                                   driverType="raw"))
         g.disks.append(VirtualDisk(conn=g.conn, path=None,
                                    device=VirtualDisk.DEVICE_CDROM,
                                    bus="scsi"))
         g.disks.append(VirtualDisk(conn=g.conn, path=None,
                                    device=VirtualDisk.DEVICE_FLOPPY))
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
-                                   device=VirtualDisk.DEVICE_FLOPPY))
+                                   device=VirtualDisk.DEVICE_FLOPPY,
+                                   driverName="phy", driverCache="none"))
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
-                                   bus="virtio"))
+                                   bus="virtio", driverName="qemu",
+                                   driverType="qcow2", driverCache="none"))
 
         self._compare(g, "boot-many-disks2", False)
 

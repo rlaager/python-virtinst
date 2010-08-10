@@ -1217,17 +1217,19 @@ class VirtualDisk(VirtualDevice):
         if not dname and self.driver_cache:
             self.driver_name = "qemu"
 
-        if path and not self.driver_name is None:
-            dtypexml = ""
+        if path:
+            drvxml = ""
+            if not self.driver_name is None:
+                drvxml += " name='%s'" % self.driver_name
+
             if not self.driver_type is None:
-                dtypexml = " type='%s'" % self.driver_type
+                drvxml += " type='%s'" % self.driver_type
 
-            dcachexml = ""
             if not self.driver_cache is None:
-                dcachexml = " cache='%s'" % self.driver_cache
+                drvxml += " cache='%s'" % self.driver_cache
 
-            ret += "      <driver name='%s'%s%s/>\n" % (self.driver_name,
-                                                      dtypexml, dcachexml)
+            if drvxml:
+                ret += "      <driver%s/>\n" % drvxml
 
         if path is not None:
             ret += "      <source %s='%s'/>\n" % (typeattr, path)
