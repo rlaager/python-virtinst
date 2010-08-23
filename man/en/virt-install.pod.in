@@ -10,12 +10,14 @@ B<virt-install> [OPTION]...
 
 =head1 DESCRIPTION
 
-B<virt-install> is a command line tool for provisioning new virtual machines
-using the C<libvirt> hypervisor management library. The tool supports both
-text based & graphical installations, using serial console, SDL graphics
-or a VNC client/server pair. The guest can be configured to use one or more
-virtual disks, network interfaces, audio devices, and physical host devices
-(USB, PCI).
+B<virt-install> is a command line tool for creating new KVM or Xen virtual
+machines using the C<libvirt> hypervisor management library. See the EXAMPLES
+section at the end of this document to quickly get started.
+
+B<virt-install> tool supports both text based & graphical installations,
+using VNC or SDL graphics, or a text serial console. The guest can be
+configured to use one or more virtual disks, network interfaces,
+audio devices, physical USB or PCI devices, among others.
 
 The installation media can be held locally or remotely on NFS, HTTP, FTP
 servers. In the latter case C<virt-install> will fetch the minimal files
@@ -869,18 +871,19 @@ even if this parameter is omitted.
 
 =head1 EXAMPLES
 
-Install a KVM guest (assuming proper host support), creating a new
-storage file, virtual networking, booting from the host CDROM, using
-VNC server/viewer.
+Install a Fedora 13 KVM guest with virtio accelerated disk/network,
+creating a new 8GB storage file, installing from media in the hosts
+CDROM drive, auto launching a graphical VNC viewer
 
   # virt-install \
        --connect qemu:///system \
+       --virt-type kvm \
        --name demo \
        --ram 500 \
-       --disk path=/var/lib/libvirt/images/demo.img,size=5 \
-       --network network=default,model=virtio \
+       --disk path=/var/lib/libvirt/images/demo.img,size=8 \
        --vnc \
-       --cdrom /dev/cdrom
+       --cdrom /dev/cdrom \
+       --os-variant fedora13
 
 Install a Fedora 9 plain QEMU guest, using LVM partition, virtual networking,
 booting from PXE, using VNC server/viewer
