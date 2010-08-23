@@ -212,7 +212,9 @@ may be desirable to also use the C<--nodisks> flag in combination.
 =item  -x EXTRA, --extra-args=EXTRA
 
 Additional kernel command line arguments to pass to the installer when
-performing a guest install from C<--location>.
+performing a guest install from C<--location>. One common usage is specifying
+an anaconda kickstart file for automated installs, such as
+--extra-args "ks=http://myserver/my.ks"
 
 =item  --initrd-inject=PATH
 
