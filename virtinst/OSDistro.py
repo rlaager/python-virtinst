@@ -106,8 +106,10 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
         if store.isValidStore(fetcher, progresscb):
             return store
 
-    raise ValueError, _("Could not find an installable distribution at '%s'" %
-                        baseuri)
+    raise ValueError(
+        _("Could not find an installable distribution at '%s'\n"
+          "The location must be the root directory of an install tree." %
+          baseuri))
 
 def _locationCheckWrapper(guest, baseuri, progresscb,
                           scratchdir, _type, arch, callback):

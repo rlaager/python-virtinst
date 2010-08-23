@@ -44,9 +44,11 @@ class ImageFetcher:
         else:
             path = self.location
 
-        if not path.endswith("/"):
-            path += "/"
-        path += filename
+        if filename:
+            if not path.endswith("/"):
+                path += "/"
+            path += filename
+
         return path
 
     def saveTemp(self, fileobj, prefix):
