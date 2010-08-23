@@ -330,6 +330,12 @@ OS_TYPES = {
                             DISK : VIRTIO_DISK,
                             NET  : VIRTIO_NET,
                         }},
+        "ubuntulucid": { "label": "Ubuntu 10.4 (Lucid Lynx)",
+                         "distro": "ubuntu",
+                         "devices" : {
+                            DISK : VIRTIO_DISK,
+                            NET  : VIRTIO_NET,
+                        }},
         "generic24": { "label": "Generic 2.4.x kernel" },
         "generic26": { "label": "Generic 2.6.x kernel" },
         "virtio26": { "sortby": "genericvirtio26",
