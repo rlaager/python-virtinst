@@ -89,26 +89,6 @@ def distroClass(distname):
 urls = {
 
     # Fedora Distros
-    "fedora7" : {
-        'i386'  : FEDORA_BASEURL % ("7", "i386"),
-        'x86_64': FEDORA_BASEURL % ("7", "x86_64"),
-        'distro': ("linux", "fedora7")
-    },
-    "fedora8" : {
-        'i386'  : FEDORA_BASEURL % ("8", "i386"),
-        'x86_64': FEDORA_BASEURL % ("8", "x86_64"),
-        'distro': ("linux", "fedora8")
-    },
-    "fedora9" : {
-        'i386'  : FEDORA_BASEURL % ("9", "i386"),
-        'x86_64': FEDORA_BASEURL % ("9", "x86_64"),
-        'distro': ("linux", "fedora9")
-    },
-    "fedora10" : {
-        'i386'  : FEDORA_BASEURL % ("10", "i386"),
-        'x86_64': FEDORA_BASEURL % ("10", "x86_64"),
-        'distro': ("linux", "fedora10")
-    },
     "fedora11" : {
         'i386'  : FEDORA_BASEURL % ("11", "i386"),
         'x86_64': FEDORA_BASEURL % ("11", "x86_64"),
@@ -118,6 +98,11 @@ urls = {
         'i386'  : FEDORA_BASEURL % ("12", "i386"),
         'x86_64': FEDORA_BASEURL % ("12", "x86_64"),
         'distro': ("linux", "fedora12")
+    },
+    "fedora13" : {
+        'i386'  : FEDORA_BASEURL % ("13", "i386"),
+        'x86_64': FEDORA_BASEURL % ("13", "x86_64"),
+        'distro': ("linux", "fedora13")
     },
     "fedora-rawhide" : {
         #'i386'  : FEDORA_RAWHIDE_BASEURL % ("i386"),
