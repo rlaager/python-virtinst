@@ -463,7 +463,7 @@ class CloneDesign(object):
             node.setContent(mac)
 
         if len(self.clone_virtual_disks) < len(self.original_virtual_disks):
-            raise ValueError(_("More disks to clone that new paths specified. "
+            raise ValueError(_("More disks to clone than new paths specified. "
                                "(%(passed)d specified, %(need)d needed") %
                                {"passed" : len(self.clone_virtual_disks),
                                 "need"   : len(self.original_virtual_disks) })
