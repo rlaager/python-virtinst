@@ -337,7 +337,15 @@ class Installer(object):
            or guest.disks[0].device != VirtualDisk.DEVICE_DISK:
             return True
 
-        if _util.is_vdisk(guest.disks[0].path):
+        disk = guest.disks[0]
+
+        if _util.is_vdisk(disk.path):
+            return True
+
+        if (disk.driver_type and
+            disk.driver_type not in [disk.DRIVER_TYPE_AIO,
+                                     disk.DRIVER_TYPE_QEMU]):
+            # Might be a non-raw format
             return True
 
         # Check for the 0xaa55 signature at the end of the MBR
