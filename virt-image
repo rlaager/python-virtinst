@@ -232,23 +232,26 @@ def main():
         guest._prepare_install(meter)
         guest._create_devices(meter)
         print guest.get_config_xml()
-    else:
-        try:
-            print _("\n\nCreating guest %s...") % guest.name
+        return
 
-            dom = guest.start_install(None, progresscb)
-            if dom is None:
-                print _("Guest creation failed")
-                sys.exit(1)
+    try:
+        print _("\n\nCreating guest %s...") % guest.name
 
-        except RuntimeError, e:
-            fail(e)
-        except Exception, e:
-            print _("Domain creation may not have been\n"
-                   "successful.  If it was, you can restart your domain\n"
-                   "by running 'virsh start %s'; otherwise, please\n"
-                   "restart your installation.") %(guest.name,)
-            raise
+        dom = guest.start_install(None, progresscb)
+        if dom is None:
+            print _("Guest creation failed")
+            sys.exit(1)
+
+    except RuntimeError:
+        raise
+    except Exception, e:
+        fail(e, do_exit=False)
+        print
+        print _("Domain creation may not have been\n"
+                "successful.  If it was, you can restart your domain\n"
+                "by running 'virsh start %s'; otherwise, please\n"
+                "restart your installation.") %(guest.name,)
+        sys.exit(1)
 
 if __name__ == "__main__":
     try:
@@ -258,6 +261,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print >> sys.stderr, _("Installation aborted at user request")
     except Exception, main_e:
-        logging.exception(main_e)
-        sys.exit(1)
+        fail(main_e)
 

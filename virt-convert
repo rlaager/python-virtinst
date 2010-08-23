@@ -276,6 +276,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print >> sys.stderr, _("Aborted at user request")
     except Exception, main_e:
-        logging.exception(main_e)
-        sys.exit(1)
+        fail(main_e)
 

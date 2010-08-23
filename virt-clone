@@ -213,40 +213,33 @@ def main():
 
     design = clmgr.CloneDesign(connection=conn)
 
-    try:
-        design.clone_running = options.clone_running
-        get_original_guest(options.original_guest, options.original_xml,
-                           design)
-        get_clone_name(options.new_name, options.auto_clone, design)
+    design.clone_running = options.clone_running
+    get_original_guest(options.original_guest, options.original_xml,
+                       design)
+    get_clone_name(options.new_name, options.auto_clone, design)
 
-        get_clone_macaddr(options.new_mac, design)
-        get_clone_uuid(options.new_uuid, design)
-        get_clone_sparse(options.sparse, design)
-        get_force_target(options.target, design)
-        get_preserve(options.preserve, design)
+    get_clone_macaddr(options.new_mac, design)
+    get_clone_uuid(options.new_uuid, design)
+    get_clone_sparse(options.sparse, design)
+    get_force_target(options.target, design)
+    get_preserve(options.preserve, design)
 
-        # This determines the devices that need to be cloned, so that
-        # get_clone_diskfile knows how many new disk paths it needs
-        design.setup_original()
+    # This determines the devices that need to be cloned, so that
+    # get_clone_diskfile knows how many new disk paths it needs
+    design.setup_original()
 
-        get_clone_diskfile(options.new_diskfile, design, conn,
-                           not options.preserve, options.auto_clone)
+    get_clone_diskfile(options.new_diskfile, design, conn,
+                       not options.preserve, options.auto_clone)
 
-        # setup design object
-        design.setup()
+    # setup design object
+    design.setup()
 
-        # start cloning
-        meter = progress.TextMeter()
-        clmgr.start_duplicate(design, meter)
+    # start cloning
+    meter = progress.TextMeter()
+    clmgr.start_duplicate(design, meter)
 
-        print _("\nClone '%s' created successfully.") % design.clone_name
-        logging.debug("end clone")
-    except RuntimeError, e:
-        fail(e)
-    except SystemExit, e:
-        sys.exit(e.code)
-    except Exception, e:
-        fail(e)
+    print _("\nClone '%s' created successfully.") % design.clone_name
+    logging.debug("end clone")
 
 if __name__ == "__main__":
     try:
@@ -256,6 +249,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print >> sys.stderr, _("Installation aborted at user request")
     except Exception, main_e:
-        logging.exception(main_e)
-        sys.exit(1)
+        fail(main_e)
 

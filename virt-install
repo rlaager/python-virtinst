@@ -123,7 +123,6 @@ def parse_boot_option(guest, optstring):
         if menu == None:
             fail(_("--boot menu must be 'on' or 'off'"))
 
-    print menu
     set_param("enable_bootmenu", "menu", menu)
     set_param("kernel", "kernel")
     set_param("initrd", "initrd")
@@ -1010,7 +1009,7 @@ def main():
 
 
     # we've got everything -- try to start the install
-    print _("\n\nStarting install...")
+    print _("\nStarting install...")
 
     try:
         start_time = time.time()
@@ -1048,13 +1047,13 @@ def main():
     except SystemExit, e:
         sys.exit(e.code)
     except Exception, e:
-        logging.error(e)
-        print _("Domain installation does not appear to have been\n "
-                "successful.  If it was, you can restart your domain\n "
-                "by running 'virsh start %s'; otherwise, please\n "
+        fail(e, do_exit=False)
+        print
+        print _("Domain installation does not appear to have been\n"
+                "successful. If it was, you can restart your domain\n"
+                "by running 'virsh start %s'; otherwise, please\n"
                 "restart your installation.") % guest.name
-        raise
-
+        sys.exit(1)
 
 def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
                install_func):
@@ -1141,6 +1140,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print >> sys.stderr, _("Installation aborted at user request")
     except Exception, main_e:
-        logging.exception(main_e)
-        sys.exit(1)
+        fail(main_e)
 

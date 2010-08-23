@@ -190,11 +190,12 @@ def setupLogging(appname, debug=False):
     # Log the app command string
     logging.debug("Launched with command line:\n%s" % " ".join(sys.argv))
 
-def fail(msg):
+def fail(msg, do_exit=True):
     """Convenience function when failing in cli app"""
     logging.error(msg)
     _util.log_exception()
-    _fail_exit()
+    if do_exit:
+        _fail_exit()
 
 def _fail_exit():
     sys.exit(1)
