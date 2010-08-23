@@ -271,6 +271,8 @@ args_dict = {
         "--hvm --pxe --os-variant farrrrrrrge"
         # Boot menu w/ bogus value
         "--hvm --pxe --boot menu=foobar",
+        # cdrom fail w/ extra-args
+        "--hvm --cdrom %(EXISTIMG1)s --extra-args console=ttyS0",
       ],
      }, # category "install"
 

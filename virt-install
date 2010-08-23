@@ -954,7 +954,10 @@ def main():
     # Set host device info
     cli.get_hostdevs(options.hostdevs, guest)
 
+    if not options.location and options.extra:
+        fail(_("--extra-args only work if specified with --location."))
     guest.extraargs = options.extra
+
     cli.set_os_variant(guest, options.distro_type, options.distro_variant)
 
     # and now for the full-virt vs paravirt specific questions
