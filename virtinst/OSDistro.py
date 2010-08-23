@@ -535,8 +535,12 @@ class RHELDistro(RedHatDistro):
                 self.os_variant = "rhel5"
                 return True
             if fetcher.hasFile("RedHat"):
-                logging.debug("Detected a RHEL 4 distro")
-                self.os_variant = "rhel4"
+                if fetcher.hasFile("dosutils"):
+                    self.os_variant = "rhel3"
+                else:
+                    self.os_variant = "rhel4"
+
+                logging.debug("Detected a %s distro" % self.os_variant)
                 return True
             return False
 
