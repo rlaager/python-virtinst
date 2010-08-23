@@ -260,6 +260,12 @@ OS_TYPES = {
                         NET  : VIRTIO_NET,
                         INPUT: USB_TABLET,
                      }},
+        "fedora14": { "label": "Fedora 14", "distro": "fedora",
+                      "devices" : {
+                        DISK : VIRTIO_DISK,
+                        NET  : VIRTIO_NET,
+                        INPUT: USB_TABLET,
+                     }},
 
         "sles10": { "label": "Suse Linux Enterprise Server",
                     "distro": "suse" },
