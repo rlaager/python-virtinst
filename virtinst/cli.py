@@ -463,6 +463,7 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
         else:
             path = None
         arg_dict["path"] = path
+        path_exists = VirtualDisk.path_exists(conn, path)
 
         sizeerr = _("A size must be specified for non-existent disks.")
         if path and not size and prompt_size:
@@ -470,7 +471,7 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
                             "be (in gigabytes)?") % path
 
             try:
-                if not VirtualDisk.path_exists(conn, path):
+                if not path_exists:
                     size = prompt_loop(size_prompt, sizeerr, size, None, None,
                                        func=float)
             except Exception, e:
@@ -492,15 +493,15 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
         askmsg = _("Do you really want to use this disk (yes or no)")
 
         # Prompt if disk file already exists and preserve mode is not used
-        if warn_overwrite and os.path.exists(dev.path):
-            msg = (_("This will overwrite the existing path '%s'!\n" %
+        if warn_overwrite and path_exists:
+            msg = (_("This will overwrite the existing path '%s'" %
                    dev.path))
             if not prompt_for_yes_or_no(msg, askmsg):
                 continue
 
         # Check disk conflicts
         if dev.is_conflict_disk(conn) is True:
-            msg = (_("Disk %s is already in use by another guest!\n" %
+            msg = (_("Disk %s is already in use by another guest" %
                    dev.path))
             if not prompt_for_yes_or_no(msg, askmsg):
                 continue
