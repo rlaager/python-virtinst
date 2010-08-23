@@ -190,6 +190,9 @@ def parse_args():
                     help=_("Do not prompt for input. Answers yes where "
                            "applicable, terminates for all other prompts"),
                     default=False)
+    misc.add_option("", "--clone-running", action="store_true",
+                    dest="clone_running", default=False,
+                    help=_("Allow cloning a running domain"))
     parser.add_option_group(misc)
 
     (options, dummy) = parser.parse_args()
@@ -211,6 +214,7 @@ def main():
     design = clmgr.CloneDesign(connection=conn)
 
     try:
+        design.clone_running = options.clone_running
         get_original_guest(options.original_guest, options.original_xml,
                            design)
         get_clone_name(options.new_name, options.auto_clone, design)

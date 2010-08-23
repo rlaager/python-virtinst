@@ -576,11 +576,15 @@ args_dict = {
         "--original-xml %(CLONE_DISK_XML)s --auto-clone",
         # Auto flag w/ managed storage,
         "--original-xml %(CLONE_STORAGE_XML)s --auto-clone",
+        # Auto flag, actual VM, skip state check
+        "-o test-for-clone --auto-clone --clone-running",
       ],
 
       "invalid" : [
         # Just the auto flag
         "--auto-clone"
+        # Auto flag, actual VM, without state skip
+        "-o test-for-clone --auto-clone",
       ]
     }, # category "misc"
 

@@ -128,6 +128,7 @@ class CloneDesign(object):
         self._force_target       = []
         self._skip_target        = []
         self._preserve           = True
+        self._clone_running      = False
 
         # Default clone policy for back compat: don't clone readonly,
         # shareable, or empty disks
@@ -368,6 +369,15 @@ class CloneDesign(object):
                             doc="List of policy rules for determining which "
                                 "vm disks to clone. See CLONE_POLICY_*")
 
+    def get_clone_running(self):
+        return self._clone_running
+    def set_clone_running(self, val):
+        self._clone_running = bool(val)
+    clone_running = property(get_clone_running, set_clone_running,
+                             doc="Allow cloning a running VM. If enabled, "
+                                 "domain state is not checked before "
+                                 "cloning.")
+
     # Functional methods
 
     def setup_original(self):
@@ -390,7 +400,8 @@ class CloneDesign(object):
         logging.debug("Original sizes: %s" % (self.original_devices_size))
 
         # If domain has devices to clone, it must be 'off' or 'paused'
-        if self._original_dom and len(self.original_devices) != 0:
+        if (not self.clone_running and
+            (self._original_dom and len(self.original_devices) != 0)):
             status = self._original_dom.info()[0]
 
             if status not in [libvirt.VIR_DOMAIN_SHUTOFF,
