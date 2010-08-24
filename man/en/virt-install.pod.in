@@ -954,7 +954,7 @@ specifying a serial device hooked to a PTY on the host machine.
        --name mykernel
        --ram 512
        --disk /home/user/VMs/mydisk.img
-       --boot kernel=/tmp/mykernel,initrd=/tmp/myinitrd,kernel_args="console ttyS0"
+       --boot kernel=/tmp/mykernel,initrd=/tmp/myinitrd,kernel_args="console=ttyS0"
        --serial pty
 
 =head1 AUTHORS
