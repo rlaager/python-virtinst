@@ -77,6 +77,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-convert
 
 %changelog
+* Tue Aug 24 2010 Cole Robinson <crobinso@redhat.com> - 0.500.4-1
+- New virt-install --console option for specifying virtio console device
+- New virt-install --channel option for specifying guest communication channel
+- New virt-install --boot option. Allows setting post-install boot
+  order, direct kernel/initrd boot, and enabling boot device menu.
+- New virt-install --initrd-inject option, which enables installation
+  using a _local_ kickstart file (Colin Walters)
+
 * Wed Mar 24 2010 Cole Robinson <crobinso@redhat.com> - 0.500.3-1
 - virt-install: New --watchdog option: configure a virtual watchdog device
 - virt-install: New --soundhw option: More flexible sound configuration

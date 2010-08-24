@@ -1,8 +1,459 @@
+2010-08-24  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod.in:
+	virt-install: man: Fix small typo
+	[b098b6a43d46] [tip]
+
+2010-08-23  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Installer.py:
+	Guest: skip post install disk check if using non-raw format
+	[312e23391971]
+
+	* virtinst/OSDistro.py:
+	OSDistro: Properly detect RHEL3 distro
+	[a0ef2e5c44d2]
+
+	* virtinst/cli.py:
+	virt-install: If in --prompt mode, ask about overwriting existing
+	disk
+	[f10c74b09e80]
+
+	* virtinst/ImageFetcher.py, virtinst/OSDistro.py:
+	imagefetcher: Better error message for incorrect --location
+	[720c89205e84]
+
+	* tests/urltest.py:
+	urltest: Update with F13 location
+	[8bac485bb06b]
+
+	* virt-clone, virt-convert, virt-image, virt-install, virtinst/cli.py:
+	virt-*: Don't show backtraces for most errors
+
+	Additionally, improve some error message cosmetics.
+	[1ce01e8c1ea4]
+
+	* virtinst/cli.py:
+	virt-clone: Don't warn about overwrite of block device
+
+	Since nearly every manually specified block path is going to already
+	exist, don't bother warning about it.
+	[211af0e51777]
+
+	* virtinst/CloneManager.py:
+	CloneManager: Fix an error message typo
+	[c5e60508dd3e]
+
+	* virtinst/cli.py:
+	cli: Some small prompting cleanups
+	[c9d27d1d7289]
+
+	* tests/clitest.py, virt-clone, virtinst/CloneManager.py:
+	virt-clone: Add --clone-running option
+
+	Skips shutoff/paused check to allow cloning running VMs. Useful for
+	testing.
+	[c246a12ffcab]
+
+	* tests/clitest.py, virt-install:
+	virt-install: Error if --extra-args passed w/o --location
+	[867c2ee9aa9a]
+
+	* man/en/virt-install.pod.in:
+	virt-install: man: explicitly mention kickstart in --extra-args docs
+
+	That way users can search the man page for 'kickstart' and find what
+	they need.
+	[6dce2b4e9a55]
+
+	* virtinst/osdict.py:
+	osdict: Add Ubuntu Lucid
+	[a1f2f56a79cb]
+
+	* virtinst/osdict.py:
+	osdict: Add Fedora 14
+	[ba0f75f2b0a3]
+
+	* man/en/virt-install.pod.in:
+	virt-install: man: Improve intro and first CLI example
+
+	Optimize for people that just want to get started.
+	[c2b7916e248a]
+
+2010-08-10  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig-xml/boot-many-disks2.xml, tests/xmlconfig.py,
+	virtinst/VirtualDisk.py:
+	VirtualDisk: Allow specifying non-raw formats for block devices
+	[c0260fc63aaa]
+
+	* tests/xmlconfig-xml/boot-many-disks2.xml, tests/xmlconfig.py,
+	virtinst/VirtualDisk.py:
+	VirtualDisk: allow setting driver type/cache without name
+	[6ab26ed43b54]
+
+2010-08-07  warrink  <warrink@fedoraproject.org>
+
+	* po/nl.po:
+	l10n: First Dutch translation
+
+	Transmitted-via: Transifex (translate.fedoraproject.org)
+	[890684295ef1]
+
+2010-08-02  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod.in, tests/xmlconfig-xml/misc-qemu-driver-
+	overwrite.xml, tests/xmlconfig.py, virtinst/VirtualDisk.py:
+	virt-install: Set driver type from --disk format=
+
+	We can't rely on newer libvirt detecting storage format, so take the
+	info directly from the user. This fixes creating qcow2 images with
+	libvirt 0.8.3 and later.
+	[e3657405fa18]
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-install:
+	virt-install: Add --disk driver_name and driver_type options
+	[e7c5da1551b6]
+
+2010-07-28  Cole Robinson  <crobinso@redhat.com>
+
+	* AUTHORS:
+	Add Diego to AUTHORS
+	[ce66232fd96d]
+
+2010-07-26  Diego E. 'Flameeyes' Pettenò  <flameeyes@gmail.com>
+
+	* virtinst/osdict.py:
+	Change network device for FreeBSD 8.x to e1000
+
+	Using the FreeBSD 7.x model (ne2k_pci) causes errors related to
+	corruption of NIC memory with both 8.0 and 8.1, while e1000 works
+	just fine.
+	[fd4edf627a34]
+
+	* virtinst/osdict.py:
+	Fix spelling of BSD variants official names.
+	[fb2847235faa]
+
+2010-07-27  Cole Robinson  <crobinso@redhat.com>
+
+	* man/en/virt-install.pod.in, tests/clitest.py, virt-install,
+	virtinst/Boot.py, virtinst/ImportInstaller.py, virtinst/cli.py:
+	virt-install: Add a --boot option for configuring post install boot
+	opts
+
+	Allows permanently booting off a kernel/initrd, specifying a boot
+	device order, and enabling the BIOS boot menu prompt.
+	[09dbd2070d47]
+
+	* tests/pylint-virtinst.sh, tests/xmlconfig-xml/boot-fullyvirt-pxe-
+	always.xml, tests/xmlconfig-xml/install-fullyvirt-import-kernel.xml,
+	tests/xmlconfig-xml/install-fullyvirt-import-multiboot.xml, tests
+	/xmlconfig-xml/install-paravirt-disk-block.xml, tests/xmlconfig-xml
+	/install-paravirt-disk-drv-file.xml, tests/xmlconfig-xml/install-
+	paravirt-disk-drv-phy.xml, tests/xmlconfig-xml/install-paravirt-
+	disk-drv-tap-qcow.xml, tests/xmlconfig-xml/install-paravirt-disk-
+	drv-tap.xml, tests/xmlconfig-xml/install-paravirt-disk-file.xml,
+	tests/xmlconfig-xml/install-paravirt-many-disks.xml,
+	tests/xmlconfig.py, virtinst/Boot.py, virtinst/DistroInstaller.py,
+	virtinst/ImageInstaller.py, virtinst/ImportInstaller.py,
+	virtinst/Installer.py, virtinst/LiveCDInstaller.py,
+	virtinst/PXEInstaller.py:
+	Refactor boot XML generation
+
+	Implement XML building support for changing post-install boot device
+	order or use kernel/initrd boot, and boot menu setting.
+	[679e281488c6]
+
+	* tests/image-xml/image-kernel.xml, tests/image-xml/image2guest/image-
+	xenfv32.xml, tests/image-xml/image2guest/image-xenpv32-kernel.xml,
+	tests/image-xml/image2guest/image-xenpv32.xml, tests/image.py,
+	virtinst/ImageInstaller.py:
+	tests: Test virt-image PV kernel/initrd
+	[4bd898066cc8]
+
+	* man/en/virt-install.pod.in:
+	docs: virtio console only supported for libvirt 0.8.3+
+	[c9fa823c0c56]
+
+	* man/en/virt-install.pod.in, tests/clitest.py, tests/xmlconfig-xml
+	/boot-many-chars.xml, tests/xmlconfig.py, virt-install,
+	virtinst/VirtualCharDevice.py:
+	virt-install: Support --console option
+
+	Allows specifying a virtio console with --console
+	pty,target_type=virtio
+	[6abdb35a7153]
+
+	* man/en/virt-install.pod.in, tests/clitest.py, tests/xmlconfig-xml
+	/boot-many-chars.xml, tests/xmlconfig.py, virt-install,
+	virtinst/VirtualCharDevice.py, virtinst/VirtualController.py,
+	virtinst/VirtualDevice.py:
+	virt-install: Support --channel option
+
+	Used for specifying qemu <channel> devices
+	[0eeea978e836]
+
+	* tests/pylint-virtinst.sh:
+	Drop unneeded pylint hack
+	[d58ddfdb4573]
+
+2010-07-25  htaira  <htaira@fedoraproject.org>
+
+	* po/ja.po:
+	l10n: Updates to Japanese (ja) translation
+
+	Transmitted-via: Transifex (translate.fedoraproject.org)
+	[e3dee5d50f18]
+
+2010-07-21  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig.py, virtinst/Guest.py:
+	Guest: Fix setting default values if OS type changes more than once
+
+	Not really relevant to the virt-* tools, but a handy internal
+	cleanup that hopefully will help avoid future bugs. Internally we
+	only call set_defaults in a non-persistent manner, so defaults
+	always take into account user specified values.
+	[3d1e27df7fa0]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py:
+	Guest: Unify emulator XML building in Guest class
+	[d80868e931fa]
+
+	* virtinst/Guest.py:
+	Guest: Simplify device handling during install
+
+	Rather than have different functions for listing install devices,
+	just combine them under the same general calls.
+	[74cb305b7d2a]
+
+	* virtinst/FullVirtGuest.py, virtinst/Guest.py,
+	virtinst/ParaVirtGuest.py, virtinst/VirtualInputDevice.py:
+	Guest: Uncomplicate default device setup
+
+	Just add default devices up front, and have the OS related device
+	settings filled in by set_defaults.
+	[e60de54dd3bb]
+
+	* tests/xmlconfig.py:
+	tests: Actually run recently added test
+	[8d18a4481f56]
+
+2010-07-20  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/xmlconfig-xml/boot-default-device-removal.xml,
+	tests/xmlconfig.py:
+	tests: xmlconfig: Test default device removal
+	[9df7952b446e]
+
+	* virtinst/ImageInstaller.py, virtinst/Installer.py, virtinst/cli.py:
+	Fix some pylint
+	[5cd06b64f8bd]
+
+	* tests/cli-test-xml/fakerhel6tree/.treeinfo, tests/cli-test-
+	xml/fakerhel6tree/images/boot.iso, tests/cli-test-
+	xml/fakerhel6tree/images/pxeboot/initrd.img, tests/cli-test-
+	xml/fakerhel6tree/images/pxeboot/vmlinuz, tests/cli-test-
+	xml/fakerhel6tree/images/xen/initrd.img, tests/cli-test-
+	xml/fakerhel6tree/images/xen/vmlinuz, tests/clitest.py,
+	tests/testdriver.xml, tests/xmlconfig-xml/rhel6-kvm-stage1.xml,
+	tests/xmlconfig-xml/rhel6-kvm-stage2.xml, tests/xmlconfig-xml/winxp-
+	kvm-stage1.xml, tests/xmlconfig-xml/winxp-kvm-stage2.xml, tests
+	/xmlconfig-xml/winxp-kvm-stage3.xml, tests/xmlconfig.py:
+	tests: xmlconfig: Add Full install/continue install testing
+
+	These tests should much more closely mimic what virt-install
+	actually does.
+	[64e85bf5df52]
+
+	* tests/xmlconfig.py:
+	tests: xmlconfig: Unify all Installer() building
+
+	This will allow us to change installer parameters globally. Use it
+	to use a local directory as a scratchdir
+	[865ad31931d2]
+
+	* tests/xmlconfig.py:
+	tests: xmlconfig: Make wrapper helper more flexible
+
+	Will be used shortly for full install testing
+	[8d7aa9ac8738]
+
+	* virtinst/DistroInstaller.py, virtinst/Guest.py,
+	virtinst/ImageInstaller.py, virtinst/Installer.py,
+	virtinst/LiveCDInstaller.py:
+	Fix device defaults if auto determining OS variant.
+
+	Fix the interface between Installer + Guests, for adding devices
+	recognized during the Installer.prepare() phase. This lets us
+	properly call set_defaults after prepare(), which fixes the
+	brokenness.
+	[8c9c16ffe976]
+
+2010-07-19  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/OSDistro.py:
+	OSDistro: Fix auto URL detection
+	[ea573f0f204d]
+
+2010-07-14  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clitest.py, virtinst/ImportInstaller.py:
+	virt-install: Fix --import install floppy booting
+	[4d0ea2274ffd]
+
+2010-06-23  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	virt-install: Fix CDROM attach for windows installs
+
+	We were unintentionally dropping the CDROM device for the 2nd stage
+	of the install.
+	[e5ab15cd4c24]
+
+2010-06-21  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/capabilities-xml/capabilities-test.xml, tests/xmlconfig-xml
+	/boot-cpuset.xml, tests/xmlconfig.py, virtinst/Guest.py,
+	virtinst/cli.py:
+	virt-install: Move cpuset=auto logic to Guest class, and test
+	[1ade3d1eaa72]
+
+	* tests/capabilities.py:
+	tests: capabilities: Add some basic topology parsing tests
+	[f714f3b44598]
+
+2010-06-14  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Storage.py:
+	Storage: Fix an error message
+	[6f7a80a0bd78]
+
+	* virtinst/support.py:
+	support: Fix check for findStoragePoolSources
+	[7870801299a5]
+
+2010-06-09  Cole Robinson  <crobinso@redhat.com>
+
+	* MANIFEST.in:
+	dist: include manpage makefile. Fixes RPM build
+	[6e5b269b5611]
+
+2010-05-20  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Storage.py:
+	Storage: Sanitize pool paths before defining
+	[0bd2a78c905b]
+
+2010-05-13  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/clitest.py, virt-install:
+	virt-install: Handle commas in security labels
+	[0911564fd0b6]
+
+2010-05-12  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/urltest.py, virtinst/DistroInstaller.py, virtinst/OSDistro.py:
+	OSDistro: Unify media acquire* functions
+	[1075df76aa63]
+
+	* virtinst/DistroInstaller.py, virtinst/ImageInstaller.py,
+	virtinst/ImportInstaller.py, virtinst/Installer.py,
+	virtinst/LiveCDInstaller.py, virtinst/OSDistro.py,
+	virtinst/PXEInstaller.py:
+	Remove unneeded 'distro' parameter from various methods
+	[e6192b75889d]
+
+2010-05-06  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/Guest.py:
+	Guest: Don't permenantly attach transient non-media disks
+	[4ea274a5b3d9]
+
+	* virtinst/DistroInstaller.py:
+	Fix virt-install --location dvd.iso
+	[666e8b658272]
+
+2010-05-12  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/support.py:
+	support: Add check for managed save
+	[dea9100e5bf2]
+
+2010-05-04  Cole Robinson  <crobinso@redhat.com>
+
+	* virtinst/VirtualDisk.py:
+	VirtualDisk: Refresh parent pool if we don't find requested volume
+	[1d3ad914004f]
+
+2010-04-26  Colin Walters  <walters@verbum.org>
+
+	* man/en/virt-install.1, man/en/virt-install.pod.in, virt-install,
+	virtinst/DistroInstaller.py, virtinst/Installer.py:
+	Add --initrd-inject option
+
+	For automating Fedora installations using Kickstart, a neat trick is
+	to put the kickstart file into the initrd. Then there's no need to
+	have a separate webserver or NFS mount just so anaconda can retrieve
+	the file.
+
+	Example usage:
+
+	virt-install --initrd-injections=/path/to/my.ks -x "ks=file:/my.ks"
+	...
+
+	This functionality really needs to be in virt-install because it's
+	the code which is downloading and then consuming the initrd. An open
+	question is whether it makes sense to have higher level options
+	like:
+
+	--kickstart=/path/to/my.ks
+
+	which would imply both of the above options. This would be
+	Anaconda-specific however.
+	[74bc3757b247]
+
+2010-04-26  Cole Robinson  <crobinso@redhat.com>
+
+	* tests/pylint-virtinst.sh:
+	Drop unneeded pylint check.
+	[a75a22e5781f]
+
+2010-03-25  logan  <logan@fedoraproject.org>
+
+	* po/es.po:
+	l10n: Updates to Spanish (Castilian) (es) translation
+
+	Transmitted-via: Transifex (translate.fedoraproject.org)
+	[5d9b8fab457f]
+
+2010-03-24  raven  <raven@fedoraproject.org>
+
+	* po/pl.po:
+	l10n: Updates to Polish (pl) translation
+
+	Transmitted-via: Transifex (translate.fedoraproject.org)
+	[799642dfcba9]
+
+2010-03-24  Cole Robinson  <crobinso@redhat.com>
+
+	* .hgtags:
+	Added tag virtinst-0_500_3 for changeset 00d5a617e214
+	[22e9a50a0bdd]
+
+	* ChangeLog, NEWS, man/en/virt-install.1, po/es.po, po/fr.po,
+	po/it.po, po/ja.po, po/pl.po, po/pt_BR.po, po/ru.po, po/sr.po,
+	po/sr@latin.po, po/uk.po, po/virtinst.pot, po/zh_CN.po, python-
+	virtinst.spec.in, virtinst/version.py:
+	Prep for release
+	[00d5a617e214] [virtinst-0_500_3]
+
 2010-03-23  Cole Robinson  <crobinso@redhat.com>
 
 	* virtinst/VirtualWatchdog.py:
 	VirtualWatchdog: Better handle unexpected action type
-	[dde964594888] [tip]
+	[dde964594888]
 
 	* man/en/virt-install.pod.in, tests/clitest.py, virt-install,
 	virtinst/Seclabel.py:

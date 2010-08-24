@@ -1,6 +1,16 @@
    Virtinst News
    =================
 
+Release 0.500.4 (August 24, 2010)
+---------------------------------
+- New virt-install --console option for specifying virtio console device
+- New virt-install --channel option for specifying guest communication
+  channel
+- New virt-install --boot option. Allows setting post-install boot
+  order, direct kernel/initrd boot, and enabling boot device menu.
+- New virt-install --initrd-inject option, which enables installation
+  using a _local_ kickstart file (Colin Walters)
+
 Release 0.500.3 (March 24, 2010)
 --------------------------------
 - virt-install: New --watchdog option: configure a virtual watchdog device

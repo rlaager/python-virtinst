@@ -132,7 +132,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2010-04-26" "" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2010-08-24" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -144,12 +144,14 @@ virt\-install \- provision new virtual machines
 \&\fBvirt-install\fR [\s-1OPTION\s0]...
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBvirt-install\fR is a command line tool for provisioning new virtual machines
-using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library. The tool supports both
-text based & graphical installations, using serial console, \s-1SDL\s0 graphics
-or a \s-1VNC\s0 client/server pair. The guest can be configured to use one or more
-virtual disks, network interfaces, audio devices, and physical host devices
-(\s-1USB\s0, \s-1PCI\s0).
+\&\fBvirt-install\fR is a command line tool for creating new \s-1KVM\s0 or Xen virtual
+machines using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library. See the \s-1EXAMPLES\s0
+section at the end of this document to quickly get started.
+.PP
+\&\fBvirt-install\fR tool supports both text based & graphical installations,
+using \s-1VNC\s0 or \s-1SDL\s0 graphics, or a text serial console. The guest can be
+configured to use one or more virtual disks, network interfaces,
+audio devices, physical \s-1USB\s0 or \s-1PCI\s0 devices, among others.
 .PP
 The installation media can be held locally or remotely on \s-1NFS\s0, \s-1HTTP\s0, \s-1FTP\s0
 servers. In the latter case \f(CW\*(C`virt\-install\*(C'\fR will fetch the minimal files
@@ -301,7 +303,9 @@ may be desirable to also use the \f(CW\*(C`\-\-nodisks\*(C'\fR flag in combinati
 .IP "\-x \s-1EXTRA\s0, \-\-extra\-args=EXTRA" 2
 .IX Item "-x EXTRA, --extra-args=EXTRA"
 Additional kernel command line arguments to pass to the installer when
-performing a guest install from \f(CW\*(C`\-\-location\*(C'\fR.
+performing a guest install from \f(CW\*(C`\-\-location\*(C'\fR. One common usage is specifying
+an anaconda kickstart file for automated installs, such as
+\&\-\-extra\-args \*(L"ks=http://myserver/my.ks\*(R"
 .IP "\-\-initrd\-inject=PATH" 2
 .IX Item "--initrd-inject=PATH"
 Add \s-1PATH\s0 to the root of the initrd fetched with \f(CW\*(C`\-\-location\*(C'\fR. This can be
@@ -374,6 +378,9 @@ Fedora 12
 .IP "fedora13" 4
 .IX Item "fedora13"
 Fedora 13
+.IP "fedora14" 4
+.IX Item "fedora14"
+Fedora 14
 .IP "generic24" 4
 .IX Item "generic24"
 Generic 2.4.x kernel
@@ -431,6 +438,9 @@ Ubuntu 9.04 (Jaunty Jackalope)
 .IP "ubuntukarmic" 4
 .IX Item "ubuntukarmic"
 Ubuntu 9.10 (Karmic Koala)
+.IP "ubuntulucid" 4
+.IX Item "ubuntulucid"
+Ubuntu 10.4 (Lucid Lynx)
 .RE
 .RS 4
 .RE
@@ -481,13 +491,16 @@ Sun Solaris 9
 .IP "freebsd6" 4
 .IX Item "freebsd6"
 .PD
-Free \s-1BSD\s0 6.x
+FreeBSD 6.x
 .IP "freebsd7" 4
 .IX Item "freebsd7"
-Free \s-1BSD\s0 7.x
+FreeBSD 7.x
+.IP "freebsd8" 4
+.IX Item "freebsd8"
+FreeBSD 8.x
 .IP "openbsd4" 4
 .IX Item "openbsd4"
-Open \s-1BSD\s0 4.x
+OpenBSD 4.x
 .RE
 .RS 4
 .RE
@@ -523,6 +536,32 @@ Microsoft Windows \s-1XP\s0 (x86_64)
 .IP "none" 4
 .IX Item "none"
 No \s-1OS\s0 version specified (disables autodetect)
+.RE
+.RS 2
+.RE
+.IP "\-\-boot=BOOTOPTS" 2
+.IX Item "--boot=BOOTOPTS"
+Optionally specify the post-install \s-1VM\s0 boot configuration. This option allows
+specifying a boot device order, permanently booting off kernel/initrd with
+option kernel arguments, and enabling a \s-1BIOS\s0 boot menu (requires libvirt
+0.8.3 or later)
+.Sp
+\&\-\-boot can be specified in addition to other install options
+(such as \-\-location, \-\-cdrom, etc.) or can be specified on it's own. In
+the latter case, behavior is similar to the \-\-import install option: there
+is no 'install' phase, the guest is just created and launched as specified.
+.Sp
+Some examples:
+.RS 2
+.IP "\fB\-\-boot cdrom,fd,hd,network,menu=on\fR" 2
+.IX Item "--boot cdrom,fd,hd,network,menu=on"
+Set the boot device priority as first cdrom, first floppy, first harddisk,
+network \s-1PXE\s0 boot. Additionally enable \s-1BIOS\s0 boot menu prompt.
+.ie n .IP "\fB\-\-boot kernel=KERNEL,initrd=INITRD,kernel_args=""console=/dev/ttyS0""\fR" 2
+.el .IP "\fB\-\-boot kernel=KERNEL,initrd=INITRD,kernel_args=``console=/dev/ttyS0''\fR" 2
+.IX Item "--boot kernel=KERNEL,initrd=INITRD,kernel_args=console=/dev/ttyS0"
+Have guest permanently boot off a local kernel/initrd pair, with the
+specified kernel options.
 .RE
 .RS 2
 .RE
@@ -604,7 +643,22 @@ read and write caching.
 .IX Item "format"
 Image format to be used if creating managed storage. For file volumes, this
 can be 'raw', 'qcow2', 'vmdk', etc. See format types in
-<http://libvirt.org/storage.html> for possible values.
+<http://libvirt.org/storage.html> for possible values. This is often
+mapped to the \fBdriver_type\fR value as well.
+.Sp
+With libvirt 0.8.3 and later, this option should be specified if reusing
+and existing disk image, since libvirt does not autodetect storage format
+as it is a potential security issue. For example, if reusing and existing
+qcow2 image, you will want to specify format=qcow2, otherwise the hypervisor
+may not be able to read your disk image.
+.IP "\fBdriver_name\fR" 4
+.IX Item "driver_name"
+Driver name the hypervisor should use when accessing the specified
+storage. Typically does not need to be set by the user.
+.IP "\fBdriver_type\fR" 4
+.IX Item "driver_type"
+Driver format/type the hypervisor should use when accessing the specified
+storage. Typically does not need to be set by the user.
 .RE
 .RS 2
 .Sp
@@ -901,6 +955,48 @@ Unix socket (see \fIunix\fR\|(7). \s-1MODE\s0 has similar behavior and defaults 
 .RE
 .RS 2
 .RE
+.IP "\-\-channel" 2
+.IX Item "--channel"
+Specifies a communication channel device to connect the guest and host
+machine. This option uses the same options as \-\-serial and \-\-parallel
+for specifying the host/source end of the channel. Extra 'target' options
+are used to specify how the guest machine sees the channel.
+.Sp
+Some of the types of character device redirection are:
+.RS 2
+.IP "\fB\-\-channel \s-1SOURCE\s0,target_type=guestfwd,target_address=HOST:PORT\fR" 4
+.IX Item "--channel SOURCE,target_type=guestfwd,target_address=HOST:PORT"
+Communication channel using \s-1QEMU\s0 usermode networking stack. The guest can
+connect to the channel using the specified \s-1HOST:PORT\s0 combination.
+.IP "\fB\-\-channel \s-1SOURCE\s0,target_type=virtio[,name=NAME]\fR" 4
+.IX Item "--channel SOURCE,target_type=virtio[,name=NAME]"
+Communication channel using virtio serial (requires 2.6.34 or later host and
+guest). Each instance of a virtio \-\-channel line is exposed in the
+guest as /dev/vport0p1, /dev/vport0p2, etc. \s-1NAME\s0 is optional metadata, and
+can be any string, such as org.linux\-kvm.virtioport1.
+If specified, this will be exposed in the guest at
+/sys/class/virtio\-ports/vport0p1/NAME
+.RE
+.RS 2
+.RE
+.IP "\-\-console" 2
+.IX Item "--console"
+Connect a text console between the guest and host. Certain guest and
+hypervisor combinations can automatically set up a getty in the guest, so
+an out of the box text login can be provided (target_type=xen for xen
+paravirt guests, and possibly target_type=virtio in the future).
+.Sp
+Example:
+.RS 2
+.IP "\fB\-\-console pty,target_type=virtio\fR" 4
+.IX Item "--console pty,target_type=virtio"
+Connect a virtio console to the guest, redirected to a \s-1PTY\s0 on the host.
+For supported guests, this exposes /dev/hvc0 in the guest. See
+http://fedoraproject.org/wiki/Features/VirtioSerial for more info. virtio
+console requires libvirt 0.8.3 or later.
+.RE
+.RS 2
+.RE
 .IP "\-\-video=VIDEO" 2
 .IX Item "--video=VIDEO"
 Specify what video device model will be attached to the guest. Valid values
@@ -944,19 +1040,20 @@ The debugging information is also stored in \f(CW\*(C`$HOME/.virtinst/virt\-inst
 even if this parameter is omitted.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
-Install a \s-1KVM\s0 guest (assuming proper host support), creating a new
-storage file, virtual networking, booting from the host \s-1CDROM\s0, using
-\&\s-1VNC\s0 server/viewer.
+Install a Fedora 13 \s-1KVM\s0 guest with virtio accelerated disk/network,
+creating a new 8GB storage file, installing from media in the hosts
+\&\s-1CDROM\s0 drive, auto launching a graphical \s-1VNC\s0 viewer
 .PP
-.Vb 8
+.Vb 9
 \&  # virt\-install \e
 \&       \-\-connect qemu:///system \e
+\&       \-\-virt\-type kvm \e
 \&       \-\-name demo \e
 \&       \-\-ram 500 \e
-\&       \-\-disk path=/var/lib/libvirt/images/demo.img,size=5 \e
-\&       \-\-network network=default,model=virtio \e
+\&       \-\-disk path=/var/lib/libvirt/images/demo.img,size=8 \e
 \&       \-\-vnc \e
-\&       \-\-cdrom /dev/cdrom
+\&       \-\-cdrom /dev/cdrom \e
+\&       \-\-os\-variant fedora13
 .Ve
 .PP
 Install a Fedora 9 plain \s-1QEMU\s0 guest, using \s-1LVM\s0 partition, virtual networking,
@@ -1027,6 +1124,18 @@ the rest of the options.
 \&       \-\-ram 512
 \&       \-\-disk /home/user/VMs/mydisk.img
 \&       \-\-import
+.Ve
+.PP
+Test a custom kernel/initrd using an existing disk image, manually
+specifying a serial device hooked to a \s-1PTY\s0 on the host machine.
+.PP
+.Vb 6
+\&  # virt\-install \e
+\&       \-\-name mykernel
+\&       \-\-ram 512
+\&       \-\-disk /home/user/VMs/mydisk.img
+\&       \-\-boot kernel=/tmp/mykernel,initrd=/tmp/myinitrd,kernel_args="console=ttyS0"
+\&       \-\-serial pty
 .Ve
 .SH "AUTHORS"
 .IX Header "AUTHORS"
