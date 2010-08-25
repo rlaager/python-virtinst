@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-08-24 17:09-0400\n"
-"PO-Revision-Date: 2010-03-24 18:21+0100\n"
+"PO-Revision-Date: 2010-08-25 19:55+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <trans-pl@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
@@ -133,14 +133,14 @@ msgid "Do you really want to use this disk (yes or no)"
 msgstr "Na pewno użyć tego dysku (\"yes\" lub \"no\")"
 
 #: virtinst/cli.py:499
-#, fuzzy, python-format
+#, python-format
 msgid "This will overwrite the existing path '%s'"
-msgstr "To zastąpi istniejącą ścieżkę \"%s\".\n"
+msgstr "To zastąpi istniejącą ścieżkę \"%s\""
 
 #: virtinst/cli.py:506
-#, fuzzy, python-format
+#, python-format
 msgid "Disk %s is already in use by another guest"
-msgstr "Dysk %s jest już używany przez innego gościa.\n"
+msgstr "Dysk %s jest już używany przez innego gościa"
 
 #: virtinst/cli.py:533
 msgid "What is the name of your virtual machine?"
@@ -250,7 +250,7 @@ msgstr ""
 "Domena z urządzeniami do sklonowania musi być wstrzymana lub wyłączona."
 
 #: virtinst/CloneManager.py:466
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "More disks to clone than new paths specified. (%(passed)d specified, %(need)"
 "d needed"
@@ -326,15 +326,15 @@ msgstr ""
 
 #: virtinst/Guest.py:127
 msgid "No topology section in capabilities xml."
-msgstr ""
+msgstr "Brak sekcji topologii w pliku XML możliwości."
 
 #: virtinst/Guest.py:131
 msgid "Capabilities only show <= 1 cell. Not NUMA capable"
-msgstr ""
+msgstr "Możliwości wyświetlają tylko <= 1 komórkę. Brak możliwości NUMA"
 
 #: virtinst/Guest.py:158
 msgid "Could not find any usable NUMA cell/cpu combinations."
-msgstr ""
+msgstr "Nie można odnaleźć żadnych używalnych połączeń komórki/procesora NUMA."
 
 #: virtinst/Guest.py:181
 msgid "Unable to connect to hypervisor, aborting installation!"
@@ -740,11 +740,13 @@ msgid "Invalid dictionary entry for device '%s %s'"
 msgstr "Nieprawidłowy wpis w słowniku dla urządzenia \"%s %s\""
 
 #: virtinst/OSDistro.py:110
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Could not find an installable distribution at '%s'\n"
 "The location must be the root directory of an install tree."
-msgstr "Nie można odnaleźć dystrybucji do zainstalowania w \"%s\""
+msgstr ""
+"Nie można odnaleźć dystrybucji do zainstalowania w \"%s\"\n"
+"Położenie musi być katalogiem root drzewa instalacji."
 
 #: virtinst/OSDistro.py:123
 msgid "Invalid install location: "
@@ -946,7 +948,6 @@ msgid "Name of the Volume Group"
 msgstr "Nazwa grupy woluminów"
 
 #: virtinst/Storage.py:730
-#, fuzzy
 msgid "Must explicitly specify source path if building pool"
 msgstr "Należy jawnie podać ścieżkę źródłową, jeśli pula jest budowana"
 
@@ -1220,26 +1221,25 @@ msgid "Unknown protocol '%s'."
 msgstr "Nieznany protokół \"%s\"."
 
 #: virtinst/VirtualCharDevice.py:236
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown target type '%s'. Must be in: "
-msgstr "Nieznany typ pamięci masowej \"%s\""
+msgstr "Nieznany typ docelowy \"%s\". Musi być w: "
 
 #: virtinst/VirtualCharDevice.py:240
 msgid "Channel type as exposed in the guest."
-msgstr ""
+msgstr "Typ kanału do przekazania do gościa."
 
 #: virtinst/VirtualCharDevice.py:247
 msgid "Guest forward channel address in the guest."
-msgstr ""
+msgstr "Adres kanału przekazywania gościa w gościu."
 
 #: virtinst/VirtualCharDevice.py:254
 msgid "Guest forward channel port in the guest."
-msgstr ""
+msgstr "Port kanału przekazywania gościa w gościu."
 
 #: virtinst/VirtualCharDevice.py:261
-#, fuzzy
 msgid "Sysfs Name of virtio port in the guest"
-msgstr "Nazwa nowego gościa"
+msgstr "Nazwa sysfs portu virtio w gościu"
 
 #: virtinst/VirtualCharDevice.py:279
 #, python-format
@@ -1869,7 +1869,7 @@ msgstr ""
 
 #: virt-clone:195
 msgid "Allow cloning a running domain"
-msgstr ""
+msgstr "Zezwolenie na klonowanie uruchomionej domeny"
 
 #: virt-clone:212
 msgid "Must be privileged to clone Xen guests"
@@ -2164,10 +2164,10 @@ msgstr "Nie można utworzyć domyślnej puli pamięci masowej \"%s\": %s"
 
 #: virt-install:124
 msgid "--boot menu must be 'on' or 'off'"
-msgstr ""
+msgstr "Menu --boot musi wynosić \"on\" lub \"off\""
 
 #: virt-install:145 virt-install:195 virt-install:229 virt-install:282
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown options %s"
 msgstr "Nieznane opcje %s"
 
@@ -2341,14 +2341,15 @@ msgid "Treat the CD-ROM media as a Live CD"
 msgstr "Traktuje nośnik CD-ROM jako Live CD"
 
 #: virt-install:689
-#, fuzzy
 msgid ""
 "Additional arguments to pass to the install kernel booted from --location"
-msgstr "Dodatkowe parametry do przekazania do jądra uruchomionego z --location"
+msgstr ""
+"Dodatkowe parametry do przekazania do jądra instalacji uruchomionego z "
+"--location"
 
 #: virt-install:694
 msgid "Add given file to root of initrd from --location"
-msgstr ""
+msgstr "Dodaje podany plik do roota obrazu initrd z --location"
 
 #: virt-install:701
 msgid ""
@@ -2363,6 +2364,8 @@ msgid ""
 "Optionally configure post-install boot order, menu, permanent kernel boot, "
 "etc."
 msgstr ""
+"Opcjonalnie po instalacji konfiguruje kolejność uruchamiania, menu, trwałe "
+"uruchamianie jądra itp."
 
 #: virt-install:711
 msgid ""
@@ -2414,11 +2417,11 @@ msgstr "Dodaje urządzenie równoległe do domeny."
 
 #: virt-install:765
 msgid "Add a guest communication channel."
-msgstr ""
+msgstr "Dodaje kanał komunikacji gościa."
 
 #: virt-install:768
 msgid "Add a text console connection between the guest and host."
-msgstr ""
+msgstr "Dodaje połączenie konsoli tekstowej między gościem a gospodarzem."
 
 #: virt-install:772
 msgid "Physical host device to attach to the domain."
@@ -2479,21 +2482,18 @@ msgid "Can't use --pxe with --nonetworks"
 msgstr "Nie można użyć --pxe razem z --nonetworks"
 
 #: virt-install:902
-#, fuzzy
 msgid "A disk device must be specified with --import."
-msgstr "Urządzenie dysku musi zostać podane."
+msgstr "Urządzenie dysku musi zostać podane za pomocą --import."
 
 #: virt-install:957
 msgid "--extra-args only work if specified with --location."
-msgstr ""
+msgstr "--extra-args działa tylko, jeśli zostało podane za pomocą --location."
 
 #: virt-install:1012
-#, fuzzy
 msgid ""
 "\n"
 "Starting install..."
 msgstr ""
-"\n"
 "\n"
 "Uruchamianie instalacji..."
 
@@ -2528,7 +2528,7 @@ msgid "Guest install interrupted."
 msgstr "Przerwano instalację gościa."
 
 #: virt-install:1052
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Domain installation does not appear to have been\n"
 "successful. If it was, you can restart your domain\n"
@@ -2536,9 +2536,9 @@ msgid ""
 "restart your installation."
 msgstr ""
 "Instalacja domeny chyba nie powiodła się. Jeśli jednak\n"
-" powiodła się, można ponownie uruchomić domenę\n"
-" wykonując \"virsh start %s\"; w innym przypadku\n"
-" proszę ponownie uruchomić instalację."
+"powiodła się, można ponownie uruchomić domenę\n"
+"wykonując polecenie \"virsh start %s\"; w innym\n"
+"przypadku proszę ponownie uruchomić instalację."
 
 #: virt-install:1069
 msgid "Domain has crashed."
