@@ -32,6 +32,122 @@ def _sanitize_libxml_xml(xml):
         ignore, xml = xml.split("\n", 1)
     return xml
 
+def _get_xpath_node(ctx, xpath):
+    node = ctx.xpathEval(xpath)
+    node = (node and node[0] or None)
+    return node
+
+def _build_xpath_node(ctx, xpath):
+    """
+    Build all nodes required to set an xpath. If we have XML <foo/>, and want
+    to set xpath /foo/bar/baz@booyeah, we create node 'bar' and 'baz'
+    returning the last node created.
+    """
+    parentpath = ""
+    parentnode = None
+    retnode = None
+
+    if xpath.count("["):
+        raise RuntimeError("Property xpath can not contain conditionals []")
+
+    for nodename in xpath.split("/"):
+        if nodename.startswith("@"):
+            # No node to create for attributes
+            retnode = parentnode
+            continue
+
+        parentpath += "/%s" % nodename
+        node = _get_xpath_node(ctx, parentpath)
+        if node:
+            parentnode = node
+            continue
+
+        if not parentnode:
+            raise RuntimeError("Could not find XML root node")
+
+        retnode = parentnode.newChild(None, nodename, None)
+
+    return retnode
+
+
+def _xml_property(fget=None, fset=None, fdel=None, doc=None,
+                  xpath=None, get_converter=None, set_converter=None):
+    """
+    Set a XMLBuilder class property that represents a value in the
+    <domain> XML. For example
+
+    name = _xml_property(get_name, set_name, xpath="/domain/name")
+
+    When building XML from scratch (virt-install), name is a regular
+    class property. When parsing and editting existing guest XML, we
+    use the xpath value to map the name property to the underlying XML
+    definition.
+
+    @param fget: typical getter function for the property
+    @param fset: typical setter function for the property
+    @param fdel: typical deleter function for the property
+    @param doc: option doc string for the property
+    @param xpath: xpath string which maps to the associated property
+                  in a typical XML document
+    @param get_converter:
+    @param set_converter: optional function for converting the property
+        value from the virtinst API to the guest XML. For example,
+        the Guest.memory API is in MB, but the libvirt domain memory API
+        is in KB. So, if xpath is specified, on a 'get' operation we need
+        to convert the XML value with int(val) / 1024.
+    """
+    getter = fget
+    setter = fset
+
+    def new_getter(self, *args, **kwargs):
+        val = None
+        if self._xml_doc:
+            if xpath:
+                node = _get_xpath_node(self._xml_ctx, xpath)
+                if node:
+                    val = node.content
+                    if val and get_converter:
+                        return get_converter(val)
+
+        return fget(self, *args, **kwargs)
+
+    def new_setter(self, val, *args, **kwargs):
+        # Do this regardless, for validation purposes
+        fset(self, val, *args, **kwargs)
+
+        val = fget(self)
+        if set_converter:
+            val = set_converter(val)
+
+        attr = None
+        if xpath.count("@"):
+            ignore, attr = xpath.split("@", 1)
+
+        if self._xml_doc:
+            if xpath:
+                node = self._xml_ctx.xpathEval(xpath)
+                node = (node and node[0] or None)
+                if not node:
+                    node = _build_xpath_node(self._xml_doc, xpath)
+
+                if attr:
+                    node.setProp(attr, str(val))
+                else:
+                    node.setContent(str(val))
+
+
+    if fdel:
+        # Not tested or supported
+        raise RuntimeError("XML deleter not yet supported.")
+
+    if xpath:
+        if fget:
+            getter = new_getter
+        if fset:
+            setter = new_setter
+
+    return property(fget=getter, fset=setter, doc=doc)
+
 class XMLBuilderDomain(object):
     """
     Base for all classes which build or parse domain XML

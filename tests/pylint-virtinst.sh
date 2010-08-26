@@ -43,6 +43,9 @@ OLDSELINUX="'selinux' has no "
 # Public api error
 VD_MISMATCHED_ARGS="get_xml_config.*Arguments number differs"
 
+# Pylint getting confused with XMLBuilder complication
+XMLBUILDER_CONFUSION="xml_property.*protected member _xml.*"
+
 # urltest needs access to protected members for testing purposes
 URLTEST_ACCESS="TestURLFetch.*Access to a protected member"
 
@@ -144,6 +147,7 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$TEST_HACKS" \
         -ve "$PROT_MEM_BUGS" \
         -ve "$CHAR_SUBCLASS" \
+        -ve "$XMLBUILDER_CONFUSION" \
         -ve "$OUTSIDE_INIT" | \
   $AWK '\
 # Strip out any "*** Module name" lines if we dont list any errors for them

@@ -51,6 +51,37 @@ def libvirt_callback(ignore, err):
     logging.warn("libvirt errmsg: %s" % err[2])
 libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
 
+def sanitize_xml_for_define(xml):
+    # Libvirt throws errors since we are defining domain
+    # type='xen', when test driver can only handle type='test'
+    # Sanitize the XML so we can define
+    if not xml:
+        return xml
+
+    xml = xml.replace("<domain type='xen'>",
+                      "<domain type='test'>")
+    xml = xml.replace(">linux<", ">xen<")
+
+    return xml
+
+def test_create(testconn, xml):
+    xml = sanitize_xml_for_define(xml)
+
+    dom = testconn.defineXML(xml)
+    try:
+        dom.create()
+        dom.destroy()
+        dom.undefine()
+    except:
+        try:
+            dom.destroy()
+        except:
+            pass
+        try:
+            dom.undefine()
+        except:
+            pass
+
 def read_file(filename):
     """Helper function to read a files contents and return them"""
     f = open(filename, "r")

@@ -30,13 +30,20 @@ def sanitize_file_xml(xml):
 
 class RoundTripTest(unittest.TestCase):
 
-    def _compare(self, filename):
+    def _roundtrip_compare(self, filename):
         expectXML = sanitize_file_xml(file(filename).read())
         guest = virtinst.Guest(connection=conn, parsexml=expectXML)
         actualXML = guest.get_config_xml()
         tests.diff_compare(actualXML, expect_out=expectXML)
 
+    def _alter_compare(self, actualXML, outfile):
+        tests.diff_compare(actualXML, outfile)
+        tests.test_create(conn, actualXML)
+
     def testRoundTrip(self):
+        """
+        Make sure parsing doesn't output different XML
+        """
         exclude = ["misc-xml-escaping.xml"]
         failed = False
         error = ""
@@ -45,7 +52,7 @@ class RoundTripTest(unittest.TestCase):
                 continue
 
             try:
-                self._compare(f)
+                self._roundtrip_compare(f)
             except Exception:
                 failed = True
                 error += "%s:\n%s\n" % (f, "".join(traceback.format_exc()))
@@ -53,6 +60,26 @@ class RoundTripTest(unittest.TestCase):
         if failed:
             raise AssertionError("Roundtrip parse tests failed:\n%s" % error)
 
+    def testAlterGuest(self):
+        """
+        Test changing Guest() parameters after parsing
+        """
+        infile  = "tests/xmlparse-xml/change-guest-in.xml"
+        outfile = "tests/xmlparse-xml/change-guest-out.xml"
+
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        guest.name = "change_name"
+        guest.description = "frob"
+        guest.description = "Hey desc changed"
+        guest.vcpus = 28
+        guest.cpuset = "1-5,15"
+        guest.memory = 1000
+        guest.maxmemory = 2000
+        guest.uuid = "11111111-2222-3333-4444-555555555555"
+
+        self._alter_compare(guest.get_config_xml(), outfile)
 
 if __name__ == "__main__":
     unittest.main()

@@ -129,19 +129,6 @@ def build_xmlfile(filebase):
         return None
     return os.path.join("tests/xmlconfig-xml", filebase + ".xml")
 
-def sanitize_xml(xml):
-    # Libvirt throws errors since we are defining domain
-    # type='xen', when test driver can only handle type='test'
-    # Sanitize the XML so we can define
-    if not xml:
-        return xml
-
-    xml = xml.replace("<domain type='xen'>",
-                      "<domain type='test'>")
-    xml = xml.replace(">linux<", ">xen<")
-
-    return xml
-
 class TestXMLConfig(unittest.TestCase):
 
     def tearDown(self):
@@ -157,27 +144,9 @@ class TestXMLConfig(unittest.TestCase):
                                              disk_boot=do_disk_boot)
 
             tests.diff_compare(actualXML, filename)
-            self._testCreate(guest.conn, actualXML)
+            tests.test_create(guest.conn, actualXML)
         finally:
             guest._cleanup_install()
-
-    def _testCreate(self, testconn, xml):
-        xml = sanitize_xml(xml)
-
-        dom = testconn.defineXML(xml)
-        try:
-            dom.create()
-            dom.destroy()
-            dom.undefine()
-        except:
-            try:
-                dom.destroy()
-            except:
-                pass
-            try:
-                dom.undefine()
-            except:
-                pass
 
     def _testInstall(self, guest,
                      instxml=None, bootxml=None, contxml=None):
@@ -193,7 +162,7 @@ class TestXMLConfig(unittest.TestCase):
         old_getxml = guest.get_config_xml
         def new_getxml(install=True, disk_boot=False):
             xml = old_getxml(install, disk_boot)
-            return sanitize_xml(xml)
+            return tests.sanitize_xml_for_define(xml)
         guest.get_config_xml = new_getxml
 
         try:

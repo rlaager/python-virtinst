@@ -34,6 +34,8 @@ import CapabilitiesParser
 import VirtualGraphics
 import support
 import XMLBuilderDomain
+from XMLBuilderDomain import _xml_property
+from ImportInstaller import ImportInstaller
 from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
 from VirtualInputDevice import VirtualInputDevice
@@ -182,13 +184,14 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         if conn == None:
             raise RuntimeError, _("Unable to connect to hypervisor, aborting "
                                   "installation!")
+
+        self._installer = installer
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml)
 
         # We specifically ignore the 'type' parameter here, since
         # it has been replaced by installer.type, and child classes can
         # use it when creating a default installer.
         ignore = type
-        self._installer = installer
         self._name = None
         self._uuid = None
         self._memory = None
@@ -288,7 +291,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             raise ValueError(_("Guest name '%s' is already in use.") % val)
 
         self._name = val
-    name = property(get_name, set_name)
+    name = _xml_property(get_name, set_name,
+                         xpath="/domain/name")
 
     # Memory allocated to the guest.  Should be given in MB
     def get_memory(self):
@@ -298,9 +302,15 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             raise ValueError, _("Memory value must be an integer greater "
                                 "than 0")
         self._memory = val
-        if self._maxmemory is None or self._maxmemory < val:
-            self._maxmemory = val
-    memory = property(get_memory, set_memory)
+
+        if self.maxmemory is None or self.maxmemory < val:
+            self.maxmemory = val
+    def _xml_memory_value(self):
+        return int(self.memory) * 1024
+    memory = _xml_property(get_memory, set_memory,
+                           xpath="/domain/currentMemory",
+                           get_converter=lambda x: int(x) / 1024,
+                           set_converter=lambda x: int(x) * 1024)
 
     # Memory allocated to the guest.  Should be given in MB
     def get_maxmemory(self):
@@ -310,7 +320,12 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             raise ValueError, _("Max Memory value must be an integer greater "
                                 "than 0")
         self._maxmemory = val
-    maxmemory = property(get_maxmemory, set_maxmemory)
+    def _xml_maxmemory_value(self):
+        return int(self.maxmemory) * 1024
+    maxmemory = _xml_property(get_maxmemory, set_maxmemory,
+                              xpath="/domain/memory",
+                              get_converter=lambda x: int(x) / 1024,
+                              set_converter=lambda x: int(x) * 1024)
 
     # UUID for the guest
     def get_uuid(self):
@@ -318,7 +333,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def set_uuid(self, val):
         val = _util.validate_uuid(val)
         self._uuid = val
-    uuid = property(get_uuid, set_uuid)
+    uuid = _xml_property(get_uuid, set_uuid,
+                         xpath="/domain/uuid")
 
     # number of vcpus for the guest
     def get_vcpus(self):
@@ -331,7 +347,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             raise ValueError, _("Number of vcpus must be no greater than %d "
                                 "for this vm type.") % maxvcpus
         self._vcpus = val
-    vcpus = property(get_vcpus, set_vcpus)
+    vcpus = _xml_property(get_vcpus, set_vcpus,
+                          xpath="/domain/vcpu")
 
     # set phy-cpus for the guest
     def get_cpuset(self):
@@ -343,7 +360,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         _validate_cpuset(self.conn, val)
         self._cpuset = val
-    cpuset = property(get_cpuset, set_cpuset)
+    cpuset = _xml_property(get_cpuset, set_cpuset,
+                           xpath="/domain/vcpu/@cpuset")
 
     def get_graphics_dev(self):
         return self._graphics_dev
@@ -426,7 +444,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return self._description
     def _set_description(self, val):
         self._description = val
-    description = property(_get_description, _set_description)
+    description = _xml_property(_get_description, _set_description,
+                                xpath="/domain/description")
 
     def _get_replace(self):
         return self._replace
@@ -666,6 +685,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     ################################
     # Private xml building methods #
     ################################
+
+    def _parsexml(self, xml):
+        XMLBuilderDomain.XMLBuilderDomain._parsexml(self, xml)
+        self._installer = ImportInstaller(conn=self.conn)
 
     def _get_default_input_device(self):
         """
