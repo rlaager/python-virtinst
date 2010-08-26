@@ -101,7 +101,7 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
         """
         raise NotImplementedError
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         xml =  ("    <hostdev mode='%s' type='%s' managed='%s'>\n" % \
                 (self.mode, self.type, self.managed and "yes" or "no"))
         xml += "      <source>\n"

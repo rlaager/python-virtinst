@@ -274,7 +274,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
 
     # Method definitions
 
-    def get_xml_config(self, guest, isinstall):
+    def _get_xml_config(self, guest, isinstall):
         """
         Generate the portion of the guest xml that determines boot devices
         and parameters. (typically the <os></os> block)
@@ -300,8 +300,6 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             bootconfig.bootorder = [bootdev]
 
         return self._get_osblob_helper(guest, isinstall, bootconfig)
-    # Back compat
-    get_install_xml = get_xml_config
 
     def cleanup(self):
         """
@@ -407,3 +405,6 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
                              % self.type))
 
         return gobj
+
+# Back compat
+Installer.get_install_xml = Installer.get_xml_config

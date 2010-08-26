@@ -47,7 +47,7 @@ class VirtualAudio(VirtualDevice.VirtualDevice):
         self._model = new_model
     model = property(get_model, set_model)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         model = self.model
         if model == self.MODEL_DEFAULT:
             model = "es1370"

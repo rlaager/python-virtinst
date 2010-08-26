@@ -69,7 +69,7 @@ class VirtualController(VirtualDevice.VirtualDevice):
     def _extra_config(self):
         return ""
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         extra = self._extra_config()
 
         xml = "    <controller type='%s' index='%s'" % (self.type, self.index)

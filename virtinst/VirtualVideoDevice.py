@@ -56,7 +56,7 @@ class VirtualVideoDevice(VirtualDevice.VirtualDevice):
         self._heads = val
     heads = property(get_heads, set_heads)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         model = self.model_type
         if self.model_type == self.MODEL_DEFAULT:
             model = "cirrus"

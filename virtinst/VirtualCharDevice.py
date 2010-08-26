@@ -313,7 +313,7 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         return xml
 
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         xml  = "    <%s type='%s'" % (self._dev_type, self._char_type)
         char_xml = self._char_xml()
         target_xml = self._get_target_xml()

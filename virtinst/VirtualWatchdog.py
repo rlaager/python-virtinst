@@ -79,7 +79,7 @@ class VirtualWatchdog(VirtualDevice.VirtualDevice):
         self._action = val
     action = property(get_action, set_action)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         model = self.model
         if model == self.MODEL_DEFAULT:
             model = "i6300esb"

@@ -35,7 +35,7 @@ class Clock(XMLBuilderDomain.XMLBuilderDomain):
         self._offset = val
     offset = property(get_offset, set_offset)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         if not self.offset:
             return ""
 

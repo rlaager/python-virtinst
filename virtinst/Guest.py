@@ -28,7 +28,6 @@ import copy
 
 import urlgrabber.progress as progress
 import libvirt
-import libxml2
 
 import _util
 import CapabilitiesParser
@@ -43,12 +42,6 @@ from Seclabel import Seclabel
 
 import osdict
 from virtinst import _virtinst as _
-
-def sanitize_libxml_xml(xml):
-    # Strip starting <?...> line
-    if xml.startswith("<?"):
-        ignore, xml = xml.split("\n", 1)
-    return xml
 
 
 def _validate_cpuset(conn, val):
@@ -189,7 +182,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         if conn == None:
             raise RuntimeError, _("Unable to connect to hypervisor, aborting "
                                   "installation!")
-        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml)
 
         # We specifically ignore the 'type' parameter here, since
         # it has been replaced by installer.type, and child classes can
@@ -209,8 +202,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._description = None
         self.features = None
         self._replace = None
-        self._xml_doc = None
-        self._xml_ctx = None
 
         self._os_type = None
         self._os_variant = None
@@ -250,9 +241,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         if con:
             self.add_device(con)
             self._default_console_device = con
-
-        if parsexml:
-            self._parsexml(parsexml)
 
 
     ######################
@@ -679,13 +667,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     # Private xml building methods #
     ################################
 
-    def _parsexml(self, xml):
-        doc = libxml2.parseDoc(xml)
-        ctx = doc.xpathNewContext()
-
-        self._xml_doc = doc
-        self._xml_ctx = ctx
-
     def _get_default_input_device(self):
         """
         Return a VirtualInputDevice.
@@ -851,7 +832,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     # Public API #
     ##############
 
-    def get_xml_config(self, install = True, disk_boot = False):
+    def _get_xml_config(self, install = True, disk_boot = False):
         """
         Return the full Guest xml configuration.
 
@@ -867,9 +848,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                           this.)
         @type disk_boot: C{bool}
         """
-        if self._xml_doc:
-            return sanitize_libxml_xml(self._xml_doc.serialize())
-
         # We do a shallow copy of the device list here, and set the defaults.
         # This way, default changes aren't persistent, and we don't need
         # to worry about when to call set_defaults
@@ -933,8 +911,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         xml = add("</domain>\n")
 
         return xml
-    # Back compat
-    get_config_xml = get_xml_config
 
     def post_install_check(self):
         """
@@ -1300,3 +1276,4 @@ def _wait_for_domain(conn, name):
 
 # Back compat class to avoid ABI break
 XenGuest = Guest
+Guest.get_config_xml = Guest.get_xml_config

@@ -1188,7 +1188,7 @@ class VirtualDisk(VirtualDevice):
                               (self.path, storage_label, self.selinux_label))
                 _util.selinux_setfilecon(self.path, self.selinux_label)
 
-    def get_xml_config(self, disknode=None):
+    def _get_xml_config(self, disknode=None):
         """
         @param disknode: device name in host (xvda, hdb, etc.). self.target
                          takes precedence.

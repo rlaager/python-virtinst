@@ -138,7 +138,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         return """    <graphics type='sdl' display='%s' xauth='%s'/>""" % \
                (disp, xauth)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         if self._type == self.TYPE_SDL:
             return self._sdl_config()
         keymapxml = ""

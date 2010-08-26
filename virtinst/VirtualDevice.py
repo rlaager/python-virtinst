@@ -81,7 +81,7 @@ class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
         return self._virtual_device_type
     virtual_device_type = property(get_virtual_device_type)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         # See XMLBuilderDomain for docs
         raise NotImplementedError()
 

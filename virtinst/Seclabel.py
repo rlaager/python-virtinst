@@ -68,7 +68,7 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
         self._imagelabel = val
     imagelabel = property(get_imagelabel, set_imagelabel)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         if not self.type or not self.model:
             raise RuntimeError("Security type and model must be specified")
 

@@ -58,7 +58,7 @@ class VirtualInputDevice(VirtualDevice.VirtualDevice):
         self._bus = val
     bus = property(get_bus, set_bus)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         typ = self.type
         bus = self.bus
         if typ == self.INPUT_TYPE_DEFAULT:

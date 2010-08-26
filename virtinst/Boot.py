@@ -71,7 +71,7 @@ class Boot(XMLBuilderDomain.XMLBuilderDomain):
         self._kernel_args = val
     kernel_args = property(_get_kernel_args, _set_kernel_args)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         xml = ""
 
         if self.kernel:

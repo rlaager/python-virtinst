@@ -160,7 +160,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         if not self.bridge and self.type == "bridge":
             self.bridge = _util.default_bridge2(self.conn)
 
-    def get_xml_config(self):
+    def _get_xml_config(self):
         src_xml = ""
         model_xml = ""
         if self.type == self.TYPE_BRIDGE:
