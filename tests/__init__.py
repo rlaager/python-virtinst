@@ -59,7 +59,7 @@ def read_file(filename):
 
     return out
 
-def diff_compare(actual_out, filename, expect_out=None):
+def diff_compare(actual_out, filename=None, expect_out=None):
     """Compare passed string output to contents of filename"""
     if not expect_out:
         expect_out = read_file(filename)
@@ -82,3 +82,4 @@ import clonetest
 import nodedev
 import virtconvtest
 import interface
+import xmlparse

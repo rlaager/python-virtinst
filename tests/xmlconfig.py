@@ -550,6 +550,7 @@ class TestXMLConfig(unittest.TestCase):
 
     def testXMLEscaping(self):
         g = get_basic_fullyvirt_guest()
+        g.description = "foooo barrrr \n baz && snarf. '' \"\" @@$\n"
         g.disks.append(get_filedisk("/tmp/ISO&'&s"))
         self._compare(g, "misc-xml-escaping", True)
 
@@ -815,7 +816,7 @@ class TestXMLConfig(unittest.TestCase):
         i = make_pxe_installer()
         g = get_basic_fullyvirt_guest(installer=i)
 
-        g.description = "foooo barrrr \n baz && snarf. '' \"\" @@$\n"
+        g.description = "foooo barrrr somedesc"
 
         # Hostdevs
         dev1 = VirtualHostDeviceUSB(g.conn)

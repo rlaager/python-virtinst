@@ -28,6 +28,7 @@ import copy
 
 import urlgrabber.progress as progress
 import libvirt
+import libxml2
 
 import _util
 import CapabilitiesParser
@@ -41,6 +42,13 @@ from Seclabel import Seclabel
 
 import osdict
 from virtinst import _virtinst as _
+
+def sanitize_libxml_xml(xml):
+    # Strip starting <?...> line
+    if xml.startswith("<?"):
+        ignore, xml = xml.split("\n", 1)
+    return xml
+
 
 def _validate_cpuset(conn, val):
     if val is None or val == "":
@@ -168,7 +176,7 @@ class Guest(object):
         return cpustr
 
     def __init__(self, type=None, connection=None, hypervisorURI=None,
-                 installer=None):
+                 installer=None, parsexml=None):
 
         # Set up the connection, since it is fundamental for other init
         self.conn = connection
@@ -199,6 +207,8 @@ class Guest(object):
         self._description = None
         self.features = None
         self._replace = None
+        self._xml_doc = None
+        self._xml_ctx = None
 
         self._os_type = None
         self._os_variant = None
@@ -240,6 +250,10 @@ class Guest(object):
         if con:
             self.add_device(con)
             self._default_console_device = con
+
+        if parsexml:
+            self._parsexml(parsexml)
+
 
     ######################
     # Property accessors #
@@ -665,6 +679,13 @@ class Guest(object):
     # Private xml building methods #
     ################################
 
+    def _parsexml(self, xml):
+        doc = libxml2.parseDoc(xml)
+        ctx = doc.xpathNewContext()
+
+        self._xml_doc = doc
+        self._xml_ctx = ctx
+
     def _get_default_input_device(self):
         """
         Return a VirtualInputDevice.
@@ -846,6 +867,9 @@ class Guest(object):
                           this.)
         @type disk_boot: C{bool}
         """
+        if self._xml_doc:
+            return sanitize_libxml_xml(self._xml_doc.serialize())
+
         # We do a shallow copy of the device list here, and set the defaults.
         # This way, default changes aren't persistent, and we don't need
         # to worry about when to call set_defaults
