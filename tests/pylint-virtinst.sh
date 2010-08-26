@@ -41,7 +41,7 @@ COVERAGE="import 'coverage'"
 OLDSELINUX="'selinux' has no "
 
 # Public api error
-VD_MISMATCHED_ARGS="VirtualDisk.get_xml_config.*Arguments number differs"
+VD_MISMATCHED_ARGS="get_xml_config.*Arguments number differs"
 
 # urltest needs access to protected members for testing purposes
 URLTEST_ACCESS="TestURLFetch.*Access to a protected member"

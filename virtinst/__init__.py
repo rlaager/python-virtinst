@@ -54,6 +54,7 @@ from CloneManager import CloneDesign
 from User import User
 from Clock import Clock
 from Seclabel import Seclabel
+from XMLBuilderDomain import XMLBuilderDomain
 import util
 import support
 

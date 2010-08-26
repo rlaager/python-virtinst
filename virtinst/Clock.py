@@ -17,13 +17,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-class Clock(object):
+import XMLBuilderDomain
+
+class Clock(XMLBuilderDomain.XMLBuilderDomain):
     """
     Class for generating <clock> XML
     """
 
     def __init__(self, conn):
-        self.conn = conn
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
 
         self._offset = None
 

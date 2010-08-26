@@ -34,6 +34,7 @@ import _util
 import CapabilitiesParser
 import VirtualGraphics
 import support
+import XMLBuilderDomain
 from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
 from VirtualInputDevice import VirtualInputDevice
@@ -78,7 +79,7 @@ def _validate_cpuset(conn, val):
                                     "than pCPUs.")
     return
 
-class Guest(object):
+class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
     # OS Dictionary static variables and methods
     _DEFAULTS = osdict.DEFAULTS
@@ -179,15 +180,16 @@ class Guest(object):
                  installer=None, parsexml=None):
 
         # Set up the connection, since it is fundamental for other init
-        self.conn = connection
-        if self.conn == None:
+        conn = connection
+        if conn == None:
             logging.debug("No conn passed to Guest, opening URI '%s'" % \
                           hypervisorURI)
-            self.conn = libvirt.open(hypervisorURI)
+            conn = libvirt.open(hypervisorURI)
 
-        if self.conn == None:
+        if conn == None:
             raise RuntimeError, _("Unable to connect to hypervisor, aborting "
                                   "installation!")
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
 
         # We specifically ignore the 'type' parameter here, since
         # it has been replaced by installer.type, and child classes can
@@ -236,8 +238,6 @@ class Guest(object):
 
         # Default bus for disks (set in subclass)
         self._diskbus = None
-
-        self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
 
         # Add default devices (if applicable)
         self._default_input_device = None
@@ -814,12 +814,12 @@ class Guest(object):
         """
         xml = ""
 
-        osxml = self.installer.get_install_xml(self, install)
+        osxml = self.installer.get_xml_config(self, install)
         if not osxml:
             return None
 
         xml = _util.xml_append(xml,
-                               self.installer.get_install_xml(self, install))
+                               self.installer.get_xml_config(self, install))
         return xml
 
     ############################
@@ -851,7 +851,7 @@ class Guest(object):
     # Public API #
     ##############
 
-    def get_config_xml(self, install = True, disk_boot = False):
+    def get_xml_config(self, install = True, disk_boot = False):
         """
         Return the full Guest xml configuration.
 
@@ -933,6 +933,8 @@ class Guest(object):
         xml = add("</domain>\n")
 
         return xml
+    # Back compat
+    get_config_xml = get_xml_config
 
     def post_install_check(self):
         """
@@ -952,7 +954,7 @@ class Guest(object):
         if val == True:
             # If we are doing an 'import' or 'liveCD' install, there is
             # no true install process, so continue install has no meaning
-            if not self.get_config_xml(install=True):
+            if not self.get_xml_config(install=True):
                 val = False
         return val
 
@@ -1070,8 +1072,8 @@ class Guest(object):
         if meter == None:
             meter = progress.BaseMeter()
 
-        start_xml = self.get_config_xml(install=True, disk_boot=disk_boot)
-        final_xml = self.get_config_xml(install=False)
+        start_xml = self.get_xml_config(install=True, disk_boot=disk_boot)
+        final_xml = self.get_xml_config(install=False)
         logging.debug("Generated %s XML: %s" %
                       (log_label,
                       (start_xml and ("\n" + start_xml) or "None required")))

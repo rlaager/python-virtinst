@@ -27,6 +27,7 @@ import copy
 
 import _util
 import virtinst
+import XMLBuilderDomain
 from virtinst import CapabilitiesParser
 from virtinst import _virtinst as _
 from VirtualDisk import VirtualDisk
@@ -54,7 +55,7 @@ def _get_scratchdir(typ):
 
     return scratch
 
-class Installer(object):
+class Installer(XMLBuilderDomain.XMLBuilderDomain):
     """
     Installer classes attempt to encapsulate all the parameters needed
     to 'install' a guest: essentially, booting the guest with the correct
@@ -81,15 +82,15 @@ class Installer(object):
     """
     def __init__(self, type = "xen", location = None, boot = None,
                  extraargs = None, os_type = None, conn = None):
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
+
         self._type = None
         self._location = None
         self._initrd_injections = []
         self._cdrom = False
         # XXX: We should set this default based on capabilities?
         self._os_type = "xen"
-        self._conn = conn
         self._scratchdir = None
-        self._caps = None
         self._arch = None
         self._install_bootconfig = Boot(self.conn)
         self._bootconfig = Boot(self.conn)
@@ -97,12 +98,10 @@ class Installer(object):
         # Devices created/added during the prepare() stage
         self.install_devices = []
 
-        if self.conn:
-            self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
-
-            # FIXME: Better solution? Skip validating this since we may not be
-            # able to install a VM of the host arch
-            self._arch = self._caps.host.arch
+        # FIXME: Better solution? Skip validating this since we may not be
+        # able to install a VM of the host arch
+        if self._get_caps():
+            self._arch = self._get_caps().host.arch
 
         if type is None:
             type = "xen"
@@ -275,7 +274,7 @@ class Installer(object):
 
     # Method definitions
 
-    def get_install_xml(self, guest, isinstall):
+    def get_xml_config(self, guest, isinstall):
         """
         Generate the portion of the guest xml that determines boot devices
         and parameters. (typically the <os></os> block)
@@ -301,6 +300,8 @@ class Installer(object):
             bootconfig.bootorder = [bootdev]
 
         return self._get_osblob_helper(guest, isinstall, bootconfig)
+    # Back compat
+    get_install_xml = get_xml_config
 
     def cleanup(self):
         """
@@ -387,7 +388,7 @@ class Installer(object):
             raise ValueError(_("A connection must be specified."))
 
         guest, domain = CapabilitiesParser.guest_lookup(conn=self.conn,
-                                                        caps=self._caps,
+                                                        caps=self._get_caps(),
                                                         os_type=self.os_type,
                                                         type=self.type,
                                                         arch=self.arch)

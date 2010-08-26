@@ -17,9 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import CapabilitiesParser
+import XMLBuilderDomain
 
-class Seclabel(object):
+class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
     """
     Class for generating <seclabel> XML
     """
@@ -29,15 +29,14 @@ class Seclabel(object):
     SECLABEL_TYPES = [SECLABEL_TYPE_DYNAMIC, SECLABEL_TYPE_STATIC]
 
     def __init__(self, conn):
-        self.conn = conn
-        self._caps = CapabilitiesParser.parse(conn.getCapabilities())
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
 
         self._type = self.SECLABEL_TYPE_DYNAMIC
         self._model = None
         self._label = None
         self._imagelabel = None
 
-        model = self._caps.host.secmodel.model
+        model = self._get_caps().host.secmodel.model
         if not model:
             raise ValueError("Hypervisor does not have any security driver"
                              "enabled")

@@ -19,13 +19,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import libvirt
-
-import CapabilitiesParser
-import _util
+import XMLBuilderDomain
 from virtinst import _virtinst as _
 
-class VirtualDevice(object):
+class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
     """
     Base class for all domain xml device objects.
     """
@@ -70,6 +67,8 @@ class VirtualDevice(object):
         @param conn: libvirt connection to validate device against
         @type conn: virConnect
         """
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
+
         if not self._virtual_device_type:
             raise ValueError(_("Virtual device type must be set in subclass."))
 
@@ -77,59 +76,13 @@ class VirtualDevice(object):
             raise ValueError(_("Unknown virtual device type '%s'.") %
                              self._virtual_device_type)
 
-        if conn:
-            if not isinstance(conn, libvirt.virConnect):
-                raise ValueError, _("'conn' must be a virConnect instance")
-
-        self._conn = conn
-        self.__caps = None
-        self.__remote = None
-
-        if self.conn:
-            self.__remote = _util.is_uri_remote(self.conn.getURI())
-
-
-    def get_conn(self):
-        return self._conn
-    def set_conn(self, val):
-        if not isinstance(val, libvirt.virConnect):
-            raise ValueError(_("'conn' must be a virConnect instance."))
-        self._conn = val
-    conn = property(get_conn, set_conn)
 
     def get_virtual_device_type(self):
         return self._virtual_device_type
     virtual_device_type = property(get_virtual_device_type)
 
-    def _get_caps(self):
-        if not self.__caps and self.conn:
-            self.__caps = CapabilitiesParser.parse(self.conn.getCapabilities())
-        return self.__caps
-
-    def _is_remote(self):
-        return bool(self.__remote)
-
-    def _get_uri(self):
-        if self.conn:
-            return self.conn.getURI()
-        return None
-
-    def _check_bool(self, val, name):
-        if val not in [True, False]:
-            raise ValueError, _("'%s' must be True or False" % name)
-
-    def _check_str(self, val, name):
-        if type(val) is not str:
-            raise ValueError, _("'%s' must be a string, not '%s'." %
-                                (name, type(val)))
-
     def get_xml_config(self):
-        """
-        Construct and return device xml
-
-        @return: device xml representation as a string
-        @rtype: str
-        """
+        # See XMLBuilderDomain for docs
         raise NotImplementedError()
 
     def setup_dev(self, conn=None, meter=None):

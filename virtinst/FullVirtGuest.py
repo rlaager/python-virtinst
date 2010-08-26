@@ -48,7 +48,7 @@ class FullVirtGuest(Guest):
             self.arch = arch
 
         self.loader = None
-        guest = self._caps.guestForOSType(type=self.installer.os_type,
+        guest = self._get_caps().guestForOSType(type=self.installer.os_type,
                                           arch=self.arch)
         if (not self.emulator) and guest:
             for dom in guest.domains:
@@ -59,7 +59,7 @@ class FullVirtGuest(Guest):
         # Fall back to default hardcoding
         if self.emulator is None:
             if self.type == "xen":
-                if self._caps.host.arch in ("x86_64"):
+                if self._get_caps().host.arch in ("x86_64"):
                     self.emulator = "/usr/lib64/xen/bin/qemu-dm"
                 else:
                     self.emulator = "/usr/lib/xen/bin/qemu-dm"

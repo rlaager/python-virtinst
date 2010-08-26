@@ -18,8 +18,9 @@
 # MA 02110-1301 USA.
 
 import _util
+import XMLBuilderDomain
 
-class Boot(object):
+class Boot(XMLBuilderDomain.XMLBuilderDomain):
     """
     Class for generating boot device related XML
     """
@@ -32,7 +33,7 @@ class Boot(object):
                     BOOT_DEVICE_FLOPPY, BOOT_DEVICE_NETWORK]
 
     def __init__(self, conn):
-        self.conn = conn
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
 
         self._bootorder = []
         self._enable_bootmenu = None
