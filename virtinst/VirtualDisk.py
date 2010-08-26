@@ -1330,9 +1330,10 @@ class VirtualDisk(VirtualDevice):
         Return True if we have the requisite libvirt and library support
         for selinux commands
         """
-        if (not self._caps and False):
-            #self._caps.host.secmodel is None or
-            #self._caps.host.secmodel.model != "selinux"):
+        caps = self._get_caps()
+        if (not caps and False):
+            #caps.host.secmodel is None or
+            #caps.host.secmodel.model != "selinux"):
             # XXX: Libvirt support isn't strictly required, but all the
             #      our label guesses are built with svirt in mind
             return False

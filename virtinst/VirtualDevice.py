@@ -80,15 +80,14 @@ class VirtualDevice(object):
         if conn:
             if not isinstance(conn, libvirt.virConnect):
                 raise ValueError, _("'conn' must be a virConnect instance")
-        self._conn = conn
 
+        self._conn = conn
+        self.__caps = None
         self.__remote = None
+
         if self.conn:
             self.__remote = _util.is_uri_remote(self.conn.getURI())
 
-        self._caps = None
-        if self.conn:
-            self._caps = CapabilitiesParser.parse(self.conn.getCapabilities())
 
     def get_conn(self):
         return self._conn
@@ -101,6 +100,11 @@ class VirtualDevice(object):
     def get_virtual_device_type(self):
         return self._virtual_device_type
     virtual_device_type = property(get_virtual_device_type)
+
+    def _get_caps(self):
+        if not self.__caps and self.conn:
+            self.__caps = CapabilitiesParser.parse(self.conn.getCapabilities())
+        return self.__caps
 
     def _is_remote(self):
         return bool(self.__remote)
