@@ -797,13 +797,7 @@ class VirtualDisk(VirtualDevice):
         """
         Return True if no path or storage was specified
         """
-        no_storage = (not self.__storage_specified() and not self.path)
-        if no_storage:
-            if (self.device != self.DEVICE_FLOPPY and
-                self.device != self.DEVICE_CDROM):
-                raise ValueError(_("Device type '%s' requires a path") %
-                                 self.device)
-        return no_storage
+        return (not self.__storage_specified() and not self.path)
 
     def __check_if_path_managed(self):
         """
@@ -920,8 +914,13 @@ class VirtualDisk(VirtualDevice):
         if not self._validate:
             return
 
+        # No storage specified for a removable device type (CDROM, floppy)
         if self.__no_storage():
-            # No storage specified for a removable device type (CDROM, floppy)
+            if (self.device != self.DEVICE_FLOPPY and
+                self.device != self.DEVICE_CDROM):
+                raise ValueError(_("Device type '%s' requires a path") %
+                                 self.device)
+
             self._type = self.TYPE_BLOCK
             return True
 
