@@ -60,24 +60,38 @@ class RoundTripTest(unittest.TestCase):
         if failed:
             raise AssertionError("Roundtrip parse tests failed:\n%s" % error)
 
+    def _set_and_check(self, obj, param, initval, newval):
+        """
+        Check expected initial value obj.param == initval, then
+        set newval, and make sure it is returned properly
+        """
+        curval = getattr(obj, param)
+        self.assertEquals(initval, curval)
+
+        setattr(obj, param, newval)
+        curval = getattr(obj, param)
+        self.assertEquals(newval, curval)
+
     def testAlterGuest(self):
         """
         Test changing Guest() parameters after parsing
         """
         infile  = "tests/xmlparse-xml/change-guest-in.xml"
         outfile = "tests/xmlparse-xml/change-guest-out.xml"
-
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
 
-        guest.name = "change_name"
-        guest.description = "frob"
-        guest.description = "Hey desc changed"
-        guest.vcpus = 28
-        guest.cpuset = "1-5,15"
-        guest.memory = 1000
-        guest.maxmemory = 2000
-        guest.uuid = "11111111-2222-3333-4444-555555555555"
+        check = lambda x, y, z: self._set_and_check(guest, x, y, z)
+
+        check("name", "TestGuest", "change_name")
+        check("description", None, "Hey desc changed")
+        check("vcpus", 5, 28)
+        check("cpuset", "1-3", "1-5,15")
+        check("maxmemory", 400, 500)
+        check("memory", 200, 1000)
+        check("maxmemory", 1000, 2000)
+        check("uuid", "12345678-1234-1234-1234-123456789012",
+                      "11111111-2222-3333-4444-555555555555")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 

@@ -52,8 +52,8 @@ def _build_xpath_node(ctx, xpath):
 
     for nodename in xpath.split("/"):
         if nodename.startswith("@"):
-            # No node to create for attributes
-            retnode = parentnode
+            nodename = nodename.strip("@")
+            retnode = parentnode.setProp(nodename, "")
             continue
 
         parentpath += "/%s" % nodename
@@ -107,7 +107,8 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
                 if node:
                     val = node.content
                     if val and get_converter:
-                        return get_converter(val)
+                        val = get_converter(val)
+                    return val
 
         return fget(self, *args, **kwargs)
 
@@ -119,10 +120,6 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
         if set_converter:
             val = set_converter(val)
 
-        attr = None
-        if xpath.count("@"):
-            ignore, attr = xpath.split("@", 1)
-
         if self._xml_doc:
             if xpath:
                 node = self._xml_ctx.xpathEval(xpath)
@@ -130,10 +127,7 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
                 if not node:
                     node = _build_xpath_node(self._xml_doc, xpath)
 
-                if attr:
-                    node.setProp(attr, str(val))
-                else:
-                    node.setContent(str(val))
+                node.setContent(str(val))
 
 
     if fdel:

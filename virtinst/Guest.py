@@ -348,7 +348,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                                 "for this vm type.") % maxvcpus
         self._vcpus = val
     vcpus = _xml_property(get_vcpus, set_vcpus,
-                          xpath="/domain/vcpu")
+                          xpath="/domain/vcpu",
+                          get_converter=lambda x: int(x))
 
     # set phy-cpus for the guest
     def get_cpuset(self):
