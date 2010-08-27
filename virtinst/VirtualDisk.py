@@ -481,7 +481,7 @@ class VirtualDisk(VirtualDevice):
                 # If this disk isn't managed, don't pass 'conn' to this
                 # validation disk, to ensure we have permissions for manual
                 # cloning
-                conn = self.__storage_specified() and self.conn or None
+                conn = self.__managed_storage() and self.conn or None
                 VirtualDisk(conn=conn, path=val)
             except Exception, e:
                 raise ValueError(_("Error validating clone path: %s") % e)
@@ -598,7 +598,7 @@ class VirtualDisk(VirtualDevice):
         retlabel = self._selinux_label
         if not retlabel:
             retlabel = ""
-            if self.__creating_storage() and not self.__storage_specified():
+            if self.__creating_storage() and not self.__managed_storage():
                 retlabel = self._expected_security_label()
             else:
                 retlabel = self._storage_security_label()
@@ -667,7 +667,7 @@ class VirtualDisk(VirtualDevice):
         if self.__creating_storage():
             return
 
-        if self.__storage_specified() and self.vol_object:
+        if self.__managed_storage() and self.vol_object:
             newsize = _util.get_xml_path(self.vol_object.XMLDesc(0),
                                          "/volume/capacity")
             try:
@@ -790,7 +790,7 @@ class VirtualDisk(VirtualDevice):
         except Exception, e:
             raise ValueError(_("Couldn't lookup volume object: %s" % str(e)))
 
-    def __storage_specified(self):
+    def __managed_storage(self):
         """
         Return bool representing if managed storage parameters have
         been explicitly specified or filled in
@@ -802,14 +802,14 @@ class VirtualDisk(VirtualDevice):
         Return True if the user requested us to create a device
         """
         return not (self.__no_storage() or
-                    (self.__storage_specified() and self.vol_object) or
+                    (self.__managed_storage() and self.vol_object) or
                     (self.path and os.path.exists(self.path)))
 
     def __no_storage(self):
         """
         Return True if no path or storage was specified
         """
-        return (not self.__storage_specified() and not self.path)
+        return (not self.__managed_storage() and not self.path)
 
     def __check_if_path_managed(self):
         """
@@ -939,7 +939,7 @@ class VirtualDisk(VirtualDevice):
         storage_capable = bool(self.conn and
                                _util.is_storage_capable(self.conn))
 
-        if storage_capable and not self.__storage_specified():
+        if storage_capable and not self.__managed_storage():
             # Try to lookup self.path storage objects
             self.__check_if_path_managed()
 
@@ -947,7 +947,7 @@ class VirtualDisk(VirtualDevice):
             if not storage_capable:
                 raise ValueError, _("Connection doesn't support remote "
                                     "storage.")
-            if not self.__storage_specified():
+            if not self.__managed_storage():
                 raise ValueError, _("Must specify libvirt managed storage "
                                     "if on a remote connection")
 
@@ -955,7 +955,7 @@ class VirtualDisk(VirtualDevice):
         # - Are we doing storage API operations or local media checks?
         # - Do we need to create the storage?
 
-        managed_storage = self.__storage_specified()
+        managed_storage = self.__managed_storage()
         create_media = self.__creating_storage()
 
         self.__set_dev_type()
@@ -1327,7 +1327,7 @@ class VirtualDisk(VirtualDevice):
             #      this will need changing.
             return False
 
-        elif self.__storage_specified() and self.path:
+        elif self.__managed_storage() and self.path:
             try:
                 statinfo = os.stat(self.path)
             except:
