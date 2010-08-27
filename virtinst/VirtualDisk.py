@@ -446,7 +446,15 @@ class VirtualDisk(VirtualDevice):
 
 
     def _get_path(self):
-        return self._path
+        retpath = self._path
+        if self.vol_object:
+            retpath = self.vol_object.path()
+        elif self.vol_install:
+            retpath = (_util.get_xml_path(self.vol_install.pool.XMLDesc(0),
+                                          "/pool/target/path") + "/" +
+                       self.vol_install.name)
+
+        return retpath
     def _set_path(self, val, validate=True):
         if val is not None:
             self._check_str(val, "path")
@@ -481,7 +489,11 @@ class VirtualDisk(VirtualDevice):
     clone_path = property(_get_clone_path, _set_clone_path)
 
     def _get_size(self):
-        return self._size
+        retsize = self._size
+        if self.vol_install:
+            newsize = self.vol_install.capacity/1024.0/1024.0/1024.0
+
+        return retsize
     def _set_size(self, val, validate=True):
         if val is not None:
             if type(val) not in [int, float, long] or val < 0:
@@ -876,32 +888,6 @@ class VirtualDisk(VirtualDevice):
         self._set_vol_install(vol, validate=False)
 
 
-    def __sync_params(self):
-        """
-        Sync some parameters between storage objects and the older
-        VirtualDisk fields
-        """
-
-        newpath = None
-        if self.vol_object:
-            newpath = self.vol_object.path()
-        elif self.vol_install:
-            newpath = (_util.get_xml_path(self.vol_install.pool.XMLDesc(0),
-                                         "/pool/target/path") + "/" +
-                       self.vol_install.name)
-
-        if newpath and newpath != self.path:
-            logging.debug("Overwriting 'path' with value from StorageVolume"
-                          " object.")
-            self._set_path(newpath, validate=False)
-
-        if self.vol_install:
-            newsize = self.vol_install.capacity/1024.0/1024.0/1024.0
-            if self.size != newsize:
-                logging.debug("Overwriting 'size' with value from "
-                              "StorageVolume object")
-                self._set_size(newsize, validate=False)
-
     def _storage_security_label(self):
         """
         Return SELinux label of existing storage, or None
@@ -953,9 +939,6 @@ class VirtualDisk(VirtualDevice):
             if not self.__storage_specified():
                 raise ValueError, _("Must specify libvirt managed storage "
                                     "if on a remote connection")
-
-        # Sync parameters between VirtualDisk and  storage objects.
-        self.__sync_params()
 
         # The main distinctions from this point forward:
         # - Are we doing storage API operations or local media checks?
