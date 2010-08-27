@@ -591,7 +591,19 @@ class VirtualDisk(VirtualDevice):
     # If there is no selinux support on the libvirt connection or the
     # system, we won't throw errors if this is set, just silently ignore.
     def _get_selinux_label(self):
-        return self._selinux_label
+        # If selinux_label manually specified, return it
+        # If we are using existing storage, pull the label from it
+        # If we are installing via vol_install, pull from the parent pool
+        # If we are creating local storage, use the expected label
+        retlabel = self._selinux_label
+        if not retlabel:
+            retlabel = ""
+            if self.__creating_storage() and not self.__storage_specified():
+                retlabel = self._expected_security_label()
+            else:
+                retlabel = self._storage_security_label()
+
+        return retlabel
     def _set_selinux_label(self, val, validate=True):
         if val is not None:
             self._check_str(val, "selinux_label")
@@ -950,19 +962,6 @@ class VirtualDisk(VirtualDevice):
         self.__set_size()
         self.__set_format()
         self.__set_driver()
-
-        if not self.selinux_label:
-            # If we are using existing storage, pull the label from it
-            # If we are installing via vol_install, pull from the parent pool
-            # If we are creating local storage, use the expected label
-            context = ""
-
-            if create_media and not managed_storage:
-                context = self._expected_security_label()
-            else:
-                context = self._storage_security_label()
-
-            self._selinux_label = context or ""
 
         # If not creating the storage, our job is easy
         if not create_media:
