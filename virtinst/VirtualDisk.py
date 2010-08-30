@@ -194,6 +194,28 @@ def _build_vol_install(path, pool, size, sparse):
                        capacity=cap, allocation=alloc, pool=pool)
     return volinst
 
+
+def _lookup_vol_name(conn, name_tuple):
+    """
+    lookup volume via tuple passed via __init__'s volName parameter
+    """
+    if type(name_tuple) is not tuple or len(name_tuple) != 2 \
+        or (type(name_tuple[0]) is not type(name_tuple[1]) is not str):
+        raise ValueError(_("volName must be a tuple of the form "
+                           "('poolname', 'volname')"))
+
+    if not conn:
+        raise ValueError(_("'volName' requires a passed connection."))
+    if not _util.is_storage_capable(conn):
+        raise ValueError(_("Connection does not support storage lookup."))
+
+    try:
+        pool = conn.storagePoolLookupByName(name_tuple[0])
+        return pool.storageVolLookupByName(name_tuple[1])
+    except Exception, e:
+        raise ValueError(_("Couldn't lookup volume object: %s" % str(e)))
+
+
 class VirtualDisk(VirtualDevice):
     """
     Builds a libvirt domain disk xml description
@@ -496,6 +518,9 @@ class VirtualDisk(VirtualDevice):
         self._driverType = driverType
         self.target = None
 
+        if volName and not volObject:
+            volObject = _lookup_vol_name(conn, volName)
+
         self.set_read_only(readOnly, validate=False)
         self.set_sparse(sparse, validate=False)
         self.set_type(type, validate=False)
@@ -509,9 +534,6 @@ class VirtualDisk(VirtualDevice):
         self._set_driver_cache(driverCache, validate=False)
         self._set_selinux_label(selinuxLabel, validate=False)
         self._set_format(format, validate=False)
-
-        if volName:
-            self.__lookup_vol_name(volName)
 
         self.__change_storage(self.path, self.vol_object, self.vol_install)
         self.__validate_params()
@@ -888,25 +910,6 @@ class VirtualDisk(VirtualDevice):
                 drvtype = self.DRIVER_TAP_VDISK
 
         return drvname or None, drvtype or None
-
-    def __lookup_vol_name(self, name_tuple):
-        """
-        lookup volume via tuple passed via __init__'s volName parameter
-        """
-        if type(name_tuple) is not tuple or len(name_tuple) != 2 \
-           or (type(name_tuple[0]) is not type(name_tuple[1]) is not str):
-            raise ValueError(_("volName must be a tuple of the form "
-                               "('poolname', 'volname')"))
-        if not self.conn:
-            raise ValueError(_("'volName' requires a passed connection."))
-        if not _util.is_storage_capable(self.conn):
-            raise ValueError(_("Connection does not support storage lookup."))
-        try:
-            pool = self.conn.storagePoolLookupByName(name_tuple[0])
-            self._set_vol_object(pool.storageVolLookupByName(name_tuple[1]),
-                                validate=False)
-        except Exception, e:
-            raise ValueError(_("Couldn't lookup volume object: %s" % str(e)))
 
     def __managed_storage(self):
         """
