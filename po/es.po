@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: virt-inst.tip.es\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-08-24 17:09-0400\n"
-"PO-Revision-Date: 2010-08-26 08:08-0300\n"
-"Last-Translator: Héctor Daniel Cabrera <logan@fedoraproject.org>\n"
+"PO-Revision-Date: 2010-08-30 11:28-0300\n"
+"Last-Translator: Claudio Rodrigo Pereyra Diaz <claudiorodrigo@pereyradiaz.com.ar>\n"
 "Language-Team: Fedora Spanish <trans-es@lists.fedoraproject.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1189,12 +1189,10 @@ msgid "Channel type as exposed in the guest."
 msgstr "El tipo de canal como se encuentra expuesto en el huésped."
 
 #: virtinst/VirtualCharDevice.py:247
-#, fuzzy
 msgid "Guest forward channel address in the guest."
 msgstr "La dirección de reenvío de canal huésped en el huésped."
 
 #: virtinst/VirtualCharDevice.py:254
-#, fuzzy
 msgid "Guest forward channel port in the guest."
 msgstr "El puerto de reenvío de canal huésped en el huésped."
 
