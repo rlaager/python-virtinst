@@ -1,4 +1,5 @@
 <domain type="kvm">
+  <description>Hey desc changed</description>
   <name>change_name</name>
   <currentMemory>1024000</currentMemory>
   <memory>2048000</memory>
@@ -45,4 +46,4 @@
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>
     <console type="pty"/>
   </devices>
-<description>Hey desc changed</description></domain>
+</domain>

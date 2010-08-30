@@ -34,6 +34,7 @@ import CapabilitiesParser
 import VirtualGraphics
 import support
 import XMLBuilderDomain
+import virtinst
 from XMLBuilderDomain import _xml_property
 from ImportInstaller import ImportInstaller
 from VirtualDevice import VirtualDevice
@@ -185,9 +186,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             raise RuntimeError, _("Unable to connect to hypervisor, aborting "
                                   "installation!")
 
-        self._installer = installer
-        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml)
-
         # We specifically ignore the 'type' parameter here, since
         # it has been replaced by installer.type, and child classes can
         # use it when creating a default installer.
@@ -200,7 +198,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._cpuset = None
         self._graphics_dev = None
         self._autostart = False
-        self._clock = Clock(self.conn)
+        self._clock = None
+        self._installer = installer
         self._seclabel = None
         self._description = None
         self.features = None
@@ -236,14 +235,21 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         # Add default devices (if applicable)
         self._default_input_device = None
         self._default_console_device = None
-        inp = self._get_default_input_device()
-        con = self._get_default_console_device()
-        if inp:
-            self.add_device(inp)
-            self._default_input_device = inp
-        if con:
-            self.add_device(con)
-            self._default_console_device = con
+
+        # Need to do this after all parameter init
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml)
+
+        if not self._xml_node:
+            if not self._clock:
+                self._clock = Clock(self.conn)
+            inp = self._get_default_input_device()
+            con = self._get_default_console_device()
+            if inp:
+                self.add_device(inp)
+                self._default_input_device = inp
+            if con:
+                self.add_device(con)
+                self._default_console_device = con
 
 
     ######################
@@ -292,7 +298,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         self._name = val
     name = _xml_property(get_name, set_name,
-                         xpath="/domain/name")
+                         xpath="./name")
 
     # Memory allocated to the guest.  Should be given in MB
     def get_memory(self):
@@ -308,7 +314,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def _xml_memory_value(self):
         return int(self.memory) * 1024
     memory = _xml_property(get_memory, set_memory,
-                           xpath="/domain/currentMemory",
+                           xpath="./currentMemory",
                            get_converter=lambda x: int(x) / 1024,
                            set_converter=lambda x: int(x) * 1024)
 
@@ -323,7 +329,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def _xml_maxmemory_value(self):
         return int(self.maxmemory) * 1024
     maxmemory = _xml_property(get_maxmemory, set_maxmemory,
-                              xpath="/domain/memory",
+                              xpath="./memory",
                               get_converter=lambda x: int(x) / 1024,
                               set_converter=lambda x: int(x) * 1024)
 
@@ -334,7 +340,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         val = _util.validate_uuid(val)
         self._uuid = val
     uuid = _xml_property(get_uuid, set_uuid,
-                         xpath="/domain/uuid")
+                         xpath="./uuid")
 
     # number of vcpus for the guest
     def get_vcpus(self):
@@ -348,8 +354,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                                 "for this vm type.") % maxvcpus
         self._vcpus = val
     vcpus = _xml_property(get_vcpus, set_vcpus,
-                          xpath="/domain/vcpu",
-                          get_converter=lambda x: int(x))
+                          xpath="./vcpu",
+                          get_converter=int)
 
     # set phy-cpus for the guest
     def get_cpuset(self):
@@ -362,7 +368,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         _validate_cpuset(self.conn, val)
         self._cpuset = val
     cpuset = _xml_property(get_cpuset, set_cpuset,
-                           xpath="/domain/vcpu/@cpuset")
+                           xpath="./vcpu/@cpuset")
 
     def get_graphics_dev(self):
         return self._graphics_dev
@@ -446,7 +452,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def _set_description(self, val):
         self._description = val
     description = _xml_property(_get_description, _set_description,
-                                xpath="/domain/description")
+                                xpath="./description")
 
     def _get_replace(self):
         return self._replace
@@ -687,9 +693,47 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     # Private xml building methods #
     ################################
 
-    def _parsexml(self, xml):
-        XMLBuilderDomain.XMLBuilderDomain._parsexml(self, xml)
+    def _parsexml(self, xml, node):
+        XMLBuilderDomain.XMLBuilderDomain._parsexml(self, xml, node)
+
+        # Set a default installer
         self._installer = ImportInstaller(conn=self.conn)
+
+        device_mappings = {
+            "disk"      : virtinst.VirtualDisk,
+            #"interface" : virtinst.VirtualNetworkInterface,
+            #"sound"     : virtinst.VirtualAudio,
+            #"hostdev"   : virtinst.VirtualHostDevice,
+            #"input"     : virtinst.VirtualInputDevice,
+            #"serial"    : virtinst.VirtualSerialDevice,
+            #"parallel"  : virtinst.VirtualParallelDevice,
+            #"console"   : virtinst.VirtualConsoleDevice,
+            #"graphics"  : virtinst.VirtualGraphicsDevice,
+            #"video"     : virtinst.VirtualVideoDevice,
+            #"watchdog"  : virtinst.VirtualWatchdog,
+            #"controller": virtinst.VirtualController,
+        }
+
+        # Hand off all child element parsing to relevant classes
+        for node in self._xml_node.children:
+
+            if node.name == "clock":
+                #self._clock = Clock(self.conn, parsexmlnode=node)
+                pass
+            elif node.name == "seclabel":
+                #self._seclabel = Seclabel(self.conn, parsexmlnode=node)
+                pass
+            elif node.name == "os":
+                #self._installer = Installer(self.conn, parsexmlnode=node)
+                pass
+
+            elif node.name == "devices":
+                for devnode in node.children:
+                    objclass = device_mappings.get(devnode.name)
+                    if objclass:
+                        dev = objclass(conn=self.conn, parsexmlnode=devnode)
+                        self.add_device(dev)
+
 
     def _get_default_input_device(self):
         """

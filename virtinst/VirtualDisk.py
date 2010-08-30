@@ -30,6 +30,7 @@ import libvirt
 import _util
 import Storage
 from VirtualDevice import VirtualDevice
+from XMLBuilderDomain import _xml_property
 from virtinst import _virtinst as _
 
 def _vdisk_create(path, size, kind, sparse = True):
@@ -215,7 +216,6 @@ def _lookup_vol_name(conn, name_tuple):
     except Exception, e:
         raise ValueError(_("Couldn't lookup volume object: %s" % str(e)))
 
-
 class VirtualDisk(VirtualDevice):
     """
     Builds a libvirt domain disk xml description
@@ -280,6 +280,22 @@ class VirtualDisk(VirtualDevice):
     TYPE_BLOCK = "block"
     TYPE_DIR = "dir"
     types = [TYPE_FILE, TYPE_BLOCK, TYPE_DIR]
+
+    _target_props = ["file", "dev", "dir"]
+
+    @staticmethod
+    def disk_type_to_target_prop(disk_type):
+        """
+        Convert a value of VirtualDisk.type to it's associated XML
+        target property name
+        """
+        if disk_type == VirtualDisk.TYPE_FILE:
+            return "file"
+        elif disk_type == VirtualDisk.TYPE_BLOCK:
+            return "dev"
+        elif disk_type == VirtualDisk.TYPE_DIR:
+            return "dir"
+        return "file"
 
     @staticmethod
     def path_exists(conn, path):
@@ -414,7 +430,7 @@ class VirtualDisk(VirtualDevice):
                 template += "not(shareable) and "
             template += "source/@%s='%s'])"
 
-            for dtype in ["dev", "file", "dir"]:
+            for dtype in VirtualDisk._target_props:
                 xpath = template % (dtype, path)
                 c += ctx.xpathEval(xpath)
 
@@ -449,7 +465,7 @@ class VirtualDisk(VirtualDevice):
                  readOnly=False, sparse=True, conn=None, volObject=None,
                  volInstall=None, volName=None, bus=None, shareable=False,
                  driverCache=None, selinuxLabel=None, format=None,
-                 validate=True):
+                 validate=True, parsexml=None, parsexmlnode=None):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -494,7 +510,8 @@ class VirtualDisk(VirtualDevice):
         @type validate: C{bool}
         """
 
-        VirtualDevice.__init__(self, conn=conn)
+        VirtualDevice.__init__(self, conn=conn,
+                               parsexml=parsexml, parsexmlnode=parsexmlnode)
 
         self._path = None
         self._size = None
@@ -510,16 +527,19 @@ class VirtualDisk(VirtualDevice):
         self._selinux_label = None
         self._clone_path = None
         self._format = None
+        self._driverName = driverName
+        self._driverType = driverType
+        self._target = None
         self._validate = validate
 
         # XXX: No property methods for these
         self.transient = transient
-        self._driverName = driverName
-        self._driverType = driverType
-        self.target = None
 
         if volName and not volObject:
             volObject = _lookup_vol_name(conn, volName)
+
+        if self._is_parse():
+            return
 
         self.set_read_only(readOnly, validate=False)
         self.set_sparse(sparse, validate=False)
@@ -568,8 +588,20 @@ class VirtualDisk(VirtualDevice):
 
         if validate:
             self.__change_storage(path=val)
-        self.__validate_wrapper("_path", val, validate)
-    path = property(_get_path, _set_path)
+        self.__validate_wrapper("_path", val, validate, self.path)
+    def _xml_get_xpath(self):
+        xpath = None
+        for prop in self._target_props:
+            xpath = "./source/@" + prop
+            if self._xml_ctx.xpathEval(xpath):
+                return xpath
+        return "./source/@file"
+    def _xml_set_xpath(self):
+        return "./source/@" + self.disk_type_to_target_prop(self.type)
+    path = _xml_property(_get_path, _set_path,
+                         xml_get_xpath=_xml_get_xpath,
+                         xml_set_xpath=_xml_set_xpath,)
+
 
     def _get_vol_object(self):
         return self._vol_object
@@ -579,7 +611,7 @@ class VirtualDisk(VirtualDevice):
 
         if validate:
             self.__change_storage(vol_object=val)
-        self.__validate_wrapper("_vol_object", val, validate)
+        self.__validate_wrapper("_vol_object", val, validate, self.vol_object)
     vol_object = property(_get_vol_object, _set_vol_object)
 
     def _get_vol_install(self):
@@ -591,7 +623,7 @@ class VirtualDisk(VirtualDevice):
 
         if validate:
             self.__change_storage(vol_install=val)
-        self.__validate_wrapper("_vol_install", val, validate)
+        self.__validate_wrapper("_vol_install", val, validate, self.vol_install)
     vol_install = property(_get_vol_install, _set_vol_install)
 
     #
@@ -614,7 +646,7 @@ class VirtualDisk(VirtualDevice):
                 VirtualDisk(conn=conn, path=val)
             except Exception, e:
                 raise ValueError(_("Error validating clone path: %s") % e)
-        self.__validate_wrapper("_clone_path", val, validate)
+        self.__validate_wrapper("_clone_path", val, validate, self.clone_path)
     clone_path = property(_get_clone_path, _set_clone_path)
 
     def _get_size(self):
@@ -631,7 +663,7 @@ class VirtualDisk(VirtualDevice):
             if type(val) not in [int, float, long] or val < 0:
                 raise ValueError, _("'size' must be a number greater than 0.")
 
-        self.__validate_wrapper("_size", val, validate)
+        self.__validate_wrapper("_size", val, validate, self.size)
     size = property(_get_size, _set_size)
 
     def get_type(self):
@@ -643,8 +675,9 @@ class VirtualDisk(VirtualDevice):
             self._check_str(val, "type")
             if val not in self.types:
                 raise ValueError, _("Unknown storage type '%s'" % val)
-        self.__validate_wrapper("_type", val, validate)
-    type = property(get_type, set_type)
+        self.__validate_wrapper("_type", val, validate, self.type)
+    type = _xml_property(get_type, set_type,
+                         xpath="./@type")
 
     def get_device(self):
         return self._device
@@ -652,55 +685,79 @@ class VirtualDisk(VirtualDevice):
         self._check_str(val, "device")
         if val not in self.devices:
             raise ValueError, _("Unknown device type '%s'" % val)
-        self.__validate_wrapper("_device", val, validate)
-    device = property(get_device, set_device)
+
+        if val == self._device:
+            return
+
+        if self._is_parse():
+            self.bus = None
+            self.target = None
+        self.__validate_wrapper("_device", val, validate, self.device)
+    device = _xml_property(get_device, set_device,
+                           xpath="./@device")
 
     def get_driver_name(self):
         retname = self._driverName
         if not retname:
             retname, ignore = self.__get_default_driver()
         return retname
-    def set_driver_name(self, val):
+    def set_driver_name(self, val, validate=True):
+        ignore = validate
         self._driverName = val
-    driver_name = property(get_driver_name, set_driver_name)
+    driver_name = _xml_property(get_driver_name, set_driver_name,
+                                xpath="./driver/@name")
 
     def get_driver_type(self):
         rettype = self._driverType
         if not rettype:
             ignore, rettype = self.__get_default_driver()
         return rettype
-    def set_driver_type(self, val):
+    def set_driver_type(self, val, validate=True):
+        ignore = validate
         self._driverType = val
-    driver_type = property(get_driver_type, set_driver_type)
+    driver_type = _xml_property(get_driver_type, set_driver_type,
+                                xpath="./driver/@type")
 
     def get_sparse(self):
         return self._sparse
     def set_sparse(self, val, validate=True):
         self._check_bool(val, "sparse")
-        self.__validate_wrapper("_sparse", val, validate)
+        self.__validate_wrapper("_sparse", val, validate, self.sparse)
     sparse = property(get_sparse, set_sparse)
 
     def get_read_only(self):
         return self._readOnly
     def set_read_only(self, val, validate=True):
         self._check_bool(val, "read_only")
-        self.__validate_wrapper("_readOnly", val, validate)
-    read_only = property(get_read_only, set_read_only)
+        self.__validate_wrapper("_readOnly", val, validate, self.read_only)
+    read_only = _xml_property(get_read_only, set_read_only,
+                              xpath="./readonly", is_bool=True)
 
     def _get_bus(self):
         return self._bus
     def _set_bus(self, val, validate=True):
         if val is not None:
             self._check_str(val, "bus")
-        self.__validate_wrapper("_bus", val, validate)
-    bus = property(_get_bus, _set_bus)
+        self.__validate_wrapper("_bus", val, validate, self.bus)
+    bus = _xml_property(_get_bus, _set_bus,
+                        xpath="./target/@bus")
+    def _get_target(self):
+        return self._target
+    def _set_target(self, val, validate=True):
+        ignore = validate
+        if val is not None:
+            self._check_str(val, "target")
+        self._target = val
+    target = _xml_property(_get_target, _set_target,
+                           xpath="./target/@dev")
 
     def _get_shareable(self):
         return self._shareable
     def _set_shareable(self, val, validate=True):
         self._check_bool(val, "shareable")
-        self.__validate_wrapper("_shareable", val, validate)
-    shareable = property(_get_shareable, _set_shareable)
+        self.__validate_wrapper("_shareable", val, validate, self.shareable)
+    shareable = _xml_property(_get_shareable, _set_shareable,
+                              xpath="./shareable", is_bool=True)
 
     def _get_driver_cache(self):
         return self._driver_cache
@@ -709,8 +766,10 @@ class VirtualDisk(VirtualDevice):
             self._check_str(val, "cache")
             if val not in self.cache_types:
                 raise ValueError, _("Unknown cache mode '%s'" % val)
-        self.__validate_wrapper("_driver_cache", val, validate)
-    driver_cache = property(_get_driver_cache, _set_driver_cache)
+        self.__validate_wrapper("_driver_cache", val, validate,
+                                self.driver_cache)
+    driver_cache = _xml_property(_get_driver_cache, _set_driver_cache,
+                                 xpath="./driver/@cache")
 
     # If there is no selinux support on the libvirt connection or the
     # system, we won't throw errors if this is set, just silently ignore.
@@ -737,7 +796,8 @@ class VirtualDisk(VirtualDevice):
                 # XXX Not valid if we support changing labels remotely
                 raise ValueError(_("SELinux label '%s' is not valid.") % val)
 
-        self.__validate_wrapper("_selinux_label", val, validate)
+        self.__validate_wrapper("_selinux_label", val, validate,
+                                self.selinux_label)
     selinux_label = property(_get_selinux_label, _set_selinux_label)
 
     def _get_format(self):
@@ -745,19 +805,17 @@ class VirtualDisk(VirtualDevice):
     def _set_format(self, val, validate=True):
         if val is not None:
             self._check_str(val, "format")
-        self.__validate_wrapper("_format", val, validate)
+        self.__validate_wrapper("_format", val, validate, self.format)
     format = property(_get_format, _set_format)
 
     # Validation assistance methods
 
     # Initializes attribute if it hasn't been done, then validates args.
     # If validation fails, reset attribute to original value and raise error
-    def __validate_wrapper(self, varname, newval, validate=True):
-        try:
-            orig = getattr(self, varname)
-        except:
-            orig = newval
+    def __validate_wrapper(self, varname, newval, validate, origval):
+        orig = origval
         setattr(self, varname, newval)
+
         if validate:
             try:
                 self.__validate_params()
@@ -791,6 +849,13 @@ class VirtualDisk(VirtualDevice):
         self._set_path(path, validate=False)
         self._set_vol_object(vol_object, validate=False)
         self._set_vol_install(vol_install, validate=False)
+
+        # XXX: Hack, we shouldn't have to conditionalize for parsing
+        if self._is_parse():
+            self.type = self.get_type()
+            self.driver_name = self.get_driver_name()
+            self.driver_name = self.get_driver_type()
+
 
     def __set_format(self):
         if not self.format:

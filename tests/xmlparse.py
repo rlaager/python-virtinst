@@ -23,12 +23,13 @@ import virtinst
 import tests
 
 conn = tests.open_testdriver()
+
 def sanitize_file_xml(xml):
     # s/"/'/g from generated XML, matches what libxml dumps out
     # This won't work all the time, but should be good enough for testing
     return xml.replace("'", "\"")
 
-class RoundTripTest(unittest.TestCase):
+class XMLParseTest(unittest.TestCase):
 
     def _roundtrip_compare(self, filename):
         expectXML = sanitize_file_xml(file(filename).read())
@@ -37,8 +38,8 @@ class RoundTripTest(unittest.TestCase):
         tests.diff_compare(actualXML, expect_out=expectXML)
 
     def _alter_compare(self, actualXML, outfile):
-        tests.diff_compare(actualXML, outfile)
         tests.test_create(conn, actualXML)
+        tests.diff_compare(actualXML, outfile)
 
     def testRoundTrip(self):
         """
@@ -94,6 +95,51 @@ class RoundTripTest(unittest.TestCase):
                       "11111111-2222-3333-4444-555555555555")
 
         self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterDisk(self):
+        """
+        Test changing VirtualDisk() parameters after parsing
+        """
+        infile  = "tests/xmlparse-xml/change-disk-in.xml"
+        outfile = "tests/xmlparse-xml/change-disk-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        # XXX: Set size up front. VirtualDisk validation is kind of
+        # convoluted. If trying to change a non-existing one and size wasn't
+        # already specified, we will error out.
+        disk1 = guest.disks[0]
+        disk1.size = 1
+        disk2 = guest.disks[2]
+        disk2.size = 1
+        disk3 = guest.disks[5]
+        disk3.size = 1
+
+        check = lambda x, y, z: self._set_and_check(disk1, x, y, z)
+        check("path", "/tmp/test.img", "/dev/loop0")
+        check("driver_name", None, "test")
+        check("driver_type", None, "foobar")
+
+        check = lambda x, y, z: self._set_and_check(disk2, x, y, z)
+        check("path", "/dev/loop0", None)
+        check("device", "cdrom", "floppy")
+        check("read_only", True, False)
+        check("target", None, "fde")
+        check("bus", None, "fdc")
+
+        check = lambda x, y, z: self._set_and_check(disk3, x, y, z)
+        check("path", None, "/default-pool/default-vol")
+        check("shareable", False, True)
+        check("driver_cache", None, "writeback")
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testSingleDisk(self):
+        xml = ("""<disk type="file" device="disk"><source file="/a.img"/>"""
+               """<target dev="hda" bus="ide"/></disk>""")
+        d = virtinst.VirtualDisk(parsexml=xml)
+        self._set_and_check(d, "target", "hda", "hdb")
+        self.assertEquals(xml.replace("hda", "hdb"), d.get_xml_config())
 
 if __name__ == "__main__":
     unittest.main()

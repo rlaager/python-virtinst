@@ -30,6 +30,8 @@ def _sanitize_libxml_xml(xml):
     # Strip starting <?...> line
     if xml.startswith("<?"):
         ignore, xml = xml.split("\n", 1)
+    if not xml.endswith("\n") and xml.count("\n"):
+        xml += "\n"
     return xml
 
 def _get_xpath_node(ctx, xpath):
@@ -45,18 +47,24 @@ def _build_xpath_node(ctx, xpath):
     """
     parentpath = ""
     parentnode = None
-    retnode = None
 
     if xpath.count("["):
         raise RuntimeError("Property xpath can not contain conditionals []")
 
     for nodename in xpath.split("/"):
-        if nodename.startswith("@"):
-            nodename = nodename.strip("@")
-            retnode = parentnode.setProp(nodename, "")
+        if not nodename:
             continue
 
-        parentpath += "/%s" % nodename
+        if nodename.startswith("@"):
+            nodename = nodename.strip("@")
+            parentnode = parentnode.setProp(nodename, "")
+            continue
+
+        if not parentpath:
+            parentpath = nodename
+        else:
+            parentpath += "/%s" % nodename
+
         node = _get_xpath_node(ctx, parentpath)
         if node:
             parentnode = node
@@ -65,13 +73,54 @@ def _build_xpath_node(ctx, xpath):
         if not parentnode:
             raise RuntimeError("Could not find XML root node")
 
-        retnode = parentnode.newChild(None, nodename, None)
+        # Add the needed parent node, try to preserve whitespace by
+        # looking for a starting TEXT node, and copying it
+        newnode = libxml2.newNode(nodename)
+        first = parentnode.children
+        if first and first.type == "text" and not first.content.count("<"):
+            content = first.content
+            if first == parentnode.get_last():
+                first = first.addNextSibling(libxml2.newText("  "))
+            txt = libxml2.newText(content)
+        else:
+            first = libxml2.newText("")
+            txt = libxml2.newText("\n")
+            parentnode.addChild(first)
 
-    return retnode
+        first.addNextSibling(newnode)
+        newnode.addNextSibling(txt)
+        parentnode = newnode
 
+    return parentnode
+
+def _remove_xpath_node(ctx, xpath):
+    """
+    Remove an XML node tree if it has no content
+    """
+    if xpath.count("["):
+        raise RuntimeError("Property xpath can not contain conditionals []")
+
+    curxpath = xpath
+    while True:
+        node = _get_xpath_node(ctx, curxpath)
+        if node and not node.children:
+            # Look for preceding whitespace and remove it
+            white = node.get_prev()
+            if white and white.type == "text" and not white.content.count("<"):
+                white.unlinkNode()
+                white.freeNode()
+
+            node.unlinkNode()
+            node.freeNode()
+
+        if not curxpath.count("/"):
+            break
+        curxpath, ignore = curxpath.rsplit("/", 1)
 
 def _xml_property(fget=None, fset=None, fdel=None, doc=None,
-                  xpath=None, get_converter=None, set_converter=None):
+                  xpath=None, get_converter=None, set_converter=None,
+                  xml_get_xpath=None, xml_set_xpath=None,
+                  is_bool=False):
     """
     Set a XMLBuilder class property that represents a value in the
     <domain> XML. For example
@@ -95,20 +144,34 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
         the Guest.memory API is in MB, but the libvirt domain memory API
         is in KB. So, if xpath is specified, on a 'get' operation we need
         to convert the XML value with int(val) / 1024.
+    @param xml_get_xpath:
+    @param xml_set_xpath: Not all props map cleanly to a static xpath.
+        This allows passing functions which generate an xpath for getting
+        or setting.
+    @param is_bool: Whether this is a boolean property in the XML
     """
     getter = fget
     setter = fset
 
     def new_getter(self, *args, **kwargs):
         val = None
-        if self._xml_doc:
-            if xpath:
-                node = _get_xpath_node(self._xml_ctx, xpath)
+        if self._xml_node:
+            usexpath = xpath
+            if xml_get_xpath:
+                usexpath = xml_get_xpath(self)
+
+            if usexpath:
+                node = _get_xpath_node(self._xml_ctx, usexpath)
                 if node:
                     val = node.content
-                    if val and get_converter:
+                    if get_converter:
                         val = get_converter(val)
+                    elif is_bool:
+                        val = True
                     return val
+
+                elif is_bool:
+                    return False
 
         return fget(self, *args, **kwargs)
 
@@ -120,21 +183,28 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
         if set_converter:
             val = set_converter(val)
 
-        if self._xml_doc:
-            if xpath:
-                node = self._xml_ctx.xpathEval(xpath)
-                node = (node and node[0] or None)
-                if not node:
-                    node = _build_xpath_node(self._xml_doc, xpath)
+        if self._xml_node:
+            usexpath = xpath
+            if xml_set_xpath:
+                usexpath = xml_set_xpath(self)
 
-                node.setContent(str(val))
+            if usexpath:
+                if val not in [None, False]:
+                    node = _get_xpath_node(self._xml_ctx, usexpath)
+                    if not node:
+                        node = _build_xpath_node(self._xml_node, usexpath)
+
+                    if val is not True:
+                        node.setContent(str(val))
+                else:
+                    _remove_xpath_node(self._xml_node, usexpath)
 
 
     if fdel:
-        # Not tested or supported
+        # Not tested
         raise RuntimeError("XML deleter not yet supported.")
 
-    if xpath:
+    if bool(xpath or xml_get_xpath or xml_set_xpath):
         if fget:
             getter = new_getter
         if fset:
@@ -147,7 +217,7 @@ class XMLBuilderDomain(object):
     Base for all classes which build or parse domain XML
     """
 
-    def __init__(self, conn=None, parsexml=None):
+    def __init__(self, conn=None, parsexml=None, parsexmlnode=None):
         """
         Initialize state
 
@@ -155,6 +225,7 @@ class XMLBuilderDomain(object):
         @type conn: virConnect
         @param parsexml: Optional XML string to parse
         @type parsexml: C{str}
+        @param parsexmlnode: Option xpathNode to use
         """
         if conn:
             if not isinstance(conn, libvirt.virConnect):
@@ -163,14 +234,14 @@ class XMLBuilderDomain(object):
 
         self.__caps = None
         self.__remote = None
-        self._xml_doc = None
+        self._xml_node = None
         self._xml_ctx = None
 
         if self.conn:
             self.__remote = _util.is_uri_remote(self.conn.getURI())
 
-        if parsexml:
-            self._parsexml(parsexml)
+        if parsexml or parsexmlnode:
+            self._parsexml(parsexml, parsexmlnode)
 
     def get_conn(self):
         return self._conn
@@ -202,11 +273,19 @@ class XMLBuilderDomain(object):
             raise ValueError, _("'%s' must be a string, not '%s'." %
                                 (name, type(val)))
 
-    def _parsexml(self, xml):
-        doc = libxml2.parseDoc(xml)
-        ctx = doc.xpathNewContext()
+    def _is_parse(self):
+        return bool(self._xml_node or self._xml_ctx)
 
-        self._xml_doc = doc
+    def _parsexml(self, xml, node):
+        if xml:
+            doc = libxml2.parseDoc(xml)
+            self._xml_node = doc.children
+        else:
+            doc = node.doc
+            self._xml_node = node
+
+        ctx = doc.xpathNewContext()
+        ctx.setContextNode(self._xml_node)
         self._xml_ctx = ctx
 
     def _get_xml_config(self):
@@ -222,8 +301,8 @@ class XMLBuilderDomain(object):
         @return: object xml representation as a string
         @rtype: str
         """
-        if self._xml_doc:
-            return _sanitize_libxml_xml(self._xml_doc.serialize())
+        if self._xml_node:
+            return _sanitize_libxml_xml(self._xml_node.serialize())
 
         return self._get_xml_config(*args, **kwargs)
 
