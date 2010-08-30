@@ -527,13 +527,19 @@ class VirtualDisk(VirtualDevice):
     device = property(get_device, set_device)
 
     def get_driver_name(self):
-        return self._driverName
+        retname = self._driverName
+        if not retname:
+            retname, ignore = self.__get_default_driver()
+        return retname
     def set_driver_name(self, val):
         self._driverName = val
     driver_name = property(get_driver_name, set_driver_name)
 
     def get_driver_type(self):
-        return self._driverType
+        rettype = self._driverType
+        if not rettype:
+            ignore, rettype = self.__get_default_driver()
+        return rettype
     def set_driver_type(self, val):
         self._driverType = val
     driver_type = property(get_driver_type, set_driver_type)
@@ -721,7 +727,7 @@ class VirtualDisk(VirtualDevice):
 
         return dtype
 
-    def __set_driver(self):
+    def __get_default_driver(self):
         """
         Set driverName and driverType from passed parameters
 
@@ -736,7 +742,7 @@ class VirtualDisk(VirtualDevice):
 
         if self.conn:
             driver = _util.get_uri_driver(self._get_uri())
-            if driver.lower() == "qemu":
+            if driver.lower() == "qemu" and not drvname:
                 drvname = self.DRIVER_QEMU
 
         if self.format:
@@ -764,14 +770,7 @@ class VirtualDisk(VirtualDevice):
                 drvname = self.DRIVER_TAP
                 drvtype = self.DRIVER_TAP_VDISK
 
-        # User already set driverName to a different value, respect that
-        if self._driverName and self._driverName != drvname:
-            return
-        self._driverName = drvname or None
-
-        if self._driverType and self._driverType != drvtype:
-            return
-        self._driverType = drvtype or None
+        return drvname or None, drvtype or None
 
     def __lookup_vol_name(self, name_tuple):
         """
@@ -961,7 +960,6 @@ class VirtualDisk(VirtualDevice):
         create_media = self.__creating_storage()
 
         self.__set_format()
-        self.__set_driver()
 
         # If not creating the storage, our job is easy
         if not create_media:
