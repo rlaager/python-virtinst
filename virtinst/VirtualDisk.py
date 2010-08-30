@@ -114,6 +114,85 @@ def _is_dir_searchable(uid, username, path):
 
     return bool(re.search("user:%s:..x" % username, out))
 
+def _check_if_path_managed(conn, path):
+    """
+    Determine if we can use libvirt storage APIs to create or lookup
+    the passed path. If we can't, throw an error
+    """
+    vol = None
+    verr = None
+
+    def lookup_vol_by_path():
+        try:
+            vol = conn.storageVolLookupByPath(path)
+            vol.info()
+            return vol, None
+        except Exception, e:
+            return None, e
+
+    pool = _util.lookup_pool_by_path(conn,
+                                     os.path.dirname(path))
+    vol = lookup_vol_by_path()[0]
+
+    # Is pool running?
+    if pool and pool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
+        pool = None
+
+    # Attempt to lookup path as a storage volume
+    if pool and not vol:
+        try:
+            # Pool may need to be refreshed, but if it errors,
+            # invalidate it
+            if pool:
+                pool.refresh(0)
+
+            vol, verr = lookup_vol_by_path()
+        except Exception, e:
+            vol = None
+            pool = None
+            verr = str(e)
+
+    if not vol and not pool:
+        if not _util.is_uri_remote(conn.getURI()):
+            # Building local disk
+            return None, None
+
+        if not verr:
+            # Since there is no error, no pool was ever found
+            err = (_("Cannot use storage '%(path)s': '%(rootdir)s' is "
+                     "not managed on the remote host.") %
+                      { 'path' : path,
+                        'rootdir' : os.path.dirname(path)})
+        else:
+            err = (_("Cannot use storage %(path)s: %(err)s") %
+                    { 'path' : path, 'err' : verr })
+
+        raise ValueError(err)
+
+    return vol, pool
+
+def _build_vol_install(path, pool, size, sparse):
+    # Path wasn't a volume. See if base of path is a managed
+    # pool, and if so, setup a StorageVolume object
+    if size == None:
+        raise ValueError(_("Size must be specified for non "
+                           "existent volume path '%s'" % path))
+
+    logging.debug("Path '%s' is target for pool '%s'. "
+                  "Creating volume '%s'." %
+                  (os.path.dirname(path), pool.name(),
+                   os.path.basename(path)))
+
+    volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
+    cap = (size * 1024 * 1024 * 1024)
+    if sparse:
+        alloc = 0
+    else:
+        alloc = cap
+
+    volinst = volclass(name=os.path.basename(path),
+                       capacity=cap, allocation=alloc, pool=pool)
+    return volinst
 
 class VirtualDisk(VirtualDevice):
     """
@@ -434,6 +513,7 @@ class VirtualDisk(VirtualDevice):
         if volName:
             self.__lookup_vol_name(volName)
 
+        self.__change_storage(self.path, self.vol_object, self.vol_install)
         self.__validate_params()
 
 
@@ -444,6 +524,10 @@ class VirtualDisk(VirtualDevice):
         return "%s:%s" %(self.type, self.path)
 
 
+
+    #
+    # Parameters for specifying the backing storage
+    #
 
     def _get_path(self):
         retpath = self._path
@@ -461,13 +545,36 @@ class VirtualDisk(VirtualDevice):
             val = os.path.abspath(val)
 
         if validate:
-            self._vol_install = None
-            self._vol_object = None
-            self._type = None
-
+            self.__change_storage(path=val)
         self.__validate_wrapper("_path", val, validate)
     path = property(_get_path, _set_path)
 
+    def _get_vol_object(self):
+        return self._vol_object
+    def _set_vol_object(self, val, validate=True):
+        if val is not None and not isinstance(val, libvirt.virStorageVol):
+            raise ValueError, _("vol_object must be a virStorageVol instance")
+
+        if validate:
+            self.__change_storage(vol_object=val)
+        self.__validate_wrapper("_vol_object", val, validate)
+    vol_object = property(_get_vol_object, _set_vol_object)
+
+    def _get_vol_install(self):
+        return self._vol_install
+    def _set_vol_install(self, val, validate=True):
+        if val is not None and not isinstance(val, Storage.StorageVolume):
+            raise ValueError, _("vol_install must be a StorageVolume "
+                                " instance.")
+
+        if validate:
+            self.__change_storage(vol_install=val)
+        self.__validate_wrapper("_vol_install", val, validate)
+    vol_install = property(_get_vol_install, _set_vol_install)
+
+    #
+    # Other properties
+    #
     def _get_clone_path(self):
         return self._clone_path
     def _set_clone_path(self, val, validate=True):
@@ -558,23 +665,6 @@ class VirtualDisk(VirtualDevice):
         self.__validate_wrapper("_readOnly", val, validate)
     read_only = property(get_read_only, set_read_only)
 
-    def _get_vol_object(self):
-        return self._vol_object
-    def _set_vol_object(self, val, validate=True):
-        if val is not None and not isinstance(val, libvirt.virStorageVol):
-            raise ValueError, _("vol_object must be a virStorageVol instance")
-        self.__validate_wrapper("_vol_object", val, validate)
-    vol_object = property(_get_vol_object, _set_vol_object)
-
-    def _get_vol_install(self):
-        return self._vol_install
-    def _set_vol_install(self, val, validate=True):
-        if val is not None and not isinstance(val, Storage.StorageVolume):
-            raise ValueError, _("vol_install must be a StorageVolume "
-                                " instance.")
-        self.__validate_wrapper("_vol_install", val, validate)
-    vol_install = property(_get_vol_install, _set_vol_install)
-
     def _get_bus(self):
         return self._bus
     def _set_bus(self, val, validate=True):
@@ -652,6 +742,33 @@ class VirtualDisk(VirtualDevice):
             except:
                 setattr(self, varname, orig)
                 raise
+
+
+    def __change_storage(self, path=None, vol_object=None, vol_install=None):
+        """
+        Validates and updates params when the backing storage is changed
+        """
+        pool = None
+
+        storage_capable = bool(self.conn and
+                               _util.is_storage_capable(self.conn))
+
+        # Try to lookup self.path storage objects
+        if vol_object or vol_install:
+            pass
+        elif not storage_capable:
+            pass
+        elif path:
+            vol_object, pool = _check_if_path_managed(self.conn, path)
+            if pool and not vol_object:
+                vol_install = _build_vol_install(path, pool,
+                                                 self.size,
+                                                 self.sparse)
+
+        # Finally, set the relevant params
+        self._set_path(path, validate=False)
+        self._set_vol_object(vol_object, validate=False)
+        self._set_vol_install(vol_install, validate=False)
 
     def __set_format(self):
         if not self.format:
@@ -812,88 +929,6 @@ class VirtualDisk(VirtualDevice):
         """
         return (not self.__managed_storage() and not self.path)
 
-    def __check_if_path_managed(self):
-        """
-        Determine if we can use libvirt storage apis to create or lookup
-        'self.path'
-        """
-        vol = None
-        verr = None
-
-        def lookup_vol_by_path():
-            try:
-                vol = self.conn.storageVolLookupByPath(self.path)
-                vol.info()
-                return vol, None
-            except Exception, e:
-                return None, e
-
-        pool = _util.lookup_pool_by_path(self.conn,
-                                         os.path.dirname(self.path))
-        vol = lookup_vol_by_path()[0]
-
-
-        # Is pool running?
-        if pool and pool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
-            pool = None
-
-        # Attempt to lookup path as a storage volume
-        if pool and not vol:
-            try:
-                # Pool may need to be refreshed, but if it errors,
-                # invalidate it
-                if pool:
-                    pool.refresh(0)
-
-                vol, verr = lookup_vol_by_path()
-            except Exception, e:
-                vol = None
-                pool = None
-                verr = str(e)
-
-        if vol:
-            self._set_vol_object(vol, validate=False)
-            return
-
-        if not pool:
-            if not self._is_remote():
-                # Building local disk
-                return
-
-            if not verr:
-                # Since there is no error, no pool was ever found
-                err = (_("Cannot use storage '%(path)s': '%(rootdir)s' is "
-                         "not managed on the remote host.") %
-                         { 'path' : self.path,
-                           'rootdir' : os.path.dirname(self.path)})
-            else:
-                err = (_("Cannot use storage %(path)s: %(err)s") %
-                        { 'path' : self.path, 'err' : verr })
-
-            raise ValueError(err)
-
-        # Path wasn't a volume. See if base of path is a managed
-        # pool, and if so, setup a StorageVolume object
-        if self.size == None:
-            raise ValueError(_("Size must be specified for non "
-                               "existent volume path '%s'" % self.path))
-
-        logging.debug("Path '%s' is target for pool '%s'. "
-                      "Creating volume '%s'." %
-                      (os.path.dirname(self.path), pool.name(),
-                       os.path.basename(self.path)))
-
-        volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
-        cap = (self.size * 1024 * 1024 * 1024)
-        if self.sparse:
-            alloc = 0
-        else:
-            alloc = cap
-
-        vol = volclass(name=os.path.basename(self.path),
-                       capacity=cap, allocation=alloc, pool=pool)
-        self._set_vol_install(vol, validate=False)
-
 
     def _storage_security_label(self):
         """
@@ -940,17 +975,13 @@ class VirtualDisk(VirtualDevice):
         storage_capable = bool(self.conn and
                                _util.is_storage_capable(self.conn))
 
-        if storage_capable and not self.__managed_storage():
-            # Try to lookup self.path storage objects
-            self.__check_if_path_managed()
-
         if self._is_remote():
             if not storage_capable:
-                raise ValueError, _("Connection doesn't support remote "
-                                    "storage.")
+                raise ValueError(_("Connection doesn't support remote "
+                                   "storage."))
             if not self.__managed_storage():
-                raise ValueError, _("Must specify libvirt managed storage "
-                                    "if on a remote connection")
+                raise ValueError(_("Must specify libvirt managed storage "
+                                   "if on a remote connection"))
 
         # The main distinctions from this point forward:
         # - Are we doing storage API operations or local media checks?
