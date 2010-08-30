@@ -121,8 +121,6 @@ args = {
     { 'path' : 'valid', 'size' : None },
     { 'path' : "valid", 'size' : 'invalid' },
     { 'path' : 'valid', 'size' : -1},
-    { 'path' : 'notblock', 'type' : VirtualDisk.TYPE_BLOCK},
-    { 'path' :'/dev/null', 'type' : VirtualDisk.TYPE_BLOCK},
     { 'path' : None },
     { 'path' : "noexist1", 'size' : 900000, 'sparse' : False },
     { 'path' : "noexist2", 'type' : VirtualDisk.DEVICE_CDROM},

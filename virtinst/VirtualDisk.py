@@ -506,7 +506,9 @@ class VirtualDisk(VirtualDevice):
     size = property(_get_size, _set_size)
 
     def get_type(self):
-        return self._type
+        if self._type:
+            return self._type
+        return self.__existing_storage_dev_type()
     def set_type(self, val, validate=True):
         if val is not None:
             self._check_str(val, "type")
@@ -685,7 +687,7 @@ class VirtualDisk(VirtualDevice):
 
         return newsize
 
-    def __set_dev_type(self):
+    def __existing_storage_dev_type(self):
         """
         Detect disk 'type' () from passed storage parameters
         """
@@ -699,7 +701,8 @@ class VirtualDisk(VirtualDevice):
             elif t == libvirt.VIR_STORAGE_VOL_BLOCK:
                 dtype = self.TYPE_BLOCK
             else:
-                raise ValueError, _("Unknown storage volume type.")
+                dtype = self.TYPE_FILE
+
         elif self.vol_install:
             if self.vol_install.file_type == libvirt.VIR_STORAGE_VOL_FILE:
                 dtype = self.TYPE_FILE
@@ -716,10 +719,7 @@ class VirtualDisk(VirtualDevice):
         if not dtype:
             dtype = self.type or self.TYPE_BLOCK
 
-        elif self.type and dtype != self.type:
-            raise ValueError(_("Passed type '%s' does not match detected "
-                               "storage type '%s'" % (self.type, dtype)))
-        self.set_type(dtype, validate=False)
+        return dtype
 
     def __set_driver(self):
         """
@@ -960,7 +960,6 @@ class VirtualDisk(VirtualDevice):
         managed_storage = self.__managed_storage()
         create_media = self.__creating_storage()
 
-        self.__set_dev_type()
         self.__set_format()
         self.__set_driver()
 
