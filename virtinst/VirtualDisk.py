@@ -862,7 +862,7 @@ class VirtualDisk(VirtualDevice):
                 dtype = self.TYPE_BLOCK
 
         if not dtype:
-            dtype = self.type or self.TYPE_BLOCK
+            dtype = self._type or self.TYPE_BLOCK
 
         return dtype
 
@@ -972,7 +972,6 @@ class VirtualDisk(VirtualDevice):
                 raise ValueError(_("Device type '%s' requires a path") %
                                  self.device)
 
-            self._type = self.TYPE_BLOCK
             return True
 
         storage_capable = bool(self.conn and
