@@ -489,15 +489,19 @@ class VirtualDisk(VirtualDevice):
     clone_path = property(_get_clone_path, _set_clone_path)
 
     def _get_size(self):
-        retsize = self._size
-        if self.vol_install:
-            newsize = self.vol_install.capacity/1024.0/1024.0/1024.0
+        retsize = self.__existing_storage_size()
+        if retsize is None:
+            if self.vol_install:
+                retsize = self.vol_install.capacity/1024.0/1024.0/1024.0
+            else:
+                retsize = self._size
 
         return retsize
     def _set_size(self, val, validate=True):
         if val is not None:
             if type(val) not in [int, float, long] or val < 0:
                 raise ValueError, _("'size' must be a number greater than 0.")
+
         self.__validate_wrapper("_size", val, validate)
     size = property(_get_size, _set_size)
 
@@ -659,15 +663,14 @@ class VirtualDisk(VirtualDevice):
             raise RuntimeError(_("Format cannot be specified for "
                                  "unmanaged storage."))
 
-    def __set_size(self):
+    def __existing_storage_size(self):
         """
-        Fill in 'size' attribute for existing storage.
+        Return size of existing storage
         """
-
         if self.__creating_storage():
             return
 
-        if self.__managed_storage() and self.vol_object:
+        if self.vol_object:
             newsize = _util.get_xml_path(self.vol_object.XMLDesc(0),
                                          "/volume/capacity")
             try:
@@ -680,8 +683,7 @@ class VirtualDisk(VirtualDevice):
             ignore, newsize = _util.stat_disk(self.path)
             newsize = newsize / 1024.0 / 1024.0 / 1024.0
 
-        if newsize != self.size:
-            self._set_size(newsize, validate=False)
+        return newsize
 
     def __set_dev_type(self):
         """
@@ -959,7 +961,6 @@ class VirtualDisk(VirtualDevice):
         create_media = self.__creating_storage()
 
         self.__set_dev_type()
-        self.__set_size()
         self.__set_format()
         self.__set_driver()
 
