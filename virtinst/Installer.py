@@ -342,7 +342,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             return True
 
         if (disk.driver_type and
-            disk.driver_type not in [disk.DRIVER_TYPE_AIO,
+            disk.driver_type not in [disk.DRIVER_TYPE_RAW,
                                      disk.DRIVER_TYPE_QEMU]):
             # Might be a non-raw format
             return True
