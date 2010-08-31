@@ -51,8 +51,9 @@ class VirtualController(VirtualDevice.VirtualDevice):
 
     _controller_type = None
 
-    def __init__(self, conn):
-        VirtualDevice.VirtualDevice.__init__(self, conn)
+    def __init__(self, conn, parsexml=None, parsexmlnode=None):
+        VirtualDevice.VirtualDevice.__init__(self, conn,
+                                             parsexml, parsexmlnode)
 
         self._index = 0
 

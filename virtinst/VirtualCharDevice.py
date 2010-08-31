@@ -153,20 +153,14 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         return c(conn, dev_type)
     get_dev_instance = staticmethod(get_dev_instance)
 
-    def __init__(self, conn, dev_type):
+    def __init__(self, conn, dev_type, parsexml=None, parsexmlnode=None):
         if dev_type not in self.dev_types:
             raise ValueError(_("Unknown character device type '%s'") % dev_type)
         self._dev_type = dev_type
         self._virtual_device_type = self._dev_type
 
-        VirtualDevice.VirtualDevice.__init__(self, conn)
-
-        if not self._char_type:
-            raise ValueError("Must not be instantiated through a subclass.")
-
-        if self._char_type not in self.char_types:
-            raise ValueError(_("Unknown character device type '%s'")
-                             % self._char_type)
+        VirtualDevice.VirtualDevice.__init__(self, conn,
+                                             parsexml, parsexmlnode)
 
         # Init
         self._source_path = None
@@ -180,6 +174,17 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         self._bind_host = None
         self._bind_port = None
         self._protocol = self.CHAR_PROTOCOL_RAW
+
+        if self._is_parse():
+            return
+
+        if not self._char_type:
+            raise ValueError("Must be instantiated through a subclass.")
+
+        if self._char_type not in self.char_types:
+            raise ValueError(_("Unknown character device type '%s'")
+                             % self._char_type)
+
 
     # Properties
     def get_char_type(self):
@@ -344,8 +349,9 @@ class VirtualConsoleDevice(VirtualCharDevice):
     _char_xml = VirtualCharDevice._char_empty_xml
     _char_type = VirtualCharDevice.CHAR_PTY
 
-    def __init__(self, conn):
-        VirtualCharDevice.__init__(self, conn, VirtualCharDevice.DEV_CONSOLE)
+    def __init__(self, conn, parsexml=None, parsexmlnode=None):
+        VirtualCharDevice.__init__(self, conn, VirtualCharDevice.DEV_CONSOLE,
+                                   parsexml, parsexmlnode)
 
         self.target_types = [self.CHAR_CONSOLE_TARGET_SERIAL,
                              self.CHAR_CONSOLE_TARGET_VIRTIO,

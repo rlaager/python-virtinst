@@ -35,9 +35,10 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     KEYMAP_LOCAL = "local"
 
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
-                 keymap=None, conn=None):
+                 keymap=None, conn=None, parsexml=None, parsexmlnode=None):
 
-        VirtualDevice.VirtualDevice.__init__(self, conn=conn)
+        VirtualDevice.VirtualDevice.__init__(self, conn,
+                                             parsexml, parsexmlnode)
 
         if type != self.TYPE_VNC and type != self.TYPE_SDL:
             raise ValueError(_("Unknown graphics type"))

@@ -701,17 +701,18 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         device_mappings = {
             "disk"      : virtinst.VirtualDisk,
-            #"interface" : virtinst.VirtualNetworkInterface,
-            #"sound"     : virtinst.VirtualAudio,
-            #"hostdev"   : virtinst.VirtualHostDevice,
-            #"input"     : virtinst.VirtualInputDevice,
-            #"serial"    : virtinst.VirtualSerialDevice,
-            #"parallel"  : virtinst.VirtualParallelDevice,
-            #"console"   : virtinst.VirtualConsoleDevice,
-            #"graphics"  : virtinst.VirtualGraphicsDevice,
-            #"video"     : virtinst.VirtualVideoDevice,
-            #"watchdog"  : virtinst.VirtualWatchdog,
-            #"controller": virtinst.VirtualController,
+            "interface" : virtinst.VirtualNetworkInterface,
+            "sound"     : virtinst.VirtualAudio,
+            "hostdev"   : virtinst.VirtualHostDevice,
+            "input"     : virtinst.VirtualInputDevice,
+            "serial"    : virtinst.VirtualCharDevice,
+            "parallel"  : virtinst.VirtualCharDevice,
+            "console"   : virtinst.VirtualCharDevice,
+            "channel"   : virtinst.VirtualCharDevice,
+            "graphics"  : virtinst.VirtualGraphics,
+            "video"     : virtinst.VirtualVideoDevice,
+            "watchdog"  : virtinst.VirtualWatchdog,
+            "controller": virtinst.VirtualController,
         }
 
         # Hand off all child element parsing to relevant classes
@@ -730,9 +731,20 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             elif node.name == "devices":
                 for devnode in node.children:
                     objclass = device_mappings.get(devnode.name)
-                    if objclass:
-                        dev = objclass(conn=self.conn, parsexmlnode=devnode)
+                    if not objclass:
+                        continue
+
+                    try:
+                        if objclass == virtinst.VirtualCharDevice:
+                            dev = objclass(self.conn, devnode.name,
+                                           parsexmlnode=devnode)
+                        else:
+                            dev = objclass(conn=self.conn,
+                                           parsexmlnode=devnode)
                         self.add_device(dev)
+                    except:
+                        print devnode.name, objclass
+                        raise
 
 
     def _get_default_input_device(self):

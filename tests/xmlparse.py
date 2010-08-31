@@ -141,5 +141,77 @@ class XMLParseTest(unittest.TestCase):
         self._set_and_check(d, "target", "hda", "hdb")
         self.assertEquals(xml.replace("hda", "hdb"), d.get_xml_config())
 
+    def testAlterChars(self):
+        infile  = "tests/xmlparse-xml/change-chars-in.xml"
+        outfile = "tests/xmlparse-xml/change-chars-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterControllers(self):
+        infile  = "tests/xmlparse-xml/change-controllers-in.xml"
+        outfile = "tests/xmlparse-xml/change-controllers-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterNics(self):
+        infile  = "tests/xmlparse-xml/change-nics-in.xml"
+        outfile = "tests/xmlparse-xml/change-nics-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterInputs(self):
+        infile  = "tests/xmlparse-xml/change-inputs-in.xml"
+        outfile = "tests/xmlparse-xml/change-inputs-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterGraphics(self):
+        infile  = "tests/xmlparse-xml/change-graphics-in.xml"
+        outfile = "tests/xmlparse-xml/change-graphics-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterVideos(self):
+        infile  = "tests/xmlparse-xml/change-videos-in.xml"
+        outfile = "tests/xmlparse-xml/change-videos-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterHostdevs(self):
+        infile  = "tests/xmlparse-xml/change-hostdevs-in.xml"
+        outfile = "tests/xmlparse-xml/change-hostdevs-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterWatchdogs(self):
+        infile  = "tests/xmlparse-xml/change-watchdogs-in.xml"
+        outfile = "tests/xmlparse-xml/change-watchdogs-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterSounds(self):
+        infile  = "tests/xmlparse-xml/change-sounds-in.xml"
+        outfile = "tests/xmlparse-xml/change-sounds-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
 if __name__ == "__main__":
     unittest.main()
