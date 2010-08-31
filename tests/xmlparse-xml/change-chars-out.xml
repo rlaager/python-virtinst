@@ -22,21 +22,26 @@
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>
     <serial type="null"/>
     <serial type="tcp">
-      <source mode="bind" host="my.source.host" service="1234"/>
-      <protocol type="telnet"/>
+      <source mode="connect" host="my.source.host" service="1234"/>
+      <protocol type="raw"/>
     </serial>
-    <parallel type="unix">
-      <source mode="bind" path="/tmp/foobar"/>
+    <parallel type="pty">
     </parallel>
     <parallel type="udp">
-      <source mode="bind" host="my.bind.host" service="1111"/>
-      <source mode="connect" host="my.source.host" service="2222"/>
+      <source mode="bind" host="my.foo.host" service="1357"/>
+      <source mode="connect" host="source.foo.host" service="7777"/>
     </parallel>
-    <console type="pty">
+    <console type="file">
+      <source path="/root/foo"/>
       <target type="virtio"/>
     </console>
+    <console type="pty"/>
     <channel type="pty">
-      <target type="virtio" name="foo.bar.frob"/>
+      <target type="virtio" name="test.changed"/>
+    </channel>
+    <channel type="unix">
+      <source mode="bind" path="/tmp/foobar"/>
+      <target type="guestfwd" address="5.6.7.8" port="1199"/>
     </channel>
   </devices>
 </domain>

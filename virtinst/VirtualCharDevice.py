@@ -20,6 +20,7 @@
 import VirtualDevice
 from _util import  xml_escape
 
+from XMLBuilderDomain import _xml_property
 from virtinst import _virtinst as _
 
 class VirtualCharDevice(VirtualDevice.VirtualDevice):
@@ -175,29 +176,55 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         self._bind_port = None
         self._protocol = self.CHAR_PROTOCOL_RAW
 
+        if self.char_type == self.CHAR_UDP:
+            self._source_mode = self.CHAR_MODE_CONNECT
+
         if self._is_parse():
             return
 
         if not self._char_type:
             raise ValueError("Must be instantiated through a subclass.")
 
-        if self._char_type not in self.char_types:
-            raise ValueError(_("Unknown character device type '%s'")
-                             % self._char_type)
+        self.char_type = self._char_type
 
+    def supports_property(self, propname):
+        """
+        Whether the character dev type supports the passed property name
+        """
+        users = {
+            "source_path"   : [self.CHAR_FILE, self.CHAR_UNIX,
+                               self.CHAR_DEV,  self.CHAR_PIPE],
+            "source_mode"   : [self.CHAR_UNIX, self.CHAR_TCP],
+            "source_host"   : [self.CHAR_TCP, self.CHAR_UDP],
+            "source_port"   : [self.CHAR_TCP, self.CHAR_UDP],
+            "protocol"      : [self.CHAR_TCP],
+            "bind_host"     : [self.CHAR_UDP],
+            "bind_port"     : [self.CHAR_UDP],
+        }
+
+        if users.get(propname):
+            return self.char_type in users[propname]
+        return hasattr(self, propname)
 
     # Properties
     def get_char_type(self):
         return self._char_type
-    char_type = property(get_char_type,
-                         doc=_("Method used to expose character device in "
-                               "the host."))
+    def set_char_type(self, val):
+        if val not in self.char_types:
+            raise ValueError(_("Unknown character device type '%s'")
+                             % val)
+        self._char_type = val
+    char_type = _xml_property(get_char_type, set_char_type,
+                doc=_("Method used to expose character device in the host."),
+                xpath="./@type")
 
     # Properties functions used by the various subclasses
     def get_source_path(self):
         return self._source_path
     def set_source_path(self, val):
         self._source_path = val
+    source_path = _xml_property(get_source_path, set_source_path,
+                                xpath="./source/@path")
 
     def get_source_mode(self):
         return self._source_mode
@@ -205,26 +232,47 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         if val not in self.char_modes:
             raise ValueError(_("Unknown character mode '%s'.") % val)
         self._source_mode = val
+    def _sourcemode_xpath(self):
+        if self.char_type == self.CHAR_UDP:
+            return "./source[@mode='connect']/@mode"
+        return "./source/@mode"
+    source_mode = _xml_property(get_source_mode, set_source_mode,
+                                xml_get_xpath=_sourcemode_xpath,
+                                xml_set_xpath=_sourcemode_xpath)
 
     def get_source_host(self):
         return self._source_host
     def set_source_host(self, val):
         self._source_host = val
+    def _sourcehost_xpath(self):
+        return "./source[@mode='%s']/@host" % self.source_mode
+    source_host = _xml_property(get_source_host, set_source_host,
+                                xml_get_xpath=_sourcehost_xpath,
+                                xml_set_xpath=_sourcehost_xpath)
 
     def get_source_port(self):
         return self._source_port
     def set_source_port(self, val):
         self._source_port = int(val)
+    def _sourceport_xpath(self):
+        return "./source[@mode='%s']/@service" % self.source_mode
+    source_port = _xml_property(get_source_port, set_source_port,
+                                xml_get_xpath=_sourceport_xpath,
+                                xml_set_xpath=_sourceport_xpath)
 
     def get_bind_host(self):
         return self._bind_host
     def set_bind_host(self, val):
         self._bind_host = val
+    bind_host = _xml_property(get_bind_host, set_bind_host,
+                              xpath="./source[@mode='bind']/@host")
 
     def get_bind_port(self):
         return self._bind_port
     def set_bind_port(self, val):
         self._bind_port = int(val)
+    bind_port = _xml_property(get_bind_port, set_bind_port,
+                              xpath="./source[@mode='bind']/@service")
 
     def get_protocol(self):
         return self._protocol
@@ -232,6 +280,8 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         if val not in self.char_protocols:
             raise ValueError(_("Unknown protocol '%s'.") % val)
         self._protocol = val
+    protocol = _xml_property(get_protocol, set_protocol,
+                             xpath="./protocol/@type")
 
     # GuestFWD target properties
     def get_target_type(self):
@@ -241,29 +291,33 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
             raise ValueError(_("Unknown target type '%s'. Must be in: ") % val,
                              self.target_types)
         self._target_type = val
-    target_type = property(get_target_type, set_target_type,
-                           doc=_("Channel type as exposed in the guest."))
+    target_type = _xml_property(get_target_type, set_target_type,
+                                doc=_("Channel type as exposed in the guest."),
+                                xpath="./target/@type")
 
     def set_target_address(self, val):
         self._target_address = val
     def get_target_address(self):
         return self._target_address
-    target_address = property(get_target_address, set_target_address,
-                        doc=_("Guest forward channel address in the guest."))
+    target_address = _xml_property(get_target_address, set_target_address,
+                        doc=_("Guest forward channel address in the guest."),
+                        xpath="./target/@address")
 
     def set_target_port(self, val):
         self._target_port = val
     def get_target_port(self):
         return self._target_port
-    target_port = property(get_target_port, set_target_port,
-                           doc=_("Guest forward channel port in the guest."))
+    target_port = _xml_property(get_target_port, set_target_port,
+                           doc=_("Guest forward channel port in the guest."),
+                           xpath="./target/@port")
 
     def set_target_name(self, val):
         self._target_name = val
     def get_target_name(self):
         return self._target_name
-    target_name = property(get_target_name, set_target_name,
-                           _("Sysfs Name of virtio port in the guest"))
+    target_name = _xml_property(get_target_name, set_target_name,
+                           doc=_("Sysfs Name of virtio port in the guest"),
+                           xpath="./target/@name")
 
     # XML building helpers
     def _char_empty_xml(self):
@@ -284,7 +338,7 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
             raise ValueError(_("A source path is required for character "
                                "device type '%s'" % self.char_type))
 
-        if hasattr(self, "source_mode") and self.source_mode:
+        if self.supports_property("source_mode") and self.source_mode:
             mode_xml = " mode='%s'" % xml_escape(self.source_mode)
 
         xml = "      <source%s%s/>\n" % (mode_xml, file_xml)

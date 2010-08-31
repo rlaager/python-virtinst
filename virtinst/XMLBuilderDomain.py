@@ -48,12 +48,12 @@ def _build_xpath_node(ctx, xpath):
     parentpath = ""
     parentnode = None
 
-    if xpath.count("["):
-        raise RuntimeError("Property xpath can not contain conditionals []")
-
     for nodename in xpath.split("/"):
         if not nodename:
             continue
+
+        if nodename.count("["):
+            nodename = nodename[:nodename.index("[")]
 
         if nodename.startswith("@"):
             nodename = nodename.strip("@")
@@ -97,10 +97,8 @@ def _remove_xpath_node(ctx, xpath):
     """
     Remove an XML node tree if it has no content
     """
-    if xpath.count("["):
-        raise RuntimeError("Property xpath can not contain conditionals []")
-
     curxpath = xpath
+
     while True:
         node = _get_xpath_node(ctx, curxpath)
         if node and not node.children:

@@ -35,8 +35,12 @@
     <console type='pty'>
       <target type='virtio'/>
     </console>
+    <console type='pty'/>
     <channel type='pty'>
       <target type='virtio' name='foo.bar.frob'/>
+    </channel>
+    <channel type='pty'>
+      <target type='guestfwd' address='1.2.3.4' port='4567'/>
     </channel>
   </devices>
 </domain>

@@ -61,7 +61,7 @@ class XMLParseTest(unittest.TestCase):
         if failed:
             raise AssertionError("Roundtrip parse tests failed:\n%s" % error)
 
-    def _set_and_check(self, obj, param, initval, newval):
+    def _set_and_check(self, obj, param, initval, newval="SENTINEL"):
         """
         Check expected initial value obj.param == initval, then
         set newval, and make sure it is returned properly
@@ -69,9 +69,16 @@ class XMLParseTest(unittest.TestCase):
         curval = getattr(obj, param)
         self.assertEquals(initval, curval)
 
+        if newval == "SENTINEL":
+            return
         setattr(obj, param, newval)
         curval = getattr(obj, param)
         self.assertEquals(newval, curval)
+
+    def _make_checker(self, obj):
+        def check(name, initval, newval="SENTINEL"):
+            return self._set_and_check(obj, name, initval, newval)
+        return check
 
     def testAlterGuest(self):
         """
@@ -82,7 +89,7 @@ class XMLParseTest(unittest.TestCase):
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
 
-        check = lambda x, y, z: self._set_and_check(guest, x, y, z)
+        check = self._make_checker(guest)
 
         check("name", "TestGuest", "change_name")
         check("description", None, "Hey desc changed")
@@ -115,19 +122,19 @@ class XMLParseTest(unittest.TestCase):
         disk3 = guest.disks[5]
         disk3.size = 1
 
-        check = lambda x, y, z: self._set_and_check(disk1, x, y, z)
+        check = self._make_checker(disk1)
         check("path", "/tmp/test.img", "/dev/loop0")
         check("driver_name", None, "test")
         check("driver_type", None, "foobar")
 
-        check = lambda x, y, z: self._set_and_check(disk2, x, y, z)
+        check = self._make_checker(disk2)
         check("path", "/dev/loop0", None)
         check("device", "cdrom", "floppy")
         check("read_only", True, False)
         check("target", None, "fde")
         check("bus", None, "fdc")
 
-        check = lambda x, y, z: self._set_and_check(disk3, x, y, z)
+        check = self._make_checker(disk3)
         check("path", None, "/default-pool/default-vol")
         check("shareable", False, True)
         check("driver_cache", None, "writeback")
@@ -146,6 +153,57 @@ class XMLParseTest(unittest.TestCase):
         outfile = "tests/xmlparse-xml/change-chars-out.xml"
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
+
+        serial1     = guest.get_devices("serial")[0]
+        serial2     = guest.get_devices("serial")[1]
+        parallel1   = guest.get_devices("parallel")[0]
+        parallel2   = guest.get_devices("parallel")[1]
+        console1    = guest.get_devices("console")[0]
+        console2    = guest.get_devices("console")[1]
+        channel1    = guest.get_devices("channel")[0]
+        channel2    = guest.get_devices("channel")[1]
+
+        check = self._make_checker(serial1)
+        check("char_type", "null")
+
+        check = self._make_checker(serial2)
+        check("char_type", "tcp")
+        check("protocol", "telnet", "raw")
+        check("source_mode", "bind", "connect") 
+        
+        check = self._make_checker(parallel1)
+        check("source_mode", "bind")
+        check("source_path", "/tmp/foobar", None)
+        check("char_type", "unix", "pty")
+
+        check = self._make_checker(parallel2)
+        check("char_type", "udp")
+        check("bind_port", "1111", "1357")
+        check("bind_host", "my.bind.host", "my.foo.host")
+        check("source_mode", "connect")
+        check("source_port", "2222", "7777")
+        check("source_host", "my.source.host", "source.foo.host")
+
+        check = self._make_checker(console1)
+        check("char_type", "file")
+        check("source_path", "/tmp/foo.img", None)
+        check("source_path", None, "/root/foo")
+        check("target_type", "virtio")
+
+        check = self._make_checker(console2)
+        check("char_type", "pty")
+        check("target_type", None)
+
+        check = self._make_checker(channel1)
+        check("char_type", "pty")
+        check("target_type", "virtio")
+        check("target_name", "foo.bar.frob", "test.changed")
+
+        check = self._make_checker(channel2)
+        check("char_type", "unix")
+        check("target_type", "guestfwd")
+        check("target_address", "1.2.3.4", "5.6.7.8")
+        check("target_port", "4567", "1199")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 

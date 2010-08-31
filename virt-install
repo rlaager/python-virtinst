@@ -161,7 +161,7 @@ def parse_char_option(guest, char_type, optstring):
         if val == None:
             return
 
-        if not hasattr(dev, paramname):
+        if not dev.supports_property(paramname):
             raise ValueError(_("%(chartype)s type %(devtype)s does not "
                                 "support '%(optname)s' option.") %
                                 {"chartype" : char_type, "devtype": dev_type,
