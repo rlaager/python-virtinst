@@ -19,6 +19,7 @@
 
 import VirtualDevice
 from virtinst import _virtinst as _
+from XMLBuilderDomain import _xml_property
 
 class VirtualWatchdog(VirtualDevice.VirtualDevice):
 
@@ -58,8 +59,14 @@ class VirtualWatchdog(VirtualDevice.VirtualDevice):
         VirtualDevice.VirtualDevice.__init__(self, conn, parsexml,
                                              parsexmlnode)
 
-        self._model = self.MODEL_DEFAULT
-        self._action = self.ACTION_DEFAULT
+        self._model = None
+        self._action = None
+
+        if self._is_parse():
+            return
+
+        self.model = self.MODEL_DEFAULT
+        self.action = self.ACTION_DEFAULT
 
     def get_model(self):
         return self._model
@@ -70,7 +77,8 @@ class VirtualWatchdog(VirtualDevice.VirtualDevice):
         if not self.MODELS.count(new_model):
             raise ValueError, _("Unsupported watchdog model '%s'" % new_model)
         self._model = new_model
-    model = property(get_model, set_model)
+    model = _xml_property(get_model, set_model,
+                          xpath="./@model")
 
     def get_action(self):
         return self._action
@@ -78,7 +86,8 @@ class VirtualWatchdog(VirtualDevice.VirtualDevice):
         if val not in self.ACTIONS:
             raise ValueError("Unknown watchdog action '%s'." % val)
         self._action = val
-    action = property(get_action, set_action)
+    action = _xml_property(get_action, set_action,
+                           xpath="./@action")
 
     def _get_xml_config(self):
         model = self.model

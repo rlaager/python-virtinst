@@ -24,10 +24,10 @@
       <target dev="fda" bus="fdc"/>
     </disk>
     <video>
-      <model type="vmvga"/>
+      <model type="vga" vram="1000" heads="1"/>
     </video>
     <video>
-      <model type="cirrus" vram="10240" heads="3"/>
+      <model type="vmvga" heads="5"/>
     </video>
     <video>
       <model type="cirrus"/>

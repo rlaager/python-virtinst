@@ -19,6 +19,7 @@
 
 import VirtualDevice
 from virtinst import _virtinst as _
+from XMLBuilderDomain import _xml_property
 
 class VirtualAudio(VirtualDevice.VirtualDevice):
 
@@ -32,6 +33,8 @@ class VirtualAudio(VirtualDevice.VirtualDevice):
                                              parsexml, parsexmlnode)
 
         self._model = None
+        if self._is_parse():
+            return
 
         if model == None:
             model = self.MODEL_DEFAULT
@@ -46,7 +49,8 @@ class VirtualAudio(VirtualDevice.VirtualDevice):
         if not self.MODELS.count(new_model):
             raise ValueError, _("Unsupported sound model '%s'" % new_model)
         self._model = new_model
-    model = property(get_model, set_model)
+    model = _xml_property(get_model, set_model,
+                          xpath="./@model")
 
     def _get_xml_config(self):
         model = self.model

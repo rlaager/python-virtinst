@@ -323,6 +323,23 @@ class XMLParseTest(unittest.TestCase):
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
 
+        dev1 = guest.get_devices("video")[0]
+        dev2 = guest.get_devices("video")[1]
+        dev3 = guest.get_devices("video")[2]
+
+        check = self._make_checker(dev1)
+        check("model_type", "vmvga", "vga")
+        check("vram", None, "1000")
+        check("heads", None, "1")
+
+        check = self._make_checker(dev2)
+        check("model_type", "cirrus", "vmvga")
+        check("vram", "10240", None)
+        check("heads", "3", "5")
+
+        check = self._make_checker(dev3)
+        check("model_type", "cirrus", "cirrus")
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterHostdevs(self):
@@ -368,6 +385,12 @@ class XMLParseTest(unittest.TestCase):
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
 
+        dev1 = guest.get_devices("watchdog")[0]
+        check = self._make_checker(dev1)
+        check("model", "ib700", "i6300esb")
+        check("action", "none", "poweroff")
+
+        check = self._make_checker(dev1)
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterSounds(self):
@@ -375,6 +398,19 @@ class XMLParseTest(unittest.TestCase):
         outfile = "tests/xmlparse-xml/change-sounds-out.xml"
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
+
+        dev1 = guest.get_devices("sound")[0]
+        dev2 = guest.get_devices("sound")[1]
+        dev3 = guest.get_devices("sound")[2]
+
+        check = self._make_checker(dev1)
+        check("model", "sb16", "ac97")
+
+        check = self._make_checker(dev2)
+        check("model", "es1370", "es1370")
+
+        check = self._make_checker(dev3)
+        check("model", "ac97", "sb16")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 

@@ -23,9 +23,9 @@
       <source dev="/dev/loop0"/>
       <target dev="fda" bus="fdc"/>
     </disk>
-    <sound model="sb16"/>
-    <sound model="es1370"/>
     <sound model="ac97"/>
+    <sound model="es1370"/>
+    <sound model="sb16"/>
   </devices>
   <seclabel type="static" model="selinux">
     <label>foolabel</label>

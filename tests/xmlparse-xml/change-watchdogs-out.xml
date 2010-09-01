@@ -23,7 +23,7 @@
       <source dev="/dev/loop0"/>
       <target dev="fda" bus="fdc"/>
     </disk>
-    <watchdog model="ib700" action="none"/>
+    <watchdog model="i6300esb" action="poweroff"/>
   </devices>
   <seclabel type="static" model="selinux">
     <label>foolabel</label>

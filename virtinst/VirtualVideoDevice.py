@@ -18,6 +18,7 @@
 # MA 02110-1301 USA.
 
 import VirtualDevice
+from XMLBuilderDomain import _xml_property
 
 class VirtualVideoDevice(VirtualDevice.VirtualDevice):
 
@@ -28,12 +29,17 @@ class VirtualVideoDevice(VirtualDevice.VirtualDevice):
     _model_types = [ "cirrus", "vga", "vmvga", "xen", MODEL_DEFAULT]
 
     def __init__(self, conn, parsexml=None, parsexmlnode=None):
-        VirtualDevice.VirtualDevice.__init__(self, conn=conn,
-                                             parsexml=None, parsexmlnode=None)
+        VirtualDevice.VirtualDevice.__init__(self, conn,
+                                             parsexml, parsexmlnode)
 
-        self._model_type    = self.MODEL_DEFAULT
+        self._model_type    = None
         self._vram          = None
         self._heads         = None
+
+        if self._is_parse():
+            return
+
+        self.model_type = self.MODEL_DEFAULT
 
     def get_model_types(self):
         return self._model_types[:]
@@ -43,19 +49,22 @@ class VirtualVideoDevice(VirtualDevice.VirtualDevice):
         return self._model_type
     def set_model_type(self, val):
         self._model_type = val
-    model_type = property(get_model_type, set_model_type)
+    model_type = _xml_property(get_model_type, set_model_type,
+                               xpath="./model/@type")
 
     def get_vram(self):
         return self._vram
     def set_vram(self, val):
         self._vram = val
-    vram = property(get_vram, set_vram)
+    vram = _xml_property(get_vram, set_vram,
+                         xpath="./model/@vram")
 
     def get_heads(self):
         return self._heads
     def set_heads(self, val):
         self._heads = val
-    heads = property(get_heads, set_heads)
+    heads = _xml_property(get_heads, set_heads,
+                          xpath="./model/@heads")
 
     def _get_xml_config(self):
         model = self.model_type
