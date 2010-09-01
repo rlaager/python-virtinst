@@ -24,6 +24,25 @@ import _util
 import VirtualDevice
 from virtinst import _virtinst as _
 
+def _countMACaddr(vms, searchmac):
+    if not searchmac:
+        return
+
+    def count_cb(ctx):
+        c = 0
+
+        for mac in ctx.xpathEval("/domain/devices/interface/mac"):
+            macaddr = mac.xpathEval("attribute::address")[0].content
+            if macaddr and _util.compareMAC(searchmac, macaddr) == 0:
+                c += 1
+        return c
+
+    count = 0
+    for vm in vms:
+        xml = vm.XMLDesc(0)
+        count += _util.get_xml_path(xml, func = count_cb)
+    return count
+
 class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
     _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_NET
@@ -90,8 +109,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         return self._network
     def set_network(self, newnet):
         def _is_net_active(netobj):
-            """Apparently the 'info' command was never hooked up for
-               libvirt virNetwork python apis."""
+            # Apparently the 'info' command was never hooked up for
+            # libvirt virNetwork python apis.
             if not self.conn:
                 return True
             return self.conn.listNetworks().count(netobj.name())
@@ -110,14 +129,21 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     network = property(get_network, set_network)
 
     def is_conflict_net(self, conn):
-        """is_conflict_net: determines if mac conflicts with others in system
+        """
+        is_conflict_net: determines if mac conflicts with others in system
 
-           returns a two element tuple:
-               first element is True if fatal collision occured
-               second element is a string description of the collision.
-           Non fatal collisions (mac addr collides with inactive guest) will
-           return (False, "description of collision")"""
+        returns a two element tuple:
+            first element is True if fatal collision occured
+            second element is a string description of the collision.
+
+        Non fatal collisions (mac addr collides with inactive guest) will
+        return (False, "description of collision")
+        """
         if self.macaddr is None:
+            return (False, None)
+
+        # Not supported for remote connections yet
+        if self._is_remote():
             return (False, None)
 
         vms, inactive_vm = _util.fetch_all_guests(conn)
@@ -125,13 +151,20 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         # get the Host's NIC MACaddress
         hostdevs = _util.get_host_network_devices()
 
-        if self.countMACaddr(vms) > 0:
-            return (True, _("The MAC address you entered is already in use by another active virtual machine."))
-        for (dummy, dummy, dummy, dummy, host_macaddr) in hostdevs:
+        if _countMACaddr(vms, self.macaddr) > 0:
+            return (True, _("The MAC address you entered is already in use "
+                            "by another active virtual machine."))
+
+        for dev in hostdevs:
+            host_macaddr = dev[4]
             if self.macaddr.upper() == host_macaddr.upper():
-                return (True, _("The MAC address you entered conflicts with a device on the physical host."))
-        if self.countMACaddr(inactive_vm) > 0:
-            return (False, _("The MAC address you entered is already in use by another inactive virtual machine."))
+                return (True, _("The MAC address you entered conflicts with "
+                                "a device on the physical host."))
+
+        if _countMACaddr(inactive_vm, self.macaddr) > 0:
+            return (False, _("The MAC address you entered is already in use "
+                             "by another inactive virtual machine."))
+
         return (False, None)
 
     def setup_dev(self, conn=None, meter=None):
@@ -178,25 +211,6 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                "      <mac address='%s'/>\n" % self.macaddr + \
                model_xml + \
                "    </interface>"
-
-    def countMACaddr(self, vms):
-        if not self.macaddr:
-            return
-
-        def count_cb(ctx):
-            c = 0
-
-            for mac in ctx.xpathEval("/domain/devices/interface/mac"):
-                macaddr = mac.xpathEval("attribute::address")[0].content
-                if macaddr and _util.compareMAC(self.macaddr, macaddr) == 0:
-                    c += 1
-            return c
-
-        count = 0
-        for vm in vms:
-            xml = vm.XMLDesc(0)
-            count += _util.get_xml_path(xml, func = count_cb)
-        return count
 
 # Back compat class to avoid ABI break
 class XenNetworkInterface(VirtualNetworkInterface):
