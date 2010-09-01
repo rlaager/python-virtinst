@@ -715,10 +715,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         for node in self._xml_node.children:
 
             if node.name == "clock":
-                #self._clock = Clock(self.conn, parsexmlnode=node)
+                self._clock = Clock(self.conn, parsexmlnode=node)
                 pass
             elif node.name == "seclabel":
-                #self._seclabel = Seclabel(self.conn, parsexmlnode=node)
+                self._seclabel = Seclabel(self.conn, parsexmlnode=node)
                 pass
             elif node.name == "os":
                 #self._installer = Installer(self.conn, parsexmlnode=node)

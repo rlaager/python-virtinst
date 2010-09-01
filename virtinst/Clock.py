@@ -18,14 +18,16 @@
 # MA 02110-1301 USA.
 
 import XMLBuilderDomain
+from XMLBuilderDomain import _xml_property
 
 class Clock(XMLBuilderDomain.XMLBuilderDomain):
     """
     Class for generating <clock> XML
     """
 
-    def __init__(self, conn):
-        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
+    def __init__(self, conn, parsexml=None, parsexmlnode=None):
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
+                                                   parsexmlnode)
 
         self._offset = None
 
@@ -33,7 +35,8 @@ class Clock(XMLBuilderDomain.XMLBuilderDomain):
         return self._offset
     def set_offset(self, val):
         self._offset = val
-    offset = property(get_offset, set_offset)
+    offset = _xml_property(get_offset, set_offset,
+                           xpath="./@offset")
 
     def _get_xml_config(self):
         if not self.offset:

@@ -11,7 +11,7 @@
   <features>
     <acpi/><apic/>
   </features>
-  <clock offset="utc"/>
+  <clock offset="localtime"/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
@@ -46,4 +46,8 @@
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>
     <console type="pty"/>
   </devices>
+  <seclabel type="static" model="apparmor">
+    <label>barlabel</label>
+    <imagelabel>fooimage</imagelabel>
+  </seclabel>
 </domain>

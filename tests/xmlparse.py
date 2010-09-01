@@ -101,6 +101,15 @@ class XMLParseTest(unittest.TestCase):
         check("uuid", "12345678-1234-1234-1234-123456789012",
                       "11111111-2222-3333-4444-555555555555")
 
+        check = self._make_checker(guest.clock)
+        check("offset", "utc", "localtime")
+
+        check = self._make_checker(guest.seclabel)
+        check("type", "static", "static")
+        check("model", "selinux", "apparmor")
+        check("label", "foolabel", "barlabel")
+        check("imagelabel", "imagelabel", "fooimage")
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterDisk(self):

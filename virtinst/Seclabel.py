@@ -18,6 +18,7 @@
 # MA 02110-1301 USA.
 
 import XMLBuilderDomain
+from XMLBuilderDomain import _xml_property
 
 class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
     """
@@ -28,19 +29,24 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
     SECLABEL_TYPE_STATIC = "static"
     SECLABEL_TYPES = [SECLABEL_TYPE_DYNAMIC, SECLABEL_TYPE_STATIC]
 
-    def __init__(self, conn):
-        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
+    def __init__(self, conn, parsexml=None, parsexmlnode=None):
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
+                                                   parsexmlnode)
 
-        self._type = self.SECLABEL_TYPE_DYNAMIC
+        self._type = None
         self._model = None
         self._label = None
         self._imagelabel = None
+
+        if self._is_parse():
+            return
 
         model = self._get_caps().host.secmodel.model
         if not model:
             raise ValueError("Hypervisor does not have any security driver"
                              "enabled")
         self.model = model
+        self.type = self.SECLABEL_TYPE_DYNAMIC
 
     def get_type(self):
         return self._type
@@ -48,25 +54,29 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
         if val not in self.SECLABEL_TYPES:
             raise ValueError("Unknown security type '%s'" % val)
         self._type = val
-    type = property(get_type, set_type)
+    type = _xml_property(get_type, set_type,
+                         xpath="./@type")
 
     def get_model(self):
         return self._model
     def set_model(self, val):
         self._model = val
-    model = property(get_model, set_model)
+    model = _xml_property(get_model, set_model,
+                          xpath="./@model")
 
     def get_label(self):
         return self._label
     def set_label(self, val):
         self._label = val
-    label = property(get_label, set_label)
+    label = _xml_property(get_label, set_label,
+                          xpath="./label")
 
     def get_imagelabel(self):
         return self._imagelabel
     def set_imagelabel(self, val):
         self._imagelabel = val
-    imagelabel = property(get_imagelabel, set_imagelabel)
+    imagelabel = _xml_property(get_imagelabel, set_imagelabel,
+                               xpath="./imagelabel")
 
     def _get_xml_config(self):
         if not self.type or not self.model:

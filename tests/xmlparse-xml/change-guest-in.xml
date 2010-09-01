@@ -45,4 +45,8 @@
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>
     <console type="pty"/>
   </devices>
+  <seclabel type="static" model="selinux">
+    <label>foolabel</label>
+    <imagelabel>imagelabel</imagelabel>
+  </seclabel>
 </domain>
