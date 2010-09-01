@@ -274,6 +274,18 @@ class XMLParseTest(unittest.TestCase):
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
 
+        dev1 = guest.get_devices("input")[0]
+        dev2 = guest.get_devices("input")[1]
+
+        check = self._make_checker(dev1)
+        check("type", "mouse", "tablet")
+        check("bus", "ps2", "usb")
+
+        check = self._make_checker(dev2)
+        check("type", "tablet", "mouse")
+        check("bus", "usb", "xen")
+        check("bus", "xen", "usb")
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterGraphics(self):

@@ -19,6 +19,7 @@
 
 import VirtualDevice
 from virtinst import _virtinst as _
+from XMLBuilderDomain import _xml_property
 
 class VirtualInputDevice(VirtualDevice.VirtualDevice):
 
@@ -40,8 +41,23 @@ class VirtualInputDevice(VirtualDevice.VirtualDevice):
         VirtualDevice.VirtualDevice.__init__(self, conn, parsexml,
                                              parsexmlnode)
 
-        self._type = self.INPUT_TYPE_DEFAULT
-        self._bus = self.INPUT_TYPE_DEFAULT
+        self._type = None
+        self._bus = None
+        
+        if self._is_parse():
+            return
+
+        self.type = self.INPUT_TYPE_DEFAULT
+        self.bus = self.INPUT_BUS_DEFAULT
+
+    def _convert_default_bus(self, val):
+        if val == self.INPUT_BUS_DEFAULT:
+            return self.INPUT_BUS_XEN
+        return val
+    def _convert_default_type(self, val):
+        if val == self.INPUT_TYPE_DEFAULT:
+            return self.INPUT_TYPE_MOUSE
+        return val
 
     def get_type(self):
         return self._type
@@ -49,7 +65,8 @@ class VirtualInputDevice(VirtualDevice.VirtualDevice):
         if val not in self.input_types:
             raise ValueError(_("Unknown input type '%s'.") % val)
         self._type = val
-    type = property(get_type, set_type)
+    type = _xml_property(get_type, set_type,
+                         xpath="./@type")
 
     def get_bus(self):
         return self._bus
@@ -57,14 +74,11 @@ class VirtualInputDevice(VirtualDevice.VirtualDevice):
         if val not in self.input_buses:
             raise ValueError(_("Unknown input bus '%s'.") % val)
         self._bus = val
-    bus = property(get_bus, set_bus)
+    bus = _xml_property(get_bus, set_bus,
+                        xpath="./@bus")
 
     def _get_xml_config(self):
-        typ = self.type
-        bus = self.bus
-        if typ == self.INPUT_TYPE_DEFAULT:
-            typ = self.INPUT_TYPE_MOUSE
-        if bus == self.INPUT_BUS_DEFAULT:
-            bus = self.INPUT_BUS_XEN
+        typ = self._convert_default_type(self.type)
+        bus = self._convert_default_bus(self.bus)
 
         return "    <input type='%s' bus='%s'/>" % (typ, bus)
