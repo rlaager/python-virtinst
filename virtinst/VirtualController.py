@@ -19,6 +19,7 @@
 
 import VirtualDevice
 #from virtinst import _virtinst as _
+from XMLBuilderDomain import _xml_property
 
 class VirtualController(VirtualDevice.VirtualDevice):
 
@@ -56,16 +57,34 @@ class VirtualController(VirtualDevice.VirtualDevice):
                                              parsexml, parsexmlnode)
 
         self._index = 0
+        self._ports = None
+        self._vectors = None
 
     def get_type(self):
         return self._controller_type
-    type = property(get_type)
+    type = _xml_property(get_type,
+                         xpath="./@type")
 
     def get_index(self):
         return self._index
     def set_index(self, val):
         self._index = int(val)
-    index = property(get_index, set_index)
+    index = _xml_property(get_index, set_index,
+                          xpath="./@index")
+
+    def get_vectors(self):
+        return self._vectors
+    def set_vectors(self, val):
+        self._vectors = val
+    vectors = _xml_property(get_vectors, set_vectors,
+                            xpath="./@vectors")
+
+    def get_ports(self):
+        return self._ports
+    def set_ports(self, val):
+        self._ports = val
+    ports = _xml_property(get_ports, set_ports,
+                          xpath="./@ports")
 
     def _extra_config(self):
         return ""
@@ -94,20 +113,6 @@ class VirtualControllerSATA(VirtualController):
 
 class VirtualControllerVirtioSerial(VirtualController):
     _controller_type = VirtualController.CONTROLLER_TYPE_VIRTIOSERIAL
-    _ports = None
-    _vectors = None
-
-    def get_vectors(self):
-        return self._vectors
-    def set_vectors(self, val):
-        self._vectors = val
-    vectors = property(get_vectors, set_vectors)
-
-    def get_ports(self):
-        return self._ports
-    def set_ports(self, val):
-        self._ports = val
-    ports = property(get_ports, set_ports)
 
     def _extra_config(self):
         xml = ""

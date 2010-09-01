@@ -19,8 +19,8 @@
   <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
-    <controller type="ide" index="3"/>
-    <controller type="virtio-serial" index="0" ports="32" vectors="17"/>
-    <controller type="scsi" index="1"/>
+    <controller type="ide" index="1"/>
+    <controller type="virtio-serial" index="7" ports="5"/>
+    <controller type="scsi" index="2"/>
   </devices>
 </domain>

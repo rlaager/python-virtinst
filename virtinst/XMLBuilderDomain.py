@@ -101,7 +101,9 @@ def _remove_xpath_node(ctx, xpath):
 
     while True:
         node = _get_xpath_node(ctx, curxpath)
-        if node and not node.children:
+        if (node and
+            not node.properties and
+            not (node.children and node.children.content != node.content)):
             # Look for preceding whitespace and remove it
             white = node.get_prev()
             if white and white.type == "text" and not white.content.count("<"):

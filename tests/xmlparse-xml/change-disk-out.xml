@@ -29,6 +29,7 @@
     </disk>
     <disk type="block" device="floppy">
       <target dev="fde" bus="fdc"/>
+      <driver type="raw"/>
     </disk>
     <disk type="block" device="disk">
       <driver name="qemu" type="qcow2"/>

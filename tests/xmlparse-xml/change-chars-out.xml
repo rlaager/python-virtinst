@@ -26,6 +26,7 @@
       <protocol type="raw"/>
     </serial>
     <parallel type="pty">
+      <source mode="bind"/>
     </parallel>
     <parallel type="udp">
       <source mode="bind" host="my.foo.host" service="1357"/>

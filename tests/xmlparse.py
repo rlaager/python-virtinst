@@ -213,6 +213,24 @@ class XMLParseTest(unittest.TestCase):
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
 
+        dev1 = guest.get_devices("controller")[0]
+        dev2 = guest.get_devices("controller")[1]
+        dev3 = guest.get_devices("controller")[2]
+
+        check = self._make_checker(dev1)
+        check("type", "ide")
+        check("index", "3", "1")
+
+        check = self._make_checker(dev2)
+        check("type", "virtio-serial")
+        check("index", "0", "7")
+        check("ports", "32", "5")
+        check("vectors", "17", None)
+
+        check = self._make_checker(dev3)
+        check("type", "scsi")
+        check("index", "1", "2")
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterNics(self):
