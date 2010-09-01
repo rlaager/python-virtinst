@@ -23,6 +23,7 @@ import os
 import _util
 import VirtualDevice
 import support
+from XMLBuilderDomain import _xml_property
 from virtinst import _virtinst as _
 
 class VirtualGraphics(VirtualDevice.VirtualDevice):
@@ -31,6 +32,8 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
     TYPE_SDL = "sdl"
     TYPE_VNC = "vnc"
+    TYPE_RDP = "rdp"
+    types = [TYPE_VNC, TYPE_SDL, TYPE_RDP]
 
     KEYMAP_LOCAL = "local"
 
@@ -40,19 +43,20 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         VirtualDevice.VirtualDevice.__init__(self, conn,
                                              parsexml, parsexmlnode)
 
-        if type != self.TYPE_VNC and type != self.TYPE_SDL:
-            raise ValueError(_("Unknown graphics type"))
-
-        self._type   = type
-        self._port = None
+        self._type   = None
+        self._port   = None
         self._listen = None
         self._passwd = None
         self._keymap = None
 
-        self.set_port(port)
-        self.set_keymap(keymap)
-        self.set_listen(listen)
-        self.set_passwd(passwd)
+        if self._is_parse():
+            return
+
+        self.type = type
+        self.port = port
+        self.keymap = keymap
+        self.listen = listen
+        self.passwd = passwd
 
     def _default_keymap(self):
         if (self.conn and
@@ -64,7 +68,13 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
     def get_type(self):
         return self._type
-    type = property(get_type)
+    def set_type(self, val):
+        if val not in self.types:
+            raise ValueError(_("Unknown graphics type"))
+
+        self._type = val
+    type = _xml_property(get_type, set_type,
+                         xpath="./@type")
 
     def get_keymap(self):
         return self._keymap
@@ -83,35 +93,48 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         if val.lower() == self.KEYMAP_LOCAL:
             val = _util.default_keymap()
         elif len(val) > 16:
-            raise ValueError, _("Keymap must be less than 16 characters")
+            raise ValueError(_("Keymap must be less than 16 characters"))
         elif re.match("^[a-zA-Z0-9_-]*$", val) == None:
-            raise ValueError, _("Keymap can only contain alphanumeric, '_', or '-' characters")
+            raise ValueError(_("Keymap can only contain alphanumeric, "
+                               "'_', or '-' characters"))
 
         self._keymap = val
-    keymap = property(get_keymap, set_keymap)
+    keymap = _xml_property(get_keymap, set_keymap,
+                           xpath="./@keymap")
 
     def get_port(self):
         return self._port
     def set_port(self, val):
         if val is None:
             val = -1
-        elif type(val) is not int \
-             or (val != -1 and (val < 5900 or val > 65535)):
-            raise ValueError, _("VNC port must be a number between 5900 and 65535, or -1 for auto allocation")
+
+        try:
+            val = int(val)
+        except:
+            pass
+
+        if (type(val) is not int or
+            (val != -1 and (val < 5900 or val > 65535))):
+            raise ValueError(_("VNC port must be a number between "
+                               "5900 and 65535, or -1 for auto allocation"))
         self._port = val
-    port = property(get_port, set_port)
+    port = _xml_property(get_port, set_port,
+                         get_converter=int,
+                         xpath="./@port")
 
     def get_listen(self):
         return self._listen
     def set_listen(self, val):
         self._listen = val
-    listen = property(get_listen, set_listen)
+    listen = _xml_property(get_listen, set_listen,
+                           xpath="./@listen")
 
     def get_passwd(self):
         return self._passwd
     def set_passwd(self, val):
         self._passwd = val
-    passwd = property(get_passwd, set_passwd)
+    passwd = _xml_property(get_passwd, set_passwd,
+                           xpath="./@passwd")
 
     def valid_keymaps(self):
         """

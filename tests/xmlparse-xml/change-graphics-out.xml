@@ -23,8 +23,10 @@
       <source dev="/dev/loop0"/>
       <target dev="fda" bus="fdc"/>
     </disk>
-    <graphics type="vnc" password="foobar" port="100" listen="0.0.0.0"/>
-    <graphics type="sdl"/>
+    <graphics type="vnc" passwd="newpass" port="6000" listen="1.2.3.4"/>
+    <graphics type="sdl" xauth="/tmp/.Xauthority" display="1:2"/>
+    <graphics type="rdp"/>
+    <graphics type="vnc" port="-1"/>
   </devices>
   <seclabel type="static" model="selinux">
     <label>foolabel</label>

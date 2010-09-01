@@ -282,6 +282,27 @@ class XMLParseTest(unittest.TestCase):
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
 
+        dev1 = guest.get_devices("graphics")[0]
+        dev2 = guest.get_devices("graphics")[1]
+        dev3 = guest.get_devices("graphics")[2]
+        dev4 = guest.get_devices("graphics")[3]
+
+        check = self._make_checker(dev1)
+        check("type", "vnc")
+        check("passwd", "foobar", "newpass")
+        check("port", 100, 6000)
+        check("listen", "0.0.0.0", "1.2.3.4")
+
+        check = self._make_checker(dev2)
+        check("type", "sdl")
+
+        check = self._make_checker(dev3)
+        check("type", "rdp")
+
+        check = self._make_checker(dev4)
+        check("type", "vnc")
+        check("port", -1)
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterVideos(self):
