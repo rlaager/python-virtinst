@@ -196,7 +196,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._maxmemory = None
         self._vcpus = 1
         self._cpuset = None
-        self._graphics_dev = None
         self._autostart = False
         self._clock = None
         self._installer = installer
@@ -371,9 +370,14 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                            xpath="./vcpu/@cpuset")
 
     def get_graphics_dev(self):
-        return self._graphics_dev
+        gdevs = self.get_devices(VirtualDevice.VIRTUAL_DEV_GRAPHICS)
+        return (gdevs and gdevs[0] or None)
     def set_graphics_dev(self, val):
-        self._graphics_dev = val
+        gdev = self.graphics_dev
+        if val:
+            self.add_device(val)
+        if gdev:
+            self.remove_device(gdev)
     graphics_dev = property(get_graphics_dev, set_graphics_dev)
 
     # GAH! - installer.os_type = "hvm" or "xen" (aka xen paravirt)
@@ -468,20 +472,20 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
     # Deprecated: Should set graphics_dev.keymap directly
     def get_keymap(self):
-        if self._graphics_dev is None:
+        if self.graphics_dev is None:
             return None
-        return self._graphics_dev.keymap
+        return self.graphics_dev.keymap
     def set_keymap(self, val):
-        if self._graphics_dev is not None:
-            self._graphics_dev.keymap = val
+        if self.graphics_dev is not None:
+            self.graphics_dev.keymap = val
     keymap = property(get_keymap, set_keymap)
 
     # Deprecated: Should set guest.graphics_dev = VirtualGraphics(...)
     def get_graphics(self):
-        if self._graphics_dev is None:
+        if self.graphics_dev is None:
             return { "enabled" : False }
-        return { "enabled" : True, "type" : self._graphics_dev, \
-                 "keymap"  : self._graphics_dev.keymap}
+        return { "enabled" : True, "type" : self.graphics_dev, \
+                 "keymap"  : self.graphics_dev.keymap}
     def set_graphics(self, val):
 
         # val can be:
@@ -527,7 +531,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 gdev.port = port
             if keymap:
                 gdev.keymap = keymap
-        self._graphics_dev = gdev
+        self.graphics_dev = gdev
 
     graphics = property(get_graphics, set_graphics)
 
@@ -624,8 +628,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             self.nics.append(dev)
         elif devtype == VirtualDevice.VIRTUAL_DEV_AUDIO:
             self.sound_devs.append(dev)
-        elif devtype == VirtualDevice.VIRTUAL_DEV_GRAPHICS:
-            self._graphics_dev = dev
         elif devtype == VirtualDevice.VIRTUAL_DEV_HOSTDEV:
             self.hostdevs.append(dev)
         else:
@@ -645,8 +647,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             devlist = self.nics[:]
         elif devtype == VirtualDevice.VIRTUAL_DEV_AUDIO:
             devlist = self.sound_devs[:]
-        elif devtype == VirtualDevice.VIRTUAL_DEV_GRAPHICS:
-            devlist = self._graphics_dev and [self._graphics_dev] or []
         elif devtype == VirtualDevice.VIRTUAL_DEV_HOSTDEV:
             devlist = self.hostdevs[:]
         else:
@@ -671,10 +671,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         @param dev: VirtualDevice instance
         """
         found = False
-        if dev == self._graphics_dev:
-            self._graphics_dev = None
-            found = True
-
         for devlist in [self.disks, self.nics, self.sound_devs, self.hostdevs,
                         self._devices, self._install_devices]:
             if found:

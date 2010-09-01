@@ -867,6 +867,11 @@ class TestXMLConfig(unittest.TestCase):
         wdev2.action = "none"
         g.add_device(wdev2)
 
+        gdev1 = virtinst.VirtualGraphics(conn=g.conn, type="vnc")
+        gdev2 = virtinst.VirtualGraphics(conn=g.conn, type="sdl")
+        g.add_device(gdev1)
+        g.add_device(gdev2)
+
         g.clock.offset = "localtime"
 
         seclabel = virtinst.Seclabel(g.conn)

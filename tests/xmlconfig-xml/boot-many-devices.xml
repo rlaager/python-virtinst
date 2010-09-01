@@ -48,6 +48,8 @@
     </interface>
     <input type='mouse' bus='ps2'/>
     <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>
+    <graphics type='vnc' port='-1' keymap='en-us'/>
+    <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>
     <serial type='null'/>
     <parallel type='unix'>
       <source mode='bind' path='/tmp/foobar'/>
