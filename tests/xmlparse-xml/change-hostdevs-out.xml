@@ -21,15 +21,21 @@
     <input type="mouse" bus="ps2"/>
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>
     <console type="pty"/>
-    <hostdev mode="subsystem" type="usb" managed="yes">
+    <hostdev type="usb" managed="no">
       <source>
-        <vendor id="0x4321"/>
-        <product id="0x1234"/>
+        <address bus="1" device="2"/>
+        <vendor id="0x1111"/>
+        <product id="0x2222"/>
       </source>
     </hostdev>
-    <hostdev mode="subsystem" type="pci" managed="yes">
+    <hostdev mode="subsystem" type="usb" managed="yes">
       <source>
-        <address domain="0x0" bus="0x11" slot="0x22" function="0x33"/>
+        <address bus="0x56" device="0x78"/>
+      </source>
+    </hostdev>
+    <hostdev mode="capabilities" type="pci" managed="yes">
+      <source>
+        <address domain="0x2" bus="0x99" slot="0x88" function="0x77"/>
       </source>
     </hostdev>
   </devices>

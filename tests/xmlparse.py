@@ -331,6 +331,35 @@ class XMLParseTest(unittest.TestCase):
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
 
+        dev1 = guest.get_devices("hostdev")[0]
+        dev2 = guest.get_devices("hostdev")[1]
+        dev3 = guest.get_devices("hostdev")[2]
+
+        check = self._make_checker(dev1)
+        check("type", "usb")
+        check("managed", True, False)
+        check("mode", "subsystem", None)
+        check("vendor", "0x4321", "0x1111")
+        check("product", "0x1234", "0x2222")
+        check("bus", None, "1")
+        check("device", None, "2")
+
+        check = self._make_checker(dev2)
+        check("type", "usb")
+        check("managed", False, True)
+        check("mode", "capabilities", "subsystem")
+        check("bus", "0x12", "0x56")
+        check("device", "0x34", "0x78")
+
+        check = self._make_checker(dev3)
+        check("type", "pci")
+        check("managed", True, True)
+        check("mode", "subsystem", "capabilities")
+        check("domain", "0x0", "0x2")
+        check("bus", "0x11", "0x99")
+        check("slot", "0x22", "0x88")
+        check("function", "0x33", "0x77")
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterWatchdogs(self):

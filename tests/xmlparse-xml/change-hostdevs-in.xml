@@ -27,6 +27,11 @@
         <product id="0x1234"/>
       </source>
     </hostdev>
+    <hostdev mode="capabilities" type="usb" managed="no">
+      <source>
+        <address bus="0x12" device="0x34"/>
+      </source>
+    </hostdev>
     <hostdev mode="subsystem" type="pci" managed="yes">
       <source>
         <address domain="0x0" bus="0x11" slot="0x22" function="0x33"/>

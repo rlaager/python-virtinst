@@ -25,6 +25,7 @@ import libvirt
 from virtinst import support
 from virtinst import _util
 from virtinst import _virtinst as _
+from XMLBuilderDomain import _xml_property
 
 class VirtualHostDevice(VirtualDevice.VirtualDevice):
 
@@ -81,14 +82,97 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
         VirtualDevice.VirtualDevice.__init__(self, conn, parsexml,
                                              parsexmlnode)
 
-        self.mode = None
-        self.type = None
+        self._mode = None
+        self._type = None
+        self._managed = None
+        self._nodedev = nodedev
+        self._vendor = None
+        self._product = None
+        self._bus = None
+        self._device = None
+        self._domain = "0x0"
+        self._slot = None
+        self._function = None
+
+        if self._is_parse():
+            return
 
         self.managed = True
         if _util.get_uri_driver(self.conn.getURI()).lower() == "xen":
             self.managed = False
 
-        self._nodedev = nodedev
+
+    def get_mode(self):
+        return self._mode
+    def set_mode(self, val):
+        self._mode = val
+    mode = _xml_property(get_mode, set_mode,
+                         xpath="./@mode")
+
+    def get_type(self):
+        return self._type
+    def set_type(self, val):
+        self._type = val
+    type = _xml_property(get_type, set_type,
+                         xpath="./@type")
+
+    def get_managed(self):
+        return self._managed
+    def set_managed(self, val):
+        self._managed = bool(val)
+    managed = _xml_property(get_type, set_type,
+                            get_converter=lambda x: bool(x == "yes"),
+                            set_converter=lambda x: x and "yes" or "no",
+                            xpath="./@managed")
+
+    def get_vendor(self):
+        return self._vendor
+    def set_vendor(self, val):
+        self._vendor = val
+    vendor = _xml_property(get_vendor, set_vendor,
+                           xpath="./source/vendor/@id")
+
+    def get_product(self):
+        return self._product
+    def set_product(self, val):
+        self._product = val
+    product = _xml_property(get_product, set_product,
+                            xpath="./source/product/@id")
+
+    def get_device(self):
+        return self._device
+    def set_device(self, val):
+        self._device = val
+    device = _xml_property(get_device, set_device,
+                           xpath="./source/address/@device")
+
+    def get_bus(self):
+        return self._bus
+    def set_bus(self, val):
+        self._bus = val
+    bus = _xml_property(get_bus, set_bus,
+                        xpath="./source/address/@bus")
+
+    def get_function(self):
+        return self._function
+    def set_function(self, val):
+        self._function = val
+    function = _xml_property(get_function, set_function,
+                             xpath="./source/address/@function")
+
+    def get_domain(self):
+        return self._domain
+    def set_domain(self, val):
+        self._domain = val
+    domain = _xml_property(get_domain, set_domain,
+                             xpath="./source/address/@domain")
+    
+    def get_slot(self):
+        return self._slot
+    def set_slot(self, val):
+        self._slot = val
+    slot = _xml_property(get_slot, set_slot,
+                         xpath="./source/address/@slot")
 
     def _get_source_xml(self):
         raise NotImplementedError("Must be implemented in subclass")
@@ -119,12 +203,6 @@ class VirtualHostDeviceUSB(VirtualHostDevice):
 
         self.mode = "subsystem"
         self.type = "usb"
-
-        self.vendor = None
-        self.product = None
-
-        self.bus = None
-        self.device = None
 
         self._set_from_nodedev(self._nodedev)
 
@@ -174,11 +252,6 @@ class VirtualHostDevicePCI(VirtualHostDevice):
 
         self.mode = "subsystem"
         self.type = "pci"
-
-        self.domain = "0x0"
-        self.bus = None
-        self.slot = None
-        self.function = None
 
         self._set_from_nodedev(self._nodedev)
 
