@@ -169,8 +169,8 @@ class XMLParseTest(unittest.TestCase):
         check = self._make_checker(serial2)
         check("char_type", "tcp")
         check("protocol", "telnet", "raw")
-        check("source_mode", "bind", "connect") 
-        
+        check("source_mode", "bind", "connect")
+
         check = self._make_checker(parallel1)
         check("source_mode", "bind")
         check("source_path", "/tmp/foobar", None)
@@ -220,6 +220,33 @@ class XMLParseTest(unittest.TestCase):
         outfile = "tests/xmlparse-xml/change-nics-out.xml"
         guest = virtinst.Guest(connection=conn,
                                parsexml=file(infile).read())
+
+        dev1 = guest.get_devices("interface")[0]
+        dev2 = guest.get_devices("interface")[1]
+        dev3 = guest.get_devices("interface")[2]
+        dev4 = guest.get_devices("interface")[3]
+
+        check = self._make_checker(dev1)
+        check("type", "user")
+        check("model", None, "testmodel")
+        check("bridge", None, "br0")
+        check("network", None, "route")
+        check("macaddr", "11:11:11:11:11:11", "AA:AA:AA:AA:AA:AA")
+
+        check = self._make_checker(dev2)
+        check("type", "network", "bridge")
+        check("network", "default", None)
+        check("bridge", None, "newbr0")
+        check("model", "e1000", "virtio")
+
+        check = self._make_checker(dev3)
+        check("type", "bridge")
+        check("bridge", "foobr0", "newfoo0")
+        check("network", None, "default")
+        check("macaddr", "22:22:22:22:22:22")
+
+        check = self._make_checker(dev4)
+        check("type", "ethernet")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 

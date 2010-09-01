@@ -729,22 +729,18 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 pass
 
             elif node.name == "devices":
-                for devnode in node.children:
+                children = filter(lambda x: x.name in device_mappings,
+                                  node.children)
+                for devnode in children:
                     objclass = device_mappings.get(devnode.name)
-                    if not objclass:
-                        continue
 
-                    try:
-                        if objclass == virtinst.VirtualCharDevice:
-                            dev = objclass(self.conn, devnode.name,
-                                           parsexmlnode=devnode)
-                        else:
-                            dev = objclass(conn=self.conn,
-                                           parsexmlnode=devnode)
-                        self.add_device(dev)
-                    except:
-                        print devnode.name, objclass
-                        raise
+                    if objclass == virtinst.VirtualCharDevice:
+                        dev = objclass(self.conn, devnode.name,
+                                       parsexmlnode=devnode)
+                    else:
+                        dev = objclass(conn=self.conn,
+                                       parsexmlnode=devnode)
+                    self.add_device(dev)
 
 
     def _get_default_input_device(self):

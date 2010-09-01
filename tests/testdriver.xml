@@ -92,6 +92,17 @@
   </ip>
 </network>
 
+<network>
+  <name>route</name>
+  <uuid>715666b7-aaaa-6c78-fa55-94863da09f2d</uuid>
+  <forward mode='route'/>
+  <ip address='192.168.123.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.123.2' end='192.168.123.254' />
+    </dhcp>
+  </ip>
+</network>
+
 <pool type='dir'>
   <name>default-pool</name>
   <uuid>35bb2ad9-388a-cdfe-461a-b8907f6e53fe</uuid>

@@ -19,20 +19,23 @@
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <interface type="user">
-      <mac address="11:11:11:11:11:11"/>
-    </interface>
-    <interface type="network">
-      <source network="default"/>
-      <mac address="11:22:33:44:55:66"/>
-    </interface>
-    <interface type="network">
-      <source network="default"/>
-      <mac address="11:22:33:44:55:66"/>
-      <model type="e1000"/>
+      <source bridge="br0" network="route"/>
+      <model type="testmodel"/>
+      <mac address="AA:AA:AA:AA:AA:AA"/>
     </interface>
     <interface type="bridge">
-      <source bridge="foobr0"/>
+      <source bridge="newbr0"/>
+      <mac address="11:22:33:44:55:66"/>
+      <model type="virtio"/>
+    </interface>
+    <interface type="bridge">
+      <source bridge="newfoo0" network="default"/>
       <mac address="22:22:22:22:22:22"/>
+    </interface>
+    <interface type="ethernet">
+      <mac address="00:11:22:33:44:55"/>
+      <script path="/etc/qemu-ifup"/>
+      <target dev="nic02"/>
     </interface>
     <input type="mouse" bus="ps2"/>
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>

@@ -24,15 +24,16 @@
     <interface type="network">
       <source network="default"/>
       <mac address="11:22:33:44:55:66"/>
-    </interface>
-    <interface type="network">
-      <source network="default"/>
-      <mac address="11:22:33:44:55:66"/>
       <model type="e1000"/>
     </interface>
     <interface type="bridge">
       <source bridge="foobr0"/>
       <mac address="22:22:22:22:22:22"/>
+    </interface>
+    <interface type='ethernet'>
+      <mac address='00:11:22:33:44:55'/>
+      <script path='/etc/qemu-ifup'/>
+      <target dev='nic02'/>
     </interface>
     <input type="mouse" bus="ps2"/>
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>

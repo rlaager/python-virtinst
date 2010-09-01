@@ -22,6 +22,7 @@ import libvirt
 
 import _util
 import VirtualDevice
+from XMLBuilderDomain import _xml_property
 from virtinst import _virtinst as _
 
 def _countMACaddr(vms, searchmac):
@@ -47,16 +48,17 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
     _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_NET
 
-    TYPE_BRIDGE  = "bridge"
-    TYPE_VIRTUAL = "network"
-    TYPE_USER    = "user"
-    network_types = [TYPE_BRIDGE, TYPE_VIRTUAL, TYPE_USER]
+    TYPE_BRIDGE     = "bridge"
+    TYPE_VIRTUAL    = "network"
+    TYPE_USER       = "user"
+    TYPE_ETHERNET   = "ethernet"
+    network_types = [TYPE_BRIDGE, TYPE_VIRTUAL, TYPE_USER, TYPE_ETHERNET]
 
     def get_network_type_desc(net_type):
         """
         Return human readable description for passed network type
         """
-        desc = ""
+        desc = net_type.capitalize()
 
         if net_type == VirtualNetworkInterface.TYPE_BRIDGE:
             desc = _("Shared physical device")
@@ -64,8 +66,6 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             desc = _("Virtual networking")
         elif net_type == VirtualNetworkInterface.TYPE_USER:
             desc = _("Usermode networking")
-        else:
-            raise ValueError(_("Unknown network type '%s'") % net_type)
 
         return desc
     get_network_type_desc = staticmethod(get_network_type_desc)
@@ -74,11 +74,16 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                  network=None, model=None, conn=None, parsexml=None,
                  parsexmlnode=None):
         VirtualDevice.VirtualDevice.__init__(self, conn, parsexml,
-                                             parsexmlnode=None)
+                                             parsexmlnode)
 
         self._network = None
+        self._bridge = None
         self._macaddr = None
         self._type = None
+        self._model = None
+
+        if self._is_parse():
+            return
 
         self.type = type
         self.macaddr = macaddr
@@ -96,14 +101,16 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         if val not in self.network_types:
             raise ValueError, _("Unknown network type %s") % val
         self._type = val
-    type = property(get_type, set_type)
+    type = _xml_property(get_type, set_type,
+                         xpath="./@type")
 
     def get_macaddr(self):
         return self._macaddr
     def set_macaddr(self, val):
         _util.validate_macaddr(val)
         self._macaddr = val
-    macaddr = property(get_macaddr, set_macaddr)
+    macaddr = _xml_property(get_macaddr, set_macaddr,
+                            xpath="./mac/@address")
 
     def get_network(self):
         return self._network
@@ -126,7 +133,22 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                                    "started.") % newnet)
 
         self._network = newnet
-    network = property(get_network, set_network)
+    network = _xml_property(get_network, set_network,
+                            xpath="./source/@network")
+
+    def get_bridge(self):
+        return self._bridge
+    def set_bridge(self, val):
+        self._bridge = val
+    bridge = _xml_property(get_bridge, set_bridge,
+                           xpath="./source/@bridge")
+
+    def get_model(self):
+        return self._model
+    def set_model(self, val):
+        self._model = val
+    model = _xml_property(get_model, set_model,
+                          xpath="./model/@type")
 
     def is_conflict_net(self, conn):
         """
