@@ -29,6 +29,7 @@ from optparse import OptionValueError, OptionParser
 import libvirt
 import _util
 import virtinst
+from _util import listify
 from virtinst import VirtualNetworkInterface, VirtualVideoDevice, Guest, \
                      VirtualGraphics, VirtualAudio, VirtualDisk, User
 from virtinst import _virtinst as _
@@ -520,14 +521,6 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
 #
 # Ask for attributes
 #
-
-def listify(l):
-    if l is None:
-        return []
-    elif type(l) != list:
-        return [ l ]
-    else:
-        return l
 
 def get_name(name, guest, image_name=None):
     prompt_txt = _("What is the name of your virtual machine?")

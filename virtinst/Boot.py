@@ -19,6 +19,7 @@
 
 import _util
 import XMLBuilderDomain
+from XMLBuilderDomain import _xml_property
 
 class Boot(XMLBuilderDomain.XMLBuilderDomain):
     """
@@ -32,8 +33,9 @@ class Boot(XMLBuilderDomain.XMLBuilderDomain):
     boot_devices = [BOOT_DEVICE_HARDDISK, BOOT_DEVICE_CDROM,
                     BOOT_DEVICE_FLOPPY, BOOT_DEVICE_NETWORK]
 
-    def __init__(self, conn):
-        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
+    def __init__(self, conn, parsexml=None, parsexmlnode=None):
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
+                                                   parsexmlnode)
 
         self._bootorder = []
         self._enable_bootmenu = None
@@ -45,31 +47,45 @@ class Boot(XMLBuilderDomain.XMLBuilderDomain):
         return self._enable_bootmenu
     def _set_enable_bootmenu(self, val):
         self._enable_bootmenu = val
-    enable_bootmenu = property(_get_enable_bootmenu, _set_enable_bootmenu)
+    enable_bootmenu = _xml_property(_get_enable_bootmenu, _set_enable_bootmenu,
+                                get_converter=lambda x: bool(x == "yes"),
+                                set_converter=lambda x: x and "yes" or "no",
+                                xpath="./os/bootmenu/@enable")
 
     def _get_bootorder(self):
         return self._bootorder
     def _set_bootorder(self, val):
         self._bootorder = val
-    bootorder = property(_get_bootorder, _set_bootorder)
+    def _bootorder_xpath_list(self):
+        l = []
+        for idx in range(len(self._get_bootorder())):
+            l.append("./os/boot[%d]/@dev" % (idx + 1))
+        return l
+    bootorder = _xml_property(_get_bootorder, _set_bootorder,
+                              is_multi=True,
+                              xml_set_list=_bootorder_xpath_list,
+                              xpath="./os/boot/@dev")
 
     def _get_kernel(self):
         return self._kernel
     def _set_kernel(self, val):
         self._kernel = val
-    kernel = property(_get_kernel, _set_kernel)
+    kernel = _xml_property(_get_kernel, _set_kernel,
+                           xpath="./os/kernel")
 
     def _get_initrd(self):
         return self._initrd
     def _set_initrd(self, val):
         self._initrd = val
-    initrd = property(_get_initrd, _set_initrd)
+    initrd = _xml_property(_get_initrd, _set_initrd,
+                           xpath="./os/initrd")
 
     def _get_kernel_args(self):
         return self._kernel_args
     def _set_kernel_args(self, val):
         self._kernel_args = val
-    kernel_args = property(_get_kernel_args, _set_kernel_args)
+    kernel_args = _xml_property(_get_kernel_args, _set_kernel_args,
+                                xpath="./os/cmdline")
 
     def _get_xml_config(self):
         xml = ""

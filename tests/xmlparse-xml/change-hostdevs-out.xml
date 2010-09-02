@@ -23,9 +23,9 @@
     <console type="pty"/>
     <hostdev type="usb" managed="no">
       <source>
-        <address bus="1" device="2"/>
         <vendor id="0x1111"/>
         <product id="0x2222"/>
+        <address bus="1" device="2"/>
       </source>
     </hostdev>
     <hostdev mode="subsystem" type="usb" managed="yes">

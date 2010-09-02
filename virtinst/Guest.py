@@ -716,13 +716,14 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
             if node.name == "clock":
                 self._clock = Clock(self.conn, parsexmlnode=node)
-                pass
+
             elif node.name == "seclabel":
                 self._seclabel = Seclabel(self.conn, parsexmlnode=node)
-                pass
+
             elif node.name == "os":
-                #self._installer = Installer(self.conn, parsexmlnode=node)
-                pass
+                self._installer = virtinst.Installer.Installer(
+                                                   self.conn,
+                                                   parsexmlnode=self._xml_node)
 
             elif node.name == "devices":
                 children = filter(lambda x: x.name in device_mappings,

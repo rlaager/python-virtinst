@@ -110,6 +110,49 @@ class XMLParseTest(unittest.TestCase):
         check("label", "foolabel", "barlabel")
         check("imagelabel", "imagelabel", "fooimage")
 
+        check = self._make_checker(guest.installer)
+        check("type", "kvm", "test")
+        check("os_type", "hvm", "xen")
+        check("arch", "i686", None)
+
+        check = self._make_checker(guest.installer.bootconfig)
+        check("bootorder", ["hd"], ["fd"])
+        check("enable_bootmenu", None, False)
+        check("kernel", None)
+        check("initrd", None)
+        check("kernel_args", None)
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterBootMulti(self):
+        infile  = "tests/xmlparse-xml/change-boot-multi-in.xml"
+        outfile = "tests/xmlparse-xml/change-boot-multi-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        check = self._make_checker(guest.installer.bootconfig)
+        check("bootorder", ['hd', 'fd', 'cdrom', 'network'], ["cdrom"])
+        check("enable_bootmenu", False, True)
+        check("kernel", None, "foo.img")
+        check("initrd", None, "bar.img")
+        check("kernel_args", None, "ks=foo.ks")
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterBootKernel(self):
+        infile  = "tests/xmlparse-xml/change-boot-kernel-in.xml"
+        outfile = "tests/xmlparse-xml/change-boot-kernel-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        check = self._make_checker(guest.installer.bootconfig)
+        check("bootorder", [], ["network", "hd", "fd"])
+        check("enable_bootmenu", None)
+        check("kernel", "/boot/vmlinuz", None)
+
+        check("initrd", "/boot/initrd", None)
+        check("kernel_args", "location", None)
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterDisk(self):

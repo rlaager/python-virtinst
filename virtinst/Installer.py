@@ -28,6 +28,7 @@ import copy
 import _util
 import virtinst
 import XMLBuilderDomain
+from XMLBuilderDomain import _xml_property
 from virtinst import CapabilitiesParser
 from virtinst import _virtinst as _
 from VirtualDisk import VirtualDisk
@@ -81,22 +82,27 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         - Guest architecture ('i686', 'x86_64')
     """
     def __init__(self, type = "xen", location = None, boot = None,
-                 extraargs = None, os_type = None, conn = None):
-        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn)
+                 extraargs = None, os_type = None, conn = None,
+                 parsexml=None, parsexmlnode=None):
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
+                                                   parsexmlnode)
 
         self._type = None
         self._location = None
         self._initrd_injections = []
         self._cdrom = False
+        self._os_type = None
         # XXX: We should set this default based on capabilities?
-        self._os_type = "xen"
         self._scratchdir = None
         self._arch = None
         self._install_bootconfig = Boot(self.conn)
-        self._bootconfig = Boot(self.conn)
+        self._bootconfig = Boot(self.conn, parsexml, parsexmlnode)
 
         # Devices created/added during the prepare() stage
         self.install_devices = []
+
+        if self._is_parse():
+            return
 
         # FIXME: Better solution? Skip validating this since we may not be
         # able to install a VM of the host arch
@@ -109,6 +115,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
 
         if not os_type is None:
             self.os_type = os_type
+        else:
+            self.os_type = "xen"
         if not location is None:
             self.location = location
 
@@ -131,7 +139,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         return self._type
     def set_type(self, val):
         self._type = val
-    type = property(get_type, set_type)
+    type = _xml_property(get_type, set_type,
+                         xpath="./@type")
 
     # Virtualization type ('xen' == xen paravirt, or 'hvm)
     def get_os_type(self):
@@ -144,7 +153,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
 
         # XXX: Need to validate this: have some whitelist based on caps?
         self._os_type = val
-    os_type = property(get_os_type, set_os_type)
+    os_type = _xml_property(get_os_type, set_os_type,
+                            xpath="./os/type")
 
     def get_arch(self):
         return self._arch
@@ -152,7 +162,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         # XXX: Sanitize to a consisten value (i368 -> i686)
         # XXX: Validate against caps
         self._arch = val
-    arch = property(get_arch, set_arch)
+    arch = _xml_property(get_arch, set_arch,
+                         xpath="./os/type/@arch")
 
     def get_scratchdir(self):
         if not self.scratchdir_required():

@@ -34,9 +34,10 @@ def _sanitize_libxml_xml(xml):
         xml += "\n"
     return xml
 
-def _get_xpath_node(ctx, xpath):
+def _get_xpath_node(ctx, xpath, is_multi=False):
     node = ctx.xpathEval(xpath)
-    node = (node and node[0] or None)
+    if not is_multi:
+        return (node and node[0] or None)
     return node
 
 def _build_xpath_node(ctx, xpath):
@@ -51,9 +52,6 @@ def _build_xpath_node(ctx, xpath):
     for nodename in xpath.split("/"):
         if not nodename:
             continue
-
-        if nodename.count("["):
-            nodename = nodename[:nodename.index("[")]
 
         if nodename.startswith("@"):
             nodename = nodename.strip("@")
@@ -73,21 +71,23 @@ def _build_xpath_node(ctx, xpath):
         if not parentnode:
             raise RuntimeError("Could not find XML root node")
 
+        if nodename.count("["):
+            nodename = nodename[:nodename.index("[")]
+
         # Add the needed parent node, try to preserve whitespace by
         # looking for a starting TEXT node, and copying it
         newnode = libxml2.newNode(nodename)
-        first = parentnode.children
-        if first and first.type == "text" and not first.content.count("<"):
-            content = first.content
-            if first == parentnode.get_last():
-                first = first.addNextSibling(libxml2.newText("  "))
+        sib = parentnode.get_last()
+        if sib and sib.type == "text" and not sib.content.count("<"):
+            content = sib.content
+            sib = sib.addNextSibling(libxml2.newText("  "))
             txt = libxml2.newText(content)
         else:
-            first = libxml2.newText("")
+            sib = libxml2.newText("")
             txt = libxml2.newText("\n")
-            parentnode.addChild(first)
+            parentnode.addChild(sib)
 
-        first.addNextSibling(newnode)
+        sib.addNextSibling(newnode)
         newnode.addNextSibling(txt)
         parentnode = newnode
 
@@ -99,28 +99,39 @@ def _remove_xpath_node(ctx, xpath):
     """
     curxpath = xpath
 
-    while True:
+    while curxpath:
+        is_orig = (curxpath == xpath)
         node = _get_xpath_node(ctx, curxpath)
-        if (node and
-            not node.properties and
-            not (node.children and node.children.content != node.content)):
-            # Look for preceding whitespace and remove it
-            white = node.get_prev()
-            if white and white.type == "text" and not white.content.count("<"):
-                white.unlinkNode()
-                white.freeNode()
+        if curxpath.count("/"):
+            curxpath, ignore = curxpath.rsplit("/", 1)
+        else:
+            curxpath = None
 
-            node.unlinkNode()
-            node.freeNode()
+        if not node:
+            continue
+        
+        if node.type not in ["attribute", "element"]:
+            continue
 
-        if not curxpath.count("/"):
-            break
-        curxpath, ignore = curxpath.rsplit("/", 1)
+        if node.type == "element" and (node.children or node.properties):
+            # Only do a deep unlink if it was the original requested path
+            if not is_orig:
+                continue
+
+        # Look for preceding whitespace and remove it
+        white = node.get_prev()
+        if white and white.type == "text" and not white.content.count("<"):
+            white.unlinkNode()
+            white.freeNode()
+
+        node.unlinkNode()
+        node.freeNode()
+
 
 def _xml_property(fget=None, fset=None, fdel=None, doc=None,
                   xpath=None, get_converter=None, set_converter=None,
                   xml_get_xpath=None, xml_set_xpath=None,
-                  is_bool=False):
+                  xml_set_list=None, is_bool=False, is_multi=False):
     """
     Set a XMLBuilder class property that represents a value in the
     <domain> XML. For example
@@ -148,69 +159,99 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
     @param xml_set_xpath: Not all props map cleanly to a static xpath.
         This allows passing functions which generate an xpath for getting
         or setting.
+    @param xml_set_list: Return a list of xpaths to set for each value
+                         in the val list
     @param is_bool: Whether this is a boolean property in the XML
+    @param is_multi: Whether data is coming multiple or a single node
     """
-    getter = fget
-    setter = fset
-
     def new_getter(self, *args, **kwargs):
         val = None
-        if self._xml_node:
-            usexpath = xpath
-            if xml_get_xpath:
-                usexpath = xml_get_xpath(self)
+        getval = fget(self, *args, **kwargs)
+        if not self._xml_node:
+            return getval
 
-            if usexpath:
-                node = _get_xpath_node(self._xml_ctx, usexpath)
-                if node:
-                    val = node.content
-                    if get_converter:
-                        val = get_converter(val)
-                    elif is_bool:
-                        val = True
-                    return val
+        usexpath = xpath
+        if xml_get_xpath:
+            usexpath = xml_get_xpath(self)
 
+        if usexpath is None:
+            return getval
+    
+        nodes = _util.listify(_get_xpath_node(self._xml_ctx,
+                                              usexpath, is_multi))
+        if nodes:
+            ret = []
+            for node in nodes:
+                val = node.content
+                if get_converter:
+                    val = get_converter(val)
                 elif is_bool:
-                    return False
+                    val = True
 
-        return fget(self, *args, **kwargs)
+                if not is_multi:
+                    return val
+                # If user is querying multiple nodes, return a list of results
+                ret.append(val)
+            return ret
+
+        elif is_bool:
+            return False
+
+        return getval
 
     def new_setter(self, val, *args, **kwargs):
         # Do this regardless, for validation purposes
         fset(self, val, *args, **kwargs)
 
+        if not self._xml_node:
+            return
+
+        # Convert from API value to XML value
         val = fget(self)
         if set_converter:
             val = set_converter(val)
 
-        if self._xml_node:
-            usexpath = xpath
-            if xml_set_xpath:
-                usexpath = xml_set_xpath(self)
+        nodexpath = xpath
+        if xml_set_xpath:
+            nodexpath = xml_set_xpath(self)
 
-            if usexpath:
-                if val not in [None, False]:
-                    node = _get_xpath_node(self._xml_ctx, usexpath)
-                    if not node:
-                        node = _build_xpath_node(self._xml_node, usexpath)
+        if nodexpath is None:
+            return
 
-                    if val is not True:
-                        node.setContent(str(val))
+        nodes = _util.listify(_get_xpath_node(self._xml_ctx,
+                                              nodexpath, is_multi))
+
+        xpath_list = nodexpath
+        if xml_set_list:
+            xpath_list = xml_set_list(self) 
+            
+        node_map = map(lambda x, y, z: (x, y, z),
+                       _util.listify(nodes),
+                       _util.listify(val),
+                       _util.listify(xpath_list))
+
+        for node, val, usexpath in node_map:
+            if node:
+                usexpath = node.nodePath()
+
+            if val not in [None, False]:
+                if not node:
+                    node = _build_xpath_node(self._xml_node, usexpath)
+
+                if val is True:
+                    # Boolean property, creating the node is enough
+                    pass
                 else:
-                    _remove_xpath_node(self._xml_node, usexpath)
+                    node.setContent(str(val))
+            else:
+                _remove_xpath_node(self._xml_node, usexpath)
 
 
     if fdel:
         # Not tested
         raise RuntimeError("XML deleter not yet supported.")
 
-    if bool(xpath or xml_get_xpath or xml_set_xpath):
-        if fget:
-            getter = new_getter
-        if fset:
-            setter = new_setter
-
-    return property(fget=getter, fset=setter, doc=doc)
+    return property(fget=new_getter, fset=new_setter, doc=doc)
 
 class XMLBuilderDomain(object):
     """

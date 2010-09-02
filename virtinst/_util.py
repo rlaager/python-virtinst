@@ -43,6 +43,14 @@ try:
 except ImportError:
     selinux = None
 
+def listify(l):
+    if l is None:
+        return []
+    elif type(l) != list:
+        return [ l ]
+    else:
+        return l
+
 def is_vdisk(path):
     if not os.path.exists("/usr/sbin/vdiskadm"):
         return False

@@ -19,17 +19,17 @@
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <disk type="file" device="disk">
-      <driver name="test" type="foobar"/>
       <source file="/dev/loop0"/>
       <target dev="hda" bus="ide"/>
+      <driver name="test" type="foobar"/>
     </disk>
     <disk type="block" device="disk">
       <source dev="/dev/loop0"/>
       <target dev="hdb" bus="ide"/>
     </disk>
     <disk type="block" device="floppy">
-      <target dev="fde" bus="fdc"/>
       <driver type="raw"/>
+      <target dev="fde" bus="fdc"/>
     </disk>
     <disk type="block" device="disk">
       <driver name="qemu" type="qcow2"/>
@@ -41,10 +41,10 @@
       <readonly/>
     </disk>
     <disk type="file" device="floppy">
-      <driver cache="writeback"/>
-      <shareable/>
-      <source file="/default-pool/default-vol"/>
       <target dev="fda" bus="fdc"/>
+      <source file="/default-pool/default-vol"/>
+      <shareable/>
+      <driver cache="writeback"/>
     </disk>
     <disk type="block" device="floppy">
       <driver name="phy" cache="none"/>

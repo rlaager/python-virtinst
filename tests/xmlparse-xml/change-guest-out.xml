@@ -1,12 +1,12 @@
-<domain type="kvm">
-  <description>Hey desc changed</description>
+<domain type="test">
   <name>change_name</name>
   <currentMemory>1024000</currentMemory>
   <memory>2048000</memory>
   <uuid>11111111-2222-3333-4444-555555555555</uuid>
   <os>
-    <type arch="i686">hvm</type>
-    <boot dev="hd"/>
+    <type>xen</type>
+    <boot dev="fd"/>
+    <bootmenu enable="no"/>
   </os>
   <features>
     <acpi/><apic/>
@@ -42,7 +42,6 @@
       <mac address="11:22:33:44:55:66"/>
       <model type="virtio"/>
     </interface>
-    <input type="tablet" bus="usb"/>
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>
     <console type="pty"/>
   </devices>
@@ -50,4 +49,5 @@
     <label>barlabel</label>
     <imagelabel>fooimage</imagelabel>
   </seclabel>
+  <description>Hey desc changed</description>
 </domain>

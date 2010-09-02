@@ -33,7 +33,7 @@
       <source mode="connect" host="my.source.host" service="2222"/>
     </parallel>
     <console type="file">
-      <source path='/tmp/foo.img'/>
+      <source path="/tmp/foo.img"/>
       <target type="virtio"/>
     </console>
     <console type="pty"/>
