@@ -36,7 +36,9 @@ class ParaVirtGuest(Guest):
         self.disknode = "xvd"
         self._diskbus = "xen"
 
-        self.features = {"acpi": False, "apic": False, "pae": False}
+        self.features["acpi"] = False
+        self.features["apic"] = False
+        self.features["pae"]  = False
 
     def _get_default_input_device(self):
         dev = VirtualInputDevice(self.conn)

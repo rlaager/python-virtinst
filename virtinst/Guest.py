@@ -42,6 +42,7 @@ from VirtualDisk import VirtualDisk
 from VirtualInputDevice import VirtualInputDevice
 from Clock import Clock
 from Seclabel import Seclabel
+from DomainFeatures import DomainFeatures
 
 import osdict
 from virtinst import _virtinst as _
@@ -201,7 +202,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._installer = installer
         self._seclabel = None
         self._description = None
-        self.features = None
+        self._features = None
         self._replace = None
 
         self._os_type = None
@@ -237,18 +238,22 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         # Need to do this after all parameter init
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml)
+        if self._is_parse():
+            return
 
-        if not self._xml_node:
-            if not self._clock:
-                self._clock = Clock(self.conn)
-            inp = self._get_default_input_device()
-            con = self._get_default_console_device()
-            if inp:
-                self.add_device(inp)
-                self._default_input_device = inp
-            if con:
-                self.add_device(con)
-                self._default_console_device = con
+        if not self._clock:
+            self._clock = Clock(self.conn)
+        if not self._features:
+            self._features = DomainFeatures(self.conn)
+
+        inp = self._get_default_input_device()
+        con = self._get_default_console_device()
+        if inp:
+            self.add_device(inp)
+            self._default_input_device = inp
+        if con:
+            self.add_device(con)
+            self._default_console_device = con
 
 
     ######################
@@ -276,6 +281,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             val.get_xml_config()
         self._seclabel = val
     seclabel = property(get_seclabel, set_seclabel)
+
+    def _get_features(self):
+        return self._features
+    features = property(_get_features)
 
     # Domain name of the guest
     def get_name(self):
@@ -725,6 +734,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                                                    self.conn,
                                                    parsexmlnode=self._xml_node)
 
+            elif node.name == "features":
+                self._features = DomainFeatures(self.conn, parsexmlnode=node)
+
             elif node.name == "devices":
                 children = filter(lambda x: x.name in device_mappings,
                                   node.children)
@@ -795,23 +807,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         return xml
 
-    def _get_features(self):
-        """
-        Determine the guest features, based on explicit settings in FEATURES
-        and the OS_TYPE and OS_VARIANT. FEATURES takes precedence over the OS
-        preferences
-        """
-        if self.features is None:
-            return None
-
-        # explicitly disabling apic and acpi will override OS_TYPES values
-        features = dict(self.features)
-        for f in ["acpi", "apic"]:
-            val = self._lookup_osdict_key(f)
-            if features.get(f) == None:
-                features[f] = val
-        return features
-
     def _get_emulator_xml(self):
         return ""
 
@@ -819,25 +814,11 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         Return features (pae, acpi, apic) xml
         """
-        features = self._get_features()
-        found_feature = False
+        defaults = {}
+        for f in ["acpi", "apic"]:
+            defaults[f] = self._lookup_osdict_key(f)
 
-        ret = "  <features>\n"
-
-        if features:
-            ret += "    "
-            for k in sorted(features.keys()):
-                v = features[k]
-                if v:
-                    ret += "<%s/>" % k
-                    found_feature = True
-            ret += "\n"
-
-        if not found_feature:
-            # Don't print empty feature block if no features added
-            return ""
-
-        return ret + "  </features>"
+        return self.features.get_xml_config(defaults)
 
     def _get_cpu_xml(self):
         """

@@ -40,8 +40,9 @@ class FullVirtGuest(Guest):
         self.disknode = "hd"
         self._diskbus = "ide"
 
-        self.features = { "acpi": None, "pae":
-            _util.is_pae_capable(self.conn), "apic": None }
+        self.features["acpi"] = None
+        self.features["pae"]  = _util.is_pae_capable(self.conn)
+        self.features["apic"] = None
 
         self.emulator = emulator
         if arch:

@@ -122,6 +122,10 @@ class XMLParseTest(unittest.TestCase):
         check("initrd", None)
         check("kernel_args", None)
 
+        check = self._make_checker(guest.features)
+        check("acpi", True, False)
+        check("apic", True, False)
+        check("pae", False, True)
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterBootMulti(self):
