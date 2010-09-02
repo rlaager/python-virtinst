@@ -742,6 +742,10 @@ def runcomm(comm):
             print ret[1]
             print "\n"
 
+        if not debug:
+            sys.stdout.write(".")
+            sys.stdout.flush()
+
         return ret
     except Exception, e:
         return (-1, str(e))
