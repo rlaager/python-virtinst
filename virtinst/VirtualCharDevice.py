@@ -223,7 +223,10 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         return self._source_path
     def set_source_path(self, val):
         self._source_path = val
+    def _sourcepath_get_xpath(self):
+        return "./source/@path | ./@tty"
     source_path = _xml_property(get_source_path, set_source_path,
+                                xml_get_xpath=_sourcepath_get_xpath,
                                 xpath="./source/@path")
 
     def get_source_mode(self):

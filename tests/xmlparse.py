@@ -478,5 +478,17 @@ class XMLParseTest(unittest.TestCase):
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
+    def testConsoleCompat(self):
+        infile  = "tests/xmlparse-xml/console-compat-in.xml"
+        outfile = "tests/xmlparse-xml/console-compat-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        dev1 = guest.get_devices("console")[0]
+        check = self._make_checker(dev1)
+        check("source_path", "/dev/pts/4")
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
 if __name__ == "__main__":
     unittest.main()
