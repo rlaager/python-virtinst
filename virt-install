@@ -1024,7 +1024,7 @@ def main():
                     "successful.  If it was, you can restart your domain\n "
                     "by running 'virsh start %s'; otherwise, please\n "
                     "restart your installation.") % guest.name
-            sys.exit(0)
+            sys.exit(1)
 
         if continue_inst:
             dom = do_install(guest, conscb, progresscb, wait, wait_time,
