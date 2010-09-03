@@ -318,9 +318,12 @@ class XMLParseTest(unittest.TestCase):
         check("bridge", "foobr0", "newfoo0")
         check("network", None, "default")
         check("macaddr", "22:22:22:22:22:22")
+        check("target_dev", None, "test1")
 
         check = self._make_checker(dev4)
         check("type", "ethernet")
+        check("target_dev", "nic02", "nic03")
+        check("target_dev", "nic03", None)
 
         self._alter_compare(guest.get_config_xml(), outfile)
 

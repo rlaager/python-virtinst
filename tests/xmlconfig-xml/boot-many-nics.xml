@@ -33,6 +33,7 @@
     <interface type='bridge'>
       <source bridge='foobr0'/>
       <mac address='22:22:22:22:22:22'/>
+      <target dev='foo1'/>
     </interface>
     <input type='mouse' bus='ps2'/>
     <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>

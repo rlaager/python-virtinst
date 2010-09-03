@@ -718,6 +718,7 @@ class TestXMLConfig(unittest.TestCase):
         net3.model = "e1000"
         net4 = VirtualNetworkInterface(bridge="foobr0",
                                        macaddr="22:22:22:22:22:22")
+        net4.target_dev = "foo1"
 
         g.nics.append(net1)
         g.nics.append(net2)

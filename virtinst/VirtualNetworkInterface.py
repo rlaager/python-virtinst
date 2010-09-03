@@ -81,6 +81,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         self._macaddr = None
         self._type = None
         self._model = None
+        self._target_dev = None
 
         if self._is_parse():
             return
@@ -149,6 +150,13 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         self._model = val
     model = _xml_property(get_model, set_model,
                           xpath="./model/@type")
+
+    def get_target_dev(self):
+        return self._target_dev
+    def set_target_dev(self, val):
+        self._target_dev = val
+    target_dev = _xml_property(get_target_dev, set_target_dev,
+                               xpath="./target/@dev")
 
     def is_conflict_net(self, conn):
         """
@@ -220,19 +228,25 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     def _get_xml_config(self):
         src_xml = ""
         model_xml = ""
+        target_xml = ""
         if self.type == self.TYPE_BRIDGE:
-            src_xml =   "      <source bridge='%s'/>\n" % self.bridge
+            src_xml     = "      <source bridge='%s'/>\n" % self.bridge
         elif self.type == self.TYPE_VIRTUAL:
-            src_xml =   "      <source network='%s'/>\n" % self.network
+            src_xml     = "      <source network='%s'/>\n" % self.network
 
         if self.model:
-            model_xml = "      <model type='%s'/>\n" % self.model
+            model_xml   = "      <model type='%s'/>\n" % self.model
 
-        return "    <interface type='%s'>\n" % self.type + \
-               src_xml + \
-               "      <mac address='%s'/>\n" % self.macaddr + \
-               model_xml + \
-               "    </interface>"
+        if self.target_dev:
+            target_xml  = "      <target dev='%s'/>\n" % self.target_dev
+
+        xml  = "    <interface type='%s'>\n" % self.type
+        xml += src_xml
+        xml += "      <mac address='%s'/>\n" % self.macaddr
+        xml += target_xml
+        xml += model_xml
+        xml += "    </interface>"
+        return xml
 
 # Back compat class to avoid ABI break
 class XenNetworkInterface(VirtualNetworkInterface):

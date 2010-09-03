@@ -31,11 +31,11 @@
     <interface type="bridge">
       <source bridge="newfoo0" network="default"/>
       <mac address="22:22:22:22:22:22"/>
+      <target dev="test1"/>
     </interface>
     <interface type="ethernet">
       <mac address="00:11:22:33:44:55"/>
       <script path="/etc/qemu-ifup"/>
-      <target dev="nic02"/>
     </interface>
     <input type="mouse" bus="ps2"/>
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>
