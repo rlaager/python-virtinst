@@ -343,8 +343,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             # XXX: Use block peek for this?
             return True
 
-        if len(guest.disks) == 0 \
-           or guest.disks[0].device != VirtualDisk.DEVICE_DISK:
+        if (len(guest.disks) == 0 or
+            guest.disks[0].device != VirtualDisk.DEVICE_DISK):
             return True
 
         disk = guest.disks[0]
@@ -353,20 +353,21 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             return True
 
         if (disk.driver_type and
-            disk.driver_type not in [disk.DRIVER_TYPE_RAW,
-                                     disk.DRIVER_TYPE_QEMU]):
+            disk.driver_type not in [disk.DRIVER_TAP_RAW,
+                                     disk.DRIVER_QEMU_RAW]):
             # Might be a non-raw format
             return True
 
         # Check for the 0xaa55 signature at the end of the MBR
         try:
-            fd = os.open(guest.disks[0].path, os.O_RDONLY)
+            fd = os.open(disk.path, os.O_RDONLY)
         except OSError, (err, msg):
             logging.debug("Failed to open guest disk: %s" % msg)
             if err == errno.EACCES and os.geteuid() != 0:
                 return True # non root might not have access to block devices
             else:
                 raise
+
         buf = os.read(fd, 512)
         os.close(fd)
         return (len(buf) == 512 and

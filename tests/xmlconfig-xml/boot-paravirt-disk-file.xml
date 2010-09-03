@@ -10,7 +10,7 @@
   <vcpu>5</vcpu>
   <devices>
     <disk type='file' device='disk'>
-      <source file='/tmp/test.img'/>
+      <source file='/tmp/somerandomfilename.img'/>
       <target dev='xvda' bus='xen'/>
     </disk>
     <input type='mouse' bus='xen'/>
