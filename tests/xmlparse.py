@@ -306,8 +306,10 @@ class XMLParseTest(unittest.TestCase):
         check("bridge", None, "br0")
         check("network", None, "route")
         check("macaddr", "11:11:11:11:11:11", "AA:AA:AA:AA:AA:AA")
+        self.assertEquals(dev1.get_source(), None)
 
         check = self._make_checker(dev2)
+        self.assertEquals(dev2.get_source(), "default")
         check("type", "network", "bridge")
         check("network", "default", None)
         check("bridge", None, "newbr0")
@@ -319,11 +321,14 @@ class XMLParseTest(unittest.TestCase):
         check("network", None, "default")
         check("macaddr", "22:22:22:22:22:22")
         check("target_dev", None, "test1")
+        self.assertEquals(dev3.get_source(), "newfoo0")
 
         check = self._make_checker(dev4)
         check("type", "ethernet")
+        check("source_dev", "eth0", "eth1")
         check("target_dev", "nic02", "nic03")
         check("target_dev", "nic03", None)
+        self.assertEquals(dev4.get_source(), "eth1")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 

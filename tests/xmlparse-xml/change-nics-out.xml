@@ -35,6 +35,7 @@
     </interface>
     <interface type="ethernet">
       <mac address="00:11:22:33:44:55"/>
+      <source dev="eth1"/>
       <script path="/etc/qemu-ifup"/>
     </interface>
     <input type="mouse" bus="ps2"/>

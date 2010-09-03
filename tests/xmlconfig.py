@@ -719,11 +719,15 @@ class TestXMLConfig(unittest.TestCase):
         net4 = VirtualNetworkInterface(bridge="foobr0",
                                        macaddr="22:22:22:22:22:22")
         net4.target_dev = "foo1"
+        net5 = VirtualNetworkInterface(type="ethernet",
+                                       macaddr="00:11:00:22:00:33")
+        net5.source_dev = "testeth1"
 
         g.nics.append(net1)
         g.nics.append(net2)
         g.nics.append(net3)
         g.nics.append(net4)
+        g.nics.append(net5)
         self._compare(g, "boot-many-nics", False)
 
     def testManyHostdevs(self):

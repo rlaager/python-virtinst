@@ -82,6 +82,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         self._type = None
         self._model = None
         self._target_dev = None
+        self._source_dev = None
 
         if self._is_parse():
             return
@@ -95,6 +96,21 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         if self.type == self.TYPE_VIRTUAL:
             if network is None:
                 raise ValueError, _("A network name was not provided")
+
+    def get_source(self):
+        """
+        Convenince function, try to return the relevant <source> value
+        per the network type.
+        """
+        if self.type == self.TYPE_VIRTUAL:
+            return self.network
+        if self.type == self.TYPE_BRIDGE:
+            return self.bridge
+        if self.type == self.TYPE_ETHERNET:
+            return self.source_dev
+        if self.type == self.TYPE_USER:
+            return None
+        return self.network or self.bridge or self.source_dev
 
     def get_type(self):
         return self._type
@@ -157,6 +173,13 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         self._target_dev = val
     target_dev = _xml_property(get_target_dev, set_target_dev,
                                xpath="./target/@dev")
+
+    def get_source_dev(self):
+        return self._source_dev
+    def set_source_dev(self, val):
+        self._source_dev = val
+    source_dev = _xml_property(get_source_dev, set_source_dev,
+                               xpath="./source/@dev")
 
     def is_conflict_net(self, conn):
         """
@@ -233,6 +256,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             src_xml     = "      <source bridge='%s'/>\n" % self.bridge
         elif self.type == self.TYPE_VIRTUAL:
             src_xml     = "      <source network='%s'/>\n" % self.network
+        elif self.type == self.TYPE_ETHERNET and self.source_dev:
+            src_xml     = "      <source dev='%s'/>\n" % self.source_dev
 
         if self.model:
             model_xml   = "      <model type='%s'/>\n" % self.model
