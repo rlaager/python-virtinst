@@ -853,6 +853,8 @@ def main():
     finally:
         cleanup()
 
+    print "\nAll tests completed successfully."
+
 def cleanup():
     # Cleanup files
     for i in clean_files:
