@@ -559,14 +559,6 @@ class VirtualDisk(VirtualDevice):
         self.__validate_params()
 
 
-    def __repr__(self):
-        """
-        prints a simple string representation for the disk instance
-        """
-        return "%s:%s" %(self.type, self.path)
-
-
-
     #
     # Parameters for specifying the backing storage
     #
