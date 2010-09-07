@@ -250,7 +250,7 @@ class TestXMLConfig(unittest.TestCase):
         # Just cram some post_install_checks in here
         try:
             g.post_install_check()
-            raise assertionError("Expected OSError, none caught.")
+            raise AssertionError("Expected OSError, none caught.")
         except OSError:
             pass
 

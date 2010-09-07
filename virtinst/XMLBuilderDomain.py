@@ -40,7 +40,7 @@ def _get_xpath_node(ctx, xpath, is_multi=False):
         return (node and node[0] or None)
     return node
 
-def _build_xpath_node(ctx, xpath):
+def _build_xpath_node(ctx, xpath, addnode=None):
     """
     Build all nodes required to set an xpath. If we have XML <foo/>, and want
     to set xpath /foo/bar/baz@booyeah, we create node 'bar' and 'baz'
@@ -48,6 +48,23 @@ def _build_xpath_node(ctx, xpath):
     """
     parentpath = ""
     parentnode = None
+
+    def make_node(parentnode, newnode):
+        # Add the needed parent node, try to preserve whitespace by
+        # looking for a starting TEXT node, and copying it
+        sib = parentnode.get_last()
+        if sib and sib.type == "text" and not sib.content.count("<"):
+            content = sib.content
+            sib = sib.addNextSibling(libxml2.newText("  "))
+            txt = libxml2.newText(content)
+        else:
+            sib = libxml2.newText("")
+            txt = libxml2.newText("\n")
+            parentnode.addChild(sib)
+
+        sib.addNextSibling(newnode)
+        newnode.addNextSibling(txt)
+        return newnode
 
     for nodename in xpath.split("/"):
         if not nodename:
@@ -74,26 +91,15 @@ def _build_xpath_node(ctx, xpath):
         if nodename.count("["):
             nodename = nodename[:nodename.index("[")]
 
-        # Add the needed parent node, try to preserve whitespace by
-        # looking for a starting TEXT node, and copying it
         newnode = libxml2.newNode(nodename)
-        sib = parentnode.get_last()
-        if sib and sib.type == "text" and not sib.content.count("<"):
-            content = sib.content
-            sib = sib.addNextSibling(libxml2.newText("  "))
-            txt = libxml2.newText(content)
-        else:
-            sib = libxml2.newText("")
-            txt = libxml2.newText("\n")
-            parentnode.addChild(sib)
+        parentnode = make_node(parentnode, newnode)
 
-        sib.addNextSibling(newnode)
-        newnode.addNextSibling(txt)
-        parentnode = newnode
+    if addnode:
+        parentnode = make_node(parentnode, addnode)
 
     return parentnode
 
-def _remove_xpath_node(ctx, xpath):
+def _remove_xpath_node(ctx, xpath, dofree=True):
     """
     Remove an XML node tree if it has no content
     """
@@ -125,7 +131,8 @@ def _remove_xpath_node(ctx, xpath):
             white.freeNode()
 
         node.unlinkNode()
-        node.freeNode()
+        if dofree:
+            node.freeNode()
 
 
 def _xml_property(fget=None, fset=None, fdel=None, doc=None,
@@ -317,17 +324,35 @@ class XMLBuilderDomain(object):
     def _is_parse(self):
         return bool(self._xml_node or self._xml_ctx)
 
-    def _parsexml(self, xml, node):
-        if xml:
-            doc = libxml2.parseDoc(xml)
-            self._xml_node = doc.children
-        else:
-            doc = node.doc
-            self._xml_node = node
+    def set_xml_node(self, node):
+        self._parsexml(None, node)
 
+    def get_xml_node_path(self):
+        if self._xml_node:
+            return self._xml_node.nodePath()
+        return None
+
+    def _add_child_node(self, parent_xpath, newnode):
+        ret = _build_xpath_node(self._xml_ctx, parent_xpath, newnode)
+        return ret
+
+    def _remove_child_xpath(self, xpath):
+        _remove_xpath_node(self._xml_ctx, xpath, dofree=False)
+        self._set_xml_context()
+
+    def _set_xml_context(self):
+        doc = self._xml_node.doc
         ctx = doc.xpathNewContext()
         ctx.setContextNode(self._xml_node)
         self._xml_ctx = ctx
+
+    def _parsexml(self, xml, node):
+        if xml:
+            self._xml_node = libxml2.parseDoc(xml).children
+        else:
+            self._xml_node = node
+
+        self._set_xml_context()
 
     def _get_xml_config(self):
         """

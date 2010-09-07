@@ -28,6 +28,7 @@ import copy
 
 import urlgrabber.progress as progress
 import libvirt
+import libxml2
 
 import _util
 import CapabilitiesParser
@@ -616,6 +617,16 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         if not isinstance(dev, VirtualDevice):
             raise ValueError(_("Must pass a VirtualDevice instance."))
+
+        if self._is_parse():
+            xml = dev.get_xml_config()
+            node = libxml2.parseDoc(xml).children
+            dev.set_xml_node(node)
+            self._add_child_node("./devices", node)
+
+        return self._add_device(dev)
+
+    def _add_device(self, dev):
         devtype = dev.virtual_device_type
 
         # If user adds a device conflicting with a default assigned device
@@ -641,6 +652,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             self.hostdevs.append(dev)
         else:
             self._devices.append(dev)
+
 
     def get_devices(self, devtype):
         """
@@ -692,6 +704,11 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         if not found:
             raise ValueError(_("Did not find device %s") % str(dev))
+
+        if self._is_parse():
+            xpath = dev.get_xml_node_path()
+            if xpath:
+                self._remove_child_xpath(xpath)
 
 
     ################################
@@ -749,7 +766,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                     else:
                         dev = objclass(conn=self.conn,
                                        parsexmlnode=devnode)
-                    self.add_device(dev)
+                    self._add_device(dev)
 
 
     def _get_default_input_device(self):

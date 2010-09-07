@@ -51,7 +51,7 @@ class DomainFeatures(XMLBuilderDomain.XMLBuilderDomain):
         self._apic = _none_or_bool(val)
     apic = _xml_property(get_apic, set_apic,
                          xpath="./apic", is_bool=True)
-    
+
     def get_pae(self):
         return self._pae
     def set_pae(self, val):
@@ -62,12 +62,14 @@ class DomainFeatures(XMLBuilderDomain.XMLBuilderDomain):
     def __setitem__(self, attr, val):
         setattr(self, attr, val)
     def __getitem__(self, attr):
-        getitem(self, attr)
+        getattr(self, attr)
     def __delitem__(self, attr):
         setattr(self, attr, None)
 
 
-    def _get_xml_config(self, defaults={}):
+    def _get_xml_config(self, defaults=None):
+        if not defaults:
+            defaults = {}
         ret = ""
 
         feature_xml = ""

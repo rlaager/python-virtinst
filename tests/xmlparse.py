@@ -490,5 +490,26 @@ class XMLParseTest(unittest.TestCase):
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
+    def testAddRemoveDevices(self):
+        infile  = "tests/xmlparse-xml/add-devices-in.xml"
+        outfile = "tests/xmlparse-xml/add-devices-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        rmdev = guest.get_devices("disk")[2]
+        guest.remove_device(rmdev)
+
+        adddev = virtinst.VirtualNetworkInterface(conn=conn, type="network",
+                                                  network="default",
+                                                  macaddr="1A:2A:3A:4A:5A:6A")
+        guest.add_device(virtinst.VirtualWatchdog(conn))
+        guest.add_device(adddev)
+
+        guest.remove_device(adddev)
+        guest.add_device(adddev)
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+
 if __name__ == "__main__":
     unittest.main()

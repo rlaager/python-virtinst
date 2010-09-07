@@ -166,7 +166,7 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
         self._domain = val
     domain = _xml_property(get_domain, set_domain,
                              xpath="./source/address/@domain")
-    
+
     def get_slot(self):
         return self._slot
     def set_slot(self, val):
