@@ -205,6 +205,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._description = None
         self._features = None
         self._replace = None
+        self._emulator = None
 
         self._os_type = None
         self._os_variant = None
@@ -459,6 +460,13 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._description = val
     description = _xml_property(_get_description, _set_description,
                                 xpath="./description")
+
+    def _get_emulator(self):
+        return self._emulator
+    def _set_emulator(self, val):
+        self._emulator = val
+    emulator = _xml_property(_get_emulator, _set_emulator,
+                             xpath="./devices/emulator")
 
     def _get_replace(self):
         return self._replace
@@ -809,7 +817,11 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return xml
 
     def _get_emulator_xml(self):
-        return ""
+        emu_xml = ""
+        if self.emulator is not None:
+            emu_xml = "    <emulator>%s</emulator>" % self.emulator
+
+        return emu_xml
 
     def _get_features_xml(self):
         """

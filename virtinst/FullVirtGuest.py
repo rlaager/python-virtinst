@@ -74,13 +74,6 @@ class FullVirtGuest(Guest):
                                                  VirtualCharDevice.CHAR_PTY)
         return dev
 
-    def _get_emulator_xml(self):
-        emu_xml = ""
-        if self.emulator is not None:
-            emu_xml = "    <emulator>%s</emulator>" % self.emulator
-
-        return emu_xml
-
     def _set_defaults(self, devlist_func):
         disktype = VirtualDevice.VIRTUAL_DEV_DISK
         nettype = VirtualDevice.VIRTUAL_DEV_NET

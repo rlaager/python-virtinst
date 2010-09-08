@@ -17,7 +17,7 @@
   <on_crash>restart</on_crash>
   <vcpu cpuset="1-5,15">28</vcpu>
   <devices>
-    <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
+    <emulator>/usr/binnnn/fooemu</emulator>
     <disk type="file" device="floppy">
       <driver name="qemu" type="qcow2"/>
       <source file="/default-pool/testvol1.img"/>
