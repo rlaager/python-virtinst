@@ -247,7 +247,7 @@ def get_security(security, guest):
     # Parse security opts
     opts = cli.parse_optstr(secopts)
     arglist = secopts.split(",")
-    secmodel = virtinst.Seclabel(guest.conn)
+    secmodel = guest.seclabel
 
     # Beware, adding boolean options here could upset label comma handling
     mode = get_opt_param(opts, "type")
@@ -281,8 +281,8 @@ def get_security(security, guest):
     if opts:
         raise ValueError(_("Unknown options %s") % opts.keys())
 
+    # Run for validation purposes
     secmodel.get_xml_config()
-    guest.seclabel = secmodel
 
 def parse_disk_option(guest, path, size):
     """helper to properly parse --disk options"""

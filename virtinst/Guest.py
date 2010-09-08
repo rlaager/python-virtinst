@@ -242,10 +242,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         if self._is_parse():
             return
 
-        if not self._clock:
-            self._clock = Clock(self.conn)
-        if not self._features:
-            self._features = DomainFeatures(self.conn)
+        self._clock = Clock(self.conn)
+        self._features = DomainFeatures(self.conn)
+        self._seclabel = Seclabel(self.conn)
+        self._seclabel.model = None
 
         inp = self._get_default_input_device()
         con = self._get_default_console_device()
@@ -273,15 +273,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
     def get_seclabel(self):
         return self._seclabel
-    def set_seclabel(self, val):
-        if val and not isinstance(val, Seclabel):
-            raise ValueError("'seclabel' must be a Seclabel() instance.")
-
-        if val:
-            # Check for validation purposes
-            val.get_xml_config()
-        self._seclabel = val
-    seclabel = property(get_seclabel, set_seclabel)
+    seclabel = property(get_seclabel)
 
     def _get_features(self):
         return self._features

@@ -29,6 +29,8 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
     SECLABEL_TYPE_STATIC = "static"
     SECLABEL_TYPES = [SECLABEL_TYPE_DYNAMIC, SECLABEL_TYPE_STATIC]
 
+    MODEL_DEFAULT = "default"
+
     def __init__(self, conn, parsexml=None, parsexmlnode=None):
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
                                                    parsexmlnode)
@@ -41,12 +43,11 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
         if self._is_parse():
             return
 
-        model = self._get_caps().host.secmodel.model
-        if not model:
-            raise ValueError("Hypervisor does not have any security driver"
-                             "enabled")
-        self.model = model
+        self.model = self.MODEL_DEFAULT
         self.type = self.SECLABEL_TYPE_DYNAMIC
+
+    def _get_default_model(self):
+        return self._get_caps().host.secmodel.model
 
     def get_type(self):
         return self._type
@@ -79,15 +80,22 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
                                xpath="./imagelabel")
 
     def _get_xml_config(self):
-        if not self.type or not self.model:
+        if not self.model:
+            return ""
+
+        if not self.type:
             raise RuntimeError("Security type and model must be specified")
 
         if (self.type == self.SECLABEL_TYPE_STATIC and not self.label):
             raise RuntimeError("A label must be specified for static "
                                "security type.")
 
+        model = self.model
+        if model == self.MODEL_DEFAULT:
+            model = self._get_default_model()
+
         label_xml = ""
-        xml = "  <seclabel type='%s' model='%s'" % (self.type, self.model)
+        xml = "  <seclabel type='%s' model='%s'" % (self.type, model)
 
         if self.label:
             label_xml += "    <label>%s</label>\n" % self.label

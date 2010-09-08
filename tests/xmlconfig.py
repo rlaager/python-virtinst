@@ -410,7 +410,7 @@ class TestXMLConfig(unittest.TestCase):
         g.installer.bootconfig.bootorder = [
             g.installer.bootconfig.BOOT_DEVICE_NETWORK]
         g.installer.bootconfig.enable_bootmenu = True
-        g.seclabel = virtinst.Seclabel(g.conn)
+        g.seclabel.model = "default"
 
         self._compare(g, "boot-fullyvirt-pxe-always", False)
 
@@ -896,12 +896,10 @@ class TestXMLConfig(unittest.TestCase):
 
         g.clock.offset = "localtime"
 
-        seclabel = virtinst.Seclabel(g.conn)
-        seclabel.type = seclabel.SECLABEL_TYPE_STATIC
-        seclabel.model = "selinux"
-        seclabel.label = "foolabel"
-        seclabel.imagelabel = "imagelabel"
-        g.seclabel = seclabel
+        g.seclabel.type = g.seclabel.SECLABEL_TYPE_STATIC
+        g.seclabel.model = "selinux"
+        g.seclabel.label = "foolabel"
+        g.seclabel.imagelabel = "imagelabel"
 
         self._compare(g, "boot-many-devices", False)
 
