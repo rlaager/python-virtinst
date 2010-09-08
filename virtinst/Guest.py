@@ -731,35 +731,27 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         # Hand off all child element parsing to relevant classes
         for node in self._xml_node.children:
+            if node.name != "devices":
+                continue
 
-            if node.name == "clock":
-                self._clock = Clock(self.conn, parsexmlnode=node)
+            children = filter(lambda x: x.name in device_mappings,
+                              node.children)
+            for devnode in children:
+                objclass = device_mappings.get(devnode.name)
 
-            elif node.name == "seclabel":
-                self._seclabel = Seclabel(self.conn, parsexmlnode=node)
+                if objclass == virtinst.VirtualCharDevice:
+                    dev = objclass(self.conn, devnode.name,
+                                   parsexmlnode=devnode)
+                else:
+                    dev = objclass(conn=self.conn,
+                                   parsexmlnode=devnode)
+                self._add_device(dev)
 
-            elif node.name == "os":
-                self._installer = virtinst.Installer.Installer(
-                                                   self.conn,
+        self._installer = virtinst.Installer.Installer(self.conn,
                                                    parsexmlnode=self._xml_node)
-
-            elif node.name == "features":
-                self._features = DomainFeatures(self.conn, parsexmlnode=node)
-
-            elif node.name == "devices":
-                children = filter(lambda x: x.name in device_mappings,
-                                  node.children)
-                for devnode in children:
-                    objclass = device_mappings.get(devnode.name)
-
-                    if objclass == virtinst.VirtualCharDevice:
-                        dev = objclass(self.conn, devnode.name,
-                                       parsexmlnode=devnode)
-                    else:
-                        dev = objclass(conn=self.conn,
-                                       parsexmlnode=devnode)
-                    self._add_device(dev)
-
+        self._features = DomainFeatures(self.conn, parsexmlnode=self._xml_node)
+        self._clock = Clock(self.conn, parsexmlnode=self._xml_node)
+        self._seclabel = Seclabel(self.conn, parsexmlnode=self._xml_node)
 
     def _get_default_input_device(self):
         """

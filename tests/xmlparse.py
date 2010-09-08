@@ -128,6 +128,26 @@ class XMLParseTest(unittest.TestCase):
         check("pae", False, True)
         self._alter_compare(guest.get_config_xml(), outfile)
 
+    def testAlterMinimalGuest(self):
+        infile  = "tests/xmlparse-xml/change-minimal-guest-in.xml"
+        outfile = "tests/xmlparse-xml/change-minimal-guest-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        check = self._make_checker(guest.features)
+        check("acpi", False, True)
+        check("pae", False)
+
+        check = self._make_checker(guest.clock)
+        check("offset", None, "utc")
+
+        check = self._make_checker(guest.seclabel)
+        check("model", None, "default")
+        check("type", None, "static")
+        check("label", None, "frob")
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
     def testAlterBootMulti(self):
         infile  = "tests/xmlparse-xml/change-boot-multi-in.xml"
         outfile = "tests/xmlparse-xml/change-boot-multi-out.xml"

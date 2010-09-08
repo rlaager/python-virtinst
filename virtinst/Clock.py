@@ -36,7 +36,7 @@ class Clock(XMLBuilderDomain.XMLBuilderDomain):
     def set_offset(self, val):
         self._offset = val
     offset = _xml_property(get_offset, set_offset,
-                           xpath="./@offset")
+                           xpath="./clock/@offset")
 
     def _get_xml_config(self):
         if not self.offset:

@@ -49,27 +49,68 @@ def _build_xpath_node(ctx, xpath, addnode=None):
     parentpath = ""
     parentnode = None
 
+    def prevSibling(node):
+        parent = node.get_parent()
+        if not parent:
+            return None
+
+        prev = None
+        for child in parent.children:
+            if child == node:
+                return prev
+            prev = child
+
+        return None
+
     def make_node(parentnode, newnode):
         # Add the needed parent node, try to preserve whitespace by
         # looking for a starting TEXT node, and copying it
+        def node_is_text(n):
+            return bool(n and n.type == "text" and not n.content.count("<"))
+
         sib = parentnode.get_last()
-        if sib and sib.type == "text" and not sib.content.count("<"):
-            content = sib.content
-            sib = sib.addNextSibling(libxml2.newText("  "))
-            txt = libxml2.newText(content)
-        else:
-            sib = libxml2.newText("")
-            txt = libxml2.newText("\n")
+        if not node_is_text(sib):
+            # This case is when we add a child element to a node for the
+            # first time, like:
+            #
+            # <features/>
+            # to
+            # <features>
+            #   <acpi/>
+            # </features>
+            prevsib = prevSibling(parentnode)
+            if node_is_text(prevsib):
+                sib = libxml2.newText(prevsib.content)
+            else:
+                sib = libxml2.newText("")
             parentnode.addChild(sib)
+
+        # This is case is adding a child element to an already properly
+        # spaced element. Example:
+        # <features>
+        #  <acpi/>
+        # </features>
+        # to
+        # <features>
+        #  <acpi/>
+        #  <apic/>
+        # </features>
+        sib = parentnode.get_last()
+        content = sib.content
+        sib = sib.addNextSibling(libxml2.newText("  "))
+        txt = libxml2.newText(content)
 
         sib.addNextSibling(newnode)
         newnode.addNextSibling(txt)
         return newnode
 
-    for nodename in xpath.split("/"):
+    nodelist = xpath.split("/")
+    for idx in range(len(nodelist)):
+        nodename = nodelist[idx]
         if not nodename:
             continue
 
+        # If xpath is a node property, set it and move on
         if nodename.startswith("@"):
             nodename = nodename.strip("@")
             parentnode = parentnode.setProp(nodename, "")
@@ -80,6 +121,7 @@ def _build_xpath_node(ctx, xpath, addnode=None):
         else:
             parentpath += "/%s" % nodename
 
+        # Node found, nothing to create for now
         node = _get_xpath_node(ctx, parentpath)
         if node:
             parentnode = node
@@ -88,6 +130,7 @@ def _build_xpath_node(ctx, xpath, addnode=None):
         if not parentnode:
             raise RuntimeError("Could not find XML root node")
 
+        # Remove conditional xpath elements for node creation
         if nodename.count("["):
             nodename = nodename[:nodename.index("[")]
 
@@ -115,7 +158,7 @@ def _remove_xpath_node(ctx, xpath, dofree=True):
 
         if not node:
             continue
-        
+
         if node.type not in ["attribute", "element"]:
             continue
 
@@ -138,7 +181,8 @@ def _remove_xpath_node(ctx, xpath, dofree=True):
 def _xml_property(fget=None, fset=None, fdel=None, doc=None,
                   xpath=None, get_converter=None, set_converter=None,
                   xml_get_xpath=None, xml_set_xpath=None,
-                  xml_set_list=None, is_bool=False, is_multi=False):
+                  xml_set_list=None, is_bool=False, is_multi=False,
+                  default_converter=None):
     """
     Set a XMLBuilder class property that represents a value in the
     <domain> XML. For example
@@ -170,11 +214,16 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
                          in the val list
     @param is_bool: Whether this is a boolean property in the XML
     @param is_multi: Whether data is coming multiple or a single node
+    @param default_converter: If the virtinst value is "default", use
+                              this function to get the actual XML value
     """
     def new_getter(self, *args, **kwargs):
         val = None
         getval = fget(self, *args, **kwargs)
         if not self._xml_node:
+            return getval
+
+        if default_converter and getval == "default":
             return getval
 
         usexpath = xpath
@@ -183,7 +232,7 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
 
         if usexpath is None:
             return getval
-    
+
         nodes = _util.listify(_get_xpath_node(self._xml_ctx,
                                               usexpath, is_multi))
         if nodes:
@@ -217,6 +266,8 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
         val = fget(self)
         if set_converter:
             val = set_converter(val)
+        elif default_converter and val == "default":
+            val = default_converter(self)
 
         nodexpath = xpath
         if xml_set_xpath:
@@ -230,8 +281,8 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
 
         xpath_list = nodexpath
         if xml_set_list:
-            xpath_list = xml_set_list(self) 
-            
+            xpath_list = xml_set_list(self)
+
         node_map = map(lambda x, y, z: (x, y, z),
                        _util.listify(nodes),
                        _util.listify(val),

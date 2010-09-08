@@ -56,28 +56,29 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
             raise ValueError("Unknown security type '%s'" % val)
         self._type = val
     type = _xml_property(get_type, set_type,
-                         xpath="./@type")
+                         xpath="./seclabel/@type")
 
     def get_model(self):
         return self._model
     def set_model(self, val):
         self._model = val
     model = _xml_property(get_model, set_model,
-                          xpath="./@model")
+                          xpath="./seclabel/@model",
+                          default_converter=_get_default_model)
 
     def get_label(self):
         return self._label
     def set_label(self, val):
         self._label = val
     label = _xml_property(get_label, set_label,
-                          xpath="./label")
+                          xpath="./seclabel/label")
 
     def get_imagelabel(self):
         return self._imagelabel
     def set_imagelabel(self, val):
         self._imagelabel = val
     imagelabel = _xml_property(get_imagelabel, set_imagelabel,
-                               xpath="./imagelabel")
+                               xpath="./seclabel/imagelabel")
 
     def _get_xml_config(self):
         if not self.model:
