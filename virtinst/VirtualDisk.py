@@ -284,6 +284,18 @@ class VirtualDisk(VirtualDevice):
     _target_props = ["file", "dev", "dir"]
 
     @staticmethod
+    def disk_type_to_xen_driver_name(disk_type):
+        """
+        Convert a value of VirtualDisk.type to it's associated Xen
+        <driver name=/> property
+        """
+        if disk_type == VirtualDisk.TYPE_BLOCK:
+            return "phy"
+        elif disk_type == VirtualDisk.TYPE_FILE:
+            return "file"
+        return "file"
+
+    @staticmethod
     def disk_type_to_target_prop(disk_type):
         """
         Convert a value of VirtualDisk.type to it's associated XML
@@ -539,6 +551,7 @@ class VirtualDisk(VirtualDevice):
             volObject = _lookup_vol_name(conn, volName)
 
         if self._is_parse():
+            self._validate = False
             return
 
         self.set_read_only(readOnly, validate=False)
