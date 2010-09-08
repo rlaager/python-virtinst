@@ -86,13 +86,20 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
             raise RuntimeError("A label must be specified for static "
                                "security type.")
 
-        xml = "  <seclabel type='%s' model='%s'>\n" % (self.type, self.model)
+        label_xml = ""
+        xml = "  <seclabel type='%s' model='%s'" % (self.type, self.model)
 
         if self.label:
-            xml += "    <label>%s</label>\n" % self.label
+            label_xml += "    <label>%s</label>\n" % self.label
         if self.imagelabel:
-            xml += "    <imagelabel>%s</imagelabel>\n" % self.imagelabel
+            label_xml += "    <imagelabel>%s</imagelabel>\n" % self.imagelabel
 
-        xml += "  </seclabel>"
+        if label_xml:
+            xml += ">\n"
+            xml += label_xml
+            xml += "  </seclabel>"
+        else:
+            xml += "/>"
+
 
         return xml

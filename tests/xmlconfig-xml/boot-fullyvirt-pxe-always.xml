@@ -27,4 +27,5 @@
     <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>
     <console type='pty'/>
   </devices>
+  <seclabel type='dynamic' model='testSecurity'/>
 </domain>
