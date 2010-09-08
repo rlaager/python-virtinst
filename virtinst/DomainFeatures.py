@@ -30,6 +30,7 @@ class DomainFeatures(XMLBuilderDomain.XMLBuilderDomain):
     Class for generating <features> XML
     """
 
+    _dumpxml_xpath = "/domain/features"
     def __init__(self, conn, parsexml=None, parsexmlnode=None):
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
                                                    parsexmlnode)

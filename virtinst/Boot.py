@@ -33,6 +33,7 @@ class Boot(XMLBuilderDomain.XMLBuilderDomain):
     boot_devices = [BOOT_DEVICE_HARDDISK, BOOT_DEVICE_CDROM,
                     BOOT_DEVICE_FLOPPY, BOOT_DEVICE_NETWORK]
 
+    _dumpxml_xpath = "/domain/os"
     def __init__(self, conn, parsexml=None, parsexmlnode=None):
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
                                                    parsexmlnode)

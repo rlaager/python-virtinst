@@ -25,6 +25,7 @@ class Clock(XMLBuilderDomain.XMLBuilderDomain):
     Class for generating <clock> XML
     """
 
+    _dumpxml_xpath = "/domain/clock"
     def __init__(self, conn, parsexml=None, parsexmlnode=None):
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
                                                    parsexmlnode)

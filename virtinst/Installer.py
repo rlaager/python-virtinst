@@ -81,6 +81,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         - Hypervisor name (parameter 'type') ('qemu', 'kvm', 'xen', etc.)
         - Guest architecture ('i686', 'x86_64')
     """
+
+    _dumpxml_xpath = "/domain/os"
     def __init__(self, type = "xen", location = None, boot = None,
                  extraargs = None, os_type = None, conn = None,
                  parsexml=None, parsexmlnode=None):

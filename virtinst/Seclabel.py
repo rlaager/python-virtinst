@@ -31,6 +31,7 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
 
     MODEL_DEFAULT = "default"
 
+    _dumpxml_xpath = "/domain/seclabel"
     def __init__(self, conn, parsexml=None, parsexmlnode=None):
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
                                                    parsexmlnode)

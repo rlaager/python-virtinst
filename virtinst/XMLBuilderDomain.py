@@ -316,6 +316,7 @@ class XMLBuilderDomain(object):
     Base for all classes which build or parse domain XML
     """
 
+    _dumpxml_xpath = "."
     def __init__(self, conn=None, parsexml=None, parsexmlnode=None):
         """
         Initialize state
@@ -418,8 +419,11 @@ class XMLBuilderDomain(object):
         @return: object xml representation as a string
         @rtype: str
         """
-        if self._xml_node:
-            return _sanitize_libxml_xml(self._xml_node.serialize())
+        if self._xml_ctx:
+            node = _get_xpath_node(self._xml_ctx, self._dumpxml_xpath)
+            if not node:
+                return ""
+            return _sanitize_libxml_xml(node.serialize())
 
         return self._get_xml_config(*args, **kwargs)
 

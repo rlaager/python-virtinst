@@ -137,14 +137,21 @@ class XMLParseTest(unittest.TestCase):
         check = self._make_checker(guest.features)
         check("acpi", False, True)
         check("pae", False)
+        self.assertTrue(
+            guest.features.get_xml_config().startswith("<features"))
 
         check = self._make_checker(guest.clock)
         check("offset", None, "utc")
+        self.assertTrue(guest.clock.get_xml_config().startswith("<clock"))
 
         check = self._make_checker(guest.seclabel)
         check("model", None, "default")
         check("type", None, "static")
         check("label", None, "frob")
+        self.assertTrue(
+            guest.seclabel.get_xml_config().startswith("<seclabel"))
+
+        self.assertTrue(guest.installer.get_xml_config().startswith("<os"))
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
