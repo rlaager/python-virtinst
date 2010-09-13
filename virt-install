@@ -619,6 +619,9 @@ def media_prompt(guest, ishvm):
         cdpath = None
         media = cli.prompt_for_input("", prompt_txt, None)
 
+        if not len(media):
+            continue
+
         if not ishvm or media.count(":/"):
             location = media
         else:
