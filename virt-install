@@ -322,6 +322,8 @@ def parse_disk_option(guest, path, size):
                 ro = True
             elif opt_val == "sh":
                 shared = True
+            elif opt_val == "rw":
+                pass  # It's default. Nothing to do.
             else:
                 fail(_("Unknown '%s' value '%s'" % (opt_type, opt_val)))
         elif opt_type == "size":

@@ -142,6 +142,8 @@ args_dict = {
 
         # Existing disk, lots of opts
         "--disk path=%(EXISTIMG1)s,perms=ro,size=.0001,cache=writethrough",
+        # Existing disk, rw perms
+        "--disk path=%(EXISTIMG1)s,perms=rw",
         # Existing floppy
         "--disk path=%(EXISTIMG1)s,device=floppy",
         # Existing disk, no extra options
