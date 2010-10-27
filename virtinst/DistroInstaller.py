@@ -180,40 +180,29 @@ class DistroInstaller(Installer.Installer):
         """
         Insert files into the root directory of the initial ram disk
         """
-        logging.debug("Unpacking initrd.")
         initrd = self._install_bootconfig.initrd
         tempdir = tempfile.mkdtemp(dir=self.scratchdir)
         os.chmod(tempdir, 0775)
-
-        gzip_proc = subprocess.Popen(['gzip', '-dc', initrd],
-                                     stdout=subprocess.PIPE, stderr=sys.stderr)
-        cpio_proc = subprocess.Popen(['cpio', '-i', '-d', '--quiet'],
-                                     stdin=gzip_proc.stdout,
-                                     stderr=sys.stderr, cwd=tempdir)
-        cpio_proc.wait()
-        gzip_proc.wait()
 
         for filename in self._initrd_injections:
             logging.debug("Copying %s to the initrd." % filename)
             shutil.copy(filename, tempdir)
 
-        logging.debug("Repacking the initrd.")
+        logging.debug("Appending to the initrd.")
         find_proc = subprocess.Popen(['find', '.', '-print0'],
                                      stdout=subprocess.PIPE,
                                      stderr=sys.stderr, cwd=tempdir)
-        cpio_proc = subprocess.Popen(['cpio', '-o', '--null', '-c', '--quiet'],
+        cpio_proc = subprocess.Popen(['cpio', '-o', '--null', '-Hnewc', '--quiet'],
                                      stdin=find_proc.stdout,
                                      stdout=subprocess.PIPE,
                                      stderr=sys.stderr, cwd=tempdir)
-        new_initrd = initrd + '.new'
-        f = open(new_initrd, 'w')
+        f = open(initrd, 'ab')
         gzip_proc = subprocess.Popen(['gzip'], stdin=cpio_proc.stdout,
                                      stdout=f, stderr=sys.stderr)
-        f.close()
         cpio_proc.wait()
         find_proc.wait()
         gzip_proc.wait()
-        os.rename(new_initrd, initrd)
+        f.close()
         shutil.rmtree(tempdir)
 
     def _prepare_kernel_and_initrd(self, guest, meter):
