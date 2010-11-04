@@ -206,7 +206,9 @@ class TestXMLConfig(unittest.TestCase):
                                conn_version=None,
                                conn_uri=None,
                                libvirt_version=None):
-        testconn = guest.conn
+        testconn = guest
+        if isinstance(guest, virtinst.Guest):
+            testconn = guest.conn
 
         def set_func(newfunc, funcname, obj, force=False):
             if newfunc or force:
@@ -612,6 +614,26 @@ class TestXMLConfig(unittest.TestCase):
                                     conn_version=conn_nosupport_ac97,
                                     conn_uri=qemu_uri)
 
+    def testKVMKeymap(self):
+        def conn_nosupport_autokeymap():
+            return 10000
+        def conn_support_autokeymap():
+            return 11000
+
+        def test1():
+            g = virtinst.VirtualGraphics(conn=conn, type="vnc")
+            self.assertTrue(g.keymap != None)
+        self.conn_function_wrappers(conn, (), func=test1,
+                                    conn_uri=qemu_uri,
+                                    conn_version=conn_nosupport_autokeymap)
+
+        def test2():
+            g = virtinst.VirtualGraphics(conn=conn, type="vnc")
+            self.assertTrue(g.keymap == None)
+        self.conn_function_wrappers(conn, (), func=test2,
+                                    conn_uri=qemu_uri,
+                                    conn_version=conn_support_autokeymap)
+
 
     def testF11Qemu(self):
         i = make_distro_installer(gtype="qemu")
@@ -889,11 +911,19 @@ class TestXMLConfig(unittest.TestCase):
         wdev2.action = "none"
         g.add_device(wdev2)
 
+        # Check keymap autoconfig
         gdev1 = virtinst.VirtualGraphics(conn=g.conn, type="vnc")
+        self.assertTrue(gdev1.keymap != None)
         gdev1.keymap = "en-us"
-        gdev2 = virtinst.VirtualGraphics(conn=g.conn, type="sdl")
+
+        # Check keymap None
+        gdev2 = virtinst.VirtualGraphics(conn=g.conn, type="vnc")
+        gdev2.keymap = None
+
+        gdev3 = virtinst.VirtualGraphics(conn=g.conn, type="sdl")
         g.add_device(gdev1)
         g.add_device(gdev2)
+        g.add_device(gdev3)
 
         g.clock.offset = "localtime"
 

@@ -760,11 +760,13 @@ def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
         guest.add_device(VirtualVideoDevice(conn=guest.conn))
 
     if sdl is not None:
-        guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_SDL)
+        guest.graphics_dev = VirtualGraphics(conn=guest.conn,
+                                             type=VirtualGraphics.TYPE_SDL)
         return
 
     if vnc is not None:
-        guest.graphics_dev = VirtualGraphics(type=VirtualGraphics.TYPE_VNC)
+        guest.graphics_dev = VirtualGraphics(conn=guest.conn,
+                                             type=VirtualGraphics.TYPE_VNC)
         if vncport:
             guest.graphics_dev.port = vncport
         if vnclisten:

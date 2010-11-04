@@ -36,9 +36,12 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     types = [TYPE_VNC, TYPE_SDL, TYPE_RDP]
 
     KEYMAP_LOCAL = "local"
+    KEYMAP_DEFAULT = "default"
+    _special_keymaps = [KEYMAP_LOCAL, KEYMAP_DEFAULT]
 
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
-                 keymap=None, conn=None, parsexml=None, parsexmlnode=None):
+                 keymap=KEYMAP_DEFAULT, conn=None, parsexml=None,
+                 parsexmlnode=None):
 
         VirtualDevice.VirtualDevice.__init__(self, conn,
                                              parsexml, parsexmlnode)
@@ -77,19 +80,23 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
                          xpath="./@type")
 
     def get_keymap(self):
+        if self._keymap == self.KEYMAP_DEFAULT:
+            return self._default_keymap()
+        if self._keymap == self.KEYMAP_LOCAL:
+            return _util.default_keymap()
         return self._keymap
     def set_keymap(self, val):
-        if not val:
-            val = self._default_keymap()
-
+        # At this point, 'None' is a valid value
         if val == None:
-            # At this point, 'None' is a valid value
+            self._keymap = None
+            return
+
+        if val in self._special_keymaps:
             self._keymap = val
             return
 
-        if type(val) != type("string"):
+        if type(val) is not str:
             raise ValueError, _("Keymap must be a string")
-
         if val.lower() == self.KEYMAP_LOCAL:
             val = _util.default_keymap()
         elif len(val) > 16:
@@ -169,7 +176,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         listenxml = ""
         passwdxml = ""
         if self.keymap:
-            keymapxml = " keymap='%s'" % self._keymap
+            keymapxml = " keymap='%s'" % self.keymap
         if self.listen:
             listenxml = " listen='%s'" % self._listen
         if self.passwd:
