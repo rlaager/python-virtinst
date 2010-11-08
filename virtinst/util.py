@@ -325,23 +325,7 @@ def _xorg_keymap():
 def _console_setup_keymap():
     """Look in /etc/default/console-setup for the host machine's keymap, and attempt to
        map it to a keymap supported by qemu"""
-
-    kt = None
-    try:
-        f = open(CONSOLE_SETUP_CONF, "r")
-    except IOError, e:
-        logging.debug('Could not open "%s": %s ' % (CONSOLE_SETUP_CONF, str(e)))
-    else:
-        keymap_re = re.compile(r'\s*XKBLAYOUT="(?P<kt>[a-z-]+)"')
-        for line in f:
-            m = keymap_re.match(line)
-            if m:
-                kt = m.group('kt')
-                break
-        else:
-            logging.debug("Didn't find keymap in '%s'!" % XORG_CONF)
-        f.close()
-    return kt
+    return virtinst._util.find_xkblayout(CONSOLE_SETUP_CONF)
 
 def default_keymap():
     """Look in /etc/sysconfig for the host machine's keymap, and attempt to
@@ -358,7 +342,7 @@ def default_keymap():
         logging.debug('Could not open "/etc/sysconfig/keyboard" ' + str(e))
         kt = _xorg_keymap()
         if not kt:
-            kt = _console_setup_keymap()
+            kt = virtinst._util.find_keymap_from_etc_default()
     else:
         while 1:
             s = f.readline()

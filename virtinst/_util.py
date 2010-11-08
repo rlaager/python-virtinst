@@ -440,6 +440,48 @@ def parse_node_helper(xml, root_name, callback, exec_class=ValueError):
 
     return ret
 
+def find_xkblayout(path):
+    """
+    Reads a keyboard layout from a file that defines an XKBLAYOUT
+    variable, e.g. /etc/default/{keyboard,console-setup}.
+    The format of these files is such that they can be 'sourced'
+    in a shell script.
+    """
+
+    kt = None
+    try:
+        f = open(path, "r")
+    except IOError, e:
+        logging.debug('Could not open "%s": %s ' % (path, str(e)))
+    else:
+        keymap_re = re.compile(r'\s*XKBLAYOUT="(?P<kt>[a-z-]+)"')
+        for line in f:
+            m = keymap_re.match(line)
+            if m:
+                kt = m.group('kt')
+                break
+        else:
+            logging.debug("Didn't find keymap in '%s'!" % path)
+        f.close()
+    return kt
+
+def find_keymap_from_etc_default():
+    """
+    Look under /etc/default for the host machine's keymap.
+
+    This checks both /etc/default/keyboard and /etc/default/console-setup.
+    The former is used by Debian 6.0 (Squeeze) and later.  The latter is
+    used by older versions of Debian, and Ubuntu.
+    """
+
+    KEYBOARD_DEFAULT = "/etc/default/keyboard"
+    paths = [ KEYBOARD_DEFAULT, util.CONSOLE_SETUP_CONF ]
+    for path in paths:
+        kt = find_xkblayout(path)
+        if kt != None:
+            break
+    return kt
+
 #
 # These functions accidentally ended up in the API under virtinst.util
 #
