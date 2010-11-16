@@ -39,6 +39,7 @@ SUPPORT_DOMAIN_GETVCPUS = 1000
 SUPPORT_DOMAIN_XML_SECURE = 1001
 SUPPORT_DOMAIN_XML_INACTIVE = 1002
 SUPPORT_DOMAIN_MANAGED_SAVE = 1003
+SUPPORT_DOMAIN_MIGRATE_DOWNTIME = 1004
 
 # Flags for check_pool_support
 SUPPORT_STORAGE_CREATEVOLFROM = 2000
@@ -146,6 +147,11 @@ _support_dict = {
     SUPPORT_DOMAIN_MANAGED_SAVE : {
         "function" : "virDomain.hasManagedSaveImage",
         "args" : (0,),
+    },
+
+    SUPPORT_DOMAIN_MIGRATE_DOWNTIME : {
+        "function" : "virDomain.migrateSetMaxDowntime",
+        "args" : (30, 0),
     },
 
     # Pool checks
