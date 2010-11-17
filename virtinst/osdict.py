@@ -336,6 +336,14 @@ OS_TYPES = {
                             DISK : VIRTIO_DISK,
                             NET  : VIRTIO_NET,
                         }},
+        "ubuntumaverick": {
+            "label": "Ubuntu 10.10 (Maverick Meerkat)",
+            "distro": "ubuntu",
+            "devices" : {
+                DISK : VIRTIO_DISK,
+                NET  : VIRTIO_NET,
+                INPUT: USB_TABLET,
+            }},
         "generic24": { "label": "Generic 2.4.x kernel" },
         "generic26": { "label": "Generic 2.6.x kernel" },
         "virtio26": { "sortby": "genericvirtio26",
