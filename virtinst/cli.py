@@ -156,7 +156,7 @@ def setupLogging(appname, debug=False):
 
     rootLogger = logging.getLogger()
     rootLogger.setLevel(logging.DEBUG)
-    fileHandler = logging.handlers.RotatingFileHandler(filename, "a",
+    fileHandler = logging.handlers.RotatingFileHandler(filename, "ae",
                                                        1024*1024, 5)
 
     fileHandler.setFormatter(logging.Formatter(fileFormat,
