@@ -58,14 +58,17 @@ def _vdisk_clone(path, clone):
     except OSError:
         return False
 
-def _qemu_sanitize_drvtype(phystype, fmt):
+def _qemu_sanitize_drvtype(phystype, fmt, manual_format=False):
     """
     Sanitize libvirt storage volume format to a valid qemu driver type
     """
     raw_list = [ "iso" ]
 
-    if phystype == VirtualDisk.TYPE_BLOCK and not fmt:
-        return VirtualDisk.DRIVER_QEMU_RAW
+    if phystype == VirtualDisk.TYPE_BLOCK:
+        if not fmt:
+            return VirtualDisk.DRIVER_QEMU_RAW
+        if fmt and not manual_format:
+            return VirtualDisk.DRIVER_QEMU_RAW
 
     if fmt in raw_list:
         return VirtualDisk.DRIVER_QEMU_RAW
@@ -956,7 +959,8 @@ class VirtualDisk(VirtualDevice):
 
         if self.format:
             if drvname == self.DRIVER_QEMU:
-                drvtype = _qemu_sanitize_drvtype(self.type, self.format)
+                drvtype = _qemu_sanitize_drvtype(self.type, self.format,
+                                                 manual_format=True)
 
         elif self.vol_object:
             fmt = _util.get_xml_path(self.vol_object.XMLDesc(0),

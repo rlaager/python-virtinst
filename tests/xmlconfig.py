@@ -108,8 +108,8 @@ def get_filedisk(path = None):
         path = "/tmp/test.img"
     return VirtualDisk(path, size=.0001, conn=conn)
 
-def get_blkdisk():
-    return VirtualDisk("/dev/loop0", conn=conn)
+def get_blkdisk(path="/dev/loop0"):
+    return VirtualDisk(path, conn=conn)
 
 def get_virtual_network():
     dev = virtinst.VirtualNetworkInterface()
@@ -522,6 +522,7 @@ class TestXMLConfig(unittest.TestCase):
 
         g = get_basic_fullyvirt_guest()
         g.disks.append(get_filedisk())
+        g.disks.append(get_blkdisk("/iscsi-pool/diskvol1"))
         fargs = (g, "misc-qemu-driver-type", True)
         self.conn_function_wrappers(g, fargs, conn_uri=qemu_uri)
 
