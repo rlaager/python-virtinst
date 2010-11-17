@@ -286,8 +286,14 @@ args_dict = {
         "--sdl",
         # VNC w/ lots of options
         "--vnc --keymap ja --vncport 5950 --vnclisten 1.2.3.4",
+        # VNC w/ lots of options, new way
+        "--graphics vnc,port=5950,listen=1.2.3.4,keymap=ja",
+        # SPICE w/ lots of options
+        "--graphics spice,port=5950,tlsport=5950,listen=1.2.3.4 --keymap ja",
         # --video option
         "--vnc --video vga",
+        # --video option
+        "--graphics spice --video qxl",
         # --keymap local,
         "--vnc --keymap local",
         # --keymap none
@@ -299,6 +305,8 @@ args_dict = {
         "--vnc --keymap ZZZ",
         # Invalid port
         "--vnc --vncport -50",
+        # Invalid port
+        "--graphics spice,tlsport=-50",
         # Invalid --video
         "--vnc --video foobar",
       ],

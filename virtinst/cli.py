@@ -421,9 +421,12 @@ def graphics_option_group(parser):
                     help=_("Address to listen on for VNC connections."))
     vncg.add_option("-k", "--keymap", type="string", dest="keymap",
                     action="callback", callback=check_before_store,
-                    help=_("set up keymap for the VNC console"))
+                    help=_("set up keymap for the graphical console"))
     vncg.add_option("", "--sdl", action="store_true", dest="sdl",
                     help=_("Use SDL for graphics support"))
+    vncg.add_option("", "--graphics", type="string", dest="graphics",
+                    action="callback", callback=check_before_store,
+                    help=_("Set graphics support (ex: --graphics spice,port=1,tlsport=2)"))
     vncg.add_option("", "--nographics", action="store_true",
                     help=_("Don't set up a graphical console for the guest."))
     return vncg
@@ -727,15 +730,46 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
 
     return net_init_dicts
 
+def parse_graphics(guest, optstring):
+    if optstring is None:
+        return None
+    # Peel the model type off the front
+    type, ignore, optstring = partition(optstring, ",")
+    opts = parse_optstr(optstring)
+    dev = VirtualGraphics()
+
+    def set_param(paramname, dictname, val=None):
+        val = get_opt_param(opts, dictname, val)
+        if val == None:
+            return
+
+        setattr(dev, paramname, val)
+
+    set_param("type", "type", type)
+    set_param("port", "port")
+    set_param("tlsPort", "tlsport")
+    set_param("listen", "listen")
+    set_param("keymap", "keymap")
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+
+    return dev
+
 def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
-                 video_models, guest):
+                 video_models, graphics, guest):
     video_models = video_models or []
 
-    if ((vnc and nographics) or
-        (vnc and sdl) or
-        (sdl and nographics)):
+    try:
+        dev = parse_graphics(guest, graphics)
+        if dev is not None:
+            guest.graphics_dev = dev
+    except Exception, e:
+        fail(_("Error in graphics device parameters: %s") % str(e))
+
+    if (sum(map(int, [vnc != None, nographics != None, sdl != None, dev != None]))) > 1:
         raise ValueError, _("Can't specify more than one of VNC, SDL, "
-                            "or --nographics")
+                            "--graphics or --nographics")
 
     for model in video_models:
         dev = virtinst.VirtualVideoDevice(guest.conn)
@@ -819,3 +853,25 @@ def check_before_append(option, opt_str, value, parser):
         raise OptionValueError, _("%s option requires an argument") %opt_str
     parser.values.ensure_value(option.dest, []).append(value)
 
+def get_opt_param(opts, dictnames, val=None):
+    if type(dictnames) is not list:
+        dictnames = [dictnames]
+
+    for key in dictnames:
+        if key in opts:
+            if val == None:
+                val = opts[key]
+            del(opts[key])
+
+    return val
+
+def partition(string, sep):
+    if not string:
+        return (None, None, None)
+
+    if string.count(sep):
+        splitres = string.split(sep, 1)
+        ret = (splitres[0], sep, splitres[1])
+    else:
+        ret = (string, None, None)
+    return ret

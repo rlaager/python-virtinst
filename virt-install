@@ -44,29 +44,6 @@ cli.setupGettext()
 DEFAULT_POOL_PATH = "/var/lib/libvirt/images"
 DEFAULT_POOL_NAME = "default"
 
-def partition(string, sep):
-    if not string:
-        return (None, None, None)
-
-    if string.count(sep):
-        splitres = string.split(sep, 1)
-        ret = (splitres[0], sep, splitres[1])
-    else:
-        ret = (string, None, None)
-    return ret
-
-def get_opt_param(opts, dictnames, val=None):
-    if type(dictnames) is not list:
-        dictnames = [dictnames]
-
-    for key in dictnames:
-        if key in opts:
-            if val == None:
-                val = opts[key]
-            del(opts[key])
-
-    return val
-
 def build_default_pool(guest):
 
     if not virtinst.util.is_storage_capable(guest.conn):
@@ -102,7 +79,7 @@ def parse_boot_option(guest, optstring):
     menu = None
 
     def set_param(paramname, dictname, val=None):
-        val = get_opt_param(opts, dictname, val)
+        val = cli.get_opt_param(opts, dictname, val)
         if val == None:
             return
 
@@ -150,14 +127,14 @@ def parse_char_option(guest, char_type, optstring):
     Helper to parse --serial/--parallel options
     """
     # Peel the char type off the front
-    dev_type, ignore, optstring = partition(optstring, ",")
+    dev_type, ignore, optstring = cli.partition(optstring, ",")
 
     opts = cli.parse_optstr(optstring)
 
     dev = VirtualCharDevice.get_dev_instance(guest.conn, char_type, dev_type)
 
     def set_param(paramname, dictname, val=None):
-        val = get_opt_param(opts, dictname, val)
+        val = cli.get_opt_param(opts, dictname, val)
         if val == None:
             return
 
@@ -169,7 +146,7 @@ def parse_char_option(guest, char_type, optstring):
         setattr(dev, paramname, val)
 
     def parse_host(key):
-        host, ignore, port = partition(opts.get(key), ":")
+        host, ignore, port = cli.partition(opts.get(key), ":")
         if opts.has_key(key):
             del(opts[key])
 
@@ -211,12 +188,12 @@ def get_chardevs(char_type, opts, guest):
 
 def parse_watchdog(guest, optstring):
     # Peel the model type off the front
-    model, ignore, optstring = partition(optstring, ",")
+    model, ignore, optstring = cli.partition(optstring, ",")
     opts = cli.parse_optstr(optstring)
     dev = virtinst.VirtualWatchdog(guest.conn)
 
     def set_param(paramname, dictname, val=None):
-        val = get_opt_param(opts, dictname, val)
+        val = cli.get_opt_param(opts, dictname, val)
         if val == None:
             return
 
@@ -250,8 +227,8 @@ def get_security(security, guest):
     secmodel = guest.seclabel
 
     # Beware, adding boolean options here could upset label comma handling
-    mode = get_opt_param(opts, "type")
-    label = get_opt_param(opts, "label")
+    mode = cli.get_opt_param(opts, "type")
+    label = cli.get_opt_param(opts, "label")
 
     # Try to fix up label if it contained commas
     if label:
@@ -296,7 +273,7 @@ def parse_disk_option(guest, path, size):
                         "format", "driver_name", "driver_type"]
 
     # Strip media type
-    path, ignore, optstr = partition(path, ",")
+    path, ignore, optstr = cli.partition(path, ",")
     path_type = None
     if path.startswith("path="):
         path_type = "path="
@@ -953,7 +930,7 @@ def main():
     # set up graphics and video device information
     cli.get_graphics(options.vnc, options.vncport, options.vnclisten,
                      options.nographics, options.sdl, options.keymap,
-                     options.video, guest)
+                     options.video, options.graphics, guest)
 
     # Set host device info
     cli.get_hostdevs(options.hostdevs, guest)
