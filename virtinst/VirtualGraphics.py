@@ -33,7 +33,8 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     TYPE_SDL = "sdl"
     TYPE_VNC = "vnc"
     TYPE_RDP = "rdp"
-    types = [TYPE_VNC, TYPE_SDL, TYPE_RDP]
+    TYPE_SPICE = "spice"
+    types = [TYPE_VNC, TYPE_SDL, TYPE_RDP, TYPE_SPICE]
 
     KEYMAP_LOCAL = "local"
     KEYMAP_DEFAULT = "default"
@@ -41,13 +42,14 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
                  keymap=KEYMAP_DEFAULT, conn=None, parsexml=None,
-                 parsexmlnode=None):
+                 parsexmlnode=None, tlsPort=-1):
 
         VirtualDevice.VirtualDevice.__init__(self, conn,
                                              parsexml, parsexmlnode)
 
         self._type   = None
         self._port   = None
+        self._tlsPort = None
         self._listen = None
         self._passwd = None
         self._keymap = None
@@ -57,6 +59,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
         self.type = type
         self.port = port
+        self.tlsPort = tlsPort
         self.keymap = keymap
         self.listen = listen
         self.passwd = passwd
@@ -143,6 +146,26 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     passwd = _xml_property(get_passwd, set_passwd,
                            xpath="./@passwd")
 
+    def get_tlsPort(self):
+        return self._tlsPort
+    def set_tlsPort(self, val):
+        if val is None:
+            val = -1
+
+        try:
+            val = int(val)
+        except:
+            pass
+
+        if (type(val) is not int or
+            (val != -1 and (val < 5900 or val > 65535))):
+            raise ValueError(_("TLS port must be a number between "
+                               "5900 and 65535, or -1 for auto allocation"))
+        self._tlsPort = val
+    tlsPort = _xml_property(get_tlsPort, set_tlsPort,
+                            get_converter=int,
+                            xpath="./@tlsPort")
+
     def valid_keymaps(self):
         """
         Return a list of valid keymap values.
@@ -169,9 +192,30 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         return """    <graphics type='sdl' display='%s' xauth='%s'/>""" % \
                (disp, xauth)
 
-    def _get_xml_config(self):
-        if self._type == self.TYPE_SDL:
-            return self._sdl_config()
+    def _spice_config(self):
+        autoportxml = ""
+        keymapxml = ""
+        listenxml = ""
+        passwdxml = ""
+        if self._port == -1 or self._tlsPort == -1:
+            autoportxml = "autoport='yes'"
+        if self.keymap:
+            keymapxml = " keymap='%s'" % self.keymap
+        if self.listen:
+            listenxml = " listen='%s'" % self._listen
+        if self.passwd:
+            passwdxml = " passwd='%s'" % self._passwd
+
+        xml = "    <graphics type='spice' " + \
+                   "port='%(port)d' " % { "port" : self._port } + \
+                   "tlsPort='%(tlsPort)d' " % { "tlsPort" : self._tlsPort } + \
+                   "%(autoport)s" % { "autoport" : autoportxml } + \
+                   "%(keymapxml)s" % { "keymapxml" : keymapxml } + \
+                   "%(listenxml)s" % { "listenxml" : listenxml } + \
+                   "%(passwdxml)s/>" % { "passwdxml" : passwdxml }
+        return xml
+
+    def _vnc_config(self):
         keymapxml = ""
         listenxml = ""
         passwdxml = ""
@@ -188,3 +232,13 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
                    "%(passwdxml)s"   % { "passwdxml" : passwdxml } + \
                    "/>"
         return xml
+
+    def _get_xml_config(self):
+        if self._type == self.TYPE_SDL:
+            return self._sdl_config()
+        if self._type == self.TYPE_SPICE:
+            return self._spice_config()
+        if self._type == self.TYPE_VNC:
+            return self._vnc_config()
+        else:
+            raise ValueError(_("Unknown graphics type"))

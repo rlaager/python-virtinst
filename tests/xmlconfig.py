@@ -922,9 +922,11 @@ class TestXMLConfig(unittest.TestCase):
         gdev2.keymap = None
 
         gdev3 = virtinst.VirtualGraphics(conn=g.conn, type="sdl")
+        gdev4 = virtinst.VirtualGraphics(conn=g.conn, type="spice")
         g.add_device(gdev1)
         g.add_device(gdev2)
         g.add_device(gdev3)
+        g.add_device(gdev4)
 
         g.clock.offset = "localtime"
 
