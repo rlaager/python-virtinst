@@ -67,6 +67,9 @@
     <video>
       <model type='cirrus'/>
     </video>
+    <video>
+      <model type='qxl'/>
+    </video>
     <hostdev mode='subsystem' type='usb' managed='yes'>
       <source>
         <vendor id='0x4321'/>

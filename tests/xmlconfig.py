@@ -903,9 +903,13 @@ class TestXMLConfig(unittest.TestCase):
         vdev2.heads = 3
 
         vdev3 = VirtualVideoDevice(g.conn)
+        vdev4 = VirtualVideoDevice(g.conn)
+        vdev4.model_type = "qxl"
+
         g.add_device(vdev1)
         g.add_device(vdev2)
         g.add_device(vdev3)
+        g.add_device(vdev4)
 
         wdev2 = VirtualWatchdog(g.conn)
         wdev2.model = "ib700"
