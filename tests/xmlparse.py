@@ -390,6 +390,7 @@ class XMLParseTest(unittest.TestCase):
         dev2 = guest.get_devices("graphics")[1]
         dev3 = guest.get_devices("graphics")[2]
         dev4 = guest.get_devices("graphics")[3]
+        dev5 = guest.get_devices("graphics")[4]
 
         check = self._make_checker(dev1)
         check("type", "vnc")
@@ -406,6 +407,16 @@ class XMLParseTest(unittest.TestCase):
         check = self._make_checker(dev4)
         check("type", "vnc")
         check("port", -1)
+
+        check = self._make_checker(dev5)
+        check("type", "spice")
+        check("passwd", "foobar", "newpass")
+        check("port", 100, 6000)
+        check("tlsPort", 101, 6001)
+        check("listen", "0.0.0.0", "1.2.3.4")
+        check("channel_inputs_mode", "insecure", "secure")
+        check("channel_main_mode", "secure", "any")
+        check("channel_record_mode", "any", "insecure")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 

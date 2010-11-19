@@ -27,6 +27,11 @@
     <graphics type="sdl" xauth="/tmp/.Xauthority" display="1:2"/>
     <graphics type="rdp"/>
     <graphics type="vnc" port="-1"/>
+    <graphics type="spice" passwd="foobar" port="100" tlsPort="101" listen="0.0.0.0">
+      <channel name='inputs' mode='insecure'/>
+      <channel name='main' mode='secure'/>
+      <channel name='record' mode='any'/>
+    </graphics>
   </devices>
   <seclabel type="static" model="selinux">
     <label>foolabel</label>

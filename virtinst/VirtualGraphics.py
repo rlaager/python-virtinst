@@ -36,13 +36,29 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     TYPE_SPICE = "spice"
     types = [TYPE_VNC, TYPE_SDL, TYPE_RDP, TYPE_SPICE]
 
+    CHANNEL_TYPE_MAIN     = "main"
+    CHANNEL_TYPE_DISPLAY  = "display"
+    CHANNEL_TYPE_INPUTS   = "inputs"
+    CHANNEL_TYPE_CURSOR   = "cursor"
+    CHANNEL_TYPE_PLAYBACK = "playback"
+    CHANNEL_TYPE_RECORD   = "record"
+    channel_types = [CHANNEL_TYPE_MAIN, CHANNEL_TYPE_DISPLAY,
+                     CHANNEL_TYPE_INPUTS, CHANNEL_TYPE_CURSOR,
+                     CHANNEL_TYPE_PLAYBACK, CHANNEL_TYPE_RECORD]
+
+    CHANNEL_MODE_SECURE   = "secure"
+    CHANNEL_MODE_INSECURE = "insecure"
+    CHANNEL_MODE_ANY      = "any"
+    channel_modes = [CHANNEL_MODE_SECURE, CHANNEL_MODE_INSECURE,
+                     CHANNEL_MODE_ANY]
+
     KEYMAP_LOCAL = "local"
     KEYMAP_DEFAULT = "default"
     _special_keymaps = [KEYMAP_LOCAL, KEYMAP_DEFAULT]
 
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
                  keymap=KEYMAP_DEFAULT, conn=None, parsexml=None,
-                 parsexmlnode=None, tlsPort=-1):
+                 parsexmlnode=None, tlsPort=-1, channels=None):
 
         VirtualDevice.VirtualDevice.__init__(self, conn,
                                              parsexml, parsexmlnode)
@@ -53,6 +69,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         self._listen = None
         self._passwd = None
         self._keymap = None
+        self._channels = {}
 
         if self._is_parse():
             return
@@ -63,6 +80,9 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         self.keymap = keymap
         self.listen = listen
         self.passwd = passwd
+        if channels:
+            self.channels = channels
+
 
     def _default_keymap(self):
         if (self.conn and
@@ -165,6 +185,21 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     tlsPort = _xml_property(get_tlsPort, set_tlsPort,
                             get_converter=int,
                             xpath="./@tlsPort")
+
+    def _get_mode_prop(channel_type, channel_mode=None):
+        xpath = "./channel[@name='%s']/@mode" % channel_type
+        def get_mode(self):
+            return self._channels.get(channel_type, None)
+        def set_mode(self, val):
+            self._channels[channel_type] = val
+        return _xml_property(get_mode, set_mode, xpath=xpath)
+
+    channel_main_mode = _get_mode_prop(CHANNEL_TYPE_MAIN)
+    channel_display_mode = _get_mode_prop(CHANNEL_TYPE_DISPLAY)
+    channel_inputs_mode = _get_mode_prop(CHANNEL_TYPE_INPUTS)
+    channel_cursor_mode = _get_mode_prop(CHANNEL_TYPE_CURSOR)
+    channel_playback_mode = _get_mode_prop(CHANNEL_TYPE_PLAYBACK)
+    channel_record_mode = _get_mode_prop(CHANNEL_TYPE_RECORD)
 
     def valid_keymaps(self):
         """
