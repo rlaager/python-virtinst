@@ -853,6 +853,7 @@ def txt_console(dom, uri):
 
 ### Let's do it!
 def main():
+    cli.earlyLogging()
     options = parse_args()
 
     # Default setup options

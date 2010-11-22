@@ -162,8 +162,7 @@ def parse_args():
     return options
 
 def main():
-
-    # Basic setup
+    cli.earlyLogging()
     options = parse_args()
 
     cli.setupLogging("virt-image", options.debug)

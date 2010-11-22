@@ -200,6 +200,7 @@ def parse_args():
 
 ### Let's do it!
 def main():
+    cli.earlyLogging()
     options = parse_args()
 
     cli.setupLogging("virt-clone", options.debug)

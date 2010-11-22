@@ -175,6 +175,7 @@ def cleanup(msg, options, vmdef, paths):
     sys.exit(1)
 
 def main():
+    cli.earlyLogging()
     options = parse_args()
 
     inp = formats.parser_by_name(options.input_format)

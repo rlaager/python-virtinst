@@ -134,6 +134,9 @@ def setupGettext():
     gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
     gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
 
+def earlyLogging():
+    logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+
 def setupLogging(appname, debug=False):
     # set up logging
     vi_dir = os.path.expanduser("~/.virtinst")
@@ -155,6 +158,11 @@ def setupLogging(appname, debug=False):
     filename = os.path.join(vi_dir, appname + ".log")
 
     rootLogger = logging.getLogger()
+
+    # Undo early logging
+    for handler in rootLogger.handlers:
+        rootLogger.removeHandler(handler)
+
     rootLogger.setLevel(logging.DEBUG)
     fileHandler = logging.handlers.RotatingFileHandler(filename, "ae",
                                                        1024*1024, 5)
