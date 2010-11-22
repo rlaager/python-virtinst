@@ -75,6 +75,8 @@ class VirtOptionParser(OptionParser):
         encoding = getattr(f, "encoding", None)
         if not encoding:
             (dummy, encoding) = locale.getlocale()
+        if not encoding:
+            encoding = "UTF-8"
         return encoding
 
     def print_help(self, file=None):
