@@ -26,6 +26,14 @@ import support
 from XMLBuilderDomain import _xml_property
 from virtinst import _virtinst as _
 
+def _get_mode_prop(channel_type):
+    xpath = "./channel[@name='%s']/@mode" % channel_type
+    def get_mode(s):
+        return s._channels.get(channel_type, None)
+    def set_mode(s, val):
+        s._channels[channel_type] = val
+    return _xml_property(get_mode, set_mode, xpath=xpath)
+
 class VirtualGraphics(VirtualDevice.VirtualDevice):
 
     _virtual_device_type = VirtualDevice.VirtualDevice.VIRTUAL_DEV_GRAPHICS
@@ -185,14 +193,6 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     tlsPort = _xml_property(get_tlsPort, set_tlsPort,
                             get_converter=int,
                             xpath="./@tlsPort")
-
-    def _get_mode_prop(channel_type, channel_mode=None):
-        xpath = "./channel[@name='%s']/@mode" % channel_type
-        def get_mode(self):
-            return self._channels.get(channel_type, None)
-        def set_mode(self, val):
-            self._channels[channel_type] = val
-        return _xml_property(get_mode, set_mode, xpath=xpath)
 
     channel_main_mode = _get_mode_prop(CHANNEL_TYPE_MAIN)
     channel_display_mode = _get_mode_prop(CHANNEL_TYPE_DISPLAY)

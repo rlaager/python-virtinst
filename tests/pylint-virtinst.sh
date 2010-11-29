@@ -2,6 +2,9 @@
 
 FILES="setup.py tests/ virt-install virt-image virt-clone virt-convert virtinst/ virtconv virtconv/parsers/*.py"
 
+# Don't print pylint config warning
+NO_PYL_CONFIG=".*No config file found.*"
+
 # Exceptions: deliberately ignore these regex
 
 # False positive: using the private excepthook is needed for custom exception
@@ -39,6 +42,7 @@ UCRED="import 'ucred'"
 SELINUX="import 'selinux'"
 COVERAGE="import 'coverage'"
 OLDSELINUX="'selinux' has no "
+HASHLIB_CONFUSION="Module 'hashlib' has no 'sha.*"
 
 # Public api error
 VD_MISMATCHED_ARGS="get_xml_config.*Arguments number differs"
@@ -70,7 +74,7 @@ ACCESS__CONN="Access to a protected member _conn"
 
 # There isn't a clean API way to access this functions from the API, but
 # they provide info that is needed. These need need to be fixed.
-PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_cleanup_install)|'virtinst.FullVirtGuest' has no '_OS_TYPES'|_install_bootconfig"
+PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_cleanup_install|_install_bootconfig|_channels)|'virtinst.FullVirtGuest' has no '_OS_TYPES'"
 
 DMSG=""
 addmsg() {
@@ -83,7 +87,7 @@ addchecker() {
 }
 
 addmsg_support() {
-    out=`pylint --list-msgs`
+    out=`pylint --list-msgs 2>&1`
     if `echo $out | grep -q $1` ; then
         addmsg "$1"
     fi
@@ -130,6 +134,7 @@ pylint --ignore=coverage.py, $FILES \
   --disable=${DMSG} \
   --disable=${DCHECKERS} 2>&1 | \
   egrep -ve "$EXCEPTHOOK" \
+        -ve "$NO_PYL_CONFIG" \
         -ve "$BTYPE_TYPE" \
         -ve "$BTYPE_FILE" \
         -ve "$BTYPE_STR" \
@@ -138,6 +143,7 @@ pylint --ignore=coverage.py, $FILES \
         -ve "$SELINUX" \
         -ve "$COVERAGE" \
         -ve "$OLDSELINUX" \
+        -ve "$HASHLIB_CONFUSION" \
         -ve "$USE_OF__EXIT" \
         -ve "$UNDEF_GETTEXT" \
         -ve "$VD_MISMATCHED_ARGS" \

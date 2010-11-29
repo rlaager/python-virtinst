@@ -235,16 +235,17 @@ class Disk:
     def check_disk_signature(self, meter=None):
         try:
             import hashlib
-            has_hashlib = True
+            sha = None
         except:
             import sha
-            has_hashlib = False
+            hashlib = None
 
         m = None
-        if has_hashlib is True:
+        if hashlib:
             if self.csum.has_key("sha256"):
                 csumvalue = self.csum["sha256"]
                 m = hashlib.sha256()
+
             elif self.csum.has_key("sha1"):
                 csumvalue = self.csum["sha1"]
                 m = hashlib.sha1()

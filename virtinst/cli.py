@@ -743,10 +743,11 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
 def parse_graphics(guest, optstring):
     if optstring is None:
         return None
+
     # Peel the model type off the front
-    type, ignore, optstring = partition(optstring, ",")
+    gtype, ignore, optstring = partition(optstring, ",")
     opts = parse_optstr(optstring)
-    dev = VirtualGraphics()
+    dev = VirtualGraphics(conn=guest.conn)
 
     def set_param(paramname, dictname, val=None):
         val = get_opt_param(opts, dictname, val)
@@ -755,7 +756,7 @@ def parse_graphics(guest, optstring):
 
         setattr(dev, paramname, val)
 
-    set_param("type", "type", type)
+    set_param("type", "type", gtype)
     set_param("port", "port")
     set_param("tlsPort", "tlsport")
     set_param("listen", "listen")
