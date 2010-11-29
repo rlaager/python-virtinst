@@ -151,7 +151,9 @@ _support_dict = {
 
     SUPPORT_DOMAIN_MIGRATE_DOWNTIME : {
         "function" : "virDomain.migrateSetMaxDowntime",
-        "args" : (30, 0),
+        # Use a bogus flags value, so that we don't overwrite existing
+        # downtime value
+        "args" : (30, 12345678),
     },
 
     # Pool checks
