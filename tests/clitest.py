@@ -803,7 +803,7 @@ def run_tests(do_app):
                 continue
 
             # Default is a unique cmd string
-            unique[option]= args_dict[app][option]
+            unique[option] = args_dict[app][option]
 
         # Build up prompt cases
         if testprompt:

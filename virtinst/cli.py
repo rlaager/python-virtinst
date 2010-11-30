@@ -719,12 +719,12 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
     if len(macs) > len(networks):
         fail(_("Cannot pass more mac addresses than networks."))
     else:
-        for dummy in range (len(macs),len(networks)):
+        for dummy in range (len(macs), len(networks)):
             macs.append(None)
 
     # Create extra networks up to the number of nics requested
     if len(macs) < nics:
-        for dummy in range(len(macs),nics):
+        for dummy in range(len(macs), nics):
             if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
                 net = _util.default_network(conn)
                 networks.append(net[0] + ":" + net[1])

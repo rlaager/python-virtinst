@@ -43,9 +43,9 @@ class Image:
             if filename is not None:
                 self.base = os.path.dirname(filename)
                 if self.base == '' :
-                    self.base ="."
+                    self.base = "."
             else:
-                self.base ="."
+                self.base = "."
         else:
             self.base = base
         self.name = None

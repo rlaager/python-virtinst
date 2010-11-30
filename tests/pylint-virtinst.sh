@@ -98,7 +98,7 @@ addmsg "C0103"  # C0103: Name doesn't match some style regex
 addmsg "C0111"  # C0111: No docstring
 addmsg "C0301"  # C0301: Line too long
 addmsg "C0302"  # C0302: Too many lines in module
-addmsg "W0105"  # W0105: String statement has no effect
+addmsg "W0105"  # W0105: String statement has no effect (annoying for docs)
 addmsg "W0141"  # W0141: Complaining about 'map' and 'filter'
 addmsg "W0142"  # W0142: Use of * or **
 addmsg "W0603"  # W0603: Using the global statement
@@ -110,9 +110,6 @@ addmsg "R0201"  # R0201: Method could be a function
 # Possibly useful at some point
 addmsg "W0403"  # W0403: Relative imports
 addmsg "W0511"  # W0511: FIXME and XXX: messages (useful in the future)
-addmsg "C0322"  # C0322: *Operator not preceded by a space*
-addmsg "C0323"  # C0323: *Operator not followed by a space*
-addmsg "C0324"  # C0324: *Comma not followed by a space*
 addmsg "R0401"  # R0401: Cyclic imports
 
 # Not supported in many pylint versions

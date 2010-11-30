@@ -71,7 +71,7 @@ def default_route(nic = None):
             print >> stderr, _("Defaulting bridge to xenbr%d") % (defn)
             break
         try:
-            route = int(info[1],16)
+            route = int(info[1], 16)
             if route == 0:
                 return info[0]
         except ValueError:

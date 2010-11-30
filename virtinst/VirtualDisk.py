@@ -1124,7 +1124,7 @@ class VirtualDisk(VirtualDevice):
             text = (_("Cloning %(srcfile)s") %
                     {'srcfile' : os.path.basename(self.clone_path)})
         else:
-            text=_("Creating storage file %s") % os.path.basename(self.path)
+            text = _("Creating storage file %s") % os.path.basename(self.path)
 
         size_bytes = long(self.size * 1024L * 1024L * 1024L)
         progresscb.start(filename=self.path, size=long(size_bytes),
@@ -1212,7 +1212,7 @@ class VirtualDisk(VirtualDevice):
                 src_fd = os.open(self.clone_path, os.O_RDONLY)
                 dst_fd = os.open(self.path, os.O_WRONLY | os.O_CREAT)
 
-                i=0
+                i = 0
                 while 1:
                     l = os.read(src_fd, clone_block_size)
                     s = len(l)

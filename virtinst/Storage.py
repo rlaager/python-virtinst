@@ -1232,7 +1232,7 @@ class FileVolume(StorageVolume):
     """
     _file_type = VIR_STORAGE_VOL_FILE
 
-    formats = ["raw", "bochs", "cloop", "cow", "dmg", "iso", "qcow",\
+    formats = ["raw", "bochs", "cloop", "cow", "dmg", "iso", "qcow",
                "qcow2", "vmdk", "vpc"]
 
     # Register applicable property methods from parent class

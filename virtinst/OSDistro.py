@@ -172,7 +172,7 @@ def detectMediaDistro(location, arch):
     progresscb = urlgrabber.progress.BaseMeter()
     guest = None
     baseuri = location
-    scratchdir="/var/tmp"
+    scratchdir = "/var/tmp"
     _type = None
     def media_cb(store, ignore):
         return store

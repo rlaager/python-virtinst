@@ -34,8 +34,8 @@ from virtinst import _virtinst as _
 from VirtualDisk import VirtualDisk
 from Boot import Boot
 
-XEN_SCRATCH="/var/lib/xen"
-LIBVIRT_SCRATCH="/var/lib/libvirt/boot"
+XEN_SCRATCH = "/var/lib/xen"
+LIBVIRT_SCRATCH = "/var/lib/libvirt/boot"
 
 def _get_scratchdir(typ):
     scratch = None

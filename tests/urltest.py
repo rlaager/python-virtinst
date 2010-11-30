@@ -34,7 +34,7 @@ import libvirt
 import virtinst
 
 # Filters for including/excluding certain distros.
-MATCH_FILTER=".*"
+MATCH_FILTER = ".*"
 
 # Variable used to store a local iso or dir path to check for a distro
 # Specified via 'python setup.py test_urls --path"
@@ -47,7 +47,7 @@ OPENSUSE_BASEURL = "http://download.opensuse.org/distribution/%s/repo/oss/"
 OLD_OPENSUSE_BASEURL = "http://ftp5.gwdg.de/pub/opensuse/discontinued/distribution/%s/repo/oss"
 
 # ISO Code specific URLs
-UBUNTU_BASEURL="http://us.archive.ubuntu.com/ubuntu/dists/%s/main/installer-%s"
+UBUNTU_BASEURL = "http://us.archive.ubuntu.com/ubuntu/dists/%s/main/installer-%s"
 DEBIAN_BASEURL = "http://ftp.us.debian.org/debian/dists/%s/main/installer-%s/"
 
 # Static URLs
@@ -57,15 +57,15 @@ MANDRIVA_BASEURL = "ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/%s/%s/"
 SCIENTIFIC_BASEURL = "http://ftp.scientificlinux.org/linux/scientific/%s/%s/"
 
 # Regex matching distro names that don't have xen kernels.
-NOXEN_FILTER=".*ubuntu.*|.*etch.*|.*mandriva.*|.*lenny-64.*|.*centos-4.0.*|.*scientific-4.0.*"
+NOXEN_FILTER = ".*ubuntu.*|.*etch.*|.*mandriva.*|.*lenny-64.*|.*centos-4.0.*|.*scientific-4.0.*"
 
 # Doesn't appear to be a simple boot iso in newer suse trees
-NOBOOTISO_FILTER=".*opensuse11.*|.*opensuse10.3.*|.*opensuse10.0.*"
+NOBOOTISO_FILTER = ".*opensuse11.*|.*opensuse10.3.*|.*opensuse10.0.*"
 
 # Opensuse < 10.3 (and some sles) require crazy rpm hacking to get a bootable
 # kernel. We expect failure in this case since our test harness doesn't
 # actually fetch anything
-EXPECT_XEN_FAIL=".*opensuse10.2.*|.*opensuse10.0.*"
+EXPECT_XEN_FAIL = ".*opensuse10.2.*|.*opensuse10.0.*"
 
 # Return the expected Distro class for the passed distro label
 def distroClass(distname):
