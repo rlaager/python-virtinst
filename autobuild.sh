@@ -3,6 +3,12 @@
 set -v
 set -e
 
+if [ -z "$AUTOBUILD_INSTALL_ROOT" ] ; then
+    echo "This script is only meant to be used with an autobuild server."
+    echo "Please see INSTALL for build instructions."
+    exit 1
+fi
+
 rm -rf build dist python-virtinst.spec MANIFEST
 
 python setup.py build
