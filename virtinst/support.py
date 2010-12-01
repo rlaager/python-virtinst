@@ -40,6 +40,7 @@ SUPPORT_DOMAIN_XML_SECURE = 1001
 SUPPORT_DOMAIN_XML_INACTIVE = 1002
 SUPPORT_DOMAIN_MANAGED_SAVE = 1003
 SUPPORT_DOMAIN_MIGRATE_DOWNTIME = 1004
+SUPPORT_DOMAIN_JOB_INFO = 1005
 
 # Flags for check_pool_support
 SUPPORT_STORAGE_CREATEVOLFROM = 2000
@@ -154,6 +155,11 @@ _support_dict = {
         # Use a bogus flags value, so that we don't overwrite existing
         # downtime value
         "args" : (30, 12345678),
+    },
+
+    SUPPORT_DOMAIN_JOB_INFO : {
+        "function" : "virDomain.jobInfo",
+        "args" : (),
     },
 
     # Pool checks
