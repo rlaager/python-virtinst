@@ -421,6 +421,8 @@ args_dict = {
       ],
 
       "invalid": [
+        # Positional arguments error
+        "--hvm --nodisks --pxe foobar",
         # pxe and nonetworks
         "--nodisks --pxe --nonetworks",
         # Colliding name
@@ -553,6 +555,8 @@ args_dict = {
       ],
 
       "invalid": [
+        # Positional arguments error
+        "-o test foobar",
         # Non-existent vm name
         "-o idontexist",
         # Non-existent vm name with auto flag,

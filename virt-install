@@ -817,8 +817,8 @@ def parse_args():
                     help=_("Print debugging information"))
     parser.add_option_group(misc)
 
-    (options, dummy) = parser.parse_args()
-    return options
+    (options, cliargs) = parser.parse_args()
+    return options, cliargs
 
 
 def vnc_console(dom, uri):
@@ -854,10 +854,13 @@ def txt_console(dom, uri):
 ### Let's do it!
 def main():
     cli.earlyLogging()
-    options = parse_args()
+    options, cliargs = parse_args()
 
     # Default setup options
     cli.setupLogging("virt-install", options.debug)
+    if cliargs:
+        fail(_("Unknown argument '%s'") % cliargs[0])
+
     cli.set_force(options.force)
     cli.set_prompt(options.prompt)
     conn = cli.getConnection(options.connect)
