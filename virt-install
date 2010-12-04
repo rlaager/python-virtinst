@@ -812,7 +812,7 @@ def parse_args():
                            "required options."), default=False)
     misc.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
                     help=_("Check that vcpus do not exceed physical CPUs "
-                             "and warn if they do."))
+                           "and warn if they do."))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=_("Print debugging information"))
     parser.add_option_group(misc)
@@ -851,20 +851,7 @@ def txt_console(dom, uri):
 
     return child
 
-### Let's do it!
-def main():
-    cli.earlyLogging()
-    options, cliargs = parse_args()
-
-    # Default setup options
-    cli.setupLogging("virt-install", options.debug)
-    if cliargs:
-        fail(_("Unknown argument '%s'") % cliargs[0])
-
-    cli.set_force(options.force)
-    cli.set_prompt(options.prompt)
-    conn = cli.getConnection(options.connect)
-
+def build_guest_instance(conn, options):
     capsguest, capsdomain = get_virt_type(conn, options)
 
     virt_type = capsguest.os_type
@@ -950,12 +937,14 @@ def main():
                       options.livecd, options.import_install,
                       guest, ishvm)
 
-    continue_inst = guest.get_continue_inst()
     if options.noacpi:
         guest.features["acpi"] = False
     if options.noapic:
         guest.features["apic"] = False
 
+    return guest
+
+def start_install(guest, options):
     def show_console(dom):
         if guest.graphics_dev:
             if guest.graphics_dev.type == virtinst.VirtualGraphics.TYPE_VNC:
@@ -975,6 +964,7 @@ def main():
     # waiting.  Otherwise, we can exit before the domain has finished
     # installing. Passing --wait will give the above semantics.
     #
+    continue_inst = guest.get_continue_inst()
     wait = continue_inst
     wait_time = -1
     autoconsole = options.autoconsole
@@ -991,6 +981,7 @@ def main():
     else:
         conscb = show_console
 
+
     progresscb = progress.TextMeter()
 
 
@@ -1001,8 +992,8 @@ def main():
         start_time = time.time()
 
         # Do first install phase
-        dom = do_install(guest, conscb, progresscb, wait, wait_time,
-                         start_time, guest.start_install)
+        dom = run_install_stage(guest, conscb, progresscb, wait, wait_time,
+                                start_time, guest.start_install)
 
         # This should be valid even before doing continue install
         if not guest.post_install_check():
@@ -1013,8 +1004,8 @@ def main():
             sys.exit(1)
 
         if continue_inst:
-            dom = do_install(guest, conscb, progresscb, wait, wait_time,
-                             start_time, guest.continue_install)
+            dom = run_install_stage(guest, conscb, progresscb, wait, wait_time,
+                                    start_time, guest.continue_install)
 
         if options.noreboot:
             print _("Guest installation complete... you can restart your "
@@ -1041,8 +1032,8 @@ def main():
                 "restart your installation.") % guest.name
         sys.exit(1)
 
-def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
-               install_func):
+def run_install_stage(guest, conscb, progresscb, wait, wait_time, start_time,
+                      install_func):
 
     dom = install_func(conscb, progresscb, wait=(not wait))
 
@@ -1118,9 +1109,28 @@ def do_install(guest, conscb, progresscb, wait, wait_time, start_time,
 
     return dom
 
+def main():
+    cli.earlyLogging()
+    options, cliargs = parse_args()
+
+    # Default setup options
+    cli.setupLogging("virt-install", options.debug)
+    if cliargs:
+        fail(_("Unknown argument '%s'") % cliargs[0])
+
+    cli.set_force(options.force)
+    cli.set_prompt(options.prompt)
+    conn = cli.getConnection(options.connect)
+
+    guest = build_guest_instance(conn, options)
+
+    start_install(guest, options)
+
+    return 0
+
 if __name__ == "__main__":
     try:
-        main()
+        sys.exit(main())
     except SystemExit, sys_e:
         sys.exit(sys_e.code)
     except KeyboardInterrupt:
