@@ -1089,7 +1089,20 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         self._prepare_install(meter)
         try:
-            return self._do_install(consolecb, meter, removeOld, wait)
+            # Remove existing VM if requested
+            self._replace_original_vm(removeOld)
+
+            # Create devices if required (disk images, etc.)
+            self._create_devices(meter)
+
+            self.domain = self._create_guest(consolecb, meter, wait,
+                                             _("Creating domain..."),
+                                             "install")
+
+            # Set domain autostart flag if requested
+            self._flag_autostart()
+
+            return self.domain
         finally:
             self._cleanup_install()
 
@@ -1145,21 +1158,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         return self.conn.lookupByName(self.name)
 
-    def _do_install(self, consolecb, meter, removeOld=False, wait=True):
-        # Remove existing VM if requested
-        self._replace_original_vm(removeOld)
-
-        # Create devices if required (disk images, etc.)
-        self._create_devices(meter)
-
-        self.domain = self._create_guest(consolecb, meter, wait,
-                                         _("Creating domain..."),
-                                         "install")
-
-        # Set domain autostart flag if requested
-        self._flag_autostart()
-
-        return self.domain
 
     def _wait_and_connect_console(self, consolecb):
         """
