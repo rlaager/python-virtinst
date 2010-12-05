@@ -1081,6 +1081,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         Begin the guest install (stage1).
         """
+        is_initial = True
         if removeOld == None:
             removeOld = self.replace
 
@@ -1089,15 +1090,16 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         self._prepare_install(meter)
         try:
-            # Remove existing VM if requested
-            self._replace_original_vm(removeOld)
-
             # Create devices if required (disk images, etc.)
             self._create_devices(meter)
 
+            start_xml, final_xml = self._build_xml(is_initial)
+
+            # Remove existing VM if requested
+            self._replace_original_vm(removeOld)
+
             self.domain = self._create_guest(consolecb, meter, wait,
-                                             _("Creating domain..."),
-                                             "install")
+                                             start_xml, final_xml, is_initial)
 
             # Set domain autostart flag if requested
             self._flag_autostart()
@@ -1112,32 +1114,47 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         guests which have the 'continue' flag set (accessed via
         get_continue_inst)
         """
-        return self._create_guest(consolecb, meter, wait,
-                                  _("Starting domain..."), "continue",
-                                  disk_boot=True,
-                                  first_create=False)
+        is_initial = False
+        start_xml, final_xml = self._build_xml(is_initial)
 
-    def _create_guest(self, consolecb, meter, wait,
-                      meter_label, log_label,
-                      disk_boot=False,
-                      first_create=True):
-        """
-        Actually do the XML logging, guest defining/creating, console
-        launching and waiting
-        """
-        if meter == None:
-            meter = progress.BaseMeter()
+        return self._create_guest(consolecb, meter, wait,
+                                  start_xml, final_xml, is_initial)
+
+    def _build_xml(self, is_initial):
+        log_label = is_initial and "install" or "continue"
+        disk_boot = not is_initial
 
         start_xml = self.get_xml_config(install=True, disk_boot=disk_boot)
         final_xml = self.get_xml_config(install=False)
+
         logging.debug("Generated %s XML: %s" %
                       (log_label,
                       (start_xml and ("\n" + start_xml) or "None required")))
+        logging.debug("Generated boot XML: \n%s" % final_xml)
+
+        return start_xml, final_xml
+
+    def _create_guest(self, consolecb, meter, wait,
+                      start_xml, final_xml, is_initial):
+        """
+        Actually do the XML logging, guest defining/creating, console
+        launching and waiting
+
+        @param is_initial: If running initial guest creation, else we
+                           are continuing the install
+        """
+        if is_initial:
+            meter_label = _("Creating domain...")
+        else:
+            meter_label = _("Starting domain...")
+
+        if meter == None:
+            meter = progress.BaseMeter()
 
         if start_xml:
             meter.start(size=None, text=meter_label)
 
-            if first_create:
+            if is_initial:
                 dom = self.conn.createLinux(start_xml, 0)
             else:
                 dom = self.conn.defineXML(start_xml)
@@ -1150,7 +1167,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             (self.domain,
              self._consolechild) = self._wait_and_connect_console(consolecb)
 
-        logging.debug("Generated boot XML: \n%s" % final_xml)
         self.domain = self.conn.defineXML(final_xml)
 
         # if we connected the console, wait for it to finish
