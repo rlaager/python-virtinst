@@ -17,7 +17,7 @@
 import unittest
 import virtconv
 import os, os.path, glob
-import tests
+import utils
 
 BASE = "tests/virtconv-files"
 
@@ -48,7 +48,7 @@ class TestVirtConv(unittest.TestCase):
 
         vmdef = inp.import_file(infile)
         out_expect = outp.export(vmdef)
-        tests.diff_compare(out_expect, outfile)
+        utils.diff_compare(out_expect, outfile)
 
     def _build_compare_path(self, base, in_path, out_dir, out_type):
         out_path = os.path.basename(in_path).rsplit(".", 1)[0]

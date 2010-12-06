@@ -29,9 +29,9 @@ from virtinst import VirtualVideoDevice
 from virtinst import VirtualController
 from virtinst import VirtualWatchdog
 from virtinst import VirtualInputDevice
-import tests
+import utils
 
-conn = tests.open_testdriver()
+conn = utils.open_testdriver()
 scratch = os.path.join(os.getcwd(), "tests", "testscratchdir")
 
 def get_basic_paravirt_guest(testconn=conn, installer=None):
@@ -143,8 +143,8 @@ class TestXMLConfig(unittest.TestCase):
             actualXML = guest.get_config_xml(install=do_install,
                                              disk_boot=do_disk_boot)
 
-            tests.diff_compare(actualXML, filename)
-            tests.test_create(guest.conn, actualXML)
+            utils.diff_compare(actualXML, filename)
+            utils.test_create(guest.conn, actualXML)
         finally:
             guest._cleanup_install()
 
@@ -162,7 +162,7 @@ class TestXMLConfig(unittest.TestCase):
         old_getxml = guest.get_config_xml
         def new_getxml(install=True, disk_boot=False):
             xml = old_getxml(install, disk_boot)
-            return tests.sanitize_xml_for_define(xml)
+            return utils.sanitize_xml_for_define(xml)
         guest.get_config_xml = new_getxml
 
         try:
@@ -180,11 +180,11 @@ class TestXMLConfig(unittest.TestCase):
             xmlcont = guest.get_config_xml(True, True)
 
             if instname:
-                tests.diff_compare(xmlinst, instname)
+                utils.diff_compare(xmlinst, instname)
             if contname:
-                tests.diff_compare(xmlcont, contname)
+                utils.diff_compare(xmlcont, contname)
             if bootname:
-                tests.diff_compare(xmlboot, bootname)
+                utils.diff_compare(xmlboot, bootname)
 
             if guest.get_continue_inst():
                 guest.continue_install(consolecb, meter, wait)

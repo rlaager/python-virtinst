@@ -29,7 +29,7 @@ import logging
 import re
 import urlgrabber.progress
 import platform
-import tests
+import utils
 import libvirt
 import virtinst
 
@@ -241,7 +241,7 @@ class TestURLFetch(unittest.TestCase):
 
     def setUp(self):
         self.meter = urlgrabber.progress.BaseMeter()
-        if tests.debug:
+        if utils.get_debug():
             self.meter = urlgrabber.progress.TextMeter()
 
     def _fetchLocalMedia(self, mediapath):
@@ -445,5 +445,5 @@ class TestURLFetch(unittest.TestCase):
                     assertions += 1
 
         if assertions != 0:
-            raise AssertionError("Found %d errors in local fetch tests." %
+            raise AssertionError("Found %d errors in local fetch utils." %
                                  assertions)

@@ -21,9 +21,9 @@ import logging
 import virtinst.Interface
 from virtinst.Interface import (Interface, InterfaceProtocol,
                                 InterfaceProtocolIPAddress)
-import tests
+import utils
 
-conn = tests.open_testdriver()
+conn = utils.open_testdriver()
 datadir = "tests/interface-xml"
 
 vlan_iface = conn.interfaceLookupByName("vlaneth1")
@@ -66,7 +66,7 @@ class TestInterfaces(unittest.TestCase):
 
         if compare:
             filename = os.path.join(datadir, obj.name + ".xml")
-            tests.diff_compare(xml, filename)
+            utils.diff_compare(xml, filename)
 
         iface = obj.install()
 

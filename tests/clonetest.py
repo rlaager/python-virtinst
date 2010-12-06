@@ -17,7 +17,8 @@
 import unittest
 import os, os.path
 import logging
-import tests
+
+import utils
 
 from virtinst import CloneManager
 CloneDesign = CloneManager.CloneDesign
@@ -50,7 +51,7 @@ for tmpf in os.listdir(clonexml_dir):
         if tmpf not in clone_files and tmpf not in black_list:
             clone_files.append(tmpf)
 
-conn = tests.open_testdriver()
+conn = utils.open_testdriver()
 
 def fake_is_uri_remote(ignore):
     return True
@@ -69,7 +70,7 @@ class TestClone(unittest.TestCase):
                       skip_list=None, compare=True):
         """Helper for comparing clone input/output from 2 xml files"""
         infile = os.path.join(clonexml_dir, filebase + "-in.xml")
-        in_content = tests.read_file(infile)
+        in_content = utils.read_file(infile)
 
         cloneobj = CloneDesign(connection=conn)
         cloneobj.original_xml = in_content
@@ -113,13 +114,13 @@ class TestClone(unittest.TestCase):
 
         cloneobj.setup()
 
-        tests.diff_compare(cloneobj.clone_xml, outfile)
+        utils.diff_compare(cloneobj.clone_xml, outfile)
 
     def _clone_define(self, filebase):
         """Take the valid output xml and attempt to define it on the
            connection to ensure we don't get any errors"""
         outfile = os.path.join(clonexml_dir, filebase + "-out.xml")
-        outxml = tests.read_file(outfile)
+        outxml = utils.read_file(outfile)
 
         vm = None
         try:
@@ -137,7 +138,7 @@ class TestClone(unittest.TestCase):
 
             vm = None
             try:
-                vm = conn.defineXML(tests.read_file(infile))
+                vm = conn.defineXML(utils.read_file(infile))
 
                 cloneobj = CloneDesign(connection=conn)
                 cloneobj.original_guest = ORIG_NAME

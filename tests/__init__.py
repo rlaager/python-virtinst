@@ -14,11 +14,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import libvirt
-import difflib
 import logging
-import os, sys
+import os
 import virtinst
+
+import utils
 
 # Force is_blktap_capable to return a consistent value, so test suite
 # won't change based on the system
@@ -32,79 +32,15 @@ for handler in rootLogger.handlers:
 logging.basicConfig(level=logging.DEBUG,
                     format="%(levelname)-8s %(message)s")
 
-if os.environ.has_key("DEBUG_TESTS") and os.environ["DEBUG_TESTS"] == "1":
+if utils.get_debug():
     rootLogger.setLevel(logging.DEBUG)
-    debug = True
 else:
     rootLogger.setLevel(logging.ERROR)
-    debug = False
 
 # Used to ensure consistent SDL xml output
 os.environ["HOME"] = "/tmp"
 os.environ["DISPLAY"] = ":3.4"
 
-def open_testdriver():
-    return libvirt.open("test:///%s/tests/testdriver.xml" % os.getcwd())
-
-# Register libvirt handler
-def libvirt_callback(ignore, err):
-    logging.warn("libvirt errmsg: %s" % err[2])
-libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
-
-def sanitize_xml_for_define(xml):
-    # Libvirt throws errors since we are defining domain
-    # type='xen', when test driver can only handle type='test'
-    # Sanitize the XML so we can define
-    if not xml:
-        return xml
-
-    xml = xml.replace("<domain type='xen'>",
-                      "<domain type='test'>")
-    xml = xml.replace(">linux<", ">xen<")
-
-    return xml
-
-def test_create(testconn, xml):
-    xml = sanitize_xml_for_define(xml)
-
-    try:
-        dom = testconn.defineXML(xml)
-    except Exception, e:
-        raise RuntimeError(str(e) + "\n" + xml)
-
-    try:
-        dom.create()
-        dom.destroy()
-        dom.undefine()
-    except:
-        try:
-            dom.destroy()
-        except:
-            pass
-        try:
-            dom.undefine()
-        except:
-            pass
-
-def read_file(filename):
-    """Helper function to read a files contents and return them"""
-    f = open(filename, "r")
-    out = f.read()
-    f.close()
-
-    return out
-
-def diff_compare(actual_out, filename=None, expect_out=None):
-    """Compare passed string output to contents of filename"""
-    if not expect_out:
-        expect_out = read_file(filename)
-
-    diff = "".join(difflib.unified_diff(expect_out.splitlines(1),
-                                        actual_out.splitlines(1),
-                                        fromfile=filename,
-                                        tofile="Generated Output"))
-    if diff:
-        raise AssertionError("Conversion outputs did not match.\n%s" % diff)
 
 # Have imports down here so they get the benefit of logging setup etc.
 import capabilities

@@ -18,8 +18,7 @@ import virtinst
 from virtinst import VirtualDisk
 from virtinst import Interface
 
-# Test helpers
-import tests
+import utils
 
 import unittest
 import logging
@@ -40,7 +39,7 @@ import os
 
 # We install several storage pools on the connection to ensure
 # we aren't bumping up against errors in that department.
-testconn = tests.open_testdriver()
+testconn = utils.open_testdriver()
 testcaps = virtinst.CapabilitiesParser.parse(testconn.getCapabilities())
 
 virtimage = virtinst.ImageParser.parse_file("tests/image-xml/image.xml")

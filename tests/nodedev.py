@@ -14,13 +14,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import tests
 import os.path
 import unittest
+
 import virtinst.NodeDeviceParser as nodeparse
 from virtinst import VirtualHostDevice
 
-conn = tests.open_testdriver()
+import utils
+
+conn = utils.open_testdriver()
 
 unknown_xml = """
 <device>
@@ -56,7 +58,7 @@ class TestNodeDev(unittest.TestCase):
             nodedev = self._nodeDevFromName(nodename)
 
         dev = VirtualHostDevice.device_from_node(conn, nodedev=nodedev)
-        tests.diff_compare(dev.get_xml_config() + "\n", devfile)
+        utils.diff_compare(dev.get_xml_config() + "\n", devfile)
 
     def testSystemDevice(self):
         devname = "computer"

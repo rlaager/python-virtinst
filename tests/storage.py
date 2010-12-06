@@ -19,7 +19,7 @@ import unittest
 
 import virtinst.Storage
 from virtinst.Storage import StoragePool, StorageVolume
-import tests
+import utils
 
 import libvirt
 
@@ -79,7 +79,7 @@ def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
 
 def poolCompare(pool_inst):
     filename = os.path.join(basepath, pool_inst.name + ".xml")
-    tests.diff_compare(pool_inst.get_xml_config(), filename)
+    utils.diff_compare(pool_inst.get_xml_config(), filename)
 
     return pool_inst.install(build=True, meter=None, create=True)
 
@@ -112,7 +112,7 @@ def createVol(poolobj, volname=None, input_vol=None, clone_vol=None):
     filename = os.path.join(basepath, vol_inst.name + ".xml")
 
     # Make sure permissions are properly set
-    tests.diff_compare(vol_inst.get_xml_config(), filename)
+    utils.diff_compare(vol_inst.get_xml_config(), filename)
 
     return vol_inst.install(meter=False)
 

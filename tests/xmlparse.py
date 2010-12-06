@@ -20,9 +20,9 @@ import traceback
 
 import virtinst
 
-import tests
+import utils
 
-conn = tests.open_testdriver()
+conn = utils.open_testdriver()
 
 def sanitize_file_xml(xml):
     # s/"/'/g from generated XML, matches what libxml dumps out
@@ -35,11 +35,11 @@ class XMLParseTest(unittest.TestCase):
         expectXML = sanitize_file_xml(file(filename).read())
         guest = virtinst.Guest(connection=conn, parsexml=expectXML)
         actualXML = guest.get_config_xml()
-        tests.diff_compare(actualXML, expect_out=expectXML)
+        utils.diff_compare(actualXML, expect_out=expectXML)
 
     def _alter_compare(self, actualXML, outfile):
-        tests.test_create(conn, actualXML)
-        tests.diff_compare(actualXML, outfile)
+        utils.test_create(conn, actualXML)
+        utils.diff_compare(actualXML, outfile)
 
     def testRoundTrip(self):
         """

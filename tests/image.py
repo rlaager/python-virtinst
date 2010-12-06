@@ -20,7 +20,7 @@ import virtinst
 import virtinst.ImageParser
 import os
 
-import tests
+import utils
 import xmlconfig
 
 class TestImageParser(unittest.TestCase):
@@ -76,10 +76,10 @@ class TestImageParser(unittest.TestCase):
             g.installer = inst
             g._prepare_install(None)
 
-            expect_out = tests.read_file(image2guestdir + fname)
+            expect_out = utils.read_file(image2guestdir + fname)
             expect_out = expect_out.replace("REPLACEME", os.getcwd())
 
-            tests.diff_compare(g.get_config_xml(install=False),
+            utils.diff_compare(g.get_config_xml(install=False),
                                image2guestdir + fname, expect_out=expect_out)
 
 
