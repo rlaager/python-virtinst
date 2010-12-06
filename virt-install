@@ -37,7 +37,7 @@ import virtinst.CapabilitiesParser
 import virtinst.cli as cli
 from virtinst.VirtualCharDevice import VirtualCharDevice
 from virtinst.VirtualDevice import VirtualDevice
-from virtinst.cli import fail
+from virtinst.cli import fail, print_stdout, print_stderr
 
 cli.setupGettext()
 
@@ -816,6 +816,8 @@ def parse_args():
                     help=_("Forces 'yes' for any applicable prompts, "
                            "terminates for all others"),
                       default=False)
+    misc.add_option("-q", "--quiet", action="store_true", dest="quiet",
+                    help=_("Suppress non-error output"))
     misc.add_option("", "--prompt", action="store_true", dest="prompt",
                     help=_("Request user input for ambiguous situations or "
                            "required options."), default=False)
@@ -841,7 +843,9 @@ def vnc_console(dom, uri):
             os.execvp(args[0], args)
         except OSError, (err, msg):
             if err == errno.ENOENT:
-                print _("Unable to connect to graphical console: virt-viewer not installed. Please install the 'virt-viewer' package.")
+                logging.warn(_("Unable to connect to graphical console: "
+                               "virt-viewer not installed. Please install "
+                               "the 'virt-viewer' package."))
             else:
                 raise OSError, (err, msg)
         os._exit(1)
@@ -990,11 +994,13 @@ def start_install(guest, continue_inst, options):
         conscb = show_console
 
 
-    progresscb = progress.TextMeter()
-
+    if options.quiet:
+        progresscb = progress.BaseMeter()
+    else:
+        progresscb = progress.TextMeter()
 
     # we've got everything -- try to start the install
-    print _("\nStarting install...")
+    print_stdout(_("\nStarting install..."))
 
     try:
         start_time = time.time()
@@ -1005,10 +1011,11 @@ def start_install(guest, continue_inst, options):
 
         # This should be valid even before doing continue install
         if not guest.post_install_check():
-            print _("Domain installation does not appear to have been\n "
+            logging.warn(
+                  _("Domain installation does not appear to have been\n "
                     "successful.  If it was, you can restart your domain\n "
                     "by running 'virsh start %s'; otherwise, please\n "
-                    "restart your installation.") % guest.name
+                    "restart your installation.") % guest.name)
             sys.exit(1)
 
         if continue_inst:
@@ -1016,28 +1023,31 @@ def start_install(guest, continue_inst, options):
                                     start_time, guest.continue_install)
 
         if options.noreboot:
-            print _("Guest installation complete... you can restart your "
-                    "domain\nby running 'virsh start %s'") % guest.name
+            print_stdout(
+                  _("Guest installation complete... you can restart your "
+                    "domain\nby running 'virsh start %s'") % guest.name)
         else:
             # FIXME: Should we say 'installation' complete for livecd, import?
-            print _("Guest installation complete... restarting guest.")
+            print_stdout(
+                _("Guest installation complete... restarting guest."))
             dom.create()
             guest.connect_console(conscb)
 
     except KeyboardInterrupt, e:
+        cli.log_exception()
         guest.terminate_console()
-        print _("Guest install interrupted.")
+        print_stderr(_("Guest install interrupted."))
     except RuntimeError, e:
         fail(e)
     except SystemExit, e:
         sys.exit(e.code)
     except Exception, e:
         fail(e, do_exit=False)
-        print
-        print _("Domain installation does not appear to have been\n"
+        logging.warn(
+              _("Domain installation does not appear to have been\n"
                 "successful. If it was, you can restart your domain\n"
                 "by running 'virsh start %s'; otherwise, please\n"
-                "restart your installation.") % guest.name
+                "restart your installation.") % guest.name)
         sys.exit(1)
 
 def run_install_stage(guest, conscb, progresscb, wait, wait_time, start_time,
@@ -1051,8 +1061,7 @@ def run_install_stage(guest, conscb, progresscb, wait, wait_time, start_time,
         state = dominfo[0]
 
         if guest.domain_is_crashed():
-            print _("Domain has crashed.")
-            sys.exit(1)
+            fail(_("Domain has crashed."))
 
         if guest.domain_is_shutdown():
             return dom, state
@@ -1085,13 +1094,14 @@ def run_install_stage(guest, conscb, progresscb, wait, wait_time, start_time,
         if wait_time > 0:
             timestr = _("%d minutes ") % (int(wait_time) / 60)
 
-        print _("Domain installation still in progress. Waiting %s"
-                "for installation to complete.") % timestr
+        print_stdout(
+            _("Domain installation still in progress. Waiting %s"
+              "for installation to complete.") % timestr)
 
         # Wait loop
         while True:
             if guest.domain_is_shutdown():
-                print _("Domain has shutdown. Continuing.")
+                print_stdout(_("Domain has shutdown. Continuing."))
                 try:
                     # Lookup a new domain object incase current
                     # one returned bogus data (see comment in
@@ -1105,14 +1115,16 @@ def run_install_stage(guest, conscb, progresscb, wait, wait_time, start_time,
             if wait_time < 0 or ((time.time() - start_time) < wait_time):
                 time.sleep(2)
             else:
-                print _("Installation has exceeded specified time limit. "
-                        "Exiting application.")
+                print_stdout(
+                      _("Installation has exceeded specified time limit. "
+                        "Exiting application."))
                 sys.exit(1)
     else:
         # User specified --wait 0, which means --noautoconsole, which
         # means just exit.
-        print _("Domain installation still in progress. You can reconnect"
-                " to \nthe console to complete the installation process.")
+        print_stdout(
+            _("Domain installation still in progress. You can reconnect"
+              " to \nthe console to complete the installation process."))
         sys.exit(0)
 
     return dom
@@ -1129,7 +1141,7 @@ def xml_to_print(guest, continue_inst, xmlonly, xmlstep, dry):
                                                        return_xml=True)
 
     if dry and not (xmlonly or xmlstep):
-        print _("Dry run completed successfully")
+        print_stdout(_("Dry run completed successfully"))
         return
 
     # --xml-only
@@ -1165,7 +1177,8 @@ def main():
     options, cliargs = parse_args()
 
     # Default setup options
-    cli.setupLogging("virt-install", options.debug)
+    options.quiet = options.xmlstep or options.xmlonly or options.quiet
+    cli.setupLogging("virt-install", options.debug, options.quiet)
     if cliargs:
         fail(_("Unknown argument '%s'") % cliargs[0])
 
@@ -1174,7 +1187,7 @@ def main():
     conn = cli.getConnection(options.connect)
 
     if options.xmlstep not in [None, "1", "2", "3", "all"]:
-        fail(_("--xml-step must be 1, 2, 3, or all"))
+        fail(_("--print-step must be 1, 2, 3, or all"))
 
     guest = build_guest_instance(conn, options)
     continue_inst = guest.get_continue_inst()
@@ -1183,7 +1196,7 @@ def main():
         xml = xml_to_print(guest, continue_inst,
                            options.xmlonly, options.xmlstep, options.dry)
         if xml:
-            print xml
+            print_stdout(xml, do_force=True)
     else:
         start_install(guest, continue_inst, options)
 
@@ -1195,7 +1208,8 @@ if __name__ == "__main__":
     except SystemExit, sys_e:
         sys.exit(sys_e.code)
     except KeyboardInterrupt:
-        print >> sys.stderr, _("Installation aborted at user request")
+        cli.log_exception()
+        print_stderr(_("Installation aborted at user request"))
     except Exception, main_e:
         fail(main_e)
 

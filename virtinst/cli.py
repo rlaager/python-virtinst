@@ -39,8 +39,10 @@ from virtinst import _virtinst as _
 
 MIN_RAM = 64
 force = False
+quiet = False
 doprompt = True
 
+log_exception = _util.log_exception
 _virtinst_uri_magic = "__virtinst_test__"
 
 def _is_virtinst_test_uri(uri):
@@ -194,8 +196,10 @@ def setupGettext():
 def earlyLogging():
     logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
-def setupLogging(appname, debug=False):
-    # set up logging
+def setupLogging(appname, debug=False, do_quiet=False):
+    global quiet
+    quiet = do_quiet
+
     vi_dir = os.path.expanduser("~/.virtinst")
     if not os.access(vi_dir, os.W_OK):
         if os.path.exists(vi_dir):
@@ -209,7 +213,8 @@ def setupLogging(appname, debug=False):
 
 
     dateFormat = "%a, %d %b %Y %H:%M:%S"
-    fileFormat = "[%(asctime)s " + appname + " %(process)d] %(levelname)s (%(module)s:%(lineno)d) %(message)s"
+    fileFormat = ("[%(asctime)s " + appname + " %(process)d] "
+                  "%(levelname)s (%(module)s:%(lineno)d) %(message)s")
     streamDebugFormat = "%(asctime)s %(levelname)-8s %(message)s"
     streamErrorFormat = "%(levelname)-8s %(message)s"
     filename = os.path.join(vi_dir, appname + ".log")
@@ -234,7 +239,11 @@ def setupLogging(appname, debug=False):
         streamHandler.setFormatter(logging.Formatter(streamDebugFormat,
                                                      dateFormat))
     else:
-        streamHandler.setLevel(logging.ERROR)
+        if quiet:
+            level = logging.ERROR
+        else:
+            level = logging.WARN
+        streamHandler.setLevel(level)
         streamHandler.setFormatter(logging.Formatter(streamErrorFormat))
     rootLogger.addHandler(streamHandler)
 
@@ -259,15 +268,22 @@ def setupLogging(appname, debug=False):
 def fail(msg, do_exit=True):
     """Convenience function when failing in cli app"""
     logging.error(msg)
-    _util.log_exception()
+    log_exception()
     if do_exit:
         _fail_exit()
+
+def print_stdout(msg, do_force=False):
+    if do_force or not quiet:
+        print msg
+
+def print_stderr(msg):
+    print >> sys.stderr, msg
 
 def _fail_exit():
     sys.exit(1)
 
 def nice_exit():
-    print _("Exiting at user request.")
+    print_stdout(_("Exiting at user request."))
     sys.exit(0)
 
 # Connection opening helper functions
@@ -301,7 +317,7 @@ def do_creds(creds, cbdata):
     try:
         return _do_creds(creds, cbdata)
     except:
-        _util.log_exception("Error in creds callback.")
+        log_exception("Error in creds callback.")
         raise
 
 def _do_creds(creds, cbdata_ignore):
@@ -415,7 +431,7 @@ def prompt_for_input(noprompt_err, prompt = "", val = None, failed=False):
             msg = noprompt_err + " " + _("(use --prompt to run interactively)")
         fail(msg)
 
-    print prompt + " ",
+    print_stdout(prompt + " ", do_force=True)
     return sys.stdin.readline().strip()
 
 def yes_or_no_convert(s):

@@ -840,7 +840,7 @@ generated XML instead of defining the guest. By default this WILL do storage
 creation (can be disabled with --dry-run).
 
 If the guest has an install phase, you will need to use --print-step to
-specify exactly what XML output you want.
+specify exactly what XML output you want. This option implies --quiet.
 
 =item --print-step
 
@@ -848,7 +848,7 @@ Acts similarly to --print-xml, except requires specifying which install step
 to print XML for. Possible values are 1, 2, 3, or all. Stage 1 is typically
 booting from the install media, and stage 2 is typically the final guest
 config booting off hardisk. Stage 3 is only relevant for windows installs,
-which by default have a second install stage.
+which by default have a second install stage. This option implies --quiet.
 
 =item --noreboot
 
@@ -886,6 +886,10 @@ is off (as of virtinst 0.400.0)
 
 Check that the number virtual cpus requested does not exceed physical CPUs and
 warn if they do.
+
+=item -q, --quiet
+
+Only print fatal error messages.
 
 =item  -d, --debug
 

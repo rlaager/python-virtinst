@@ -34,7 +34,6 @@ import re
 import libxml2
 import logging
 import subprocess
-from sys import stderr
 
 import libvirt
 from virtinst import _virtinst as _
@@ -67,8 +66,9 @@ def default_route(nic = None):
     for line in d.xreadlines():
         info = line.split()
         if (len(info) != 11): # 11 = typical num of fields in the file
-            print >> stderr, _("Invalid line length while parsing %s.") %(route_file)
-            print >> stderr, _("Defaulting bridge to xenbr%d") % (defn)
+            logging.warn(_("Invalid line length while parsing %s.") %
+                         (route_file))
+            logging.warn(_("Defaulting bridge to xenbr%d") % (defn))
             break
         try:
             route = int(info[1], 16)

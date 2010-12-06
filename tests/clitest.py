@@ -570,6 +570,8 @@ args_dict = {
   "compare" : [
     # F14 Directory tree URL install with extra-args
     ("--os-variant fedora14 --file %(EXISTIMG1)s --location %(TREEDIR)s --extra-args console=ttyS0", "kvm-f14-url"),
+    # Quiet URL install should make no noise
+    ("--os-variant fedora14 --disk %(NEWIMG1)s,size=.01 --location %(TREEDIR)s --extra-args console=ttyS0 --quiet", "quiet-url"),
     # HVM windows install with disk
     ("--cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --sound", "kvm-win2k3-cdrom"),
   ],
@@ -904,7 +906,8 @@ def run_tests(do_app):
                 if not cmdstr.count("--uuid"):
                     cmdstr += " --uuid 00000000-1111-2222-3333-444444444444"
                 if (not cmdstr.count("--print-xml") and
-                    not cmdstr.count("--print-step")):
+                    not cmdstr.count("--print-step") and
+                    not cmdstr.count("--quiet")):
                     cmdstr += " --print-step all"
                 if not cmdstr.count(fakeuri):
                     cmdstr += " --connect %s" % fakeuri
@@ -912,8 +915,8 @@ def run_tests(do_app):
                 ignore, output = assertPass(cmdstr)
 
                 # Uncomment to generate new test files
-                #if not os.path.exists(filename):
-                #    file(filename, "w").write(output)
+                if not os.path.exists(filename):
+                    file(filename, "w").write(output)
 
                 utils.diff_compare(output, filename)
 
