@@ -25,6 +25,9 @@ import logging.handlers
 import gettext, locale
 import optparse
 from optparse import OptionValueError, OptionParser
+import re
+import difflib
+import tempfile
 
 import libvirt
 import _util
@@ -38,12 +41,62 @@ MIN_RAM = 64
 force = False
 doprompt = True
 
-def check_if_test_uri_remote(uri):
-    magic = "__virtinst_test_remote__"
-    if uri and uri.startswith(magic):
-        uri = uri.replace(magic, "")
+_virtinst_uri_magic = "__virtinst_test__"
+
+def _is_virtinst_test_uri(uri):
+    return uri and uri.startswith(_virtinst_uri_magic)
+
+def _open_test_uri(uri):
+    uri = uri.replace(_virtinst_uri_magic, "")
+    ret = uri.split(",", 1)
+    uri = ret[0]
+    opts = parse_optstr(len(ret) > 1 and ret[1] or "")
+
+    conn = open_connection(uri)
+
+    def sanitize_qemu_xml(xml):
+        orig = xml
+        xml = re.sub("arch='.*'", "arch='i686'", xml)
+        xml = re.sub("domain type='.*'", "domain type='test'", xml)
+        xml = re.sub("machine type='.*'", "", xml)
+
+        logging.debug("virtinst test sanitizing diff\n:%s" %
+                      "\n".join(difflib.unified_diff(orig.split("\n"),
+                                                     xml.split("\n"))))
+        return xml
+
+    # Need tmpfile names to be deterministic
+    def fakemkstemp(prefix, *args, **kwargs):
+        filename = os.path.join(".", prefix)
+        return os.open(filename, os.O_RDWR | os.O_CREAT), filename
+    tempfile.mkstemp = fakemkstemp
+
+    _util.randomMAC = lambda type_: "00:11:22:33:44:55"
+
+    # Fake remote status
+    if "remote" in opts:
         _util.is_uri_remote = lambda uri_: True
-    return uri
+
+    # Fake capabilities
+    if "caps" in opts:
+        capsxml = file(opts["caps"]).read()
+        conn.getCapabilities = lambda: capsxml
+
+    if "qemu" in opts:
+        conn.getURI = lambda: "qemu+abc:///system"
+        conn.getVersion = lambda: 100000000
+        origcreate = conn.createLinux
+        origdefine = conn.defineXML
+        def newcreate(xml, flags):
+            xml = sanitize_qemu_xml(xml)
+            origcreate(xml, flags)
+        def newdefine(xml):
+            xml = sanitize_qemu_xml(xml)
+            origdefine(xml)
+        conn.createLinux = newcreate
+        conn.defineXML = newdefine
+
+    return conn
 
 class VirtStreamHandler(logging.StreamHandler):
 
@@ -216,16 +269,16 @@ def nice_exit():
     sys.exit(0)
 
 # Connection opening helper functions
-def getConnection(connect):
-    if (connect and
-        not User.current().has_priv(User.PRIV_CREATE_DOMAIN, connect)):
+def getConnection(uri):
+    if (uri and not User.current().has_priv(User.PRIV_CREATE_DOMAIN, uri)):
         fail(_("Must be root to create Xen guests"))
 
-    # Hack to facilitate remote unit testing
-    connect = check_if_test_uri_remote(connect)
+    # Hack to facilitate virtinst unit testing
+    if _is_virtinst_test_uri(uri):
+        return _open_test_uri(uri)
 
-    logging.debug("Requesting libvirt URI %s" % (connect or "default"))
-    conn = open_connection(connect)
+    logging.debug("Requesting libvirt URI %s" % (uri or "default"))
+    conn = open_connection(uri)
     logging.debug("Received libvirt URI %s" % conn.getURI())
 
     return conn

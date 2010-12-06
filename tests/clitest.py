@@ -25,7 +25,9 @@ testuri = "test:///`pwd`/tests/testdriver.xml"
 
 # There is a hack in virtinst/cli.py to find this magic string and
 # convince virtinst we are using a remote connection.
-remoteuri = "__virtinst_test_remote__test:///`pwd`/tests/testdriver.xml"
+fakeuri     = "__virtinst_test__" + testuri
+remoteuri   = fakeuri + ",remote"
+kvmuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/libvirt-0.7.6-qemu-caps.xml,qemu"
 
 # Location
 xmldir = "tests/cli-test-xml"
@@ -61,6 +63,7 @@ clean_files = (new_images + exist_images +
 test_files = {
     'TESTURI'           : testuri,
     'REMOTEURI'         : remoteuri,
+    'KVMURI'            : kvmuri,
     'CLONE_DISK_XML'    : "%s/clone-disk.xml" % xmldir,
     'CLONE_STORAGE_XML' : "%s/clone-disk-managed.xml" % xmldir,
     'CLONE_NOEXIST_XML' : "%s/clone-disk-noexist.xml" % xmldir,
@@ -75,6 +78,7 @@ test_files = {
     'POOL'              : "default-pool",
     'VOL'               : "testvol1.img",
     'DIR'               : os.getcwd(),
+    'TREEDIR'           : treedir,
     'MANAGEDEXIST1'     : "/default-pool/testvol1.img",
     'MANAGEDEXIST2'     : "/default-pool/testvol2.img",
     'MANAGEDNEW1'       : "/default-pool/clonevol",
@@ -235,19 +239,19 @@ args_dict = {
         # Convert i*86 -> i686
         "--arch i486 --pxe",
         # Directory tree URL install
-        "--hvm --location %s" % treedir,
+        "--hvm --location %(TREEDIR)s",
         # Directory tree URL install with extra-args
-        "--hvm --location %s --extra-args console=ttyS0" % treedir,
+        "--hvm --location %(TREEDIR)s --extra-args console=ttyS0",
         # Directory tree CDROM install
-        "--hvm --cdrom %s" % treedir,
+        "--hvm --cdrom %(TREEDIR)s",
         # Paravirt location
-        "--paravirt --location %s" % treedir,
+        "--paravirt --location %(TREEDIR)s",
         # Using ro path as a cd media
         "--hvm --cdrom %(ROIMG)s",
         # Paravirt location with --os-variant none
-        "--paravirt --location %s --os-variant none" % treedir,
+        "--paravirt --location %(TREEDIR)s --os-variant none",
         # URL install with manual os-variant
-        "--hvm --location %s --os-variant fedora12" % treedir,
+        "--hvm --location %(TREEDIR)s --os-variant fedora12",
         # Boot menu
         "--hvm --pxe --boot menu=on",
         # Kernel params
@@ -520,6 +524,24 @@ args_dict = {
 
      }, # category "remote"
 
+
+"kvm" : {
+  "kvm_args": "--connect %(KVMURI)s --noautoconsole",
+
+  "valid" : [
+    # HVM windows install with disk
+    "--cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --sound",
+    # F14 Directory tree URL install with extra-args
+    "--os-variant fedora14 --file %(EXISTIMG1)s --location %(TREEDIR)s --extra-args console=ttyS0"
+  ],
+
+  "invalid" : [
+  ],
+
+
+}, # category "kvm"
+
+
     "prompt" : [ " --connect %(TESTURI)s --debug --prompt" ]
   },
 
@@ -617,8 +639,9 @@ args_dict = {
       ],
     }, # categort "remote"
 
-    "prompt" : [ " --connect %(TESTURI) --debug --prompt",
-                 " --connect %(TESTURI) --debug --original-xml %(CLONE_DISK_XML)s --prompt" ]
+    "prompt" : [
+        " --connect %(TESTURI) --debug --prompt",
+        " --connect %(TESTURI) --debug --original-xml %(CLONE_DISK_XML)s --prompt" ]
   }, # app 'virt-clone'
 
 
