@@ -88,7 +88,8 @@ class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
 
     def setup_dev(self, conn=None, meter=None):
         """
-        Perform any necessary device initialization
+        Perform potentially hazardous device initialization, like
+        storage creation or host device reset
 
         @param conn: Optional connection to use if neccessary. If not
                      specified, device's 'conn' will be used

@@ -84,6 +84,10 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         self._target_dev = None
         self._source_dev = None
 
+        # Generate _random_mac
+        self._random_mac = None
+        self._default_bridge = None
+
         if self._is_parse():
             return
 
@@ -96,6 +100,21 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         if self.type == self.TYPE_VIRTUAL:
             if network is None:
                 raise ValueError, _("A network name was not provided")
+
+    def _generate_default_bridge(self):
+        if not self._default_bridge:
+            self._default_bridge = _util.default_bridge2(self.conn)
+        return self._default_bridge
+
+    def _generate_random_mac(self):
+        if self.conn and not self._random_mac:
+            while 1:
+                self._random_mac = _util.randomMAC(self.conn.getType().lower())
+                ret = self.is_conflict_net(self.conn, self._random_mac)
+                if ret[1] is not None:
+                    continue
+                break
+        return self._random_mac
 
     def get_source(self):
         """
@@ -122,6 +141,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                          xpath="./@type")
 
     def get_macaddr(self):
+        if not self._macaddr:
+            return self._generate_random_mac()
         return self._macaddr
     def set_macaddr(self, val):
         _util.validate_macaddr(val)
@@ -154,6 +175,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                             xpath="./source/@network")
 
     def get_bridge(self):
+        if not self._bridge and self.type == self.TYPE_BRIDGE:
+            return self._generate_default_bridge()
         return self._bridge
     def set_bridge(self, val):
         self._bridge = val
@@ -181,7 +204,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     source_dev = _xml_property(get_source_dev, set_source_dev,
                                xpath="./source/@dev")
 
-    def is_conflict_net(self, conn):
+    def is_conflict_net(self, conn, mac=None):
         """
         is_conflict_net: determines if mac conflicts with others in system
 
@@ -192,7 +215,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         Non fatal collisions (mac addr collides with inactive guest) will
         return (False, "description of collision")
         """
-        if self.macaddr is None:
+        mac = mac or self.macaddr
+        if mac is None:
             return (False, None)
 
         # Not supported for remote connections yet
@@ -204,7 +228,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         # get the Host's NIC MACaddress
         hostdevs = _util.get_host_network_devices()
 
-        if _countMACaddr(vms, self.macaddr) > 0:
+        if _countMACaddr(vms, mac) > 0:
             return (True, _("The MAC address you entered is already in use "
                             "by another active virtual machine."))
 
@@ -214,7 +238,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                 return (True, _("The MAC address you entered conflicts with "
                                 "a device on the physical host."))
 
-        if _countMACaddr(inactive_vm, self.macaddr) > 0:
+        if _countMACaddr(inactive_vm, mac) > 0:
             return (False, _("The MAC address you entered is already in use "
                              "by another inactive virtual machine."))
 
@@ -227,26 +251,19 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         """
         DEPRECATED: Please use setup_dev instead
         """
+        # Access self.macaddr to generate a random one
+        if not self.conn and conn:
+            self.conn = conn
         if not conn:
             conn = self.conn
 
-        if self.macaddr is None:
-            while 1:
-                self.macaddr = _util.randomMAC(type=conn.getType().lower())
-                if self.is_conflict_net(conn)[1] is not None:
-                    continue
-                else:
-                    break
-        else:
+        if self.macaddr:
             ret, msg = self.is_conflict_net(conn)
             if msg is not None:
                 if ret is False:
                     logging.warning(msg)
                 else:
                     raise RuntimeError(msg)
-
-        if not self.bridge and self.type == "bridge":
-            self.bridge = _util.default_bridge2(self.conn)
 
     def _get_xml_config(self):
         src_xml = ""
