@@ -15,15 +15,15 @@
   <devices>
     <disk type='file' device='disk'>
       <target dev='hda' bus='ide'/>
-      <source file='cli_exist1.img'/>
+      <source file='/tmp/__virtinst_cli_exist1.img'/>
     </disk>
     <disk type='file' device='disk'>
       <target dev='hdb' bus='ide'/>
-      <source file='cli_exist2.img'/>
+      <source file='/tmp/__virtinst_cli_exist2.img'/>
     </disk>
     <disk type='file' device='cdrom'>
       <target dev='hdc' bus='ide'/>
-      <source file='cli_exist2.img'/>
+      <source file='/tmp/__virtinst_cli_exist2.img'/>
       <readonly/>
     </disk>
     <disk type='file' device='floppy'>

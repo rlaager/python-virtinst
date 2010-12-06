@@ -76,6 +76,14 @@ ACCESS__CONN="Access to a protected member _conn"
 # they provide info that is needed. These need need to be fixed.
 PROT_MEM_BUGS="protected member (_lookup_osdict_key|_OS_TYPES|_prepare_install|_create_devices|_cleanup_install|_install_bootconfig|_channels)|'virtinst.FullVirtGuest' has no '_OS_TYPES'"
 
+
+# This doesn't belong here, but makes sure I don't break the test suite :)
+if grep -qIR crobinso tests --exclude pylint\* ; then
+    echo "Test suite borked:"
+    grep -IR crobinso tests --exclude pylint\*
+    exit 1
+fi
+
 DMSG=""
 addmsg() {
     DMSG="${DMSG},$1"

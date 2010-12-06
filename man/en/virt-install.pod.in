@@ -833,6 +833,23 @@ cirrus, vga, or vmvga (vmware).
 Set the autostart flag for a domain. This causes the domain to be started
 on host boot up.
 
+=item --print-xml
+
+If the requested guest has no install phase (--import, --boot), print the
+generated XML instead of defining the guest. By default this WILL do storage
+creation (can be disabled with --dry-run).
+
+If the guest has an install phase, you will need to use --print-step to
+specify exactly what XML output you want.
+
+=item --print-step
+
+Acts similarly to --print-xml, except requires specifying which install step
+to print XML for. Possible values are 1, 2, 3, or all. Stage 1 is typically
+booting from the install media, and stage 2 is typically the final guest
+config booting off hardisk. Stage 3 is only relevant for windows installs,
+which by default have a second install stage.
+
 =item --noreboot
 
 Prevent the domain from automatically rebooting after the install has
@@ -852,6 +869,13 @@ simply exits, leaving the virtual machine in its current state.
 
 Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
 say yes. For any other prompts, the application will exit.
+
+=item --dry-run
+
+Proceed through the guest creation process, but do NOT create storage devices,
+change host device configuration, or actually teach libvirt about the guest.
+virt-install may still fetch install media, since this is required to
+properly detect the OS to install.
 
 =item --prompt
 

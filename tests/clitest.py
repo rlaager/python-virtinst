@@ -17,6 +17,8 @@
 import commands
 import os, sys
 
+import utils
+
 # Set DISPLAY if it isn't already set
 os.environ["DISPLAY"] = "testdisplay"
 os.environ["VIRTCONV_TEST_NO_DISK_CONVERSION"] = "1"
@@ -30,21 +32,32 @@ remoteuri   = fakeuri + ",remote"
 kvmuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/libvirt-0.7.6-qemu-caps.xml,qemu"
 
 # Location
+image_prefix = "/tmp/__virtinst_cli_"
 xmldir = "tests/cli-test-xml"
 treedir = "%s/faketree" % xmldir
 vcdir = "%s/virtconv" % xmldir
-ro_dir = "clitest_rodir"
+ro_dir = image_prefix + "clitest_rodir"
 ro_img = "%s/cli_exist3ro.img" % ro_dir
 ro_noexist_img = "%s/idontexist.img" % ro_dir
+compare_xmldir = "%s/compare" % xmldir
 virtconv_out = "virtconv-outdir"
 
 # Images that will be created by virt-install/virt-clone, and removed before
 # each run
-new_images =    [ "cli_new1.img", "cli_new2.img", "cli_new3.img",
-                  "cli_exist1-clone.img", "cli_exist2-clone.img"]
+new_images =    [
+    image_prefix + "new1.img",
+    image_prefix + "new2.img",
+    image_prefix + "new3.img",
+    image_prefix + "exist1-clone.img",
+    image_prefix + "exist2-clone.img",
+]
 
 # Images that are expected to exist before a command is run
-exist_images =  [ "cli_exist1.img", "cli_exist2.img", ro_img]
+exist_images =  [
+    image_prefix + "exist1.img",
+    image_prefix + "exist2.img",
+    ro_img,
+]
 
 # Images that need to exist ahead of time for virt-image
 virtimage_exist = [os.path.join(xmldir, "cli_root.raw")]
@@ -398,6 +411,8 @@ args_dict = {
         "--hvm --import --disk path=virt-install",
         # PV Import install
         "--paravirt --import --disk path=virt-install",
+        # PV Import install, print single XML
+        "--paravirt --import --disk path=virt-install --print-xml",
         # Import a floppy disk
         "--hvm --import --disk path=virt-install,device=floppy",
         # --autostart flag
@@ -406,6 +421,8 @@ args_dict = {
         "--hvm --nodisks --pxe --description \"foobar & baz\"",
         # HVM windows install with disk
         "--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0",
+        # HVM windows install, print 3rd stage XML
+        "--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --print-step 3",
         # --watchdog dev default
         "--hvm --nodisks --pxe --watchdog default",
         # --watchdog opts
@@ -437,7 +454,19 @@ args_dict = {
         "--hvm --nodisks --pxe --soundhw default --soundhw foobar",
         # Busted --security
         "--hvm --nodisks --pxe --security type=foobar",
+        # PV Import install, no second XML step
+        "--paravirt --import --disk path=virt-install --print-step 2",
+        # 2 stage install with --print-xml
+        "--hvm --nodisks --pxe --print-xml",
       ],
+
+      "compare": [
+        # Diskless PXE install
+        ("--hvm --nodisks --pxe --print-step all", "simple-pxe"),
+        # HVM windows install with disk
+        ("--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0", "w2k3-cdrom"),
+      ],
+
      }, # category "misc"
 
      "network": {
@@ -532,12 +561,18 @@ args_dict = {
     # HVM windows install with disk
     "--cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --sound",
     # F14 Directory tree URL install with extra-args
-    "--os-variant fedora14 --file %(EXISTIMG1)s --location %(TREEDIR)s --extra-args console=ttyS0"
+    "--os-variant fedora14 --file %(EXISTIMG1)s --location %(TREEDIR)s --extra-args console=ttyS0 --sound"
   ],
 
   "invalid" : [
   ],
 
+  "compare" : [
+    # F14 Directory tree URL install with extra-args
+    ("--os-variant fedora14 --file %(EXISTIMG1)s --location %(TREEDIR)s --extra-args console=ttyS0", "kvm-f14-url"),
+    # HVM windows install with disk
+    ("--cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --sound", "kvm-win2k3-cdrom"),
+  ],
 
 }, # category "kvm"
 
@@ -656,6 +691,8 @@ args_dict = {
       "valid": [
         # All default values
         "",
+        # Print default
+        "--print",
         # Manual boot idx 0
         "--boot 0",
         # Manual boot idx 1
@@ -798,6 +835,7 @@ def assertPass(comm):
                              "Command was: %s\n" % (comm) + \
                              "Error code : %d\n" % ret[0] + \
                              "Output was:\n%s" % ret[1])
+    return ret
 
 def assertFail(comm):
     ret = runcomm(comm)
@@ -806,6 +844,8 @@ def assertFail(comm):
                              "Command was: %s\n" % (comm) + \
                              "Error code : %d\n" % ret[0] + \
                              "Output was:\n%s" % ret[1])
+    return ret
+
 
 # Setup: build cliarg dict, which uses
 def run_tests(do_app):
@@ -853,6 +893,29 @@ def run_tests(do_app):
                 cmdstr = "./%s %s %s %s" % (app, global_args,
                                             category_args, optstr)
                 assertFail(cmdstr)
+
+            for optstr, filename in catdict.get("compare") or []:
+                filename = "%s/%s.xml" % (compare_xmldir, filename)
+                cmdstr = "./%s %s %s %s" % (app, global_args,
+                                            category_args, optstr)
+
+                # Strip --debug to get reasonable output
+                cmdstr = cmdstr.replace("--debug ", "").replace("-d ", "")
+                if not cmdstr.count("--uuid"):
+                    cmdstr += " --uuid 00000000-1111-2222-3333-444444444444"
+                if (not cmdstr.count("--print-xml") and
+                    not cmdstr.count("--print-step")):
+                    cmdstr += " --print-step all"
+                if not cmdstr.count(fakeuri):
+                    cmdstr += " --connect %s" % fakeuri
+
+                ignore, output = assertPass(cmdstr)
+
+                # Uncomment to generate new test files
+                #if not os.path.exists(filename):
+                #    file(filename, "w").write(output)
+
+                utils.diff_compare(output, filename)
 
 def main():
     # CLI Args

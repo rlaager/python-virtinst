@@ -874,8 +874,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     # Install Helper functions #
     ############################
 
-    def _prepare_install(self, meter):
+    def _prepare_install(self, meter, dry=False):
         self._install_devices = []
+        ignore = dry
 
         # Fetch install media, prepare installer devices
         self._installer.prepare(guest = self,
@@ -1077,9 +1078,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     ##########################
 
     def start_install(self, consolecb=None, meter=None, removeOld=None,
-                      wait=True):
+                      wait=True, dry=False, return_xml=False):
         """
         Begin the guest install (stage1).
+        @param return_xml: Don't create the guest, just return generated XML
         """
         is_initial = True
         if removeOld == None:
@@ -1088,12 +1090,17 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self.validate_parms()
         self._consolechild = None
 
-        self._prepare_install(meter)
+        self._prepare_install(meter, dry)
         try:
             # Create devices if required (disk images, etc.)
-            self._create_devices(meter)
+            if not dry:
+                self._create_devices(meter)
 
             start_xml, final_xml = self._build_xml(is_initial)
+            if return_xml:
+                return (start_xml, final_xml)
+            if dry:
+                return
 
             # Remove existing VM if requested
             self._replace_original_vm(removeOld)
@@ -1108,7 +1115,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         finally:
             self._cleanup_install()
 
-    def continue_install(self, consolecb=None, meter=None, wait=True):
+    def continue_install(self, consolecb=None, meter=None, wait=True,
+                         dry=False, return_xml=False):
         """
         Continue with stage 2 of a guest install. Only required for
         guests which have the 'continue' flag set (accessed via
@@ -1116,6 +1124,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         is_initial = False
         start_xml, final_xml = self._build_xml(is_initial)
+        if return_xml:
+            return (start_xml, final_xml)
+        if dry:
+            return
 
         return self._create_guest(consolecb, meter, wait,
                                   start_xml, final_xml, is_initial)

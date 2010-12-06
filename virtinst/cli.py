@@ -67,6 +67,8 @@ def _open_test_uri(uri):
 
     # Need tmpfile names to be deterministic
     def fakemkstemp(prefix, *args, **kwargs):
+        ignore = args
+        ignore = kwargs
         filename = os.path.join(".", prefix)
         return os.open(filename, os.O_RDWR | os.O_CREAT), filename
     tempfile.mkstemp = fakemkstemp

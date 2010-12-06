@@ -798,11 +798,20 @@ def parse_args():
     misc.add_option("", "--autostart", action="store_true", default=False,
                     dest="autostart",
                     help=_("Have domain autostart on host boot up."))
+    misc.add_option("", "--print-xml", action="store_true", dest="xmlonly",
+                    help=_("Print the generated domain XML rather than define "
+                           "the guest."))
+    misc.add_option("", "--print-step", type="str", dest="xmlstep",
+                    help=_("Print XML of a specific install step "
+                           "(1, 2, 3, all) rather than define the guest."))
     misc.add_option("", "--noreboot", action="store_true", dest="noreboot",
                     help=_("Disables the automatic rebooting when the "
                            "installation is complete."))
     misc.add_option("", "--wait", type="int", dest="wait",
                     help=_("Time to wait (in minutes)"))
+    misc.add_option("", "--dry-run", action="store_true", dest="dry",
+                    help=_("Run through install process, but do not "
+                           "create devices or define the guest."))
     misc.add_option("", "--force", action="store_true", dest="force",
                     help=_("Forces 'yes' for any applicable prompts, "
                            "terminates for all others"),
@@ -944,7 +953,7 @@ def build_guest_instance(conn, options):
 
     return guest
 
-def start_install(guest, options):
+def start_install(guest, continue_inst, options):
     def show_console(dom):
         if guest.graphics_dev:
             if guest.graphics_dev.type == virtinst.VirtualGraphics.TYPE_VNC:
@@ -964,7 +973,6 @@ def start_install(guest, options):
     # waiting.  Otherwise, we can exit before the domain has finished
     # installing. Passing --wait will give the above semantics.
     #
-    continue_inst = guest.get_continue_inst()
     wait = continue_inst
     wait_time = -1
     autoconsole = options.autoconsole
@@ -1109,6 +1117,49 @@ def run_install_stage(guest, conscb, progresscb, wait, wait_time, start_time,
 
     return dom
 
+def xml_to_print(guest, continue_inst, xmlonly, xmlstep, dry):
+    start_xml, final_xml = guest.start_install(dry=dry, return_xml=True)
+    second_xml = None
+    if not start_xml:
+        start_xml = final_xml
+        final_xml = None
+
+    if continue_inst:
+        second_xml, final_xml = guest.continue_install(dry=dry,
+                                                       return_xml=True)
+
+    if dry and not (xmlonly or xmlstep):
+        print _("Dry run completed successfully")
+        return
+
+    # --xml-only
+    if xmlonly and not xmlstep:
+        if second_xml or final_xml:
+            fail(_("--xml-only can only be used with guests that do not have "
+                   "an installation phase (--import, --boot, etc.). To see all"
+                   "all generated XML, please use --xml-step all."))
+        return start_xml
+
+    # --xml-step
+    if xmlstep == "1":
+        return start_xml
+    if xmlstep == "2":
+        if not (second_xml or final_xml):
+            fail(_("Requested installation does not have XML step 2"))
+        return second_xml or final_xml
+    if xmlstep == "3":
+        if not second_xml:
+            fail(_("Requested installation does not have XML step 3"))
+        return final_xml
+
+    # "all" case
+    xml = start_xml
+    if second_xml:
+        xml += second_xml
+    if final_xml:
+        xml += final_xml
+    return xml
+
 def main():
     cli.earlyLogging()
     options, cliargs = parse_args()
@@ -1122,9 +1173,19 @@ def main():
     cli.set_prompt(options.prompt)
     conn = cli.getConnection(options.connect)
 
-    guest = build_guest_instance(conn, options)
+    if options.xmlstep not in [None, "1", "2", "3", "all"]:
+        fail(_("--xml-step must be 1, 2, 3, or all"))
 
-    start_install(guest, options)
+    guest = build_guest_instance(conn, options)
+    continue_inst = guest.get_continue_inst()
+
+    if options.xmlstep or options.xmlonly or options.dry:
+        xml = xml_to_print(guest, continue_inst,
+                           options.xmlonly, options.xmlstep, options.dry)
+        if xml:
+            print xml
+    else:
+        start_install(guest, continue_inst, options)
 
     return 0
 
