@@ -1182,6 +1182,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         @param is_initial: If running initial guest creation, else we
                            are continuing the install
         """
+        has_install_phase = bool(start_xml)
         if is_initial:
             meter_label = _("Creating domain...")
         else:
@@ -1189,19 +1190,18 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         if meter == None:
             meter = progress.BaseMeter()
+        meter.start(size=None, text=meter_label)
 
-        if start_xml:
-            meter.start(size=None, text=meter_label)
+        if is_initial:
+            dom = self.conn.createLinux(start_xml or final_xml, 0)
+        else:
+            dom = self.conn.defineXML(start_xml or final_xml)
+            dom.create()
 
-            if is_initial:
-                dom = self.conn.createLinux(start_xml, 0)
-            else:
-                dom = self.conn.defineXML(start_xml)
-                dom.create()
+        self.domain = dom
+        meter.end(0)
 
-            self.domain = dom
-            meter.end(0)
-
+        if has_install_phase:
             logging.debug("Started guest, looking to see if it is running")
             (self.domain,
              self._consolechild) = self._wait_and_connect_console(consolecb)
