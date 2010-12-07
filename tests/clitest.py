@@ -112,16 +112,16 @@ CLI test matrix
 Format:
 
 "appname" {
-  "global_args" : Arguments to be passed to every app invocation
+  "globalargs" : Arguments to be passed to every app invocation
 
   "categoryfoo" : { Some descriptive test catagory name (e.g. storage)
 
-    "categoryfoo_args" : Args to be applied to all invocations in category
+    "args" : Args to be applied to all invocations in category
 
     "valid" : { # Argument strings that should succeed
       "--option --string --number1" # Some option string to test. The
           resulting cmdstr would be:
-          $ appname global_args categoryfoo_args --option --string --number1
+          $ appname globalargs categoryfoo_args --option --string --number1
     }
 
     "invalid" : { # Argument strings that should fail
@@ -140,10 +140,10 @@ args_dict = {
 
 
   "virt-install" : {
-    "global_args" : " --connect %(TESTURI)s -d --name foobar --ram 64",
+    "globalargs" : " --connect %(TESTURI)s -d --name foobar --ram 64",
 
     "storage" : {
-      "storage_args": "--pxe --nographics --noautoconsole --hvm",
+      "args": "--pxe --nographics --noautoconsole --hvm",
 
       "valid"  : [
         # Existing file, other opts
@@ -234,7 +234,7 @@ args_dict = {
      }, # category "storage"
 
      "install" : {
-      "install_args": "--nographics --noautoconsole --nodisks",
+      "args": "--nographics --noautoconsole --nodisks",
 
       "valid" : [
         # Simple cdrom install
@@ -294,7 +294,7 @@ args_dict = {
      }, # category "install"
 
      "graphics": {
-      "graphics_args": "--noautoconsole --nodisks --pxe",
+      "args": "--noautoconsole --nodisks --pxe",
 
       "valid": [
         # SDL
@@ -337,7 +337,7 @@ args_dict = {
      }, # category "graphics"
 
     "char" : {
-     "char_args": "--hvm --nographics --noautoconsole --nodisks --pxe",
+     "args": "--hvm --nographics --noautoconsole --nodisks --pxe",
 
      "valid": [
         # Simple devs
@@ -381,7 +381,7 @@ args_dict = {
      }, # category 'char'
 
      "cpuram" : {
-      "cpuram_args" : "--hvm --nographics --noautoconsole --nodisks --pxe",
+      "args" : "--hvm --nographics --noautoconsole --nodisks --pxe",
 
       "valid" : [
         # Max VCPUS
@@ -408,7 +408,7 @@ args_dict = {
     }, # category 'cpuram'
 
      "misc": {
-      "misc_args": "--nographics --noautoconsole",
+      "args": "--nographics --noautoconsole",
 
       "valid": [
         # Specifying cdrom media via --disk
@@ -476,7 +476,7 @@ args_dict = {
      }, # category "misc"
 
      "network": {
-      "network_args": "--pxe --nographics --noautoconsole --nodisks",
+      "args": "--pxe --nographics --noautoconsole --nodisks",
 
       "valid": [
         # Just a macaddr
@@ -516,7 +516,7 @@ args_dict = {
      }, # category "network"
 
      "hostdev" : {
-      "hostdev_args": "--noautoconsole --nographics --nodisks --pxe",
+      "args": "--noautoconsole --nographics --nodisks --pxe",
 
       "valid" : [
         # Host dev by libvirt name
@@ -536,7 +536,7 @@ args_dict = {
      }, # category "hostdev"
 
      "remote" : {
-      "remote_args": "--connect %(REMOTEURI)s --nographics --noautoconsole",
+      "args": "--connect %(REMOTEURI)s --nographics --noautoconsole",
 
       "valid" : [
         # Simple pxe nodisks
@@ -561,7 +561,7 @@ args_dict = {
 
 
 "kvm" : {
-  "kvm_args": "--connect %(KVMURI)s --noautoconsole",
+  "args": "--connect %(KVMURI)s --noautoconsole",
 
   "valid" : [
     # HVM windows install with disk
@@ -612,10 +612,10 @@ args_dict = {
 
 
   "virt-clone": {
-    "global_args" : " --connect %(TESTURI)s -d",
+    "globalargs" : " --connect %(TESTURI)s -d",
 
     "general" : {
-      "general_args": "-n clonetest",
+      "args": "-n clonetest",
 
       "valid"  : [
         # Nodisk guest
@@ -666,7 +666,7 @@ args_dict = {
      }, # category "general"
 
     "misc" : {
-      "misc_args": "",
+      "args": "",
 
       "valid" : [
         # Auto flag, no storage
@@ -688,7 +688,7 @@ args_dict = {
     }, # category "misc"
 
      "remote" : {
-      "remote_args": "--connect %(REMOTEURI)s",
+      "args": "--connect %(REMOTEURI)s",
 
       "valid"  : [
         # Auto flag, no storage
@@ -711,10 +711,10 @@ args_dict = {
 
 
   'virt-image': {
-    "global_args" : " --connect %(TESTURI)s -d %(IMAGE_XML)s",
+    "globalargs" : " --connect %(TESTURI)s -d %(IMAGE_XML)s",
 
     "general" : {
-      "general_args" : "--name test-image",
+      "args" : "--name test-image",
 
       "valid": [
         # All default values
@@ -738,7 +738,7 @@ args_dict = {
      }, # category 'general'
 
     "graphics" : {
-      "graphics_args" : "--name test-image --boot 0",
+      "args" : "--name test-image --boot 0",
 
       "valid": [
         # SDL
@@ -751,7 +751,7 @@ args_dict = {
     },
 
     "misc": {
-     "misc_args" : "",
+     "args" : "",
 
       "valid" : [
         # Colliding VM name w/ --replace
@@ -767,7 +767,7 @@ args_dict = {
      }, # category 'misc'
 
      "network": {
-      "network_args": "--name test-image --boot 0 --nographics",
+      "args": "--name test-image --boot 0 --nographics",
 
       "valid": [
         # user networking
@@ -797,10 +797,10 @@ args_dict = {
 
 
   "virt-convert" : {
-    "global_args" : "--debug",
+    "globalargs" : "--debug",
 
     "misc" : {
-     "misc_args": "",
+     "args": "",
 
      "valid": [
         # virt-image to default (virt-image) w/ no convert
@@ -886,12 +886,12 @@ def run_tests(do_app, do_category):
 
         unique = {}
         prompts = []
-        global_args = ""
+        globalargs = ""
 
         # Build default command line dict
         for option in args_dict.get(app):
-            if option == "global_args":
-                global_args = args_dict[app][option]
+            if option == "globalargs":
+                globalargs = args_dict[app][option]
                 continue
             elif option == "prompt":
                 prompts = args_dict[app][option]
@@ -915,21 +915,21 @@ def run_tests(do_app, do_category):
             if do_category and category != do_category:
                 continue
             catdict = unique[category]
-            category_args = catdict["%s_args" % category]
+            category_args = catdict["args"]
 
             for optstr in catdict["valid"]:
-                cmdstr = "./%s %s %s %s" % (app, global_args,
+                cmdstr = "./%s %s %s %s" % (app, globalargs,
                                             category_args, optstr)
                 assertPass(cmdstr)
 
             for optstr in catdict["invalid"]:
-                cmdstr = "./%s %s %s %s" % (app, global_args,
+                cmdstr = "./%s %s %s %s" % (app, globalargs,
                                             category_args, optstr)
                 assertFail(cmdstr)
 
             for optstr, filename in catdict.get("compare") or []:
                 filename = "%s/%s.xml" % (compare_xmldir, filename)
-                cmdstr = "./%s %s %s %s" % (app, global_args,
+                cmdstr = "./%s %s %s %s" % (app, globalargs,
                                             category_args, optstr)
                 cmdstr = cmdstr % test_files
 
