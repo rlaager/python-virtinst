@@ -70,11 +70,19 @@ class DistroInstaller(Installer.Installer):
         Installer.Installer.__init__(self, type, location, boot, extraargs,
                                  os_type, conn=conn)
 
+        self._livecd = False
+
         # True == location is a filesystem path
         # False == location is a url
         self._location_is_path = True
 
     # DistroInstaller specific methods/overwrites
+
+    def _get_livecd(self):
+        return self._livecd
+    def _set_livecd(self, val):
+        self._livecd = bool(val)
+    livecd = property(_get_livecd, _set_livecd)
 
     def get_location(self):
         return self._location
@@ -158,6 +166,7 @@ class DistroInstaller(Installer.Installer):
     # Private helper methods
 
     def _prepare_cdrom(self, guest, meter):
+        transient = not self.livecd
         if not self._location_is_path:
             # Xen needs a boot.iso if its a http://, ftp://, or nfs: url
             (store_ignore, os_type_ignore, os_variant_ignore, media) = \
@@ -166,6 +175,7 @@ class DistroInstaller(Installer.Installer):
             cdrom = media
 
             self._tmpfiles.append(cdrom)
+            transient = True
         else:
             cdrom = self.location
 
@@ -173,7 +183,7 @@ class DistroInstaller(Installer.Installer):
                            conn=guest.conn,
                            device=VirtualDisk.DEVICE_CDROM,
                            readOnly=True,
-                           transient=True)
+                           transient=transient)
         self.install_devices.append(disk)
 
     def _perform_initrd_injections(self):
@@ -255,8 +265,11 @@ class DistroInstaller(Installer.Installer):
 
         return disk
 
+    def _persistent_cd(self):
+        return (self._location_is_path and self.cdrom and self.livecd)
+
     def _get_bootdev(self, isinstall, guest):
-        if isinstall:
+        if isinstall or self._persistent_cd():
             bootdev = self.bootconfig.BOOT_DEVICE_CDROM
         else:
             bootdev = self.bootconfig.BOOT_DEVICE_HARDDISK
