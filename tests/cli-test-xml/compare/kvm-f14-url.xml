@@ -1,10 +1,10 @@
-<domain type='test'>
+<domain type='kvm'>
   <name>foobar</name>
   <currentMemory>65536</currentMemory>
   <memory>65536</memory>
   <uuid>00000000-1111-2222-3333-444444444444</uuid>
   <os>
-    <type arch='i686'>hvm</type>
+    <type arch='x86_64'>hvm</type>
     <kernel>./virtinst-vmlinuz.</kernel>
     <initrd>./virtinst-initrd.img.</initrd>
     <cmdline>method=tests/cli-test-xml/faketree console=ttyS0</cmdline>
@@ -18,29 +18,32 @@
   <on_crash>destroy</on_crash>
   <vcpu>1</vcpu>
   <devices>
-    <emulator>/usr/bin/test-hv</emulator>
+    <emulator>/usr/bin/qemu-kvm</emulator>
     <disk type='file' device='disk'>
+      <driver name='qemu'/>
       <source file='/tmp/__virtinst_cli_exist1.img'/>
-      <target dev='hda' bus='ide'/>
+      <target dev='vda' bus='virtio'/>
     </disk>
-    <interface type='user'>
+    <interface type='network'>
+      <source network='default'/>
       <mac address='00:11:22:33:44:55'/>
+      <model type='virtio'/>
     </interface>
     <input type='tablet' bus='usb'/>
-    <graphics type='vnc' port='-1' keymap='en-us'/>
+    <graphics type='vnc' port='-1'/>
     <console type='pty'/>
     <video>
       <model type='cirrus'/>
     </video>
   </devices>
 </domain>
-<domain type='test'>
+<domain type='kvm'>
   <name>foobar</name>
   <currentMemory>65536</currentMemory>
   <memory>65536</memory>
   <uuid>00000000-1111-2222-3333-444444444444</uuid>
   <os>
-    <type arch='i686'>hvm</type>
+    <type arch='x86_64'>hvm</type>
     <boot dev='hd'/>
   </os>
   <features>
@@ -52,16 +55,19 @@
   <on_crash>restart</on_crash>
   <vcpu>1</vcpu>
   <devices>
-    <emulator>/usr/bin/test-hv</emulator>
+    <emulator>/usr/bin/qemu-kvm</emulator>
     <disk type='file' device='disk'>
+      <driver name='qemu'/>
       <source file='/tmp/__virtinst_cli_exist1.img'/>
-      <target dev='hda' bus='ide'/>
+      <target dev='vda' bus='virtio'/>
     </disk>
-    <interface type='user'>
+    <interface type='network'>
+      <source network='default'/>
       <mac address='00:11:22:33:44:55'/>
+      <model type='virtio'/>
     </interface>
     <input type='tablet' bus='usb'/>
-    <graphics type='vnc' port='-1' keymap='en-us'/>
+    <graphics type='vnc' port='-1'/>
     <console type='pty'/>
     <video>
       <model type='cirrus'/>

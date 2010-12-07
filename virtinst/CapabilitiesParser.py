@@ -210,6 +210,10 @@ class Guest(object):
                 while n:
                     if n.name == "machine":
                         machines.append(n.content)
+
+                        canon = n.prop("canonical")
+                        if canon:
+                            machines.append(canon)
                     elif n.name == "emulator":
                         emulator = n.content
                     elif n.name == "loader":
@@ -219,38 +223,55 @@ class Guest(object):
                 n = child.children
                 while n:
                     if n.name == "domain":
-                        self.domains.append(Domain(n.prop("type"), emulator, loader, machines, n))
+                        self.domains.append(Domain(n.prop("type"),
+                                            emulator, loader, machines, n))
                     n = n.next
 
             child = child.next
 
+    def _favoredDomain(self, accelerated, domains):
+        """
+        Return the recommended domain for use if the user does not explicitly
+        request one.
+        """
+        if accelerated is None:
+            # Picking last in list so we favour KVM/KQEMU over QEMU
+            return domains[-1]
 
-    def bestDomainType(self, accelerated=None):
+        priority = ["kvm", "xen", "kqemu", "qemu"]
+        if not accelerated:
+            priority.reverse()
+
+        for t in priority:
+            for d in domains:
+                if d.hypervisor_type == t:
+                    return d
+
+        # Fallback, just return last item in list
+        return domains[-1]
+
+    def bestDomainType(self, accelerated=None, dtype=None, machine=None):
         if len(self.domains) == 0:
             raise CapabilitiesParserException(_("No domains available for "
                                                 "virt type '%(type)s', arch "
-                                                "%(arch)s.") % \
+                                                "%(arch)s.") %
                                                 {'type': self.os_type,
                                                  'arch': self.arch})
-        if accelerated is None:
-            # Picking last in list so we favour KVM/KQEMU over QEMU
-            return self.domains[-1]
-        else:
-            priority = ["kvm", "xen", "kqemu", "qemu"]
-            if not accelerated:
-                priority.reverse()
 
-            for t in priority:
-                for d in self.domains:
-                    if d.hypervisor_type == t:
-                        return d
+        domains = []
+        for d in self.domains:
+            if dtype and d.hypervisor_type != dtype.lower():
+                continue
+            if machine and machine not in d.machines:
+                continue
+            domains.append(d)
 
-            # Fallback, just return last item in list
-            return self.domains[-1]
+        return self._favoredDomain(accelerated, domains)
 
 
 class Domain(object):
-    def __init__(self, hypervisor_type, emulator = None, loader = None, machines = None, node = None):
+    def __init__(self, hypervisor_type, emulator = None, loader = None,
+                 machines = None, node = None):
         self.hypervisor_type = hypervisor_type
         self.emulator = emulator
         self.loader = loader
@@ -267,6 +288,11 @@ class Domain(object):
             if child.name == "emulator":
                 self.emulator = child.content
             elif child.name == "machine":
+                machines.append(child.content)
+
+                canon = child.prop("canonical")
+                if canon:
+                    machines.append(canon)
                 machines.append(child.content)
             child = child.next
 
@@ -442,7 +468,7 @@ class Capabilities(object):
 
         return True
 
-    def guestForOSType(self, type = None, arch = None):
+    def guestForOSType(self, type=None, arch=None):
         if self.host is None:
             return None
 
@@ -450,6 +476,7 @@ class Capabilities(object):
             archs = [self.host.arch, None]
         else:
             archs = [arch]
+
         for a in archs:
             for g in self.guests:
                 if (type is None or g.os_type == type) and \
@@ -503,7 +530,7 @@ def parse(xml):
                                    CapabilitiesParserException)
 
 def guest_lookup(conn, caps=None, os_type=None, arch=None, type=None,
-                 accelerated=False):
+                 accelerated=False, machine=None):
     """
     Simple virtualization availability lookup
 
@@ -533,6 +560,8 @@ def guest_lookup(conn, caps=None, os_type=None, arch=None, type=None,
     @param accelerated: Whether to look for accelerated domain if none is
                         specifically requested
     @type accelerated: C{bool}
+    @param machine: Optional machine type to emulate
+    @type machine: C{str}
 
     @returns: A (Capabilities Guest, Capabilities Domain) tuple
     """
@@ -553,21 +582,19 @@ def guest_lookup(conn, caps=None, os_type=None, arch=None, type=None,
         raise ValueError(_("Host does not support %(virttype)s %(arch)s") %
                            {'virttype' : osstr, 'arch' : archstr})
 
-    domain = None
-    if type:
-        for d in guest.domains:
-            if d.hypervisor_type == type.lower():
-                domain = d
-                break
-    else:
-        domain = guest.bestDomainType(accelerated=accelerated)
+    domain = guest.bestDomainType(accelerated=accelerated,
+                                  dtype=type,
+                                  machine=machine)
 
     if domain == None:
-        raise ValueError(_("Host does not support domain type "
-                           "'%(domain)s' for virtualization type "
+        machinestr = "with machine '%s'" % machine
+        if not machine:
+            machinestr = ""
+        raise ValueError(_("Host does not support domain type %(domain)s"
+                           "%(machine)s for virtualization type "
                            "'%(virttype)s' arch '%(arch)s'") %
                            {'domain': type, 'virttype': guest.os_type,
-                            'arch': guest.arch})
+                            'arch': guest.arch, 'machine': machinestr})
 
     return (guest, domain)
 

@@ -565,6 +565,12 @@ args_dict = {
   ],
 
   "invalid" : [
+    # Unknown machine type
+    "--nodisks --boot network --machine foobar",
+    # Invalid domain type for arch
+    "--nodisks --boot network --arch mips --virt-type kvm",
+    # Invalid arch/virt combo
+    "--nodisks --boot network --paravirt --arch mips",
   ],
 
   "compare" : [
@@ -574,6 +580,20 @@ args_dict = {
     ("--os-variant fedora14 --disk %(NEWIMG1)s,size=.01 --location %(TREEDIR)s --extra-args console=ttyS0 --quiet", "quiet-url"),
     # HVM windows install with disk
     ("--cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --sound", "kvm-win2k3-cdrom"),
+
+    # xenner
+    ("--os-variant fedora14 --nodisks --boot hd --paravirt", "kvm-xenner"),
+    # plain qemu
+    ("--os-variant fedora14 --nodisks --boot cdrom --virt-type qemu",
+     "qemu-plain"),
+    # 32 on 64
+    ("--os-variant fedora14 --nodisks --boot network --arch i686",
+     "qemu-32-on-64"),
+    # kvm machine type 'pc'
+    ("--os-variant fedora14 --nodisks --boot fd --machine pc", "kvm-machine"),
+    # exotic arch + machine type
+    ("--os-variant fedora14 --nodisks --boot fd --arch sparc --machine SS-20",
+     "qemu-sparc"),
   ],
 
 }, # category "kvm"
@@ -850,7 +870,7 @@ def assertFail(comm):
 
 
 # Setup: build cliarg dict, which uses
-def run_tests(do_app):
+def run_tests(do_app, do_category):
     if do_app and do_app not in args_dict.keys():
         raise ValueError("Unknown app '%s'" % do_app)
 
@@ -881,8 +901,13 @@ def run_tests(do_app):
                 run_prompt_comm(cmd)
             continue
 
+        if do_category and do_category not in unique.keys():
+            raise ValueError("Unknown category %s" % do_category)
+
         # Build up unique command line cases
         for category in unique.keys():
+            if do_category and category != do_category:
+                continue
             catdict = unique[category]
             category_args = catdict["%s_args" % category]
 
@@ -900,6 +925,7 @@ def run_tests(do_app):
                 filename = "%s/%s.xml" % (compare_xmldir, filename)
                 cmdstr = "./%s %s %s %s" % (app, global_args,
                                             category_args, optstr)
+                cmdstr = cmdstr % test_files
 
                 # Strip --debug to get reasonable output
                 cmdstr = cmdstr.replace("--debug ", "").replace("-d ", "")
@@ -915,8 +941,8 @@ def run_tests(do_app):
                 ignore, output = assertPass(cmdstr)
 
                 # Uncomment to generate new test files
-                if not os.path.exists(filename):
-                    file(filename, "w").write(output)
+                #if not os.path.exists(filename):
+                #    file(filename, "w").write(output)
 
                 utils.diff_compare(output, filename)
 
@@ -926,6 +952,7 @@ def main():
     global testprompt
 
     do_app = None
+    do_category = None
 
     if len(sys.argv) > 1:
         for i in range(1, len(sys.argv)):
@@ -935,6 +962,8 @@ def main():
                 testprompt = True
             elif sys.argv[i].count("--app"):
                 do_app = sys.argv[i+1]
+            elif sys.argv[i].count("--category"):
+                do_category = sys.argv[i+1]
 
     # Setup needed files
     for i in exist_files:
@@ -952,7 +981,7 @@ def main():
     os.system("chmod 555 %s" % ro_dir)
 
     try:
-        run_tests(do_app)
+        run_tests(do_app, do_category)
     finally:
         cleanup()
 

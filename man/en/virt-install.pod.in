@@ -93,6 +93,12 @@ away from the host operating system to satisfy this allocation.
 Request a non-native CPU architecture for the guest virtual machine.
 If omitted, the host CPU architecture will be used in the guest.
 
+=item --machine=MACHINE
+
+The machine type to emulate. This will typically not need to be specified
+for Xen or KVM, but is useful for choosing machine times of more exotic
+architectures.
+
 =item -u UUID, --uuid=UUID
 
 UUID for the guest; if none is given a random UUID will be generated. If you

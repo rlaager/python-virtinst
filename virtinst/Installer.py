@@ -94,9 +94,9 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self._initrd_injections = []
         self._cdrom = False
         self._os_type = None
-        # XXX: We should set this default based on capabilities?
         self._scratchdir = None
         self._arch = None
+        self._machine = None
         self._install_bootconfig = Boot(self.conn)
         self._bootconfig = Boot(self.conn, parsexml, parsexmlnode)
 
@@ -166,6 +166,13 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self._arch = val
     arch = _xml_property(get_arch, set_arch,
                          xpath="./os/type/@arch")
+
+    def _get_machine(self):
+        return self._machine
+    def _set_machine(self, val):
+        self._machine = val
+    machine = _xml_property(_get_machine, _set_machine,
+                            xpath="./os/type/@machine")
 
     def get_scratchdir(self):
         if not self.scratchdir_required():
@@ -274,6 +281,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         osblob += "    <type"
         if arch:
             osblob += " arch='%s'" % arch
+        if self.machine:
+            osblob += " machine='%s'" % self.machine
         osblob += ">%s</type>\n" % os_type
 
         if loader:
@@ -390,10 +399,10 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         Return a L{Guest} instance wrapping the current installer.
 
         If all the appropriate values are present in the installer
-        (conn, type, os_type, arch), we have everything we need to determine
-        what L{Guest} class is expected and what default values to pass
-        it. This is a convenience method to save the API user from having
-        to enter all these known details twice.
+        (conn, type, os_type, arch, machine), we have everything we need
+        to determine what L{Guest} class is expected and what default values
+        to pass it. This is a convenience method to save the API user from
+        having to enter all these known details twice.
         """
 
         if not self.conn:
@@ -403,7 +412,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
                                                         caps=self._get_caps(),
                                                         os_type=self.os_type,
                                                         type=self.type,
-                                                        arch=self.arch)
+                                                        arch=self.arch,
+                                                        machine=self.machine)
 
         if self.os_type == "xen":
             gobj = virtinst.ParaVirtGuest(installer=self, connection=self.conn)

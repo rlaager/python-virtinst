@@ -534,9 +534,14 @@ def get_virt_type(conn, options):
 
     try:
         (capsguest,
-         capsdomain) = virtinst.CapabilitiesParser.guest_lookup(conn=conn,
-                        caps=capabilities, os_type=req_virt_type,
-                        arch=arch, type=req_hv_type, accelerated=req_accel)
+         capsdomain) = virtinst.CapabilitiesParser.guest_lookup(
+                        conn=conn,
+                        caps=capabilities,
+                        os_type=req_virt_type,
+                        arch=arch,
+                        type=req_hv_type,
+                        accelerated=req_accel,
+                        machine=options.machine)
     except Exception, e:
         fail(e)
 
@@ -781,6 +786,9 @@ def parse_args():
     virg.add_option("", "--arch", type="string", dest="arch",
                     action="callback", callback=cli.check_before_store,
                     help=_("The CPU architecture to simulate"))
+    virg.add_option("", "--machine", type="string", dest="machine",
+                    action="callback", callback=cli.check_before_store,
+                    help=_("The machine type to emulate"))
     virg.add_option("", "--noapic", action="store_true", dest="noapic",
                     default=False,
                     help=_("Disables APIC for fully virtualized guest "
@@ -894,16 +902,14 @@ def build_guest_instance(conn, options):
     installer = instclass(type=hv_name, os_type=virt_type, conn=conn)
     installer.arch = capsguest.arch
     installer.initrd_injections = options.initrd_injections
+    installer.machine = options.machine
 
     # Get Guest instance from installer parameters.
     guest = installer.guest_from_installer()
 
 
     # now let's get some of the common questions out of the way
-    if virt_type == "hvm":
-        ishvm = True
-    else:
-        ishvm = False
+    ishvm = bool(virt_type == "hvm")
 
     cli.get_name(options.name, guest)
     cli.get_memory(options.memory, guest)
@@ -950,10 +956,8 @@ def build_guest_instance(conn, options):
                       options.livecd, options.import_install,
                       guest, ishvm)
 
-    if options.noacpi:
-        guest.features["acpi"] = False
-    if options.noapic:
-        guest.features["apic"] = False
+    guest.features["acpi"] = not options.noacpi
+    guest.features["apic"] = not options.noapic
 
     return guest
 

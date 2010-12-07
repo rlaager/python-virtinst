@@ -4,7 +4,7 @@
   <memory>2048000</memory>
   <uuid>11111111-2222-3333-4444-555555555555</uuid>
   <os>
-    <type>xen</type>
+    <type machine="pc-0.11">xen</type>
     <boot dev="fd"/>
     <bootmenu enable="no"/>
   </os>
