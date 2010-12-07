@@ -78,7 +78,7 @@ class DomainFeatures(XMLBuilderDomain.XMLBuilderDomain):
             feature_xml += "<acpi/>"
         if self.apic or (self.apic is None and defaults.get("apic")):
             feature_xml += "<apic/>"
-        if self.pae:
+        if self.pae or (self.pae is None and defaults.get("pae")):
             feature_xml += "<pae/>"
 
         if feature_xml:

@@ -230,49 +230,28 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self.domain = None
         self._consolechild = None
 
-        # Default disk target prefix ('hd' or 'xvd'). Set in subclass
-        self.disknode = None
-
-        # Default bus for disks (set in subclass)
-        self._diskbus = None
-
-        # Add default devices (if applicable)
         self._default_input_device = None
         self._default_console_device = None
 
-        # Need to do this after all parameter init
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml)
         if self._is_parse():
             return
 
-        self._clock = Clock(self.conn)
+        # Add default devices (if applicable)
+        inp = self._get_default_input_device()
+        self.add_device(inp)
+        self._default_input_device = inp
+
+        con = self._get_default_console_device()
+        con.virtinst_default = True
+        self.add_device(con)
+        self._default_console_device = con
+
+        # Need to do this after all parameter init
         self._features = DomainFeatures(self.conn)
+        self._clock = Clock(self.conn)
         self._seclabel = Seclabel(self.conn)
         self._seclabel.model = None
-
-        inp = self._get_default_input_device()
-        con = self._get_default_console_device()
-        if inp:
-            self.add_device(inp)
-            self._default_input_device = inp
-        if con:
-            self.add_device(con)
-            self._default_console_device = con
-
-        if self.is_xen():
-            self.disknode = "xvd"
-            self._diskbus = "xen"
-
-            self.features["acpi"] = False
-            self.features["apic"] = False
-            self.features["pae"]  = False
-        elif self.is_hvm():
-            self.disknode = "hd"
-            self._diskbus = "ide"
-
-            self.features["acpi"] = None
-            self.features["pae"]  = self._get_caps().support_pae()
-            self.features["apic"] = None
 
     def is_xen(self):
         return (self.installer and
@@ -282,7 +261,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return self.installer and self.installer.os_type == "hvm"
 
     def _get_caps(self):
-        return self.installer._get_caps()
+        caps = self.installer._get_caps()
+        return caps or XMLBuilderDomain.XMLBuilderDomain._get_caps(self)
 
     ######################
     # Property accessors #
@@ -792,18 +772,12 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         Return a VirtualInputDevice.
         """
         dev = VirtualInputDevice(self.conn)
-        if self.is_xen():
-            dev.type = "mouse"
-            dev.bus = "xen"
         return dev
 
     def _get_default_console_device(self):
         """
         Only implemented for FullVirtGuest
         """
-        if self.is_xen():
-            return None
-
         dev = VirtualCharDevice.get_dev_instance(self.conn,
                                                  VirtualCharDevice.DEV_CONSOLE,
                                                  VirtualCharDevice.CHAR_PTY)
@@ -873,8 +847,13 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         Return features (pae, acpi, apic) xml
         """
         defaults = {}
-        for f in ["acpi", "apic"]:
-            defaults[f] = self._lookup_osdict_key(f)
+        if self.is_hvm():
+            for f in ["acpi", "apic"]:
+                defaults[f] = self._lookup_osdict_key(f)
+
+            caps = self._get_caps()
+            if caps:
+                defaults["pae"] = caps.support_pae()
 
         return self.features.get_xml_config(defaults)
 
@@ -972,9 +951,12 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         def get_transient_devices(devtype):
             return self._dev_build_list(devtype, devs)
+        def remove_transient_device(device):
+            devs.remove(device)
 
         # Set device defaults so we can validly generate XML
-        self._set_defaults(get_transient_devices)
+        self._set_defaults(get_transient_devices,
+                           remove_transient_device)
 
         if install:
             action = "destroy"
@@ -1327,7 +1309,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         The install process will call a non-persistent version, so calling
         this manually isn't required.
         """
-        self._set_defaults(self.get_devices)
+        self._set_defaults(self.get_devices, self.remove_device)
 
     def _set_hvm_defaults(self, devlist_func):
         disktype = VirtualDevice.VIRTUAL_DEV_DISK
@@ -1348,7 +1330,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         if self.clock.offset == None:
             self.clock.offset = self._lookup_osdict_key("clock")
 
-    def _set_pv_defaults(self, devlist_func):
+    def _set_pv_defaults(self, devlist_func, remove_func):
         # Default file backed PV guests to tap driver
         for d in devlist_func(VirtualDevice.VIRTUAL_DEV_DISK):
             if (d.type == VirtualDisk.TYPE_FILE
@@ -1356,11 +1338,21 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 and d.driver_name == None):
                 d.driver_name = VirtualDisk.DRIVER_TAP
 
-    def _set_defaults(self, devlist_func):
+        for d in devlist_func(VirtualDevice.VIRTUAL_DEV_INPUT):
+            if d.type == d.INPUT_TYPE_DEFAULT:
+                d.type = d.INPUT_TYPE_MOUSE
+            if d.bus == d.INPUT_BUS_DEFAULT:
+                d.bus = d.INPUT_BUS_XEN
+
+        for d in devlist_func(VirtualDevice.VIRTUAL_DEV_CONSOLE):
+            if hasattr(d, "virtinst_default"):
+                remove_func(d)
+
+    def _set_defaults(self, devlist_func, remove_func):
         if self.is_hvm():
             self._set_hvm_defaults(devlist_func)
         if self.is_xen():
-            self._set_pv_defaults(devlist_func)
+            self._set_pv_defaults(devlist_func, remove_func)
 
         soundtype = VirtualDevice.VIRTUAL_DEV_AUDIO
         videotype = VirtualDevice.VIRTUAL_DEV_VIDEO
@@ -1382,7 +1374,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 if disk.device == disk.DEVICE_FLOPPY:
                     disk.bus = "fdc"
                 else:
-                    disk.bus = self._diskbus
+                    if self.is_hvm():
+                        disk.bus = "ide"
+                    elif self.is_xen():
+                        disk.bus = "xen"
             used_targets.append(disk.generate_target(used_targets))
 
         # Set sound device model
