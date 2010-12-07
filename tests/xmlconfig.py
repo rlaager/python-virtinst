@@ -68,8 +68,8 @@ def get_basic_fullyvirt_guest(typ="xen", testconn=conn, installer=None):
     g.installer._scratchdir = scratch
     return g
 
-def make_import_installer():
-    inst = virtinst.ImportInstaller(type="xen", os_type="hvm", conn=conn)
+def make_import_installer(os_type="hvm"):
+    inst = virtinst.ImportInstaller(type="xen", os_type=os_type, conn=conn)
     return inst
 
 def make_distro_installer(location="/default-pool/default-vol", gtype="xen"):
@@ -508,7 +508,7 @@ class TestXMLConfig(unittest.TestCase):
         self._compare(g, "install-fullyvirt-import-multiboot", False)
 
     def testInstallPVImport(self):
-        i = make_import_installer()
+        i = make_import_installer("xen")
         g = get_basic_paravirt_guest(installer=i)
 
         g.disks.append(get_filedisk())

@@ -97,6 +97,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self._scratchdir = None
         self._arch = None
         self._machine = None
+        self._loader = None
         self._install_bootconfig = Boot(self.conn)
         self._bootconfig = Boot(self.conn, parsexml, parsexmlnode)
 
@@ -173,6 +174,13 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self._machine = val
     machine = _xml_property(_get_machine, _set_machine,
                             xpath="./os/type/@machine")
+
+    def _get_loader(self):
+        return self._loader
+    def _set_loader(self, val):
+        self._loader = val
+    loader = _xml_property(_get_loader, _set_loader,
+                           xpath="./os/loader")
 
     def get_scratchdir(self):
         if not self.scratchdir_required():
@@ -257,15 +265,12 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         raise NotImplementedError
 
     def _get_osblob_helper(self, guest, isinstall, bootconfig):
-        def get_param(obj, paramname):
-            if hasattr(obj, paramname):
-                return getattr(obj, paramname)
-            return None
-
-        ishvm = bool(isinstance(guest, virtinst.FullVirtGuest))
+        ishvm = self.os_type == "hvm"
         conn = guest.conn
         arch = self.arch
-        loader = get_param(guest, "loader")
+        loader = self.loader
+        if not loader and ishvm and self.type == "xen":
+            loader = "/usr/lib/xen/boot/hvmloader"
 
         if not isinstall and not ishvm and not self.bootconfig.kernel:
             return "<bootloader>%s</bootloader>" % _util.pygrub_path(conn)
@@ -415,18 +420,14 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
                                                         arch=self.arch,
                                                         machine=self.machine)
 
-        if self.os_type == "xen":
-            gobj = virtinst.ParaVirtGuest(installer=self, connection=self.conn)
-            gobj.arch = guest.arch
-        elif self.os_type == "hvm":
-            gobj = virtinst.FullVirtGuest(installer=self,
-                                          connection=self.conn,
-                                          emulator=domain.emulator,
-                                          arch=guest.arch)
-            gobj.loader = domain.loader
-        else:
+        if self.os_type not in ["xen", "hvm"]:
             raise ValueError(_("No 'Guest' class for virtualization type '%s'"
                              % self.type))
+
+        gobj = virtinst.Guest(installer=self, connection=self.conn)
+        gobj.arch = guest.arch
+        gobj.emulator = domain.emulator
+        self.loader = domain.loader
 
         return gobj
 

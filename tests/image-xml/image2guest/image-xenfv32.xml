@@ -5,7 +5,6 @@
   <uuid>12345678-1234-1234-1234-123456789012</uuid>
   <os>
     <type arch='i686'>hvm</type>
-    <loader>/usr/lib/xen/boot/hvmloader</loader>
     <boot dev='hd'/>
   </os>
   <features>

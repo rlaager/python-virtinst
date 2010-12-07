@@ -28,7 +28,7 @@ import socket
 import ConfigParser
 
 import virtinst
-from virtinst.Guest import Guest
+import osdict
 from virtinst import _util
 from virtinst import _virtinst as _
 
@@ -161,10 +161,11 @@ def acquireBootDisk(guest, baseuri, progresscb, scratchdir, type=None):
                          scratchdir, type)
 
 def _check_ostype_valid(os_type):
-    return bool(os_type in Guest.list_os_types())
+    return bool(os_type in osdict.sort_helper(osdict.OS_TYPES))
+
 def _check_osvariant_valid(os_type, os_variant):
     return bool(_check_ostype_valid(os_type) and
-                os_variant in Guest.list_os_variants(os_type))
+        os_variant in osdict.sort_helper(osdict.OS_TYPES[os_type]["variants"]))
 
 # Attempt to detect the os type + variant for the passed location
 def detectMediaDistro(location, arch):
@@ -502,7 +503,6 @@ class FedoraDistro(RedHatDistro):
             return False
 
     def _latestFedoraVariant(self):
-        import osdict
         ret = None
         for var in osdict.sort_helper(osdict.OS_TYPES["linux"]["variants"]):
             if var.startswith("fedora"):

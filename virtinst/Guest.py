@@ -38,9 +38,11 @@ import XMLBuilderDomain
 import virtinst
 from XMLBuilderDomain import _xml_property
 from ImportInstaller import ImportInstaller
+import DistroInstaller
 from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
 from VirtualInputDevice import VirtualInputDevice
+from VirtualCharDevice import VirtualCharDevice
 from Clock import Clock
 from Seclabel import Seclabel
 from DomainFeatures import DomainFeatures
@@ -180,7 +182,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         # Set up the connection, since it is fundamental for other init
         conn = connection
         if conn == None:
-            logging.debug("No conn passed to Guest, opening URI '%s'" % \
+            logging.debug("No conn passed to Guest, opening URI '%s'" %
                           hypervisorURI)
             conn = libvirt.open(hypervisorURI)
 
@@ -188,10 +190,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             raise RuntimeError, _("Unable to connect to hypervisor, aborting "
                                   "installation!")
 
-        # We specifically ignore the 'type' parameter here, since
-        # it has been replaced by installer.type, and child classes can
-        # use it when creating a default installer.
-        ignore = type
+        if not installer:
+            installer = DistroInstaller.DistroInstaller(type=type,
+                                                        conn=conn)
+
         self._name = None
         self._uuid = None
         self._memory = None
@@ -257,6 +259,30 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             self.add_device(con)
             self._default_console_device = con
 
+        if self.is_xen():
+            self.disknode = "xvd"
+            self._diskbus = "xen"
+
+            self.features["acpi"] = False
+            self.features["apic"] = False
+            self.features["pae"]  = False
+        elif self.is_hvm():
+            self.disknode = "hd"
+            self._diskbus = "ide"
+
+            self.features["acpi"] = None
+            self.features["pae"]  = self._get_caps().support_pae()
+            self.features["apic"] = None
+
+    def is_xen(self):
+        return (self.installer and
+                (self.installer.os_type == "xen" or
+                 self.installer.os_type == "linux"))
+    def is_hvm(self):
+        return self.installer and self.installer.os_type == "hvm"
+
+    def _get_caps(self):
+        return self.installer._get_caps()
 
     ######################
     # Property accessors #
@@ -766,13 +792,22 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         Return a VirtualInputDevice.
         """
         dev = VirtualInputDevice(self.conn)
+        if self.is_xen():
+            dev.type = "mouse"
+            dev.bus = "xen"
         return dev
 
     def _get_default_console_device(self):
         """
         Only implemented for FullVirtGuest
         """
-        return None
+        if self.is_xen():
+            return None
+
+        dev = VirtualCharDevice.get_dev_instance(self.conn,
+                                                 VirtualCharDevice.DEV_CONSOLE,
+                                                 VirtualCharDevice.CHAR_PTY)
+        return dev
 
     def _get_device_xml(self, devs, install=True):
 
@@ -817,9 +852,19 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return xml
 
     def _get_emulator_xml(self):
+        emulator = self.emulator
+        if self.is_xen():
+            return ""
+
+        if not self.emulator and self.is_hvm() and self.type == "xen":
+            if self._get_caps().host.arch in ("x86_64"):
+                emulator = "/usr/lib64/xen/bin/qemu-dm"
+            else:
+                emulator = "/usr/lib/xen/bin/qemu-dm"
+
         emu_xml = ""
-        if self.emulator is not None:
-            emu_xml = "    <emulator>%s</emulator>" % self.emulator
+        if emulator is not None:
+            emu_xml = "    <emulator>%s</emulator>" % emulator
 
         return emu_xml
 
@@ -1284,7 +1329,39 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         self._set_defaults(self.get_devices)
 
+    def _set_hvm_defaults(self, devlist_func):
+        disktype = VirtualDevice.VIRTUAL_DEV_DISK
+        nettype = VirtualDevice.VIRTUAL_DEV_NET
+        disk_bus  = self._lookup_device_param(disktype, "bus")
+        net_model = self._lookup_device_param(nettype, "model")
+
+        # Only overwrite params if they weren't already specified
+        for net in devlist_func(nettype):
+            if net_model and not net.model:
+                net.model = net_model
+
+        for disk in devlist_func(disktype):
+            if (disk_bus and not disk.bus and
+                disk.device == VirtualDisk.DEVICE_DISK):
+                disk.bus = disk_bus
+
+        if self.clock.offset == None:
+            self.clock.offset = self._lookup_osdict_key("clock")
+
+    def _set_pv_defaults(self, devlist_func):
+        # Default file backed PV guests to tap driver
+        for d in devlist_func(VirtualDevice.VIRTUAL_DEV_DISK):
+            if (d.type == VirtualDisk.TYPE_FILE
+                and _util.is_blktap_capable()
+                and d.driver_name == None):
+                d.driver_name = VirtualDisk.DRIVER_TAP
+
     def _set_defaults(self, devlist_func):
+        if self.is_hvm():
+            self._set_hvm_defaults(devlist_func)
+        if self.is_xen():
+            self._set_pv_defaults(devlist_func)
+
         soundtype = VirtualDevice.VIRTUAL_DEV_AUDIO
         videotype = VirtualDevice.VIRTUAL_DEV_VIDEO
         inputtype = VirtualDevice.VIRTUAL_DEV_INPUT

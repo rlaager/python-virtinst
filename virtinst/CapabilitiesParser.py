@@ -468,6 +468,12 @@ class Capabilities(object):
 
         return True
 
+    def support_pae(self):
+        for g in self.guests:
+            if "pae" in g.features.names():
+                return True
+        return False
+
     def guestForOSType(self, type=None, arch=None):
         if self.host is None:
             return None

@@ -19,39 +19,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import DistroInstaller
 from Guest import Guest
-from DistroInstaller import DistroInstaller
-from VirtualInputDevice import VirtualInputDevice
-from VirtualDevice import VirtualDevice
-from VirtualDisk import VirtualDisk
-import _util
 
 class ParaVirtGuest(Guest):
     def __init__(self, type=None, connection=None, hypervisorURI=None,
                  installer=None):
         if not installer:
-            installer = DistroInstaller(type = type, os_type = "xen",
-                                        conn=connection)
+            installer = DistroInstaller.DistroInstaller(type=type,
+                                                        os_type="xen",
+                                                        conn=connection)
         Guest.__init__(self, type, connection, hypervisorURI, installer)
-        self.disknode = "xvd"
-        self._diskbus = "xen"
 
-        self.features["acpi"] = False
-        self.features["apic"] = False
-        self.features["pae"]  = False
-
-    def _get_default_input_device(self):
-        dev = VirtualInputDevice(self.conn)
-        dev.type = "mouse"
-        dev.bus = "xen"
-        return dev
-
-    def _set_defaults(self, devlist_func):
-        # Default file backed PV guests to tap driver
-        for d in devlist_func(VirtualDevice.VIRTUAL_DEV_DISK):
-            if (d.type == VirtualDisk.TYPE_FILE
-                and _util.is_blktap_capable()
-                and d.driver_name == None):
-                d.driver_name = VirtualDisk.DRIVER_TAP
-
-        Guest._set_defaults(self, devlist_func)
