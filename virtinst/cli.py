@@ -435,11 +435,7 @@ def prompt_for_input(noprompt_err, prompt = "", val = None, failed=False):
             # We already failed validation in a previous function, just exit
             _fail_exit()
 
-        msg = noprompt_err
-        if not force and not msg.count("--prompt"):
-            # msg wasn't already appended to from yes_or_no
-            msg = noprompt_err + " " + _("(use --prompt to run interactively)")
-        fail(msg)
+        fail(noprompt_err)
 
     print_stdout(prompt + " ", do_force=True)
     return sys.stdin.readline().strip()
@@ -455,7 +451,7 @@ def yes_or_no_convert(s):
 def yes_or_no(s):
     ret = yes_or_no_convert(s)
     if ret == None:
-        raise ValueError, "A yes or no response is required"
+        raise ValueError(_("A yes or no response is required"))
     return ret
 
 def prompt_for_yes_or_no(warning, question):
@@ -510,7 +506,7 @@ def graphics_option_group(parser):
              "--graphics vnc\n"
              "--graphics spice,port=1,tlsport=2\n"
              "--graphics none\n"
-             "--graphics vnc,password=foobar,port=5910,keymap=ja\n"))
+             "--graphics vnc,password=foobar,port=5910,keymap=ja"))
     vncg.add_option("", "--vnc", action="store_true", dest="vnc",
                     help=optparse.SUPPRESS_HELP)
     vncg.add_option("", "--vncport", type="int", dest="vncport",
@@ -620,9 +616,12 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
 # Ask for attributes
 #
 
+name_missing    = _("--name is required")
+ram_missing     = _("--ram amount in MB is required")
+
 def get_name(name, guest, image_name=None):
     prompt_txt = _("What is the name of your virtual machine?")
-    err_txt = _("A name is required for the virtual machine.")
+    err_txt = name_missing
 
     if name is None:
         name = image_name
@@ -630,7 +629,8 @@ def get_name(name, guest, image_name=None):
 
 def get_memory(memory, guest, image_memory=None):
     prompt_txt = _("How much RAM should be allocated (in megabytes)?")
-    err_txt = _("Memory amount is required for the virtual machine.")
+    err_txt = ram_missing
+
     def check_memory(mem):
         mem = int(mem)
         if mem < MIN_RAM:

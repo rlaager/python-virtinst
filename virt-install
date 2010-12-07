@@ -45,6 +45,30 @@ cli.setupGettext()
 DEFAULT_POOL_PATH = "/var/lib/libvirt/images"
 DEFAULT_POOL_NAME = "default"
 
+install_methods = "--location URL, --cdrom CD/ISO, --pxe, --import, --boot hd|cdrom|..."
+install_missing = (_("An install method must be specified\n(%(methods)s)") %
+                   {"methods" : install_methods })
+disk_missing = _("--disk storage must be specified (override with --nodisks)")
+
+def install_specified(location, cdpath, pxe, import_install):
+    return bool(pxe or cdpath or location or import_install)
+
+def cdrom_specified(guest, diskopts=None):
+    for disk in guest.disks:
+        if disk.device == virtinst.VirtualDisk.DEVICE_CDROM:
+            return True
+
+    # Probably haven't set up disks yet
+    if not guest.disks and diskopts:
+        for opts in diskopts:
+            if opts.count("device=cdrom"):
+                return True
+
+    return False
+
+def storage_specified(files, disks, nodisks):
+    return bool(files or disks or nodisks)
+
 def build_default_pool(guest):
 
     if not virtinst.util.is_storage_capable(guest.conn):
@@ -430,13 +454,14 @@ def get_disk(disk, size, sparse, guest, conn, is_file_path):
 def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, conn):
     if nodisks:
         if file_paths or disk_paths or size:
-            fail(_("Cannot use --file, --file-size, or --disk with --nodisks"))
+            fail(_("Cannot specify storage and use --nodisks"))
         return
     if (file_paths or size or sparse == False) and disk_paths:
         fail(_("Cannot mix --file, --nonsparse, or --file-size with --disk "
-               "options. Please see the manual for --disk syntax."))
-    elif not file_paths and not disk_paths and not cli.is_prompt():
-        fail(_("A disk must be specified (use --nodisks to override)"))
+               "options. Use --disk PATH[,size=SIZE][,sparse=yes|no]"))
+    if (not storage_specified(file_paths, disk_paths, nodisks) and
+        not cli.is_prompt()):
+        fail(disk_missing)
 
     is_file_path = (file_paths or (not disk_paths and cli.is_prompt()))
     disk = (file_paths or disk_paths)
@@ -579,8 +604,8 @@ def get_install_media(location, cdpath, pxe, livecd, import_install,
     for m in [pxe, location, cdpath, import_install]:
         if m:
             if found:
-                fail(_("Only one install method (%s) can be used") %
-                       "--pxe, --location, --cdrom, --import")
+                fail(_("Only one install method can be used (%(methods)s)") %
+                       {"methods" : install_methods})
             found = True
 
     if not ishvm:
@@ -593,15 +618,12 @@ def get_install_media(location, cdpath, pxe, livecd, import_install,
     if location and virtinst.util.is_uri_remote(guest.conn.getURI()):
         fail(_("--location can not be specified for remote connections."))
 
+    # Make sure some install option is specified
     cdinstall = (cdpath or False)
-    if not (pxe or cdpath or location or import_install):
-        # Look at Guest disks: if there is a cdrom, use for install
-        for disk in guest.disks:
-            if disk.device == virtinst.VirtualDisk.DEVICE_CDROM:
-                cdinstall = True
+    if not install_specified(location, cdpath, pxe, import_install):
+        cdinstall = cdrom_specified(guest)
         if not cdinstall and not cli.is_prompt():
-            fail(_("One of %s, or cdrom media must be specified.") %
-                  "--pxe, --location, --import")
+            fail(install_missing)
 
 
     if pxe or import_install:
@@ -935,12 +957,18 @@ def build_guest_instance(conn, options):
     # now let's get some of the common questions out of the way
     ishvm = bool(virt_type == "hvm")
 
-    cli.get_name(options.name, guest)
-    cli.get_memory(options.memory, guest)
+    # Optional config
+    get_networks(options.mac, options.bridge, options.network,
+                 options.nonetworks, guest)
+    cli.get_graphics(options.vnc, options.vncport, options.vnclisten,
+                     options.nographics, options.sdl, options.keymap,
+                     options.video, options.graphics, guest)
+
     cli.get_uuid(options.uuid, guest)
     cli.get_vcpus(options.vcpus, options.check_cpu, guest, conn)
     cli.get_cpuset(options.cpuset, guest.memory, guest, conn)
     get_security(options.security, guest)
+    parse_boot_option(guest, options.bootopts)
 
     get_watchdog(options.watchdog, guest)
     cli.get_sound(options.sound, options.soundhw, guest)
@@ -951,41 +979,48 @@ def build_guest_instance(conn, options):
 
     guest.autostart = options.autostart
     guest.description = options.description
-    parse_boot_option(guest, options.bootopts)
-
-    # set up disks
-    get_disks(options.file_path, options.diskopts, options.disksize,
-              options.sparse, options.nodisks, guest, conn)
-
-    # set up network information
-    get_networks(options.mac, options.bridge, options.network,
-                 options.nonetworks, guest)
-
-    # set up graphics and video device information
-    cli.get_graphics(options.vnc, options.vncport, options.vnclisten,
-                     options.nographics, options.sdl, options.keymap,
-                     options.video, options.graphics, guest)
 
     # Set host device info
     cli.get_hostdevs(options.hostdevs, guest)
 
-    if not options.location and options.extra:
-        fail(_("--extra-args only work if specified with --location."))
     guest.extraargs = options.extra
+    guest.features["acpi"] = not options.noacpi
+    guest.features["apic"] = not options.noapic
 
     cli.set_os_variant(guest, options.distro_type, options.distro_variant)
 
-    # and now for the full-virt vs paravirt specific questions
+    # Required config. Don't error right away if nothing is specified,
+    # aggregate the errors to help first time users get it right
+    msg = ""
+    if not cli.is_prompt():
+        if not options.name:
+            msg += "\n" + cli.name_missing
+        if not options.memory:
+            msg += "\n" + cli.ram_missing
+        if not storage_specified(options.file_path, options.diskopts,
+                                 options.nodisks):
+            msg += "\n" + disk_missing
+        if ((not install_specified(options.location, options.cdrom,
+                                   options.pxe, options.import_install)) and
+            (not cdrom_specified(guest, options.diskopts))):
+            msg += "\n" + install_missing
+        if msg:
+            fail(msg)
+
+    cli.get_name(options.name, guest)
+    cli.get_memory(options.memory, guest)
+    get_disks(options.file_path, options.diskopts, options.disksize,
+              options.sparse, options.nodisks, guest, conn)
     get_install_media(options.location, options.cdrom, options.pxe,
                       options.livecd, options.import_install,
                       guest, ishvm)
 
+    if not options.location and options.extra:
+        fail(_("--extra-args only work if specified with --location."))
+
     if options.pxe and not supports_pxe(guest):
         logging.warn(_("The guest's network configuration does not support "
                        "PXE"))
-
-    guest.features["acpi"] = not options.noacpi
-    guest.features["apic"] = not options.noapic
 
     return guest
 
