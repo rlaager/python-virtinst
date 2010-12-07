@@ -72,14 +72,15 @@ def _open_test_uri(uri):
         return xml
 
     # Need tmpfile names to be deterministic
-    def fakemkstemp(prefix, *args, **kwargs):
-        ignore = args
-        ignore = kwargs
-        filename = os.path.join(".", prefix)
-        return os.open(filename, os.O_RDWR | os.O_CREAT), filename
-    tempfile.mkstemp = fakemkstemp
+    if "predictable" in opts:
+        def fakemkstemp(prefix, *args, **kwargs):
+            ignore = args
+            ignore = kwargs
+            filename = os.path.join(".", prefix)
+            return os.open(filename, os.O_RDWR | os.O_CREAT), filename
+        tempfile.mkstemp = fakemkstemp
 
-    _util.randomMAC = lambda type_: "00:11:22:33:44:55"
+        _util.randomMAC = lambda type_: "00:11:22:33:44:55"
 
     # Fake remote status
     if "remote" in opts:

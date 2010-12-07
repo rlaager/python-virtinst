@@ -25,7 +25,7 @@ testuri = "test:///`pwd`/tests/testdriver.xml"
 
 # There is a hack in virtinst/cli.py to find this magic string and
 # convince virtinst we are using a remote connection.
-fakeuri     = "__virtinst_test__" + testuri
+fakeuri     = "__virtinst_test__" + testuri + ",predictable"
 remoteuri   = fakeuri + ",remote"
 kvmuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/libvirt-0.7.6-qemu-caps.xml,qemu"
 xenuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/rhel5.4-xen-caps-virt-enabled.xml,xen"
