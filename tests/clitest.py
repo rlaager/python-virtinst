@@ -28,6 +28,8 @@ testuri = "test:///`pwd`/tests/testdriver.xml"
 fakeuri     = "__virtinst_test__" + testuri
 remoteuri   = fakeuri + ",remote"
 kvmuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/libvirt-0.7.6-qemu-caps.xml,qemu"
+xenuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/rhel5.4-xen-caps-virt-enabled.xml,xen"
+xenia64uri  = fakeuri + ",caps=`pwd`/tests/capabilities-xml/xen-ia64-hvm.xml,xen"
 
 # Location
 image_prefix = "/tmp/__virtinst_cli_"
@@ -75,6 +77,8 @@ test_files = {
     'TESTURI'           : testuri,
     'REMOTEURI'         : remoteuri,
     'KVMURI'            : kvmuri,
+    'XENURI'            : xenuri,
+    'XENIA64URI'        : xenia64uri,
     'CLONE_DISK_XML'    : "%s/clone-disk.xml" % xmldir,
     'CLONE_STORAGE_XML' : "%s/clone-disk-managed.xml" % xmldir,
     'CLONE_NOEXIST_XML' : "%s/clone-disk-noexist.xml" % xmldir,
@@ -604,7 +608,38 @@ args_dict = {
 
 }, # category "kvm"
 
+"xen" : {
+  "args": "--connect %(XENURI)s --noautoconsole",
 
+  "valid"   : [
+    # HVM
+    "--nodisks --cdrom %(EXISTIMG1)s --livecd --hvm",
+    # PV
+    "--nodisks --boot hd --paravirt",
+    # 32 on 64 xen
+    "--nodisks --boot hd --paravirt --arch i686",
+  ],
+
+  "invalid" : [
+  ],
+
+  "compare" : [
+    # Xen default
+    ("--disk %(EXISTIMG1)s --import", "xen-default"),
+    # Xen PV
+    ("--disk %(EXISTIMG1)s --location %(TREEDIR)s --paravirt", "xen-pv"),
+    # Xen HVM
+    ("--disk %(EXISTIMG1)s --cdrom %(EXISTIMG1)s --livecd --hvm", "xen-hvm"),
+    # ia64 default
+    ("--connect %(XENIA64URI)s --disk %(EXISTIMG1)s --import",
+     "xen-ia64-default"),
+    # ia64 pv
+    ("--connect %(XENIA64URI)s --disk %(EXISTIMG1)s --location %(TREEDIR)s --paravirt", "xen-ia64-pv"),
+    # ia64 hvm
+    ("--connect %(XENIA64URI)s --disk %(EXISTIMG1)s --location %(TREEDIR)s --hvm", "xen-ia64-hvm"),
+  ],
+
+},
     "prompt" : [ " --connect %(TESTURI)s --debug --prompt" ]
   },
 

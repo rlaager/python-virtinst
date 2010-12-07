@@ -49,6 +49,10 @@ def _is_virtinst_test_uri(uri):
     return uri and uri.startswith(_virtinst_uri_magic)
 
 def _open_test_uri(uri):
+    """
+    This hack allows us to fake various drivers via passing a magic
+    URI string to virt-*. Helps with testing
+    """
     uri = uri.replace(_virtinst_uri_magic, "")
     ret = uri.split(",", 1)
     uri = ret[0]
@@ -56,7 +60,7 @@ def _open_test_uri(uri):
 
     conn = open_connection(uri)
 
-    def sanitize_qemu_xml(xml):
+    def sanitize_xml(xml):
         orig = xml
         xml = re.sub("arch='.*'", "arch='i686'", xml)
         xml = re.sub("domain type='.*'", "domain type='test'", xml)
@@ -86,19 +90,24 @@ def _open_test_uri(uri):
         capsxml = file(opts["caps"]).read()
         conn.getCapabilities = lambda: capsxml
 
-    if "qemu" in opts:
-        conn.getURI = lambda: "qemu+abc:///system"
-        conn.getVersion = lambda: 100000000
+    if "qemu" in opts or "xen" in opts:
+        conn.getVersion = lambda: 10000000000
+
         origcreate = conn.createLinux
         origdefine = conn.defineXML
         def newcreate(xml, flags):
-            xml = sanitize_qemu_xml(xml)
+            xml = sanitize_xml(xml)
             origcreate(xml, flags)
         def newdefine(xml):
-            xml = sanitize_qemu_xml(xml)
+            xml = sanitize_xml(xml)
             origdefine(xml)
         conn.createLinux = newcreate
         conn.defineXML = newdefine
+
+        if "qemu" in opts:
+            conn.getURI = lambda: "qemu+abc:///system"
+        if "xen" in opts:
+            conn.getURI = lambda: "xen+abc:///"
 
     return conn
 
