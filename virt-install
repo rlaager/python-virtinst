@@ -35,6 +35,7 @@ import libvirt
 import virtinst
 import virtinst.CapabilitiesParser
 import virtinst.cli as cli
+import virtinst.util as util
 from virtinst.VirtualCharDevice import VirtualCharDevice
 from virtinst.VirtualDevice import VirtualDevice
 from virtinst.cli import fail, print_stdout, print_stderr
@@ -69,6 +70,29 @@ def build_default_pool(guest):
     except Exception, e:
         raise RuntimeError(_("Couldn't create default storage pool '%s': %s") %
                              (DEFAULT_POOL_PATH, str(e)))
+
+def supports_pxe(guest):
+    """
+    Return False if we are pretty sure the config doesn't support PXE
+    """
+    for nic in guest.get_devices("interface"):
+        if nic.type == nic.TYPE_USER:
+            continue
+        if nic.type != nic.TYPE_VIRTUAL:
+            return True
+
+        try:
+            xml = nic.conn.networkLookupByName(nic.network).XMLDesc(0)
+            if util.get_xml_path(xml, "/network/ip/dhcp/bootp/@file"):
+                return True
+
+            forward = util.get_xml_path("/network/forward/@mode")
+            if forward and forward != "nat":
+                return True
+        except:
+            logging.exception("Error checking if PXE supported")
+
+    return False
 
 def parse_boot_option(guest, optstring):
     """
@@ -955,6 +979,10 @@ def build_guest_instance(conn, options):
     get_install_media(options.location, options.cdrom, options.pxe,
                       options.livecd, options.import_install,
                       guest, ishvm)
+
+    if options.pxe and not supports_pxe(guest):
+        logging.warn(_("The guest's network configuration does not support "
+                       "PXE"))
 
     guest.features["acpi"] = not options.noacpi
     guest.features["apic"] = not options.noapic
