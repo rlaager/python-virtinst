@@ -20,6 +20,10 @@ import logging
 
 import libvirt
 
+# Used to ensure consistent SDL xml output
+os.environ["HOME"] = "/tmp"
+os.environ["DISPLAY"] = ":3.4"
+
 def get_debug():
     return (os.environ.has_key("DEBUG_TESTS") and
             os.environ["DEBUG_TESTS"] == "1")

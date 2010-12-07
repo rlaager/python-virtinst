@@ -58,8 +58,6 @@ def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
         guest.graphics_dev = None
         return
 
-    if not (vnc or sdl or nographics):
-        vnc = True
     cli.get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, [],
                      graphics, guest)
 

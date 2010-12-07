@@ -23,7 +23,7 @@
       <model type='virtio'/>
     </interface>
     <input type='tablet' bus='usb'/>
-    <graphics type='vnc' port='-1'/>
+    <graphics type='spice' port='-1' tlsPort='-1' autoport='yes'/>
     <console type='pty'/>
     <video>
       <model type='cirrus'/>

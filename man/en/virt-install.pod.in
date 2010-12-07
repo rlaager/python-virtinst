@@ -512,49 +512,115 @@ if the DISPLAY environment variable is set, otherwise --nographics is used.
 
 =over 2
 
-=item  --vnc
+=item --graphics TYPE,opt1=arg1,opt2=arg2,...
+
+Specifies the graphical display configuration. This does not configure any
+virtual hardware, just how the guest's graphical display can be accessed.
+Typically the user does not need to specify this option, virt-install will
+try and choose a useful default, and launch a suitable connection.
+
+General format of a graphical string is
+
+    --graphics TYPE,opt1=arg1,opt2=arg2,...
+
+For example:
+
+    --graphics vnc,password=foobar
+
+The supported options are:
+
+=over 4
+
+=item B<type>
+
+The display type. This is one of:
+
+vnc
 
 Setup a virtual console in the guest and export it as a VNC server in
-the host. Unless the C<--vncport> parameter is also provided, the VNC
+the host. Unless the C<port> parameter is also provided, the VNC
 server will run on the first free port number at 5900 or above. The
 actual VNC display allocated can be obtained using the C<vncdisplay>
 command to C<virsh> (or L<virt-viewer(1)> can be used which handles this
 detail for the use).
 
-=item  --vncport=VNCPORT
-
-Request a permanent, statically assigned port number for the guest VNC
-console. Use of this option is discouraged as other guests may automatically
-choose to run on this port causing a clash.
-
-=item --vnclisten=VNCLISTEN
-
-Address to listen on for VNC connections. Default is typically 127.0.0.1
-(localhost only), but some hypervisors allow changing this globally (for
-example, the qemu driver default can be changed in /etc/libvirt/qemu.conf).
-Use 0.0.0.0 to allow access from other machines.
-
-=item  -k KEYMAP, --keymap=KEYMAP
-
-Request that the virtual VNC console be configured to run with a specific
-keyboard layout. If the special value 'local' is specified, virt-install
-will attempt to configure to use the same keymap as the local system. A value
-of 'none' specifically defers to the hypervisor. Default behavior is
-hypervisor specific, but typically is the same as 'local'.
-
-=item  --sdl
+sdl
 
 Setup a virtual console in the guest and display an SDL window in the
 host to render the output. If the SDL window is closed the guest may
 be unconditionally terminated.
 
-=item  --nographics
+spice
+
+Export the guest's console using the Spice protocol. Spice allows advanced
+features like audio and USB device streaming, as well as improved graphical
+performance.
+
+none
 
 No graphical console will be allocated for the guest. Fully virtualized guests
 (Xen FV or QEmu/KVM) will need to have a text console configured on the first
 serial port in the guest (this can be done via the --extra-args option). Xen
 PV will set this up automatically. The command 'virsh console NAME' can be
 used to connect to the serial device.
+
+=item B<port>
+
+Request a permanent, statically assigned port number for the guest
+console. This is used by 'vnc' and 'spice'
+
+=item B<tlsport>
+
+Specify the spice tlsport.
+
+=item B<listen>
+
+Address to listen on for VNC/Spice connections. Default is typically 127.0.0.1
+(localhost only), but some hypervisors allow changing this globally (for
+example, the qemu driver default can be changed in /etc/libvirt/qemu.conf).
+Use 0.0.0.0 to allow access from other machines. This is use by 'vnc' and
+'spice'
+
+=item B<keymap>
+
+Request that the virtual VNC console be configured to run with a specific
+keyboard layout. If the special value 'local' is specified, virt-install
+will attempt to configure to use the same keymap as the local system. A value
+of 'none' specifically defers to the hypervisor. Default behavior is
+hypervisor specific, but typically is the same as 'local'. This is used
+by 'vnc'
+
+=item B<password>
+
+Request a VNC password, required at connection time. Beware, this info may
+end up in virt-install log files, so don't use an important password. This
+is used by 'vnc'
+
+=back
+
+=item  --vnc
+
+This option is deprecated in favor of C<--graphics vnc,...>
+
+=item  --vncport=VNCPORT
+
+This option is deprecated in favor of C<--graphics vnc,port=PORT,...>
+
+=item --vnclisten=VNCLISTEN
+
+This option is deprecated in favor of C<--graphics vnc,listen=LISTEN,...>
+
+=item  -k KEYMAP, --keymap=KEYMAP
+
+This option is deprecated in favor of C<--graphics vnc,keymap=KEYMAP,...>
+
+=item  --sdl
+
+This option is deprecated in favor of C<--graphics sdl,...>
+
+=item  --nographics
+
+This option is deprecated in favor of C<--graphics none>
 
 =item  --noautoconsole
 
@@ -917,7 +983,7 @@ CDROM drive, auto launching a graphical VNC viewer
        --name demo \
        --ram 500 \
        --disk path=/var/lib/libvirt/images/demo.img,size=8 \
-       --vnc \
+       --graphics vnc \
        --cdrom /dev/cdrom \
        --os-variant fedora13
 
@@ -931,7 +997,7 @@ booting from PXE, using VNC server/viewer
        --disk path=/dev/HostVG/DemoVM \
        --network network=default \
        --virt-type qemu
-       --vnc \
+       --graphics vnc \
        --os-variant fedora9
 
 Install a guest with a real partition, with the default QEMU hypervisor for
@@ -945,7 +1011,7 @@ pair:
        --disk path=/dev/hdc \
        --network bridge=eth1 \
        --arch ppc64 \
-       --sdl \
+       --graphics sdl \
        --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 
 Run a Live CD image under Xen fullyvirt, in diskless environment
@@ -956,7 +1022,7 @@ Run a Live CD image under Xen fullyvirt, in diskless environment
        --ram 500 \
        --nodisks \
        --livecd \
-       --vnc \
+       --graphics vnc \
        --cdrom /root/fedora7live.iso
 
 Install a paravirtualized Xen guest, 500 MB of RAM, a 5 GB of disk, and
@@ -969,7 +1035,7 @@ options:
        --ram 500 \
        --file /var/lib/xen/images/demo.img \
        --file-size 6 \
-       --nographics \
+       --graphics none \
        --location http://download.fedora.redhat.com/pub/fedora/linux/core/6/x86_64/os/
 
 Create a guest from an existing disk image 'mydisk.img' using defaults for

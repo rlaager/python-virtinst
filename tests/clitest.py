@@ -19,8 +19,6 @@ import os, sys
 
 import utils
 
-# Set DISPLAY if it isn't already set
-os.environ["DISPLAY"] = "testdisplay"
 os.environ["VIRTCONV_TEST_NO_DISK_CONVERSION"] = "1"
 
 testuri = "test:///`pwd`/tests/testdriver.xml"
@@ -301,12 +299,16 @@ args_dict = {
       "valid": [
         # SDL
         "--sdl",
+        # --graphics SDL
+        "--graphics sdl",
+        # --graphics none,
+        "--graphics none",
         # VNC w/ lots of options
         "--vnc --keymap ja --vncport 5950 --vnclisten 1.2.3.4",
         # VNC w/ lots of options, new way
-        "--graphics vnc,port=5950,listen=1.2.3.4,keymap=ja",
+        "--graphics vnc,port=5950,listen=1.2.3.4,keymap=ja,password=foo",
         # SPICE w/ lots of options
-        "--graphics spice,port=5950,tlsport=5950,listen=1.2.3.4 --keymap ja",
+        "--graphics spice,port=5950,tlsport=5950,listen=1.2.3.4,keymap=ja",
         # --video option
         "--vnc --video vga",
         # --video option
@@ -326,6 +328,10 @@ args_dict = {
         "--graphics spice,tlsport=-50",
         # Invalid --video
         "--vnc --video foobar",
+        # --graphics bogus
+        "--graphics vnc,foobar=baz",
+        # mixing old and new
+        "--graphics vnc --vnclisten 1.2.3.4",
       ],
 
      }, # category "graphics"
@@ -587,12 +593,12 @@ args_dict = {
     ("--os-variant fedora14 --nodisks --boot cdrom --virt-type qemu",
      "qemu-plain"),
     # 32 on 64
-    ("--os-variant fedora14 --nodisks --boot network --arch i686",
+    ("--os-variant fedora14 --nodisks --boot network --nographics --arch i686",
      "qemu-32-on-64"),
     # kvm machine type 'pc'
-    ("--os-variant fedora14 --nodisks --boot fd --machine pc", "kvm-machine"),
+    ("--os-variant fedora14 --nodisks --boot fd --graphics spice --machine pc", "kvm-machine"),
     # exotic arch + machine type
-    ("--os-variant fedora14 --nodisks --boot fd --arch sparc --machine SS-20",
+    ("--os-variant fedora14 --nodisks --boot fd --graphics sdl --arch sparc --machine SS-20",
      "qemu-sparc"),
   ],
 
@@ -938,13 +944,17 @@ def run_tests(do_app, do_category):
                 if not cmdstr.count(fakeuri):
                     cmdstr += " --connect %s" % fakeuri
 
-                ignore, output = assertPass(cmdstr)
+                try:
+                    ignore, output = assertPass(cmdstr)
 
-                # Uncomment to generate new test files
-                #if not os.path.exists(filename):
-                #    file(filename, "w").write(output)
+                    # Uncomment to generate new test files
+                    #if not os.path.exists(filename):
+                    #    file(filename, "w").write(output)
 
-                utils.diff_compare(output, filename)
+                    utils.diff_compare(output, filename)
+                except:
+                    print cmdstr
+                    raise
 
 def main():
     # CLI Args

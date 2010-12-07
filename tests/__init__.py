@@ -37,10 +37,6 @@ if utils.get_debug():
 else:
     rootLogger.setLevel(logging.ERROR)
 
-# Used to ensure consistent SDL xml output
-os.environ["HOME"] = "/tmp"
-os.environ["DISPLAY"] = ":3.4"
-
 
 # Have imports down here so they get the benefit of logging setup etc.
 import capabilities

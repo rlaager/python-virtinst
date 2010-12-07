@@ -33,7 +33,7 @@ import libvirt
 import _util
 import virtinst
 from _util import listify
-from virtinst import VirtualNetworkInterface, VirtualVideoDevice, Guest, \
+from virtinst import VirtualNetworkInterface, Guest, \
                      VirtualGraphics, VirtualAudio, VirtualDisk, User
 from virtinst import _virtinst as _
 
@@ -494,22 +494,26 @@ def graphics_option_group(parser):
     from optparse import OptionGroup
 
     vncg = OptionGroup(parser, _("Graphics Configuration"))
-    vncg.add_option("", "--vnc", action="store_true", dest="vnc",
-                    help=_("Use VNC for graphics support"))
-    vncg.add_option("", "--vncport", type="int", dest="vncport",
-                    help=_("Port to use for VNC"))
-    vncg.add_option("", "--vnclisten", type="string", dest="vnclisten",
-                    help=_("Address to listen on for VNC connections."))
-    vncg.add_option("-k", "--keymap", type="string", dest="keymap",
-                    action="callback", callback=check_before_store,
-                    help=_("set up keymap for the graphical console"))
-    vncg.add_option("", "--sdl", action="store_true", dest="sdl",
-                    help=_("Use SDL for graphics support"))
     vncg.add_option("", "--graphics", type="string", dest="graphics",
                     action="callback", callback=check_before_store,
-                    help=_("Set graphics support (ex: --graphics spice,port=1,tlsport=2)"))
+      help=_("Specify display configuration. Ex:\n"
+             "--graphics vnc\n"
+             "--graphics spice,port=1,tlsport=2\n"
+             "--graphics none\n"
+             "--graphics vnc,password=foobar,port=5910,keymap=ja\n"))
+    vncg.add_option("", "--vnc", action="store_true", dest="vnc",
+                    help=optparse.SUPPRESS_HELP)
+    vncg.add_option("", "--vncport", type="int", dest="vncport",
+                    help=optparse.SUPPRESS_HELP)
+    vncg.add_option("", "--vnclisten", type="string", dest="vnclisten",
+                    help=optparse.SUPPRESS_HELP)
+    vncg.add_option("-k", "--keymap", type="string", dest="keymap",
+                    action="callback", callback=check_before_store,
+                    help=optparse.SUPPRESS_HELP)
+    vncg.add_option("", "--sdl", action="store_true", dest="sdl",
+                    help=optparse.SUPPRESS_HELP)
     vncg.add_option("", "--nographics", action="store_true",
-                    help=_("Don't set up a graphical console for the guest."))
+                    help=optparse.SUPPRESS_HELP)
     return vncg
 
 # Specific function for disk prompting. Returns a validated VirtualDisk
@@ -811,13 +815,32 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
 
     return net_init_dicts
 
-def parse_graphics(guest, optstring):
-    if optstring is None:
+def sanitize_keymap(keymap):
+    if not keymap:
+        return None
+
+    use_keymap = None
+
+    if keymap.lower() == "local":
+        use_keymap = virtinst.VirtualGraphics.KEYMAP_LOCAL
+
+    elif keymap.lower() != "none":
+        use_keymap = _util.check_keytable(keymap)
+        if not use_keymap:
+            raise ValueError(_("Didn't match keymap '%s' in keytable!") %
+                             keymap)
+
+    return use_keymap
+
+def parse_graphics(guest, optstring, basedict):
+    if optstring is None and not basedict:
         return None
 
     # Peel the model type off the front
     gtype, ignore, optstring = partition(optstring, ",")
-    opts = parse_optstr(optstring)
+    opts = parse_optstr(optstring, basedict)
+    if gtype == "none" or basedict.get("type") == "none":
+        return None
     dev = VirtualGraphics(conn=guest.conn)
 
     def set_param(paramname, dictname, val=None):
@@ -825,6 +848,8 @@ def parse_graphics(guest, optstring):
         if val == None:
             return
 
+        if paramname == "keymap":
+            val = sanitize_keymap(val)
         setattr(dev, paramname, val)
 
     set_param("type", "type", gtype)
@@ -832,6 +857,7 @@ def parse_graphics(guest, optstring):
     set_param("tlsPort", "tlsport")
     set_param("listen", "listen")
     set_param("keymap", "keymap")
+    set_param("passwd", "password")
 
     if opts:
         raise ValueError(_("Unknown options %s") % opts.keys())
@@ -842,23 +868,11 @@ def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
                  video_models, graphics, guest):
     video_models = video_models or []
 
-    try:
-        dev = parse_graphics(guest, graphics)
-        if dev is not None:
-            guest.graphics_dev = dev
-    except Exception, e:
-        fail(_("Error in graphics device parameters: %s") % str(e))
+    if graphics and (vnc or sdl or keymap or vncport or vnclisten):
+        fail(_("Cannot mix --graphics and old style graphical options"))
 
-    if (sum(map(int, [vnc != None, nographics != None, sdl != None, dev != None]))) > 1:
-        raise ValueError, _("Can't specify more than one of VNC, SDL, "
-                            "--graphics or --nographics")
-
-    for model in video_models:
-        dev = virtinst.VirtualVideoDevice(guest.conn)
-        dev.model_type = model
-        guest.add_device(dev)
-
-    if not (vnc or nographics or sdl):
+    # If not graphics specified, choose a default
+    if not (vnc or nographics or sdl or graphics):
         if "DISPLAY" in os.environ.keys():
             logging.debug("DISPLAY is set: graphics defaulting to VNC.")
             vnc = True
@@ -866,41 +880,38 @@ def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
             logging.debug("DISPLAY is not set: defaulting to nographics.")
             nographics = True
 
-    if nographics is not None:
-        guest.graphics_dev = None
-        return
+    if (sum(map(int, map(bool, [vnc, nographics, sdl, graphics])))) > 1:
+        raise ValueError, _("Can't specify more than one of VNC, SDL, "
+                            "--graphics or --nographics")
 
-    # After this point, we are using graphics, so add a video device
-    # if one wasn't passed
+    # Build an initial graphics argument dict
+    basedict = {
+        "type"      : ((vnc and "vnc") or
+                       (sdl and "sdl") or
+                       (nographics and "none")),
+        "listen"    : vnclisten,
+        "port"      : vncport,
+        "keymap"    : keymap,
+    }
+
+    try:
+        dev = parse_graphics(guest, graphics, basedict)
+    except Exception, e:
+        fail(_("Error in graphics device parameters: %s") % str(e))
+
+    if not dev:
+        return
+    guest.graphics_dev = dev
+
+    # At this point we are definitely using graphics, so setup a default
+    # video card if necc.
     if not video_models:
-        guest.add_device(VirtualVideoDevice(conn=guest.conn))
-
-    if sdl is not None:
-        guest.graphics_dev = VirtualGraphics(conn=guest.conn,
-                                             type=VirtualGraphics.TYPE_SDL)
-        return
-
-    if vnc is not None:
-        guest.graphics_dev = VirtualGraphics(conn=guest.conn,
-                                             type=VirtualGraphics.TYPE_VNC)
-        if vncport:
-            guest.graphics_dev.port = vncport
-        if vnclisten:
-            guest.graphics_dev.listen = vnclisten
-
-    if keymap:
-        use_keymap = None
-
-        if keymap.lower() == "local":
-            use_keymap = virtinst.VirtualGraphics.KEYMAP_LOCAL
-
-        elif keymap.lower() != "none":
-            use_keymap = _util.check_keytable(keymap)
-            if not use_keymap:
-                raise ValueError(_("Didn't match keymap '%s' in keytable!") %
-                                 keymap)
-
-        guest.graphics_dev.keymap = use_keymap
+        video_models.append(None)
+    for model in video_models:
+        dev = virtinst.VirtualVideoDevice(guest.conn)
+        if model:
+            dev.model_type = model
+        guest.add_device(dev)
 
 def get_sound(old_sound_bool, sound_opts, guest):
     if not sound_opts:
