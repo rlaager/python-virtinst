@@ -105,6 +105,7 @@ test_files = {
 
     'VIRTCONV_OUT'      : "%s/test.out" % virtconv_out,
     'VC_IMG1'           : "%s/virtimage/test1.virt-image" % vcdir,
+    'VC_IMG2'           : "tests/image-xml/image-format.xml",
     'VMX_IMG1'          : "%s/vmx/test1.vmx" % vcdir,
 }
 
@@ -855,6 +856,8 @@ args_dict = {
         "%(VC_IMG1)s -o vmx -D qcow2 %(VIRTCONV_OUT)s",
         # vmx to vmx no convert
         "%(VMX_IMG1)s -o vmx -D none %(VIRTCONV_OUT)s",
+        # virt-image with exotic formats specified
+        "%(VC_IMG2)s -o vmx -D vmdk %(VIRTCONV_OUT)s"
      ],
 
      "invalid": [

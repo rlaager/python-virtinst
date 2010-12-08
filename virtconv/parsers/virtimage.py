@@ -228,14 +228,19 @@ class virtimage_parser(formats.parser):
 
         for d in boot.drives:
             disk = d.disk
-            fmt = None
-            if disk.format == ImageParser.Disk.FORMAT_RAW:
-                fmt = diskcfg.DISK_FORMAT_RAW
-            elif disk.format == ImageParser.Disk.FORMAT_VMDK:
-                fmt = diskcfg.DISK_FORMAT_VMDK
+            format_mappings = {
+                ImageParser.Disk.FORMAT_RAW: diskcfg.DISK_FORMAT_RAW,
+                ImageParser.Disk.FORMAT_VMDK: diskcfg.DISK_FORMAT_VMDK,
+                ImageParser.Disk.FORMAT_QCOW: diskcfg.DISK_FORMAT_QCOW,
+                ImageParser.Disk.FORMAT_QCOW2: diskcfg.DISK_FORMAT_QCOW2,
+            }
 
-            if fmt is None:
-                raise ValueError(_("Unable to determine disk format"))
+            fmt = None
+            if disk.format in format_mappings:
+                fmt = format_mappings[disk.format]
+            else:
+                raise ValueError(_("Unknown disk format '%s'") % disk.format)
+
             devid = (bus, nr_disk)
             vm.disks[devid] = diskcfg.disk(bus = bus,
                 type = diskcfg.DISK_TYPE_DISK)
