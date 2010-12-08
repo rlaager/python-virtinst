@@ -119,29 +119,34 @@ class ImageInstaller(Installer.Installer):
         return self.boot_caps.bootdev
 
     def _make_disks(self):
-        for m in self.boot_caps.drives:
-            p = self._abspath(m.disk.file)
-            s = None
-            if m.disk.size is not None:
-                s = float(m.disk.size)/1024
+        for drive in self.boot_caps.drives:
+            path = self._abspath(drive.disk.file)
+            size = None
+            if drive.disk.size is not None:
+                size = float(drive.disk.size)/1024
 
             # FIXME: This is awkward; the image should be able to express
             # whether the disk is expected to be there or not independently
             # of its classification, especially for user disks
             # FIXME: We ignore the target for the mapping in m.target
-            if (m.disk.use == ImageParser.Disk.USE_SYSTEM and
-                not os.path.exists(p)):
+            if (drive.disk.use == ImageParser.Disk.USE_SYSTEM and
+                not os.path.exists(path)):
                 raise ImageInstallerException(_("System disk %s does not exist")
-                                              % p)
-            device = VirtualDisk.DEVICE_DISK
-            if m.disk.format == ImageParser.Disk.FORMAT_ISO:
-                device = VirtualDisk.DEVICE_CDROM
-            d = VirtualDisk(p, s,
-                            device = device,
-                            type = VirtualDisk.TYPE_FILE)
-            d.target = m.target
+                                              % path)
 
-            self.install_devices.append(d)
+            device = VirtualDisk.DEVICE_DISK
+            if drive.disk.format == ImageParser.Disk.FORMAT_ISO:
+                device = VirtualDisk.DEVICE_CDROM
+
+
+            disk = VirtualDisk(conn=self.conn,
+                               path=path,
+                               size=size,
+                               device=device,
+                               format=drive.disk.format)
+            disk.target = drive.target
+
+            self.install_devices.append(disk)
 
     def _abspath(self, p):
         return self.image.abspath(p)

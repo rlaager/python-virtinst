@@ -17,17 +17,22 @@
 import unittest
 import libvirt
 import virtinst
+import virtinst.cli
 import virtinst.ImageParser
 import os
 
 import utils
 import xmlconfig
 
+qemuuri = "__virtinst_test__test:///default,caps=%s/tests/capabilities-xml/capabilities-kvm.xml,qemu,predictable" % os.getcwd()
+
 class TestImageParser(unittest.TestCase):
 
     basedir = "tests/image-xml/"
     conn = libvirt.open("test:///default")
+    qemuconn = virtinst.cli._open_test_uri(qemuuri)
     caps = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
+    qemucaps = virtinst.CapabilitiesParser.parse(qemuconn.getCapabilities())
 
     def testImageParsing(self):
         f = open(os.path.join(self.basedir, "image.xml"), "r")
@@ -58,20 +63,30 @@ class TestImageParser(unittest.TestCase):
         virtinst.ImageInstaller(image, self.caps, 0)
         self.assertTrue(True)
 
-    def _image2XMLhelper(self, image_xml, output_xmls):
+    def testStorageFormat(self):
+        self._image2XMLhelper("image-format.xml", "image-format-out.xml",
+                              qemu=True)
+
+    def _image2XMLhelper(self, image_xml, output_xmls, qemu=False):
         image2guestdir = self.basedir + "image2guest/"
         image = virtinst.ImageParser.parse_file(self.basedir + image_xml)
         if type(output_xmls) is not list:
             output_xmls = [output_xmls]
 
+        conn = qemu and self.qemuconn or self.conn
+        caps = qemu and self.qemucaps or self.caps
+        gtype = qemu and "qemu" or "xen"
+
         for idx in range(len(output_xmls)):
             fname = output_xmls[idx]
-            inst = virtinst.ImageInstaller(image, self.caps, boot_index=idx)
+            inst = virtinst.ImageInstaller(image, caps, boot_index=idx,
+                                           conn=conn)
 
             if inst.is_hvm():
-                g = xmlconfig.get_basic_fullyvirt_guest()
+                g = xmlconfig.get_basic_fullyvirt_guest(typ=gtype,
+                                                        testconn=conn)
             else:
-                g = xmlconfig.get_basic_paravirt_guest()
+                g = xmlconfig.get_basic_paravirt_guest(testconn=conn)
 
             g.installer = inst
             g._prepare_install(None)
