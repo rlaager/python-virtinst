@@ -219,20 +219,15 @@ def main():
         for disk in image.storage.values():
             disk.check_disk_signature(meter=meter)
 
-    progresscb = progress.TextMeter()
 
     # we've got everything -- try to start the install
     if options.print_only:
-        # FIXME: Ugly remix of Guest.start_install/_do_install
-        # Should be exposed by Guest in a different way
-        meter = progress.BaseMeter()
-        guest.validate_parms()
-        guest._prepare_install(meter)
-        guest._create_devices(meter)
-        print guest.get_config_xml()
+        start_xml, final_xml = guest.start_install(return_xml=True)
+        print start_xml or final_xml
         return
-
     try:
+        progresscb = progress.TextMeter()
+
         print _("\n\nCreating guest %s...") % guest.name
 
         dom = guest.start_install(None, progresscb)
