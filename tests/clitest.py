@@ -20,6 +20,7 @@ import os, sys
 import utils
 
 os.environ["VIRTCONV_TEST_NO_DISK_CONVERSION"] = "1"
+os.environ["LANG"] = "en_US.UTF-8"
 
 testuri = "test:///`pwd`/tests/testdriver.xml"
 
@@ -471,6 +472,8 @@ args_dict = {
       ],
 
       "compare": [
+        # No arguments
+        ("", "noargs-fail"),
         # Diskless PXE install
         ("--hvm --nodisks --pxe --print-step all", "simple-pxe"),
         # HVM windows install with disk
@@ -979,12 +982,17 @@ def run_tests(do_app, do_category):
                 if not cmdstr.count(fakeuri):
                     cmdstr += " --connect %s" % fakeuri
 
+                check_fail = filename.endswith("fail.xml")
+
                 try:
-                    ignore, output = assertPass(cmdstr)
+                    if check_fail:
+                        ignore, output = assertFail(cmdstr)
+                    else:
+                        ignore, output = assertPass(cmdstr)
 
                     # Uncomment to generate new test files
-                    #if not os.path.exists(filename):
-                    #    file(filename, "w").write(output)
+                    if not os.path.exists(filename):
+                        file(filename, "w").write(output)
 
                     utils.diff_compare(output, filename)
                 except:

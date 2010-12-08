@@ -665,12 +665,13 @@ def media_prompt(guest, ishvm):
         break
 
 def validate_install_media(guest, location, cdpath, cdinstall=False):
-    if location or cdpath:
-        guest.location = (location or cdpath)
-
     if cdinstall or cdpath:
         guest.installer.cdrom = True
+    if location or cdpath:
+        guest.installer.location = (location or cdpath)
 
+    if hasattr(guest.installer, "check_location"):
+        guest.installer.check_location()
 
 ### Option parsing
 def parse_args():

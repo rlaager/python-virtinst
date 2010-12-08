@@ -299,6 +299,15 @@ class DistroInstaller(Installer.Installer):
         if dev:
             self.install_devices.append(dev)
 
+    def check_location(self):
+        if self._location_is_path:
+            # We already mostly validated this
+            return True
+        else:
+            # This will throw an error for us
+            OSDistro.detectMediaDistro(location=self.location, arch=self.arch)
+        return True
+
     def detect_distro(self):
         try:
             dist_info = OSDistro.detectMediaDistro(location=self.location,
