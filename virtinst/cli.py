@@ -589,8 +589,10 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
         askmsg = _("Do you really want to use this disk (yes or no)")
 
         # Prompt if disk file already exists and preserve mode is not used
-        if ((path_exists and dev.type == dev.TYPE_FILE and warn_overwrite) or
-            is_prompt()):
+        does_collide = (path_exists and
+                        dev.type == dev.TYPE_FILE and
+                        dev.device == dev.DEVICE_DISK)
+        if (does_collide and (warn_overwrite or is_prompt())):
             msg = (_("This will overwrite the existing path '%s'" %
                    dev.path))
             if not prompt_for_yes_or_no(msg, askmsg):
