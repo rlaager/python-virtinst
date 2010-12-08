@@ -630,7 +630,7 @@ def get_install_media(location, cdpath, pxe, livecd, import_install,
         return
 
     try:
-        if not location and not cdpath and cli.is_prompt():
+        if not location and not cdinstall and cli.is_prompt():
             media_prompt(guest, ishvm)
         else:
             validate_install_media(guest, location, cdpath, cdinstall)
