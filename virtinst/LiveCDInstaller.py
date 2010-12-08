@@ -28,17 +28,9 @@ class LiveCDInstallerException(Exception):
         Exception.__init__(self, msg)
 
 class LiveCDInstaller(Installer.Installer):
-    def __init__(self, type = "xen", location = None, os_type = None,
-                 conn = None):
-        self._install_disk = None
-        Installer.Installer.__init__(self, type=type, location=location,
-                                     os_type=os_type, conn=conn)
 
     # LiveCD specific methods/overwrites
-
-    def _get_location(self):
-        return self._location
-    def _set_location(self, val):
+    def _validate_location(self, val):
         path = None
         vol_tuple = None
         if type(val) is tuple:
@@ -46,12 +38,18 @@ class LiveCDInstaller(Installer.Installer):
         else:
             path = val
 
+        disk = None
         if path or vol_tuple:
-            self._install_disk = VirtualDisk(path=path, conn=self.conn,
-                                             volName=vol_tuple,
-                                             device = VirtualDisk.DEVICE_CDROM,
-                                             readOnly = True)
-
+            disk = VirtualDisk(path=path,
+                               conn=self.conn,
+                               volName=vol_tuple,
+                               device = VirtualDisk.DEVICE_CDROM,
+                               readOnly = True)
+        return disk
+    def _get_location(self):
+        return self._location
+    def _set_location(self, val):
+        self._validate_location(val)
         self._location = val
         self.cdrom = True
     location = property(_get_location, _set_location)
@@ -61,11 +59,13 @@ class LiveCDInstaller(Installer.Installer):
     def prepare(self, guest, meter):
         self.cleanup()
 
-        if not self._install_disk:
+        disk = self._validate_location(self.location)
+
+        if not disk:
             raise ValueError(_("CDROM media must be specified for the live "
                                "CD installer."))
 
-        self.install_devices.append(self._install_disk)
+        self.install_devices.append(disk)
 
     def post_install_check(self, guest):
         return True

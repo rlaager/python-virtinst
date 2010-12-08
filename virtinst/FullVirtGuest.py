@@ -19,19 +19,17 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import DistroInstaller
 from Guest import Guest
 
 class FullVirtGuest(Guest):
 
-    def __init__(self, type=None, arch=None, connection=None,
-                 hypervisorURI=None, emulator=None, installer=None):
-        if not installer:
-            installer = DistroInstaller.DistroInstaller(type=type,
-                                                        os_type="hvm",
-                                                        conn=connection)
+    _default_os_type = "hvm"
 
-        Guest.__init__(self, type, connection, hypervisorURI, installer)
+    def __init__(self, type=None, arch=None, connection=None,
+                 hypervisorURI=None, emulator=None, installer=None,
+                 caps=None):
+        Guest.__init__(self, type, connection, hypervisorURI, installer,
+                       caps=caps)
 
         self.emulator = emulator
         if arch:

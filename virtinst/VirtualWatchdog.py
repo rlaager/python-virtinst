@@ -55,9 +55,9 @@ class VirtualWatchdog(VirtualDevice.VirtualDevice):
         else:
             return action
 
-    def __init__(self, conn, parsexml=None, parsexmlnode=None):
+    def __init__(self, conn, parsexml=None, parsexmlnode=None, caps=None):
         VirtualDevice.VirtualDevice.__init__(self, conn, parsexml,
-                                             parsexmlnode)
+                                             parsexmlnode, caps)
 
         self._model = None
         self._action = None

@@ -65,10 +65,11 @@ def _sanitize_url(url):
     return url
 
 class DistroInstaller(Installer.Installer):
-    def __init__(self, type = "xen", location = None, boot = None,
-                 extraargs = None, os_type = None, conn = None):
+    def __init__(self, type="xen", location=None, boot=None,
+                 extraargs=None, os_type=None,
+                 conn=None, caps=None):
         Installer.Installer.__init__(self, type, location, boot, extraargs,
-                                 os_type, conn=conn)
+                                     os_type, conn=conn, caps=caps)
 
         self._livecd = False
 

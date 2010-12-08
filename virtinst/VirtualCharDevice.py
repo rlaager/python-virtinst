@@ -154,14 +154,15 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         return c(conn, dev_type)
     get_dev_instance = staticmethod(get_dev_instance)
 
-    def __init__(self, conn, dev_type, parsexml=None, parsexmlnode=None):
+    def __init__(self, conn, dev_type,
+                 parsexml=None, parsexmlnode=None, caps=None):
         if dev_type not in self.dev_types:
             raise ValueError(_("Unknown character device type '%s'") % dev_type)
         self._dev_type = dev_type
         self._virtual_device_type = self._dev_type
 
         VirtualDevice.VirtualDevice.__init__(self, conn,
-                                             parsexml, parsexmlnode)
+                                             parsexml, parsexmlnode, caps)
 
         # Init
         self._source_path = None

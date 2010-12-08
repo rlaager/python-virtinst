@@ -28,9 +28,10 @@ class VirtualAudio(VirtualDevice.VirtualDevice):
     MODEL_DEFAULT = "default"
     MODELS = [ "es1370", "sb16", "pcspk", "ac97", MODEL_DEFAULT ]
 
-    def __init__(self, model=None, conn=None, parsexml=None, parsexmlnode=None):
+    def __init__(self, model=None, conn=None,
+                 parsexml=None, parsexmlnode=None, caps=None):
         VirtualDevice.VirtualDevice.__init__(self, conn,
-                                             parsexml, parsexmlnode)
+                                             parsexml, parsexmlnode, caps)
 
         self._model = None
         if self._is_parse():

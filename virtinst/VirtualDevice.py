@@ -60,7 +60,7 @@ class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
     # General device type (disk, interface, etc.)
     _virtual_device_type = None
 
-    def __init__(self, conn=None, parsexml=None, parsexmlnode=None):
+    def __init__(self, conn=None, parsexml=None, parsexmlnode=None, caps=None):
         """
         Initialize device state
 
@@ -68,7 +68,8 @@ class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
         @type conn: virConnect
         """
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
-                                                   parsexmlnode)
+                                                   parsexmlnode,
+                                                   caps=None)
 
         if not self._virtual_device_type:
             raise ValueError(_("Virtual device type must be set in subclass."))

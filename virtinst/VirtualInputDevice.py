@@ -37,9 +37,9 @@ class VirtualInputDevice(VirtualDevice.VirtualDevice):
     input_buses = [INPUT_BUS_PS2, INPUT_BUS_USB, INPUT_BUS_XEN,
                    INPUT_BUS_DEFAULT]
 
-    def __init__(self, conn, parsexml=None, parsexmlnode=None):
+    def __init__(self, conn, parsexml=None, parsexmlnode=None, caps=None):
         VirtualDevice.VirtualDevice.__init__(self, conn, parsexml,
-                                             parsexmlnode)
+                                             parsexmlnode, caps)
 
         self._type = None
         self._bus = None

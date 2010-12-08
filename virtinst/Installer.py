@@ -83,11 +83,11 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
     """
 
     _dumpxml_xpath = "/domain/os"
-    def __init__(self, type = "xen", location = None, boot = None,
-                 extraargs = None, os_type = None, conn = None,
-                 parsexml=None, parsexmlnode=None):
+    def __init__(self, type="xen", location=None, boot=None,
+                 extraargs=None, os_type=None, conn=None,
+                 parsexml=None, parsexmlnode=None, caps=None):
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
-                                                   parsexmlnode)
+                                                   parsexmlnode, caps=caps)
 
         self._type = None
         self._location = None

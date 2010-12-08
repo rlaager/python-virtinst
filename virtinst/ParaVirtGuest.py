@@ -19,15 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import DistroInstaller
 from Guest import Guest
 
 class ParaVirtGuest(Guest):
-    def __init__(self, type=None, connection=None, hypervisorURI=None,
-                 installer=None):
-        if not installer:
-            installer = DistroInstaller.DistroInstaller(type=type,
-                                                        os_type="xen",
-                                                        conn=connection)
-        Guest.__init__(self, type, connection, hypervisorURI, installer)
+    _default_os_type = "xen"
 

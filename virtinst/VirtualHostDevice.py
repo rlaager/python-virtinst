@@ -71,7 +71,8 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
 
     device_from_node = staticmethod(device_from_node)
 
-    def __init__(self, conn, nodedev=None, parsexml=None, parsexmlnode=None):
+    def __init__(self, conn, nodedev=None,
+                 parsexml=None, parsexmlnode=None, caps=None):
         """
         @param conn: Connection the device/guest will be installed on
         @type conn: libvirt.virConnect
@@ -80,7 +81,7 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
         @type nodedev: L{virtinst.NodeDeviceParser.NodeDevice}
         """
         VirtualDevice.VirtualDevice.__init__(self, conn, parsexml,
-                                             parsexmlnode)
+                                             parsexmlnode, caps)
 
         self._mode = None
         self._type = None

@@ -480,7 +480,7 @@ class VirtualDisk(VirtualDevice):
                  readOnly=False, sparse=True, conn=None, volObject=None,
                  volInstall=None, volName=None, bus=None, shareable=False,
                  driverCache=None, selinuxLabel=None, format=None,
-                 validate=True, parsexml=None, parsexmlnode=None):
+                 validate=True, parsexml=None, parsexmlnode=None, caps=None):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -526,7 +526,8 @@ class VirtualDisk(VirtualDevice):
         """
 
         VirtualDevice.__init__(self, conn=conn,
-                               parsexml=parsexml, parsexmlnode=parsexmlnode)
+                               parsexml=parsexml, parsexmlnode=parsexmlnode,
+                               caps=caps)
 
         self._path = None
         self._size = None

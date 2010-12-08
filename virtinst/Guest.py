@@ -37,7 +37,6 @@ import support
 import XMLBuilderDomain
 import virtinst
 from XMLBuilderDomain import _xml_property
-from ImportInstaller import ImportInstaller
 import DistroInstaller
 from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
@@ -84,6 +83,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     # OS Dictionary static variables and methods
     _DEFAULTS = osdict.DEFAULTS
     _OS_TYPES = osdict.OS_TYPES
+
+    _default_os_type = None
 
     def list_os_types():
         return osdict.sort_helper(Guest._OS_TYPES)
@@ -177,7 +178,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return cpustr
 
     def __init__(self, type=None, connection=None, hypervisorURI=None,
-                 installer=None, parsexml=None):
+                 installer=None, parsexml=None, caps=None):
 
         # Set up the connection, since it is fundamental for other init
         conn = connection
@@ -190,10 +191,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             raise RuntimeError, _("Unable to connect to hypervisor, aborting "
                                   "installation!")
 
-        if not installer:
-            installer = DistroInstaller.DistroInstaller(type=type,
-                                                        conn=conn)
-
         self._name = None
         self._uuid = None
         self._memory = None
@@ -202,12 +199,12 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._cpuset = None
         self._autostart = False
         self._clock = None
-        self._installer = installer
         self._seclabel = None
         self._description = None
         self._features = None
         self._replace = None
         self._emulator = None
+        self._installer = installer
 
         self._os_type = None
         self._os_variant = None
@@ -233,9 +230,18 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._default_input_device = None
         self._default_console_device = None
 
-        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml)
+        caps = caps or (self._installer and self._installer._get_caps())
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
+                                                   caps=caps)
         if self._is_parse():
             return
+
+        if not self.installer:
+            i = DistroInstaller.DistroInstaller(type=type,
+                                                conn=conn,
+                                                os_type=self._default_os_type,
+                                                caps=self._get_caps())
+            self.installer = i
 
         # Add default devices (if applicable)
         inp = self._get_default_input_device()
@@ -259,10 +265,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                  self.installer.os_type == "linux"))
     def is_hvm(self):
         return self.installer and self.installer.os_type == "hvm"
-
-    def _get_caps(self):
-        caps = self.installer._get_caps()
-        return caps or XMLBuilderDomain.XMLBuilderDomain._get_caps(self)
 
     ######################
     # Property accessors #
@@ -724,9 +726,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def _parsexml(self, xml, node):
         XMLBuilderDomain.XMLBuilderDomain._parsexml(self, xml, node)
 
-        # Set a default installer
-        self._installer = ImportInstaller(conn=self.conn)
-
         device_mappings = {
             "disk"      : virtinst.VirtualDisk,
             "interface" : virtinst.VirtualNetworkInterface,
@@ -744,6 +743,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         }
 
         # Hand off all child element parsing to relevant classes
+        caps = self._get_caps()
         for node in self._xml_node.children:
             if node.name != "devices":
                 continue
@@ -755,17 +755,21 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
                 if objclass == virtinst.VirtualCharDevice:
                     dev = objclass(self.conn, devnode.name,
-                                   parsexmlnode=devnode)
+                                   parsexmlnode=devnode, caps=caps)
                 else:
                     dev = objclass(conn=self.conn,
-                                   parsexmlnode=devnode)
+                                   parsexmlnode=devnode, caps=caps)
                 self._add_device(dev)
 
         self._installer = virtinst.Installer.Installer(self.conn,
-                                                   parsexmlnode=self._xml_node)
-        self._features = DomainFeatures(self.conn, parsexmlnode=self._xml_node)
-        self._clock = Clock(self.conn, parsexmlnode=self._xml_node)
-        self._seclabel = Seclabel(self.conn, parsexmlnode=self._xml_node)
+                                                   parsexmlnode=self._xml_node,
+                                                   caps=caps)
+        self._features = DomainFeatures(self.conn,
+                                        parsexmlnode=self._xml_node,
+                                        caps=caps)
+        self._clock = Clock(self.conn, parsexmlnode=self._xml_node, caps=caps)
+        self._seclabel = Seclabel(self.conn, parsexmlnode=self._xml_node,
+                                  caps=caps)
 
     def _get_default_input_device(self):
         """

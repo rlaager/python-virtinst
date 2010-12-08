@@ -28,9 +28,9 @@ class VirtualVideoDevice(VirtualDevice.VirtualDevice):
     MODEL_DEFAULT = "default"
     _model_types = [ "cirrus", "vga", "vmvga", "xen", "qxl", MODEL_DEFAULT]
 
-    def __init__(self, conn, parsexml=None, parsexmlnode=None):
+    def __init__(self, conn, parsexml=None, parsexmlnode=None, caps=None):
         VirtualDevice.VirtualDevice.__init__(self, conn,
-                                             parsexml, parsexmlnode)
+                                             parsexml, parsexmlnode, caps)
 
         self._model_type    = None
         self._vram          = None

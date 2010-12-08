@@ -317,7 +317,8 @@ class XMLBuilderDomain(object):
     """
 
     _dumpxml_xpath = "."
-    def __init__(self, conn=None, parsexml=None, parsexmlnode=None):
+    def __init__(self, conn=None, parsexml=None, parsexmlnode=None,
+                 caps=None):
         """
         Initialize state
 
@@ -326,6 +327,7 @@ class XMLBuilderDomain(object):
         @param parsexml: Optional XML string to parse
         @type parsexml: C{str}
         @param parsexmlnode: Option xpathNode to use
+        @param caps: Capabilities() instance
         """
         if conn:
             if not isinstance(conn, libvirt.virConnect):
@@ -339,6 +341,11 @@ class XMLBuilderDomain(object):
 
         if self.conn:
             self.__remote = _util.is_uri_remote(self.conn.getURI())
+
+        if caps:
+            if not isinstance(caps, CapabilitiesParser.Capabilities):
+                raise ValueError("caps must be a Capabilities instance")
+            self.__caps = caps
 
         if parsexml or parsexmlnode:
             self._parsexml(parsexml, parsexmlnode)

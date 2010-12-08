@@ -71,10 +71,10 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     get_network_type_desc = staticmethod(get_network_type_desc)
 
     def __init__(self, macaddr=None, type=TYPE_BRIDGE, bridge=None,
-                 network=None, model=None, conn=None, parsexml=None,
-                 parsexmlnode=None):
+                 network=None, model=None, conn=None,
+                 parsexml=None, parsexmlnode=None, caps=None):
         VirtualDevice.VirtualDevice.__init__(self, conn, parsexml,
-                                             parsexmlnode)
+                                             parsexmlnode, caps)
 
         self._network = None
         self._bridge = None

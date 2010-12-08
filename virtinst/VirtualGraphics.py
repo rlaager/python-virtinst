@@ -66,10 +66,11 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
                  keymap=KEYMAP_DEFAULT, conn=None, parsexml=None,
-                 parsexmlnode=None, tlsPort=-1, channels=None):
+                 parsexmlnode=None, tlsPort=-1, channels=None,
+                 caps=None):
 
         VirtualDevice.VirtualDevice.__init__(self, conn,
-                                             parsexml, parsexmlnode)
+                                             parsexml, parsexmlnode, caps)
 
         self._type   = None
         self._port   = None
