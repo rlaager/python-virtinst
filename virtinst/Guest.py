@@ -644,12 +644,15 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         # remove the default
         if (dev.virtual_device_type == VirtualDevice.VIRTUAL_DEV_INPUT and
             self._default_input_device):
-            self.remove_device(self._default_input_device)
+            if self._default_input_device in self.get_all_devices():
+                self.remove_device(self._default_input_device)
             self._default_input_device = None
+
         if (dev.virtual_device_type in [VirtualDevice.VIRTUAL_DEV_CONSOLE,
                                         VirtualDevice.VIRTUAL_DEV_SERIAL] and
             self._default_console_device):
-            self.remove_device(self._default_console_device)
+            if self._default_console_device in self.get_all_devices():
+                self.remove_device(self._default_console_device)
             self._default_console_device = None
 
         # Actually add the device
