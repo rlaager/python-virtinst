@@ -1031,11 +1031,11 @@ def start_install(guest, continue_inst, options):
     def show_console(dom):
         if guest.graphics_dev:
             if guest.graphics_dev.type == virtinst.VirtualGraphics.TYPE_VNC:
-                return vnc_console(dom, options.connect)
+                return vnc_console(dom, guest.conn.getURI())
             else:
                 return None # SDL needs no viewer app
         else:
-            return txt_console(dom, options.connect)
+            return txt_console(dom, guest.conn.getURI())
 
     # There are two main cases we care about:
     #
