@@ -43,8 +43,8 @@ class LiveCDInstaller(Installer.Installer):
             disk = VirtualDisk(path=path,
                                conn=self.conn,
                                volName=vol_tuple,
-                               device = VirtualDisk.DEVICE_CDROM,
-                               readOnly = True)
+                               device=VirtualDisk.DEVICE_CDROM,
+                               readOnly=True)
         return disk
     def _get_location(self):
         return self._location

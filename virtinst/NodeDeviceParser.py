@@ -76,7 +76,7 @@ class NodeDevice(object):
         return None
 
     def _parseValueHelper(self, node, value_map):
-        if value_map.has_key(node.name):
+        if node.name in value_map:
             setattr(self, value_map[node.name], node.content)
 
     def _parseHelper(self, main_node, value_map):
@@ -108,7 +108,7 @@ class SystemDevice(NodeDevice):
                         "uuid": "hw_uuid"}
         firmware_map = {"vendor": "fw_vendor",
                         "version": "fw_version",
-                        "release_date": "fw_date" }
+                        "release_date": "fw_date"}
         while child:
             if child.name == "hardware":
                 self._parseHelper(child, hardware_map)

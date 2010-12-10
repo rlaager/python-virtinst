@@ -19,7 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import os, errno
+import os
+import errno
 import struct
 import platform
 import logging
@@ -195,7 +196,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         return self._cdrom
     def set_cdrom(self, enable):
         if enable not in [True, False]:
-            raise ValueError, _("Guest.cdrom must be a boolean type")
+            raise ValueError(_("Guest.cdrom must be a boolean type"))
         self._cdrom = enable
     cdrom = property(get_cdrom, set_cdrom)
 
@@ -220,23 +221,23 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         boot = {}
         if type(val) == tuple:
             if len(val) != 2:
-                raise ValueError, _("Must pass both a kernel and initrd")
+                raise ValueError(_("Must pass both a kernel and initrd"))
             (k, i) = val
             boot = {"kernel": k, "initrd": i}
 
         elif type(val) == dict:
-            if not val.has_key("kernel") or not val.has_key("initrd"):
-                raise ValueError, _("Must pass both a kernel and initrd")
+            if "kernel" not in val or "initrd" not in val:
+                raise ValueError(_("Must pass both a kernel and initrd"))
             boot = val
 
         elif type(val) == list:
             if len(val) != 2:
-                raise ValueError, _("Must pass both a kernel and initrd")
+                raise ValueError(_("Must pass both a kernel and initrd"))
             boot = {"kernel": val[0], "initrd": val[1]}
 
         else:
-            raise ValueError, _("Kernel and initrd must be specified by "
-                                "a list, dict, or tuple.")
+            raise ValueError(_("Kernel and initrd must be specified by "
+                               "a list, dict, or tuple."))
 
         self._install_bootconfig.kernel = boot.get("kernel")
         self._install_bootconfig.initrd = boot.get("initrd")

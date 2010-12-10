@@ -113,8 +113,8 @@ def run_vdiskadm(args):
 class disk(object):
     """Definition of an individual disk instance."""
 
-    def __init__(self, path = None, format = DISK_FORMAT_NONE, bus = "ide",
-                 type = DISK_TYPE_DISK):
+    def __init__(self, path=None, format=DISK_FORMAT_NONE, bus="ide",
+                 type=DISK_TYPE_DISK):
         self.path = path
         self.format = format
         self.bus = bus

@@ -182,9 +182,9 @@ def main():
 
 
     # Build the Installer instance
-    installer = virtinst.ImageInstaller(boot_index = options.boot,
-                                        image = image,
-                                        conn = conn)
+    installer = virtinst.ImageInstaller(boot_index=options.boot,
+                                        image=image,
+                                        conn=conn)
 
 
     # Get Guest instance from installer parameters.
@@ -243,7 +243,7 @@ def main():
         print _("Domain creation may not have been\n"
                 "successful.  If it was, you can restart your domain\n"
                 "by running 'virsh start %s'; otherwise, please\n"
-                "restart your installation.") %(guest.name,)
+                "restart your installation.") % guest.name
         sys.exit(1)
 
 if __name__ == "__main__":
@@ -255,4 +255,3 @@ if __name__ == "__main__":
         print >> sys.stderr, _("Installation aborted at user request")
     except Exception, main_e:
         fail(main_e)
-

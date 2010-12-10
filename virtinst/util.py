@@ -46,7 +46,7 @@ KEYBOARD_DIR = "/etc/sysconfig/keyboard"
 XORG_CONF = "/etc/X11/xorg.conf"
 CONSOLE_SETUP_CONF = "/etc/default/console-setup"
 
-def default_route(nic = None):
+def default_route(nic=None):
     if platform.system() == 'SunOS':
         cmd = [ '/usr/bin/netstat', '-rn' ]
         if nic:
@@ -100,9 +100,9 @@ def default_network(conn):
 def default_connection():
     if os.path.exists('/var/lib/xend'):
         if os.path.exists('/dev/xen/evtchn'):
-            return 'xen' 
+            return 'xen'
         if os.path.exists("/proc/xen"):
-            return 'xen' 
+            return 'xen'
 
     if os.path.exists("/usr/bin/qemu") or \
         os.path.exists("/usr/bin/qemu-kvm") or \
@@ -131,7 +131,7 @@ def get_cpu_flags():
         return flst
     return []
 
-def is_pae_capable(conn = None):
+def is_pae_capable(conn=None):
     """Determine if a machine is PAE capable or not."""
     if not conn:
         conn = libvirt.open('')
@@ -178,7 +178,7 @@ def get_default_arch():
 # available under the LGPL,
 # Copyright 2004, 2005 Mike Wray <mike.wray@hp.com>
 # Copyright 2005 XenSource Ltd
-def randomMAC(type = "xen"):
+def randomMAC(type="xen"):
     """Generate a random MAC address.
 
     00-16-3E allocated to xensource
@@ -210,7 +210,7 @@ def randomMAC(type = "xen"):
     mac = oui + [
             random.randint(0x00, 0xff),
             random.randint(0x00, 0xff),
-            random.randint(0x00, 0xff) ]
+            random.randint(0x00, 0xff)]
     return ':'.join(map(lambda x: "%02x" % x, mac))
 
 # the following three functions are from xend/uuid.py and are thus
@@ -270,7 +270,7 @@ def get_phy_cpus(conn):
 def system(cmd):
     st = os.system(cmd)
     if os.WIFEXITED(st) and os.WEXITSTATUS(st) != 0:
-        raise OSError("Failed to run %s, exited with %d" % 
+        raise OSError("Failed to run %s, exited with %d" %
                       (cmd, os.WEXITSTATUS(st)))
 
 def xml_escape(str):
@@ -281,7 +281,7 @@ def xml_escape(str):
     str = str.replace("<", "&lt;")
     str = str.replace(">", "&gt;")
     return str
- 
+
 def compareMAC(p, q):
     """Compare two MAC addresses"""
     pa = p.split(":")
@@ -411,13 +411,13 @@ def uri_split(uri):
     username = netloc = query = fragment = ''
     i = uri.find(":")
     if i > 0:
-        scheme, uri = uri[:i].lower(), uri[i+1:]
+        scheme, uri = uri[:i].lower(), uri[i + 1:]
         if uri[:2] == '//':
             netloc, uri = splitnetloc(uri, 2)
             offset = netloc.find("@")
             if offset > 0:
                 username = netloc[0:offset]
-                netloc = netloc[offset+1:]
+                netloc = netloc[offset + 1:]
         if '#' in uri:
             uri, fragment = uri.split('#', 1)
         if '?' in uri:
@@ -459,7 +459,7 @@ def get_uri_transport(uri):
         if scheme:
             offset = scheme.index("+")
             if offset > 0:
-                return [scheme[offset+1:], username]
+                return [scheme[offset + 1:], username]
     except:
         pass
     return [None, None]
@@ -546,7 +546,7 @@ def check_keytable(kt):
     import keytable
     keymap = None
     # Try a simple lookup in the keytable
-    if keytable.keytable.has_key(kt.lower()):
+    if kt.lower() in keytable.keytable:
         return keytable.keytable[kt]
     else:
         # Try a more intelligent lookup: strip out all '-' and '_', sort
@@ -560,7 +560,7 @@ def check_keytable(kt):
 
         for key in sorted_keys:
             origkey = key
-            key = key.replace("-", "").replace("_","")
+            key = key.replace("-", "").replace("_", "")
 
             if clean_kt.startswith(key):
                 return keytable.keytable[origkey]
@@ -570,6 +570,6 @@ def check_keytable(kt):
 def _test():
     import doctest
     doctest.testmod()
- 
+
 if __name__ == "__main__":
     _test()

@@ -19,7 +19,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import os, stat, pwd, statvfs
+import os
+import stat
+import pwd
+import statvfs
 import subprocess
 import logging
 import re
@@ -33,7 +36,7 @@ from VirtualDevice import VirtualDevice
 from XMLBuilderDomain import _xml_property
 from virtinst import _virtinst as _
 
-def _vdisk_create(path, size, kind, sparse = True):
+def _vdisk_create(path, size, kind, sparse=True):
     force_fixed = "raw"
     path = os.path.expanduser(path)
     if kind in force_fixed or not sparse:
@@ -415,7 +418,7 @@ class VirtualDisk(VirtualDevice):
 
                     fix_perms(dirname, useacl)
             except Exception, e:
-                errdict[dirname] =  str(e)
+                errdict[dirname] = str(e)
 
         return errdict
 
@@ -454,7 +457,7 @@ class VirtualDisk(VirtualDevice):
         names = []
         for vm in vms:
             xml = vm.XMLDesc(0)
-            tmpcount = _util.get_xml_path(xml, func = count_cb)
+            tmpcount = _util.get_xml_path(xml, func=count_cb)
             if tmpcount:
                 names.append(vm.name())
 
@@ -616,7 +619,7 @@ class VirtualDisk(VirtualDevice):
         return self._vol_object
     def _set_vol_object(self, val, validate=True):
         if val is not None and not isinstance(val, libvirt.virStorageVol):
-            raise ValueError, _("vol_object must be a virStorageVol instance")
+            raise ValueError(_("vol_object must be a virStorageVol instance"))
 
         if validate:
             self.__change_storage(vol_object=val)
@@ -627,8 +630,8 @@ class VirtualDisk(VirtualDevice):
         return self._vol_install
     def _set_vol_install(self, val, validate=True):
         if val is not None and not isinstance(val, Storage.StorageVolume):
-            raise ValueError, _("vol_install must be a StorageVolume "
-                                " instance.")
+            raise ValueError(_("vol_install must be a StorageVolume "
+                               " instance."))
 
         if validate:
             self.__change_storage(vol_install=val)
@@ -662,7 +665,7 @@ class VirtualDisk(VirtualDevice):
         retsize = self.__existing_storage_size()
         if retsize is None:
             if self.vol_install:
-                retsize = self.vol_install.capacity/1024.0/1024.0/1024.0
+                retsize = self.vol_install.capacity / 1024.0 / 1024.0 / 1024.0
             else:
                 retsize = self._size
 
@@ -670,7 +673,7 @@ class VirtualDisk(VirtualDevice):
     def _set_size(self, val, validate=True):
         if val is not None:
             if type(val) not in [int, float, long] or val < 0:
-                raise ValueError, _("'size' must be a number greater than 0.")
+                raise ValueError(_("'size' must be a number greater than 0."))
 
         self.__validate_wrapper("_size", val, validate, self.size)
     size = property(_get_size, _set_size)
@@ -683,7 +686,7 @@ class VirtualDisk(VirtualDevice):
         if val is not None:
             self._check_str(val, "type")
             if val not in self.types:
-                raise ValueError, _("Unknown storage type '%s'" % val)
+                raise ValueError(_("Unknown storage type '%s'" % val))
         self.__validate_wrapper("_type", val, validate, self.type)
     type = _xml_property(get_type, set_type,
                          xpath="./@type")
@@ -693,7 +696,7 @@ class VirtualDisk(VirtualDevice):
     def set_device(self, val, validate=True):
         self._check_str(val, "device")
         if val not in self.devices:
-            raise ValueError, _("Unknown device type '%s'" % val)
+            raise ValueError(_("Unknown device type '%s'" % val))
 
         if val == self._device:
             return
@@ -774,7 +777,7 @@ class VirtualDisk(VirtualDevice):
         if val is not None:
             self._check_str(val, "cache")
             if val not in self.cache_types:
-                raise ValueError, _("Unknown cache mode '%s'" % val)
+                raise ValueError(_("Unknown cache mode '%s'" % val))
         self.__validate_wrapper("_driver_cache", val, validate,
                                 self.driver_cache)
     driver_cache = _xml_property(_get_driver_cache, _set_driver_cache,
@@ -1084,29 +1087,29 @@ class VirtualDisk(VirtualDevice):
 
         if self.device == self.DEVICE_FLOPPY or \
            self.device == self.DEVICE_CDROM:
-            raise ValueError, _("Cannot create storage for %s device.") % \
-                                self.device
+            raise ValueError(_("Cannot create storage for %s device.") %
+                               self.device)
 
         if not managed_storage:
             if self.type is self.TYPE_BLOCK:
-                raise ValueError, _("Local block device path '%s' must "
-                                    "exist.") % self.path
+                raise ValueError(_("Local block device path '%s' must "
+                                   "exist.") % self.path)
 
             # Path doesn't exist: make sure we have write access to dir
             if not os.access(os.path.dirname(self.path), os.R_OK):
                 raise ValueError("No read access to directory '%s'" %
                                  os.path.dirname(self.path))
             if self.size is None:
-                raise ValueError, _("size is required for non-existent disk "
-                                    "'%s'" % self.path)
+                raise ValueError(_("size is required for non-existent disk "
+                                   "'%s'" % self.path))
             if not os.access(os.path.dirname(self.path), os.W_OK):
-                raise ValueError, _("No write access to directory '%s'") % \
-                                    os.path.dirname(self.path)
+                raise ValueError(_("No write access to directory '%s'") %
+                                   os.path.dirname(self.path))
 
         # Applicable for managed or local storage
         ret = self.is_size_conflict()
         if ret[0]:
-            raise ValueError, ret[1]
+            raise ValueError(ret[1])
         elif ret[1]:
             logging.warn(ret[1])
 
@@ -1138,10 +1141,10 @@ class VirtualDisk(VirtualDevice):
 
                 if (not _util.is_vdisk(self.clone_path) or
                     os.path.exists(self.path)):
-                    raise RuntimeError, _("copying to an existing vdisk is not"
-                                          " supported")
+                    raise RuntimeError(_("copying to an existing vdisk is not"
+                                         " supported"))
                 if not _vdisk_clone(self.clone_path, self.path):
-                    raise RuntimeError, _("failed to clone disk")
+                    raise RuntimeError(_("failed to clone disk"))
                 progresscb.end(size_bytes)
 
             else:
@@ -1152,7 +1155,7 @@ class VirtualDisk(VirtualDevice):
             # Create vdisk
             progresscb.update(1024)
             if not _vdisk_create(self.path, size_bytes, "vmdk", self.sparse):
-                raise RuntimeError, _("Error creating vdisk %s" % self.path)
+                raise RuntimeError(_("Error creating vdisk %s" % self.path))
 
             progresscb.end(self.size)
         else:
@@ -1199,7 +1202,7 @@ class VirtualDisk(VirtualDevice):
                 if fd:
                     os.close(fd)
         else:
-            clone_block_size = 1024*1024*10
+            clone_block_size = 1024 * 1024 * 10
             sparse = False
 
         logging.debug("Local Cloning %s to %s, sparse=%s, block_size=%s" %
@@ -1370,8 +1373,8 @@ class VirtualDisk(VirtualDevice):
 
 
             if msg:
-                msg += _(" %d M requested > %d M available") % \
-                        ((need / (1024*1024)), (avail / (1024*1024)))
+                msg += (_(" %d M requested > %d M available") %
+                        ((need / (1024 * 1024)), (avail / (1024 * 1024))))
         return (ret, msg)
 
     def is_conflict_disk(self, conn, return_names=False):

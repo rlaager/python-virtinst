@@ -19,10 +19,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import os, sys
+import os
+import sys
 import logging
 import logging.handlers
-import gettext, locale
+import gettext
+import locale
 import optparse
 from optparse import OptionValueError, OptionParser
 import re
@@ -237,7 +239,7 @@ def setupLogging(appname, debug=False, do_quiet=False):
 
     rootLogger.setLevel(logging.DEBUG)
     fileHandler = logging.handlers.RotatingFileHandler(filename, "ae",
-                                                       1024*1024, 5)
+                                                       1024 * 1024, 5)
 
     fileHandler.setFormatter(logging.Formatter(fileFormat,
                                                dateFormat))
@@ -426,7 +428,7 @@ def set_prompt(prompt=True):
 def is_prompt():
     return doprompt
 
-def prompt_for_input(noprompt_err, prompt = "", val = None, failed=False):
+def prompt_for_input(noprompt_err, prompt="", val=None, failed=False):
     if val is not None:
         return val
 
@@ -552,7 +554,7 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
             msg = _("What would you like to use as the disk (file path)?")
             if not size is None:
                 msg = _("Please enter the path to the file you would like to "
-                        "use for storage. It will have size %sGB.") %(size,)
+                        "use for storage. It will have size %sGB.") % size
 
         if not no_path_needed:
             path = prompt_for_input(patherr, prompt_txt or msg, passed_path)
@@ -641,7 +643,7 @@ def get_memory(memory, guest, image_memory=None):
         guest.memory = mem
 
     if memory is None and image_memory is not None:
-        memory = int(image_memory)/1024
+        memory = int(image_memory) / 1024
     prompt_loop(prompt_txt, err_txt, memory, guest, "memory",
                 func=check_memory)
 
@@ -780,10 +782,10 @@ def parse_network_opts(conn, mac, network):
     # __init__
     if mac == "RANDOM":
         mac = None
-    return { "conn" : conn, "type" : net_type, "bridge": bridge_name,
-             "network" : network_name, "model" : model , "macaddr" : mac }
+    return {"conn" : conn, "type" : net_type, "bridge": bridge_name,
+            "network" : network_name, "model" : model , "macaddr" : mac}
 
-def digest_networks(conn, macs, bridges, networks, nics = 0):
+def digest_networks(conn, macs, bridges, networks, nics=0):
     macs     = listify(macs)
     bridges  = listify(bridges)
     networks = listify(networks)
@@ -806,7 +808,7 @@ def digest_networks(conn, macs, bridges, networks, nics = 0):
     if len(macs) > len(networks):
         fail(_("Cannot pass more mac addresses than networks."))
     else:
-        for dummy in range (len(macs), len(networks)):
+        for dummy in range(len(macs), len(networks)):
             macs.append(None)
 
     # Create extra networks up to the number of nics requested
@@ -893,8 +895,8 @@ def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
             nographics = True
 
     if (sum(map(int, map(bool, [vnc, nographics, sdl, graphics])))) > 1:
-        raise ValueError, _("Can't specify more than one of VNC, SDL, "
-                            "--graphics or --nographics")
+        raise ValueError(_("Can't specify more than one of VNC, SDL, "
+                           "--graphics or --nographics"))
 
     # Build an initial graphics argument dict
     basedict = {
@@ -950,12 +952,12 @@ def get_hostdevs(hostdevs, guest):
 ### Option parsing
 def check_before_store(option, opt_str, value, parser):
     if len(value) == 0:
-        raise OptionValueError, _("%s option requires an argument") %opt_str
+        raise OptionValueError(_("%s option requires an argument") % opt_str)
     setattr(parser.values, option.dest, value)
 
 def check_before_append(option, opt_str, value, parser):
     if len(value) == 0:
-        raise OptionValueError, _("%s option requires an argument") %opt_str
+        raise OptionValueError(_("%s option requires an argument") % opt_str)
     parser.values.ensure_value(option.dest, []).append(value)
 
 def get_opt_param(opts, dictnames, val=None):

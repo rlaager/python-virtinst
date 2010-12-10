@@ -415,7 +415,7 @@ class TestURLFetch(unittest.TestCase):
                 logging.debug("Excluding '%s' from exclude filter." % label)
                 continue
 
-            if urls[label].has_key("distro"):
+            if "distro" in urls[label]:
                 distro_info = urls[label]["distro"]
 
             for arch, url in urls[label].items():

@@ -121,7 +121,7 @@ class StorageObject(object):
         Initialize storage object parameters
         """
         if object_type not in [self.TYPE_POOL, self.TYPE_VOLUME]:
-            raise ValueError, _("Unknown storage object type: %s") % type
+            raise ValueError(_("Unknown storage object type: %s") % type)
         self._object_type = object_type
         self._conn = None
         self._name = None
@@ -182,25 +182,25 @@ class StorageObject(object):
 
     def _check_name_collision(self, name):
         ignore = name
-        raise RuntimeError, "Must be implemented in subclass"
+        raise NotImplementedError()
 
     # XML Building
     def _get_storage_xml(self):
         """
         Returns the pool/volume specific xml blob
         """
-        raise RuntimeError, "Must be implemented in subclass"
+        raise NotImplementedError()
 
     def _get_perms_xml(self):
         perms = self.get_perms()
         if not perms:
             return ""
-        xml =  "    <permissions>\n" + \
-               "      <mode>0%o</mode>\n" % perms["mode"] + \
-               "      <owner>%d</owner>\n" % perms["owner"] + \
-               "      <group>%d</group>\n" % perms["group"]
+        xml = "    <permissions>\n" + \
+              "      <mode>0%o</mode>\n" % perms["mode"] + \
+              "      <owner>%d</owner>\n" % perms["owner"] + \
+              "      <group>%d</group>\n" % perms["group"]
 
-        if perms.has_key("label"):
+        if "label" in perms:
             xml += "      <label>%s</label>\n" % perms["label"]
 
         xml += "    </permissions>\n"
@@ -261,7 +261,7 @@ class StoragePool(StorageObject):
         @type ptype: C{str} member of L{Types}
         """
         if ptype not in StoragePool._types:
-            raise ValueError, _("Unknown storage pool type: %s" % ptype)
+            raise ValueError(_("Unknown storage pool type: %s" % ptype))
         if ptype == StoragePool.TYPE_DIR:
             return DirectoryPool
         if ptype == StoragePool.TYPE_FS:
@@ -291,7 +291,7 @@ class StoragePool(StorageObject):
 
     def get_pool_type_desc(pool_type):
         """Return human readable description for passed pool type"""
-        if StoragePool._types.has_key(pool_type):
+        if pool_type in StoragePool._types:
             return StoragePool._types[pool_type]
         else:
             return "%s pool" % pool_type
@@ -347,7 +347,7 @@ class StoragePool(StorageObject):
                                name=name, conn=conn)
 
         if type not in self.get_pool_types():
-            raise ValueError, _("Unknown storage pool type: %s" % type)
+            raise ValueError(_("Unknown storage pool type: %s" % type))
         self._type = type
         self._target_path = None
         self._host = None
@@ -413,14 +413,14 @@ class StoragePool(StorageObject):
                                 name))
 
     def _get_default_target_path(self):
-        raise RuntimeError, "Must be implemented in subclass"
+        raise NotImplementedError()
 
     # XML Building
     def _get_target_xml(self):
-        raise RuntimeError, "Must be implemented in subclass"
+        raise NotImplementedError()
 
     def _get_source_xml(self):
-        raise RuntimeError, "Must be implemented in subclass"
+        raise NotImplementedError()
 
     def _get_storage_xml(self):
         src_xml = ""
@@ -1057,9 +1057,9 @@ class StorageVolume(StorageObject):
         return self._pool
     def set_pool(self, newpool):
         if not isinstance(newpool, libvirt.virStoragePool):
-            raise ValueError, _("'pool' must be a virStoragePool instance.")
+            raise ValueError(_("'pool' must be a virStoragePool instance."))
         if newpool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
-            raise ValueError, _("pool '%s' must be active." % newpool.name())
+            raise ValueError(_("pool '%s' must be active." % newpool.name()))
         self._pool = newpool
     pool = property(get_pool, set_pool)
 
@@ -1110,10 +1110,10 @@ class StorageVolume(StorageObject):
 
     # xml building functions
     def _get_target_xml(self):
-        raise RuntimeError, "Must be implemented in subclass"
+        raise NotImplementedError()
 
     def _get_source_xml(self):
-        raise RuntimeError, "Must be implemented in subclass"
+        raise NotImplementedError()
 
     def _get_storage_xml(self):
         src_xml = ""
@@ -1215,15 +1215,15 @@ class StorageVolume(StorageObject):
             return (True, _("There is not enough free space on the storage "
                             "pool to create the volume. "
                             "(%d M requested allocation > %d M available)" % \
-                            ((self.allocation/(1024*1024)),
-                             (avail/(1024*1024)))))
+                            ((self.allocation / (1024 * 1024)),
+                             (avail / (1024 * 1024)))))
         elif self.capacity > avail:
             return (False, _("The requested volume capacity will exceed the "
                              "available pool space when the volume is fully "
                              "allocated. "
                              "(%d M requested capacity > %d M available)" % \
-                             ((self.capacity/(1024*1024)),
-                              (avail/(1024*1024)))))
+                             ((self.capacity / (1024 * 1024)),
+                              (avail / (1024 * 1024)))))
         return (False, "")
 
 class FileVolume(StorageVolume):
@@ -1329,6 +1329,11 @@ class CloneVolume(StorageVolume):
         self._file_type = typ
         self._format = fmt
 
+    def _get_target_xml(self):
+        return ""
+    def _get_source_xml(self):
+        return ""
+
     def get_xml_config(self):
         xml  = self.input_vol.XMLDesc(0)
         newxml = _util.set_xml_path(xml, "/volume/name", self.name)
@@ -1342,4 +1347,3 @@ class CloneVolume(StorageVolume):
 #
 #    def __init__(self, *args, **kwargs):
 #        raise NotImplementedError
-

@@ -15,7 +15,7 @@
 # MA 02110-1301 USA.
 
 import unittest
-import os, os.path
+import os
 import logging
 
 import utils
@@ -235,4 +235,3 @@ class TestClone(unittest.TestCase):
                                  "failure.")
         except (ValueError, RuntimeError), e:
             logging.debug("Received expected exception: %s" % str(e))
-

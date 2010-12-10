@@ -32,7 +32,7 @@ class VirtualController(VirtualDevice.VirtualDevice):
     CONTROLLER_TYPE_VIRTIOSERIAL    = "virtio-serial"
     CONTROLLER_TYPES = [CONTROLLER_TYPE_IDE, CONTROLLER_TYPE_FDC,
                         CONTROLLER_TYPE_SCSI, CONTROLLER_TYPE_SATA,
-                        CONTROLLER_TYPE_VIRTIOSERIAL ]
+                        CONTROLLER_TYPE_VIRTIOSERIAL]
 
     @staticmethod
     def get_class_for_type(ctype):

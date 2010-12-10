@@ -119,7 +119,7 @@ class CloneDesign(object):
         self._clone_name         = None
         self._clone_devices      = []
         self._clone_virtual_disks = []
-        self._clone_bs           = 1024*1024*10
+        self._clone_bs           = 1024 * 1024 * 10
         self._clone_mac          = []
         self._clone_uuid         = None
         self._clone_sparse       = True
@@ -175,7 +175,7 @@ class CloneDesign(object):
         try:
             self._valid_guest.set_name(name)
         except ValueError, e:
-            raise ValueError, _("Invalid name for new guest: %s") % (str(e),)
+            raise ValueError(_("Invalid name for new guest: %s") % e)
 
         # Make sure new VM name isn't taken.
         try:
@@ -193,7 +193,7 @@ class CloneDesign(object):
         try:
             self._valid_guest.set_uuid(uuid)
         except ValueError, e:
-            raise ValueError, _("Invalid uuid for new guest: %s") % (str(e),)
+            raise ValueError(_("Invalid uuid for new guest: %s") % e)
 
         if _util.vm_uuid_collision(self._hyper_conn, uuid):
             raise ValueError(_("UUID '%s' is in use by another guest.") %
@@ -406,8 +406,8 @@ class CloneDesign(object):
 
             if status not in [libvirt.VIR_DOMAIN_SHUTOFF,
                               libvirt.VIR_DOMAIN_PAUSED]:
-                raise RuntimeError, _("Domain with devices to clone must be "
-                                      "paused or shutoff.")
+                raise RuntimeError(_("Domain with devices to clone must be "
+                                     "paused or shutoff."))
 
 
     def setup_clone(self):
@@ -437,7 +437,7 @@ class CloneDesign(object):
 
         # changing mac
         count = ctx.xpathEval("count(/domain/devices/interface/mac)")
-        for i in range(1, int(count+1)):
+        for i in range(1, int(count + 1)):
             base_xpath = "/domain/devices/interface[%d]" % i
             base_node = ctx.xpathEval(base_xpath)[0]
             node = ctx.xpathEval(base_xpath + "/mac/@address")
@@ -450,7 +450,7 @@ class CloneDesign(object):
 
             mac = None
             try:
-                mac = self._clone_mac[i-1]
+                mac = self._clone_mac[i - 1]
             except Exception:
                 while 1:
                     mac = _util.randomMAC(typ)
@@ -572,7 +572,7 @@ class CloneDesign(object):
         lst     = []
 
         count = _util.get_xml_path(xml, "count(/domain/devices/disk)")
-        for i in range(1, int(count+1)):
+        for i in range(1, int(count + 1)):
             # Check if the disk needs cloning
             (path, target) = self._do_we_clone_device(xml, i)
             if target == None:
@@ -691,4 +691,3 @@ def _do_duplicate(design, meter):
 
         # VirtualDisk.setup handles everything
         dst_dev.setup(meter)
-

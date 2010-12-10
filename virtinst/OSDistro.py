@@ -120,7 +120,7 @@ def _locationCheckWrapper(guest, baseuri, progresscb,
     try:
         fetcher.prepareLocation()
     except ValueError, e:
-        raise ValueError, _("Invalid install location: ") + str(e)
+        raise ValueError(_("Invalid install location: ") + str(e))
 
     try:
         store = _storeForDistro(fetcher=fetcher, baseuri=baseuri, typ=_type,
@@ -178,8 +178,8 @@ def detectMediaDistro(location, arch):
     def media_cb(store, ignore):
         return store
 
-    store =  _locationCheckWrapper(guest, baseuri, progresscb, scratchdir,
-                                   _type, arch, media_cb)
+    store = _locationCheckWrapper(guest, baseuri, progresscb, scratchdir,
+                                  _type, arch, media_cb)
 
     return store.get_osdict_info()
 
@@ -723,7 +723,7 @@ class SuseDistro(Distro):
     # install-initrd RPM entries - capturing the directory they are
     # in and the version'd filename.
     def _extractRPMNames(self, filelist):
-        filelistData = gzip.GzipFile(filelist, mode = "r")
+        filelistData = gzip.GzipFile(filelist, mode="r")
         try:
             arches = [self.arch]
             # On i686 arch, we also look under i585 and i386 dirs
@@ -820,7 +820,7 @@ class SuseDistro(Distro):
                     line = fn.readline()
                     if not line:
                         break
-                    line = line[:len(line)-1]
+                    line = line[:len(line) - 1]
                     modnames.append(line)
             finally:
                 fn.close()
@@ -846,7 +846,7 @@ class SuseDistro(Distro):
 
             # Copy modules we need into initrd staging dir
             for modname in modnames:
-                if modpaths.has_key(modname):
+                if modname in modpaths:
                     src = modpaths[modname]
                     dst = moddir + "/" + modname
                     os.system("cp " + src + " " + dst)
@@ -1032,7 +1032,7 @@ class SunDistro(Distro):
                     Bargs = args[i]
                 else:
                     Bargs = ','.join([Bargs, args[i]])
-        
+
             elif exarg == '-m':
                 i += 1
                 if i == len(args):
@@ -1145,7 +1145,7 @@ class SolarisDistro(SunDistro):
 class OpenSolarisDistro(SunDistro):
 
     os_variant = "opensolaris"
- 
+
     kernelpath = "platform/i86xpv/kernel/unix"
     initrdpaths = [ "platform/i86pc/boot_archive", "boot/x86.microroot" ]
 

@@ -94,7 +94,7 @@ class TestNodeDev(unittest.TestCase):
                 "domain": "0", "bus": "21", "slot": "0", "function": "4",
                 "product_id": "0x0592", "vendor_id": "0x1180",
                 "product_name": "R5C592 Memory Stick Bus Host Adapter",
-                "vendor_name": "Ricoh Co Ltd",}
+                "vendor_name": "Ricoh Co Ltd"}
         self._testCompare(devname, vals)
 
     def testPCIDevice2(self):
@@ -104,7 +104,7 @@ class TestNodeDev(unittest.TestCase):
                 "domain": "0", "bus": "0", "slot": "25", "function": "0",
                 "product_id": "0x1049", "vendor_id": "0x8086",
                 "product_name": "82566MM Gigabit Network Connection",
-                "vendor_name": "Intel Corporation",}
+                "vendor_name": "Intel Corporation"}
         self._testCompare(devname, vals)
 
     def testUSBDevDevice1(self):
@@ -115,7 +115,7 @@ class TestNodeDev(unittest.TestCase):
                 "bus": "1", "device": "4", "product_id": '0x5151',
                 "vendor_id": '0x0781',
                 "vendor_name": "SanDisk Corp.",
-                "product_name": "Cruzer Micro 256/512MB Flash Drive" }
+                "product_name": "Cruzer Micro 256/512MB Flash Drive"}
         self._testCompare(devname, vals)
 
     def testUSBDevDevice2(self):
@@ -126,7 +126,7 @@ class TestNodeDev(unittest.TestCase):
                 "bus": "3", "device": "2", "product_id": '0x2016',
                 "vendor_id": '0x0483',
                 "vendor_name": "SGS Thomson Microelectronics",
-                "product_name": "Fingerprint Reader" }
+                "product_name": "Fingerprint Reader"}
         self._testCompare(devname, vals)
 
     def testStorageDevice1(self):
@@ -149,7 +149,7 @@ class TestNodeDev(unittest.TestCase):
                 "block": "/dev/sdb", "bus": "usb", "drive_type": "disk",
                 "model": "Cruzer Micro", "vendor": "SanDisk", "size": 0,
                 "removable": True, "hotpluggable": True,
-                "media_available": True, "media_size": 12345678 }
+                "media_available": True, "media_size": 12345678}
         self._testCompare(devname, vals)
 
     def testUSBBus(self):

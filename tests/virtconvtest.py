@@ -16,7 +16,8 @@
 
 import unittest
 import virtconv
-import os, os.path, glob
+import os
+import glob
 import utils
 
 BASE = "tests/virtconv-files"

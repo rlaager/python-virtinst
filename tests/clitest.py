@@ -15,7 +15,8 @@
 # MA 02110-1301 USA.
 
 import commands
-import os, sys
+import os
+import sys
 
 import utils
 
@@ -45,7 +46,7 @@ virtconv_out = "virtconv-outdir"
 
 # Images that will be created by virt-install/virt-clone, and removed before
 # each run
-new_images =    [
+new_images = [
     image_prefix + "new1.img",
     image_prefix + "new2.img",
     image_prefix + "new3.img",
@@ -54,7 +55,7 @@ new_images =    [
 ]
 
 # Images that are expected to exist before a command is run
-exist_images =  [
+exist_images = [
     image_prefix + "exist1.img",
     image_prefix + "exist2.img",
     ro_img,
@@ -1017,9 +1018,9 @@ def main():
             elif sys.argv[i].count("prompt"):
                 testprompt = True
             elif sys.argv[i].count("--app"):
-                do_app = sys.argv[i+1]
+                do_app = sys.argv[i + 1]
             elif sys.argv[i].count("--category"):
-                do_category = sys.argv[i+1]
+                do_category = sys.argv[i + 1]
 
     # Setup needed files
     for i in exist_files:

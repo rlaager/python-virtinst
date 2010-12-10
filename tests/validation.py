@@ -84,8 +84,8 @@ args = {
         'valid'   : [ 1, 32 ] },
     'graphics'  : {
         'invalid' : ['', True, 'unknown', {}, ('', '', '', 0),
-                     ('','','', 'longerthan16chars'),
-                     ('','','','invalid!!ch@r')],
+                     ('', '', '', 'longerthan16chars'),
+                     ('', '', '', 'invalid!!ch@r')],
         'valid'   : [False, 'sdl', 'vnc', (True, 'sdl', '', 'key_map-2'),
                      {'enabled' : True, 'type':'vnc', 'opts':5900} ]},
     'type'      : {
@@ -103,7 +103,7 @@ args = {
 
 'fvguest'  : {
     'os_type'   : {
-        'invalid' : ['notpresent',0,''],
+        'invalid' : ['notpresent', 0, ''],
         'valid'   : ['other', 'windows', 'unix', 'linux']},
     'os_variant': {
         'invalid' : ['', 0, 'invalid'],
@@ -201,11 +201,11 @@ args = {
     '__init__' : {
         'invalid' : \
             [{'image' : virtimage, 'capabilities': testcaps, 'boot_index': 5},
-             {'image' : virtimage, 'capabilities': "foo"},],
+             {'image' : virtimage, 'capabilities': "foo"}],
         'valid'   : \
             [{'image' : virtimage, 'capabilities': testcaps, 'boot_index': 1},
             {'image' : virtimage },
-            {'image' : virtimage, 'capabilities': testcaps, 'conn': None},],
+            {'image' : virtimage, 'capabilities': testcaps, 'conn': None}],
     }
 },
 
@@ -218,7 +218,7 @@ args = {
 },
 
 'clonedesign' : {
-    'original_guest' :{
+    'original_guest' : {
         'invalid' : ['idontexist'],
         'valid'   : ['test']},
     'clone_name': { 'invalid' : [0, 'test' # Already in use
@@ -361,14 +361,14 @@ args = {
 class TestValidation(unittest.TestCase):
 
     def _getInitConns(self, label):
-        if args[label].has_key("init_conns"):
+        if "init_conns" in args[label]:
             return args[label]["init_conns"]
         return [testconn]
 
     def _runObjInit(self, testclass, valuedict, defaultsdict=None):
         if defaultsdict:
             for key in defaultsdict.keys():
-                if not valuedict.has_key(key):
+                if key not in valuedict:
                     valuedict[key] = defaultsdict.get(key)
         return testclass(*(), **valuedict)
 
@@ -382,7 +382,7 @@ class TestValidation(unittest.TestCase):
             msg = ("Expected TypeError or ValueError: None Raised.\n"
                    "For '%s' object, paramname '%s', val '%s':" %
                    (name, paramname, paramvalue))
-            raise AssertionError, msg
+            raise AssertionError(msg)
 
         except AssertionError:
             raise
@@ -394,14 +394,14 @@ class TestValidation(unittest.TestCase):
                    "Original traceback was: \n%s\n" % traceback.format_exc() +
                    "For '%s' object, paramname '%s', val '%s':" %
                    (name, paramname, paramvalue))
-            raise AssertionError, msg
+            raise AssertionError(msg)
 
     def _testValid(self, name, obj, testclass, paramname, paramvalue):
 
         try:
             if paramname is '__init__':
                 conns = self._getInitConns(name)
-                if paramvalue.has_key("conn"):
+                if "conn" in paramvalue:
                     conns = [paramvalue["conn"]]
                 for conn in conns:
                     paramvalue["conn"] = conn
@@ -414,7 +414,7 @@ class TestValidation(unittest.TestCase):
                    "Original traceback was: \n%s\n" % traceback.format_exc() +
                    "For '%s' object, paramname '%s', val '%s':" %
                    (name, paramname, paramvalue))
-            raise AssertionError, msg
+            raise AssertionError(msg)
 
     def _testArgs(self, obj, testclass, name, exception_check=None,
                   manual_dict=None):
@@ -474,9 +474,10 @@ class TestValidation(unittest.TestCase):
             network = virtinst.VirtualNetworkInterface()
             network.setup(testconn)
         except Exception, e:
-            raise AssertionError, \
-                "Network setup with no params failed, expected success." + \
-                " Exception was: %s: %s" % (str(e), "".join(traceback.format_exc()))
+            raise AssertionError(
+            "Network setup with no params failed, expected success." +
+            " Exception was: %s: %s" %
+            (str(e), "".join(traceback.format_exc())))
 
     def testDistroInstaller(self):
         def exception_check(obj, paramname, paramvalue):

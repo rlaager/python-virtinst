@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import os, os.path
+import os
 import time
 import re
 import logging
@@ -55,27 +55,27 @@ def _validate_cpuset(conn, val):
         return
 
     if type(val) is not type("string") or len(val) == 0:
-        raise ValueError, _("cpuset must be string")
+        raise ValueError(_("cpuset must be string"))
     if re.match("^[0-9,-]*$", val) is None:
-        raise ValueError, _("cpuset can only contain numeric, ',', or "
-                            "'-' characters")
+        raise ValueError(_("cpuset can only contain numeric, ',', or "
+                           "'-' characters"))
 
     pcpus = _util.get_phy_cpus(conn)
     for c in val.split(','):
         if c.find('-') != -1:
             (x, y) = c.split('-')
             if int(x) > int(y):
-                raise ValueError, _("cpuset contains invalid format.")
+                raise ValueError(_("cpuset contains invalid format."))
             if int(x) >= pcpus or int(y) >= pcpus:
-                raise ValueError, _("cpuset's pCPU numbers must be less "
-                                    "than pCPUs.")
+                raise ValueError(_("cpuset's pCPU numbers must be less "
+                                   "than pCPUs."))
         else:
             if len(c) == 0:
                 continue
 
             if int(c) >= pcpus:
-                raise ValueError, _("cpuset's pCPU numbers must be less "
-                                    "than pCPUs.")
+                raise ValueError(_("cpuset's pCPU numbers must be less "
+                                   "than pCPUs."))
     return
 
 class Guest(XMLBuilderDomain.XMLBuilderDomain):
@@ -188,8 +188,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             conn = libvirt.open(hypervisorURI)
 
         if conn == None:
-            raise RuntimeError, _("Unable to connect to hypervisor, aborting "
-                                  "installation!")
+            raise RuntimeError(_("Unable to connect to hypervisor, aborting "
+                                 "installation!"))
 
         self._name = None
         self._uuid = None
@@ -315,8 +315,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return self._memory
     def set_memory(self, val):
         if (type(val) is not type(1) or val <= 0):
-            raise ValueError, _("Memory value must be an integer greater "
-                                "than 0")
+            raise ValueError(_("Memory value must be an integer greater "
+                               "than 0"))
         self._memory = val
 
         if self.maxmemory is None or self.maxmemory < val:
@@ -333,8 +333,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return self._maxmemory
     def set_maxmemory(self, val):
         if (type(val) is not type(1) or val <= 0):
-            raise ValueError, _("Max Memory value must be an integer greater "
-                                "than 0")
+            raise ValueError(_("Max Memory value must be an integer greater "
+                               "than 0"))
         self._maxmemory = val
     def _xml_maxmemory_value(self):
         return int(self.maxmemory) * 1024
@@ -358,10 +358,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def set_vcpus(self, val):
         maxvcpus = _util.get_max_vcpus(self.conn, self.type)
         if type(val) is not int or val < 1:
-            raise ValueError, _("Number of vcpus must be a postive integer.")
+            raise ValueError(_("Number of vcpus must be a postive integer."))
         if val > maxvcpus:
-            raise ValueError, _("Number of vcpus must be no greater than %d "
-                                "for this vm type.") % maxvcpus
+            raise ValueError(_("Number of vcpus must be no greater than %d "
+                               "for this vm type.") % maxvcpus)
         self._vcpus = val
     vcpus = _xml_property(get_vcpus, set_vcpus,
                           xpath="./vcpu",
@@ -403,14 +403,14 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             raise ValueError(_("OS type must be a string."))
         val = val.lower()
 
-        if self._OS_TYPES.has_key(val):
+        if val in self._OS_TYPES:
             if self._os_type != val:
                 # Invalidate variant, since it may not apply to the new os type
                 self._os_type = val
                 self._os_variant = None
         else:
-            raise ValueError, _("OS type '%s' does not exist in our "
-                                "dictionary") % val
+            raise ValueError(_("OS type '%s' does not exist in our "
+                                "dictionary") % val)
 
     os_type = property(get_os_type, set_os_type)
 
@@ -422,25 +422,25 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         val = val.lower()
 
         if self.os_type:
-            if self._OS_TYPES[self.os_type]["variants"].has_key(val):
+            if val in self._OS_TYPES[self.os_type]["variants"]:
                 self._os_variant = val
             else:
-                raise ValueError, _("OS variant '%(var)s' does not exist in "
-                                    "our dictionary for OS type '%(ty)s'" ) % \
-                                    {'var' : val, 'ty' : self._os_type}
+                raise ValueError(_("OS variant '%(var)s' does not exist in "
+                                   "our dictionary for OS type '%(ty)s'") %
+                                   {'var' : val, 'ty' : self._os_type})
         else:
             found = False
             for ostype in self.list_os_types():
-                if self._OS_TYPES[ostype]["variants"].has_key(val) and \
-                   not self._OS_TYPES[ostype]["variants"][val].get("skip"):
-                    logging.debug("Setting os type to '%s' for variant '%s'" %\
+                if (val in self._OS_TYPES[ostype]["variants"] and
+                    not self._OS_TYPES[ostype]["variants"][val].get("skip")):
+                    logging.debug("Setting os type to '%s' for variant '%s'" %
                                   (ostype, val))
                     self.os_type = ostype
                     self._os_variant = val
                     found = True
 
             if not found:
-                raise ValueError, _("Unknown OS variant '%s'" % val)
+                raise ValueError(_("Unknown OS variant '%s'" % val))
 
     os_variant = property(get_os_variant, set_os_variant)
 
@@ -517,13 +517,15 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         keymap = None
         gdev = None
         if type(val) == dict:
-            if not val.has_key("enabled"):
-                raise ValueError, _("Must specify whether graphics are enabled")
+            if "enabled" not in val:
+                raise ValueError(_("Must specify whether graphics are enabled"))
+
             enabled = val["enabled"]
-            if val.has_key("type"):
+            if "type" in val:
                 gtype = val["type"]
-                if val.has_key("opts"):
+                if "opts" in val:
                     port = val["opts"]
+
         elif type(val) == tuple:
             if len(val) >= 1:
                 enabled = val[0]
@@ -533,6 +535,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 port = val[2]
             if len(val) >= 4:
                 keymap = val[3]
+
         else:
             if val in ("vnc", "sdl"):
                 gtype = val
@@ -541,7 +544,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 enabled = val
 
         if enabled not in (True, False):
-            raise ValueError, _("Graphics enabled must be True or False")
+            raise ValueError(_("Graphics enabled must be True or False"))
 
         if enabled:
             gdev = VirtualGraphics.VirtualGraphics(type=gtype)
@@ -907,8 +910,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         ignore = dry
 
         # Fetch install media, prepare installer devices
-        self._installer.prepare(guest = self,
-                                meter = meter)
+        self._installer.prepare(guest=self,
+                                meter=meter)
 
         # Initialize install device list
         for dev in self._installer.install_devices:
@@ -928,7 +931,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     # Public API #
     ##############
 
-    def _get_xml_config(self, install = True, disk_boot = False):
+    def _get_xml_config(self, install=True, disk_boot=False):
         """
         Return the full Guest xml configuration.
 
@@ -1038,7 +1041,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         Do some pre-install domain validation
         """
         if self.domain is not None:
-            raise RuntimeError, _("Domain has already been started!")
+            raise RuntimeError(_("Domain has already been started!"))
 
         if self.name is None or self.memory is None:
             raise RuntimeError(_("Name and memory must be specified for "

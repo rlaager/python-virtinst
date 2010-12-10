@@ -567,7 +567,7 @@ class InterfaceVLAN(Interface):
         else:
             name = self.parent_interface.name()
 
-        xml =  "  <vlan tag='%s'>\n" % self.tag
+        xml  = "  <vlan tag='%s'>\n" % self.tag
         xml += "    <interface name='%s'/>\n" % name
         xml += "  </vlan>\n"
 
@@ -733,4 +733,3 @@ class InterfaceProtocolIPAddress(object):
 
         xml += "/>\n"
         return xml
-

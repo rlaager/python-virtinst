@@ -45,10 +45,10 @@ class VirtualAudio(VirtualDevice.VirtualDevice):
         return self._model
     def set_model(self, new_model):
         if type(new_model) != str:
-            raise ValueError, _("'model' must be a string, "
-                                " was '%s'." % type(new_model))
+            raise ValueError(_("'model' must be a string, "
+                               " was '%s'." % type(new_model)))
         if not self.MODELS.count(new_model):
-            raise ValueError, _("Unsupported sound model '%s'" % new_model)
+            raise ValueError(_("Unsupported sound model '%s'" % new_model))
         self._model = new_model
     model = _xml_property(get_model, set_model,
                           xpath="./@model")

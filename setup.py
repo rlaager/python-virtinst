@@ -7,9 +7,10 @@ from distutils.command.install import install as _install
 from unittest import TextTestRunner, TestLoader
 from glob import glob
 from os.path import splitext, basename, join as pjoin
-import os, sys
+import os
+import sys
 
-pkgs = ['virtinst', 'virtconv', 'virtconv.parsers' ]
+pkgs = ['virtinst', 'virtconv', 'virtconv.parsers']
 
 datafiles = [('share/man/man1', ['man/en/virt-install.1',
                                  'man/en/virt-clone.1',
@@ -32,7 +33,7 @@ class TestBaseCommand(Command):
         self._dir = os.getcwd()
 
     def finalize_options(self):
-        if self.debug and not os.environ.has_key("DEBUG_TESTS"):
+        if self.debug and "DEBUG_TESTS" not in os.environ:
             os.environ["DEBUG_TESTS"] = "1"
 
     def run(self):
@@ -44,7 +45,7 @@ class TestBaseCommand(Command):
             use_coverage = False
 
         tests = TestLoader().loadTestsFromNames(self._testfiles)
-        t = TextTestRunner(verbosity = 1)
+        t = TextTestRunner(verbosity=1)
 
         if use_coverage:
             coverage.erase()
@@ -65,7 +66,7 @@ class TestCommand(TestBaseCommand):
     description = "Runs a quick unit test suite"
     user_options = TestBaseCommand.user_options + \
                    [("testfile=", None, "Specific test file to run (e.g "
-                                        "validation, storage, ...)"),]
+                                        "validation, storage, ...)")]
 
     def initialize_options(self):
         TestBaseCommand.initialize_options(self)
@@ -151,7 +152,7 @@ class TestURLFetch(TestBaseCommand):
 
     def run(self):
         import tests
-        self._testfiles = [ "tests.urltest" ]
+        self._testfiles = ["tests.urltest"]
         tests.urltest.MATCH_FILTER = self.match
         if self.path:
             for p in self.path:
@@ -204,8 +205,8 @@ class refresh_translations(Command):
     def run(self):
 
         # Generate POT file
-        files = [ "virtinst/*.py", "virtconv/*.py", "virtconv/parsers/*.py",
-                  "virt-*" ]
+        files = ["virtinst/*.py", "virtconv/*.py", "virtconv/parsers/*.py",
+                  "virt-*"]
         pot_cmd = "xgettext --language=Python -o po/virtinst.pot"
         for f in files:
             pot_cmd += " %s " % f
@@ -278,7 +279,7 @@ class build(_build):
 
         for filename in glob(pjoin(os.getcwd(), 'po', '*.po')):
             filename = os.path.basename(filename)
-            lang = os.path.basename(filename)[0:len(filename)-3]
+            lang = os.path.basename(filename)[0:len(filename) - 3]
             if not os.path.exists("build/po/%s" % lang):
                 os.makedirs("build/po/%s" % lang)
             newname = "build/po/%s/virtinst.mo" % lang
@@ -304,7 +305,7 @@ class install_lib(_install_lib):
 
     def run(self):
         for initfile in [ "virtinst/__init__.py", "virtconv/__init__.py" ]:
-            cmd =  "cat %s | " % initfile
+            cmd  = "cat %s | " % initfile
             cmd += """sed -e "s,::LOCALEDIR::,%s," > """ % locale
             cmd += "%s/%s" % (builddir, initfile)
             os.system(cmd)
@@ -338,16 +339,16 @@ setup(name='virtinst',
       license='GPL',
       url='http://virt-manager.et.redhat.com',
       package_dir={'virtinst': 'virtinst'},
-      scripts = ["virt-install","virt-clone", "virt-image", "virt-convert"],
+      scripts=["virt-install", "virt-clone", "virt-image", "virt-convert"],
       packages=pkgs,
-      data_files = datafiles,
-      cmdclass = { 'test': TestCommand, 'test_urls' : TestURLFetch,
-                   'test_cli' : TestCLI,
-                    'check': CheckPylint,
-                    'rpm' : custom_rpm,
-                    'sdist': sdist, 'build': build,
-                    'install_data' : install_data,
-                    'install_lib' : install_lib,
-                    'install' : install,
-                    'refresh_translations' : refresh_translations}
+      data_files=datafiles,
+      cmdclass={ 'test': TestCommand, 'test_urls' : TestURLFetch,
+                 'test_cli' : TestCLI,
+                 'check': CheckPylint,
+                 'rpm' : custom_rpm,
+                 'sdist': sdist, 'build': build,
+                 'install_data' : install_data,
+                 'install_lib' : install_lib,
+                 'install' : install,
+                 'refresh_translations' : refresh_translations}
       )

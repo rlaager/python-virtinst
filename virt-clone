@@ -254,4 +254,3 @@ if __name__ == "__main__":
         print >> sys.stderr, _("Installation aborted at user request")
     except Exception, main_e:
         fail(main_e)
-

@@ -36,13 +36,13 @@ class Features(object):
        be turned on or off. For features for which toggling doesn't make sense
        (e.g., 'vmx') store FEATURE_ON when the feature is present."""
 
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.features = {}
         if node is not None:
             self.parseXML(node)
 
     def __getitem__(self, feature):
-        if self.features.has_key(feature):
+        if feature in self.features:
             return self.features[feature]
         return 0
 
@@ -64,7 +64,7 @@ class Features(object):
                 feature_list.append(n.content)
 
         for feature in feature_list:
-            if not d.has_key(feature):
+            if feature not in d:
                 d[feature] = 0
 
             self._extractFeature(feature, d, n)
@@ -75,7 +75,7 @@ class Features(object):
         raise NotImplementedError("Abstract base class")
 
 class CapabilityFeatures(Features):
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         Features.__init__(self, node)
 
     def _extractFeature(self, feature, d, n):
@@ -91,7 +91,7 @@ class CapabilityFeatures(Features):
             else:
                 raise CapabilitiesParserException("Feature %s: value of default must be 'on' or 'off', but is '%s'" % (feature, default))
             if toggle == "yes":
-                d[feature] |= d[feature] ^ (FEATURE_ON|FEATURE_OFF)
+                d[feature] |= d[feature] ^ (FEATURE_ON | FEATURE_OFF)
         else:
             # Format for old HOST features, on OLD old guest features
             # back compat is just <$featurename>, like <svm/>
@@ -144,7 +144,7 @@ class CPU(object):
             child = child.next
 
 class Host(object):
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.cpu = CPU()
         self.topology = None
         self.secmodel = None
@@ -181,7 +181,7 @@ class Host(object):
 
 
 class Guest(object):
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         # e.g. "xen" or "hvm"
         self.os_type = None
         # e.g. "i686" or "x86_64"
@@ -270,8 +270,9 @@ class Guest(object):
 
 
 class Domain(object):
-    def __init__(self, hypervisor_type, emulator = None, loader = None,
-                 machines = None, node = None):
+    def __init__(self, hypervisor_type,
+                 emulator=None, loader=None,
+                 machines=None, node=None):
         self.hypervisor_type = hypervisor_type
         self.emulator = emulator
         self.loader = loader
@@ -300,7 +301,7 @@ class Domain(object):
             self.machines = machines
 
 class Topology(object):
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.cells = []
 
         if not node is None:
@@ -314,7 +315,7 @@ class Topology(object):
                     self.cells.append(TopologyCell(cell))
 
 class TopologyCell(object):
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.id = None
         self.cpus = []
 
@@ -330,7 +331,7 @@ class TopologyCell(object):
                     self.cpus.append(TopologyCPU(cpu))
 
 class TopologyCPU(object):
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.id = None
 
         if not node is None:
@@ -341,7 +342,7 @@ class TopologyCPU(object):
 
 
 class SecurityModel(object):
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.model = None
         self.doi = None
 
@@ -356,7 +357,7 @@ class SecurityModel(object):
                 self.doi = child.content
 
 class Capabilities(object):
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.host = None
         self.guests = []
         self._topology = None
@@ -605,7 +606,7 @@ def guest_lookup(conn, caps=None, os_type=None, arch=None, type=None,
     return (guest, domain)
 
 
-def xpathString(node, path, default = None):
+def xpathString(node, path, default=None):
     result = node.xpathEval("string(%s)" % path)
     if len(result) == 0:
         result = default

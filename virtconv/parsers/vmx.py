@@ -93,7 +93,7 @@ def parse_netdev_entry(vm, fullkey, value):
         return
 
     if not vm.netdevs.get(inst):
-        vm.netdevs[inst] = netdevcfg.netdev(type = netdevcfg.NETDEV_TYPE_UNKNOWN)
+        vm.netdevs[inst] = netdevcfg.netdev(type=netdevcfg.NETDEV_TYPE_UNKNOWN)
 
     # "vlance", "vmxnet", "e1000"
     if key == "virtualdev":
@@ -132,8 +132,8 @@ def parse_disk_entry(vm, fullkey, value):
 
     devid = (bus, inst)
     if not vm.disks.get(devid):
-        vm.disks[devid] = diskcfg.disk(bus = bus,
-            type = diskcfg.DISK_TYPE_DISK)
+        vm.disks[devid] = diskcfg.disk(bus=bus,
+            type=diskcfg.DISK_TYPE_DISK)
 
     if key == "devicetype":
         if lvalue == "atapi-cdrom" or lvalue == "cdrom-raw":
@@ -197,7 +197,7 @@ class vmx_parser(formats.parser):
                 continue
             else:
                 lines.append(line)
-    
+
         config = {}
 
         # split out all remaining entries of key = value form
@@ -234,7 +234,7 @@ class vmx_parser(formats.parser):
         vm.memory = config.get("memsize")
         vm.description = config.get("annotation")
         vm.nr_vcpus = config.get("numvcpus")
-     
+
         vm.validate()
         return vm
 
@@ -248,7 +248,7 @@ class vmx_parser(formats.parser):
         """
 
         vm.description = vm.description.strip()
-        vm.description = vm.description.replace("\n","|")
+        vm.description = vm.description.replace("\n", "|")
         vmx_out_template = []
         vmx_dict = {
             #"now": time.strftime("%Y-%m-%dT%H:%M:%S %Z", time.localtime()),

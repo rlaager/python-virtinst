@@ -179,3 +179,29 @@ BEGIN { found=0; cur_line="" }
         print $0
     }
 }'
+
+################
+# pep8 section #
+################
+
+SKIP_PEP8=""
+skip_pep8() {
+    if [ ! -z ${SKIP_PEP8} ] ; then
+        SKIP_PEP8="${SKIP_PEP8},"
+    fi
+    SKIP_PEP8="${SKIP_PEP8}$1"
+}
+
+skip_pep8 "E201"            # Spaces after [, before ]
+skip_pep8 "E203"            # Space before : in dictionary defs
+skip_pep8 "E221"            # Multiple spaces before operator (warns
+                            # about column aligning assigments
+skip_pep8 "E241"            # Space after , column alignment nono
+skip_pep8 "E261"            # 2 spaces before inline comment?
+skip_pep8 "E301"            # 1 blank line between methods
+skip_pep8 "E302"            # 2 blank lines between function defs
+skip_pep8 "E303"            # Too many blank lines
+skip_pep8 "E501"            # Line too long
+
+echo "Running pep8"
+pep8 -r --ignore $SKIP_PEP8 $FILES

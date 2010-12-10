@@ -128,7 +128,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
             return
 
         if type(val) is not str:
-            raise ValueError, _("Keymap must be a string")
+            raise ValueError(_("Keymap must be a string"))
         if val.lower() == self.KEYMAP_LOCAL:
             val = _util.default_keymap()
         elif len(val) > 16:
@@ -219,7 +219,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         return sort_list
 
     def _sdl_config(self):
-        if not os.environ.has_key("DISPLAY"):
+        if "DISPLAY" not in os.environ:
             raise RuntimeError("No DISPLAY environment variable set.")
 
         disp  = os.environ["DISPLAY"]

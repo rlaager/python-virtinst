@@ -32,7 +32,7 @@ class ParserException(Exception):
 
 class Image:
     """The toplevel object representing a VM image"""
-    def __init__(self, node = None, base = None, filename = None):
+    def __init__(self, node=None, base=None, filename=None):
         self.storage = {}
         self.domain = None
         if filename == None:
@@ -72,7 +72,7 @@ class Image:
             if disk.file is None:
                 disk.id = "disk%d.img" % len(self.storage)
                 disk.file = "disk%d.img" % (len(self.storage) + 1)
-            if self.storage.has_key(disk.id):
+            if disk.id in self.storage:
                 raise ParserException("Disk file '%s' defined twice"
                                            % disk.file)
             self.storage[disk.id] = disk
@@ -84,14 +84,14 @@ class Image:
         # Connect the disk maps to the disk definitions
         for boot in self.domain.boots:
             for d in boot.drives:
-                if not self.storage.has_key(d.disk_id):
+                if d.disk_id not in self.storage:
                     raise ParserException(_("Disk entry for '%s' not found")
                                                % d.disk_id)
                 d.disk = self.storage[d.disk_id]
 
 class Domain:
     """The description of a virtual domain as part of an image"""
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.boots = []
         self.vcpu = None
         self.memory = None
@@ -104,7 +104,7 @@ class Domain:
         self.boots = [ Boot(b) for b in node.xpathEval("boot") ]
         self.vcpu = xpathString(node, "devices/vcpu", 1)
         tmpmem = xpathString(node, "devices/memory")
-        self.interface = int(node.xpathEval("count(devices/interface)")) 
+        self.interface = int(node.xpathEval("count(devices/interface)"))
         self.graphics = node.xpathEval("count(devices/graphics)") > 0
 
         # FIXME: There must be a better way to check this
@@ -118,7 +118,7 @@ class Domain:
             tmpmem = 0
 
 class ImageFeatures(CapabilitiesParser.Features):
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         CapabilitiesParser.Features.__init__(self, node)
 
     def _extractFeature(self, feature, d, n):
@@ -134,7 +134,7 @@ class ImageFeatures(CapabilitiesParser.Features):
 class Boot:
     """The overall description of how the image can be booted, including
     required capabilities of the host and mapping of disks into the VM"""
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         # 'xen' or 'hvm'
         self.type = None
         # Either 'pygrub' or nothing; might have others in the future
@@ -184,7 +184,7 @@ class Boot:
 class Drive:
     """The mapping of a disk from the storage section to a virtual drive
     in a guest"""
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.disk_id = None
         self.target = None
         self.disk = None   # Will point to the underlying Disk object
@@ -206,7 +206,7 @@ class Disk:
     USE_USER = "user"
     USE_SCRATCH = "scratch"
 
-    def __init__(self, node = None):
+    def __init__(self, node=None):
         self.id = None
         self.file = None
         self.format = None
@@ -228,9 +228,9 @@ class Disk:
             csumvalue = xpathString(d, "")
             self.csum[csumtype] = csumvalue
         formats = [Disk.FORMAT_RAW, Disk.FORMAT_QCOW, Disk.FORMAT_QCOW2, Disk.FORMAT_VMDK, Disk.FORMAT_ISO]
-        validate (formats.count(self.format) > 0,
-                  _("The format for disk %s must be one of %s") %
-                  (self.file, ",".join(formats)))
+        validate(formats.count(self.format) > 0,
+                 _("The format for disk %s must be one of %s") %
+                 (self.file, ",".join(formats)))
 
     def check_disk_signature(self, meter=None):
         try:
@@ -242,15 +242,15 @@ class Disk:
 
         m = None
         if hashlib:
-            if self.csum.has_key("sha256"):
+            if "sha256" in self.csum:
                 csumvalue = self.csum["sha256"]
                 m = hashlib.sha256()
 
-            elif self.csum.has_key("sha1"):
+            elif "sha1" in self.csum:
                 csumvalue = self.csum["sha1"]
                 m = hashlib.sha1()
         else:
-            if self.csum.has_key("sha1"):
+            if "sha1" in self.csum:
                 csumvalue = self.csum["sha1"]
                 m = sha.new()
 
@@ -263,7 +263,7 @@ class Disk:
             meter.start(size=disk_size,
                         text=_("Checking disk signature for %s" % self.file))
 
-        f = open(self.file,"r")
+        f = file(self.file)
         while 1:
             chunk = f.read(65536)
             if not chunk:
@@ -276,15 +276,15 @@ class Disk:
         if checksum != csumvalue:
             logging.debug(_("Disk signature for %s does not match "
                             "Expected: %s  Received: %s" % (self.file,
-                             csumvalue,checksum)))
-            raise ValueError (_("Disk signature for %s does not "
-                                "match" % self.file))
+                             csumvalue, checksum)))
+            raise ValueError(_("Disk signature for %s does not "
+                               "match" % self.file))
 
 def validate(cond, msg):
     if not cond:
         raise ParserException(msg)
 
-def xpathString(node, path, default = None):
+def xpathString(node, path, default=None):
     result = node.xpathEval("string(%s)" % path)
     if len(result) == 0:
         result = default
@@ -318,7 +318,7 @@ def parse(xml, filename):
         if root.name != "image":
             raise ParserException(_("Root element is not 'image'"))
 
-        image = Image(root, filename = filename)
+        image = Image(root, filename=filename)
     finally:
         doc.freeDoc()
 
@@ -328,4 +328,4 @@ def parse_file(filename):
     f = open(filename, "r")
     xml = f.read()
     f.close()
-    return parse(xml, filename = filename)
+    return parse(xml, filename=filename)

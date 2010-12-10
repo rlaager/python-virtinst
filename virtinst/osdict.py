@@ -170,9 +170,9 @@ def lookup_osdict_key(conn, hv_type, os_type, var, key):
     defaults = DEFAULTS[key]
     dictval = defaults
     if os_type:
-        if var and OS_TYPES[os_type]["variants"][var].has_key(key):
+        if var and key in OS_TYPES[os_type]["variants"][var]:
             dictval = OS_TYPES[os_type]["variants"][var][key]
-        elif OS_TYPES[os_type].has_key(key):
+        elif key in OS_TYPES[os_type]:
             dictval = OS_TYPES[os_type][key]
 
     return parse_key_entry(conn, hv_type, dictval, defaults)
@@ -184,7 +184,7 @@ def lookup_device_param(conn, hv_type, os_type, var, device_key, param):
     defaults = DEFAULTS["devices"]
 
     for devs in [os_devs, defaults]:
-        if not devs.has_key(device_key):
+        if device_key not in devs:
             continue
 
         return parse_key_entry(conn, hv_type, devs[device_key][param],
@@ -213,7 +213,7 @@ OS_TYPES = {
                       "devices" : {
                         DISK : VIRTIO_DISK,
                         NET  : VIRTIO_NET,
-                      },},
+                      }, },
         "rhel6": { "label": "Red Hat Enterprise Linux 6", "distro": "rhel",
                    "devices" : {
                         DISK : VIRTIO_DISK,
@@ -365,7 +365,7 @@ OS_TYPES = {
         VIDEO : VGA_VIDEO,
     },
     "variants": {
-        "winxp":{ "label": "Microsoft Windows XP (x86)",
+        "winxp": { "label": "Microsoft Windows XP (x86)",
                   "acpi": [
                     (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
                   ],
@@ -373,7 +373,7 @@ OS_TYPES = {
                     (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
                   ],
         },
-        "winxp64":{ "label": "Microsoft Windows XP (x86_64)" },
+        "winxp64": { "label": "Microsoft Windows XP (x86_64)" },
         "win2k": { "label": "Microsoft Windows 2000",
                   "acpi": [
                     (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
@@ -442,7 +442,7 @@ OS_TYPES = {
         "netware6": { "label": "Novell Netware 6", "pv_cdrom_install": True, },
         "generic": { "label": "Generic" },
     },
-},}
+}}
 
 # Back compatibility entries
 solaris_compat = OS_TYPES["unix"]["variants"]

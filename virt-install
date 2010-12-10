@@ -21,7 +21,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import os, sys
+import os
+import sys
 import time
 import errno
 import re
@@ -195,7 +196,7 @@ def parse_char_option(guest, char_type, optstring):
 
     def parse_host(key):
         host, ignore, port = cli.partition(opts.get(key), ":")
-        if opts.has_key(key):
+        if key in opts:
             del(opts[key])
 
         return host, port
@@ -232,7 +233,7 @@ def get_chardevs(char_type, opts, guest):
             guest.add_device(dev)
         except Exception, e:
             fail(_("Error in %(chartype)s device parameters: %(err)s") %
-                 {"chartype": char_type, "err": str(e) })
+                 {"chartype": char_type, "err": str(e)})
 
 def parse_watchdog(guest, optstring):
     # Peel the model type off the front
@@ -286,7 +287,7 @@ def get_security(security, guest):
             if not arg.split("=")[0] == "label":
                 continue
 
-            for arg in tmparglist[idx+1:]:
+            for arg in tmparglist[idx + 1:]:
                 if arg.count("="):
                     break
 
@@ -391,7 +392,8 @@ def parse_disk_option(guest, path, size):
                                                               name=guest.name,
                                                               suffix=".img")
         volinst = vc(pool_name=path, name=vname, conn=guest.conn,
-                     allocation=0, capacity=(size and size*1024*1024*1024))
+                     allocation=0, capacity=(size and
+                                             size * 1024 * 1024 * 1024))
         if fmt:
             if not hasattr(volinst, "format"):
                 raise ValueError(_("Format attribute not supported for this "
@@ -902,7 +904,7 @@ def vnc_console(dom, uri):
                                "virt-viewer not installed. Please install "
                                "the 'virt-viewer' package."))
             else:
-                raise OSError, (err, msg)
+                raise OSError(err, msg)
         os._exit(1)
 
     return child
@@ -1280,4 +1282,3 @@ if __name__ == "__main__":
         print_stderr(_("Installation aborted at user request"))
     except Exception, main_e:
         fail(main_e)
-

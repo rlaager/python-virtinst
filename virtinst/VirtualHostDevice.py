@@ -178,7 +178,7 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
     def _get_source_xml(self):
         raise NotImplementedError("Must be implemented in subclass")
 
-    def setup(self, conn = None):
+    def setup(self, conn=None):
         """
         Perform DeviceDetach and DeviceReset calls if necessary
 
@@ -188,7 +188,7 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
         raise NotImplementedError
 
     def _get_xml_config(self):
-        xml =  ("    <hostdev mode='%s' type='%s' managed='%s'>\n" % \
+        xml  = ("    <hostdev mode='%s' type='%s' managed='%s'>\n" % \
                 (self.mode, self.type, self.managed and "yes" or "no"))
         xml += "      <source>\n"
         xml += self._get_source_xml()
@@ -236,7 +236,7 @@ class VirtualHostDeviceUSB(VirtualHostDevice):
     def setup_dev(self, conn=None, meter=None):
         return self.setup(conn)
 
-    def setup(self, conn = None):
+    def setup(self, conn=None):
         """
         DEPRECATED: Please use setup_dev instead
         """
@@ -286,7 +286,7 @@ class VirtualHostDevicePCI(VirtualHostDevice):
         """
         return self.setup(conn)
 
-    def setup(self, conn = None):
+    def setup(self, conn=None):
         """
         DEPRECATED: Please use setup_dev instead
         """
@@ -309,5 +309,3 @@ class VirtualHostDevicePCI(VirtualHostDevice):
                     raise
         except Exception, e:
             raise RuntimeError(_("Could not detach PCI device: %s" % str(e)))
-
-

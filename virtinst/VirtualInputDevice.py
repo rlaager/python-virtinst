@@ -43,7 +43,7 @@ class VirtualInputDevice(VirtualDevice.VirtualDevice):
 
         self._type = None
         self._bus = None
-        
+
         if self._is_parse():
             return
 

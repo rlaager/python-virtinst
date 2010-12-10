@@ -84,11 +84,11 @@ class ImageFetcher:
 
             try:
                 f = grabber.urlopen(path,
-                                    progress_obj = progresscb,
-                                    text = _("Retrieving file %s...") % base)
+                                    progress_obj=progresscb,
+                                    text=_("Retrieving file %s...") % base)
             except Exception, e:
-                raise ValueError, _("Couldn't acquire file %s: %s") % \
-                                    (path, str(e))
+                raise ValueError(_("Couldn't acquire file %s: %s") %
+                                   (path, str(e)))
 
             tmpname = self.saveTemp(f, prefix=base + ".")
             logging.debug("Saved file to " + tmpname)
@@ -206,4 +206,3 @@ class DirectImageFetcher(LocalImageFetcher):
 
     def prepareLocation(self):
         self.srcdir = self.location
-

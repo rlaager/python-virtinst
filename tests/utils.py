@@ -25,7 +25,7 @@ os.environ["HOME"] = "/tmp"
 os.environ["DISPLAY"] = ":3.4"
 
 def get_debug():
-    return (os.environ.has_key("DEBUG_TESTS") and
+    return ("DEBUG_TESTS" in os.environ and
             os.environ["DEBUG_TESTS"] == "1")
 
 def open_testdriver():

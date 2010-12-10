@@ -113,7 +113,7 @@ def export_os_params(vm):
 def export_disks(vm):
     """
     Export code for the disks.  Slightly tricky for two reasons.
-    
+
     We can't handle duplicate disks: some vmx files define SCSI/IDE devices
     that point to the same storage, and Xen isn't happy about that. We
     just ignore any entries that have duplicate paths.
@@ -242,8 +242,8 @@ class virtimage_parser(formats.parser):
                 raise ValueError(_("Unknown disk format '%s'") % disk.format)
 
             devid = (bus, nr_disk)
-            vm.disks[devid] = diskcfg.disk(bus = bus,
-                type = diskcfg.DISK_TYPE_DISK)
+            vm.disks[devid] = diskcfg.disk(bus=bus,
+                type=diskcfg.DISK_TYPE_DISK)
             vm.disks[devid].format = fmt
             vm.disks[devid].path = disk.file
             nr_disk = nr_disk + 1
@@ -251,7 +251,8 @@ class virtimage_parser(formats.parser):
         nics = domain.interface
         nic_idx = 0
         while nic_idx in range(0, nics):
-            vm.netdevs[nic_idx] = netdevcfg.netdev(type = netdevcfg.NETDEV_TYPE_UNKNOWN)
+            vm.netdevs[nic_idx] = netdevcfg.netdev(
+                                    type=netdevcfg.NETDEV_TYPE_UNKNOWN)
             nic_idx = nic_idx + 1
             """  Eventually need to add support for mac addresses if given"""
         vm.validate()

@@ -23,4 +23,3 @@ from Guest import Guest
 
 class ParaVirtGuest(Guest):
     _default_os_type = "xen"
-

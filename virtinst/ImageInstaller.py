@@ -115,7 +115,7 @@ class ImageInstaller(Installer.Installer):
             path = self._abspath(drive.disk.file)
             size = None
             if drive.disk.size is not None:
-                size = float(drive.disk.size)/1024
+                size = float(drive.disk.size) / 1024
 
             # FIXME: This is awkward; the image should be able to express
             # whether the disk is expected to be there or not independently

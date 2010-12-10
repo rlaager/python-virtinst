@@ -115,7 +115,7 @@ def output_formats():
     """
     return [p.name for p in _parsers if p.can_export]
 
-def find_input(path, format = None):
+def find_input(path, format=None):
     """
     Search for a configuration file automatically. If @format is given,
     then only search using a matching format parser.
@@ -137,5 +137,5 @@ def find_input(path, format = None):
             for cfgfile in [ x for x in files if x.endswith(p.suffix) ]:
                 if p.identify_file(os.path.join(path, cfgfile)):
                     return (os.path.join(path, cfgfile), p.name)
- 
+
     raise StandardError(_("Unknown format"))

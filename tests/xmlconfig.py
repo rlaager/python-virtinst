@@ -40,7 +40,7 @@ def get_basic_paravirt_guest(testconn=conn, installer=None):
     g.memory = int(200)
     g.maxmemory = int(400)
     g.uuid = "12345678-1234-1234-1234-123456789012"
-    g.boot = ["/boot/vmlinuz","/boot/initrd"]
+    g.boot = ["/boot/vmlinuz", "/boot/initrd"]
     g.graphics = (True, "vnc", None, "ja")
     g.vcpus = 5
 
@@ -98,12 +98,12 @@ def build_win_kvm(path=None):
 
     return g
 
-def get_floppy(path = None):
+def get_floppy(path=None):
     if not path:
         path = "/default-pool/testvol1.img"
     return VirtualDisk(path, conn=conn, device=VirtualDisk.DEVICE_FLOPPY)
 
-def get_filedisk(path = None):
+def get_filedisk(path=None):
     if not path:
         path = "/tmp/test.img"
     return VirtualDisk(path, size=.0001, conn=conn)

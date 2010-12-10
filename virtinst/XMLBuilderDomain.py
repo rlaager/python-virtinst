@@ -331,7 +331,7 @@ class XMLBuilderDomain(object):
         """
         if conn:
             if not isinstance(conn, libvirt.virConnect):
-                raise ValueError, _("'conn' must be a virConnect instance")
+                raise ValueError(_("'conn' must be a virConnect instance"))
         self._conn = conn
 
         self.__caps = None
@@ -373,12 +373,12 @@ class XMLBuilderDomain(object):
 
     def _check_bool(self, val, name):
         if val not in [True, False]:
-            raise ValueError, _("'%s' must be True or False" % name)
+            raise ValueError(_("'%s' must be True or False" % name))
 
     def _check_str(self, val, name):
         if type(val) is not str:
-            raise ValueError, _("'%s' must be a string, not '%s'." %
-                                (name, type(val)))
+            raise ValueError(_("'%s' must be a string, not '%s'." %
+                                (name, type(val))))
 
     def _is_parse(self):
         return bool(self._xml_node or self._xml_ctx)
@@ -433,4 +433,3 @@ class XMLBuilderDomain(object):
             return _sanitize_libxml_xml(node.serialize())
 
         return self._get_xml_config(*args, **kwargs)
-

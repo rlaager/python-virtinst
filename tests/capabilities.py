@@ -68,7 +68,7 @@ class TestCapabilities(unittest.TestCase):
             ( 'i686',   'xen',
               [['xen', None, []]], { 'pae': capabilities.FEATURE_ON } ),
             ( 'i686',   'hvm',
-              [['xen', "/usr/lib64/xen/bin/qemu-dm", ['pc', 'isapc']]], { 'pae': capabilities.FEATURE_ON|capabilities.FEATURE_OFF } ),
+              [['xen', "/usr/lib64/xen/bin/qemu-dm", ['pc', 'isapc']]], { 'pae': capabilities.FEATURE_ON | capabilities.FEATURE_OFF } ),
             ( 'x86_64', 'hvm',
               [['xen', "/usr/lib64/xen/bin/qemu-dm", ['pc', 'isapc']]], {} )
         ]
@@ -81,17 +81,18 @@ class TestCapabilities(unittest.TestCase):
 
         guests = [
             ( 'x86_64', 'hvm',
-              [['qemu','/usr/bin/qemu-system-x86_64', ['pc', 'isapc']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-x86_64', ['pc', 'isapc']]], {} ),
             ( 'i686',   'hvm',
-              [['qemu','/usr/bin/qemu', ['pc', 'isapc']]], {} ),
+              [['qemu', '/usr/bin/qemu', ['pc', 'isapc']]], {} ),
             ( 'mips',   'hvm',
-              [['qemu','/usr/bin/qemu-system-mips', ['mips']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-mips', ['mips']]], {} ),
             ( 'mipsel', 'hvm',
-              [['qemu','/usr/bin/qemu-system-mipsel', ['mips']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-mipsel', ['mips']]], {} ),
             ( 'sparc',  'hvm',
-              [['qemu','/usr/bin/qemu-system-sparc', ['sun4m']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-sparc', ['sun4m']]], {} ),
             ( 'ppc',    'hvm',
-              [['qemu','/usr/bin/qemu-system-ppc', ['g3bw', 'mac99', 'prep']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-ppc',
+               ['g3bw', 'mac99', 'prep']]], {} ),
         ]
 
         self._testCapabilities("capabilities-qemu.xml", host, guests, secmodel)
@@ -101,30 +102,31 @@ class TestCapabilities(unittest.TestCase):
 
         guests = [
             ( 'i686',   'hvm',
-              [['qemu','/usr/bin/qemu', ['pc', 'isapc']],
+              [['qemu', '/usr/bin/qemu', ['pc', 'isapc']],
                ['kvm', '/usr/bin/qemu-kvm', ['pc', 'isapc']]], {} ),
             ( 'x86_64', 'hvm',
-              [['qemu','/usr/bin/qemu-system-x86_64', ['pc', 'isapc']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-x86_64', ['pc', 'isapc']]], {} ),
             ( 'mips',   'hvm',
-              [['qemu','/usr/bin/qemu-system-mips', ['mips']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-mips', ['mips']]], {} ),
             ( 'mipsel', 'hvm',
-              [['qemu','/usr/bin/qemu-system-mipsel', ['mips']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-mipsel', ['mips']]], {} ),
             ( 'sparc',  'hvm',
-              [['qemu','/usr/bin/qemu-system-sparc', ['sun4m']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-sparc', ['sun4m']]], {} ),
             ( 'ppc',    'hvm',
-              [['qemu','/usr/bin/qemu-system-ppc', ['g3bw', 'mac99', 'prep']]], {} ),
+              [['qemu', '/usr/bin/qemu-system-ppc',
+               ['g3bw', 'mac99', 'prep']]], {} ),
         ]
 
         self._testCapabilities("capabilities-kvm.xml", host, guests)
 
     def testCapabilities4(self):
         host = ( 'i686',
-                 { 'pae': capabilities.FEATURE_ON|capabilities.FEATURE_OFF })
+                 { 'pae': capabilities.FEATURE_ON | capabilities.FEATURE_OFF })
 
         guests = [
             ( 'i686', 'linux',
               [['test', None, []]],
-              { 'pae': capabilities.FEATURE_ON|capabilities.FEATURE_OFF } ),
+              { 'pae': capabilities.FEATURE_ON | capabilities.FEATURE_OFF } ),
         ]
 
         self._testCapabilities("capabilities-test.xml", host, guests)

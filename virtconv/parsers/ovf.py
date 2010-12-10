@@ -208,7 +208,7 @@ def _parse_hw_section(vm, nodes, file_refs, disk_section):
 
             dev_num = int(get_child_content(device_node, "AddressOnParent"))
 
-            if bus_id and not disk_buses.has_key(bus_id):
+            if bus_id and bus_id not in disk_buses:
                 raise ValueError(_("Didn't find parent bus for disk '%s'" %
                                  path))
 
@@ -222,7 +222,7 @@ def _parse_hw_section(vm, nodes, file_refs, disk_section):
 
                 if path.startswith("ovf:/disk/"):
                     disk_ref = path[len("ovf:/disk/"):]
-                    if not disk_section.has_key(disk_ref):
+                    if disk_ref not in disk_section:
                         raise ValueError(_("Unknown reference id '%s' "
                                            "for path %s.") % (path, ref))
 
@@ -238,7 +238,7 @@ def _parse_hw_section(vm, nodes, file_refs, disk_section):
                     # XXX: This means allocate the disk.
                     pass
 
-                if not file_refs.has_key(ref):
+                if ref not in file_refs:
                     raise ValueError(_("Unknown reference id '%s' "
                                        "for path %s.") % (path, ref))
 

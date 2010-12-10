@@ -55,7 +55,7 @@ class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
                             VIRTUAL_DEV_AUDIO,
                             VIRTUAL_DEV_VIDEO,
                             VIRTUAL_DEV_HOSTDEV,
-                            VIRTUAL_DEV_WATCHDOG ]
+                            VIRTUAL_DEV_WATCHDOG]
 
     # General device type (disk, interface, etc.)
     _virtual_device_type = None

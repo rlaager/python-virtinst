@@ -41,7 +41,7 @@ def _countMACaddr(vms, searchmac):
     count = 0
     for vm in vms:
         xml = vm.XMLDesc(0)
-        count += _util.get_xml_path(xml, func = count_cb)
+        count += _util.get_xml_path(xml, func=count_cb)
     return count
 
 class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
@@ -62,7 +62,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
         if net_type == VirtualNetworkInterface.TYPE_BRIDGE:
             desc = _("Shared physical device")
-        elif net_type ==  VirtualNetworkInterface.TYPE_VIRTUAL:
+        elif net_type == VirtualNetworkInterface.TYPE_VIRTUAL:
             desc = _("Virtual networking")
         elif net_type == VirtualNetworkInterface.TYPE_USER:
             desc = _("Usermode networking")
@@ -99,7 +99,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
         if self.type == self.TYPE_VIRTUAL:
             if network is None:
-                raise ValueError, _("A network name was not provided")
+                raise ValueError(_("A network name was not provided"))
 
     def _generate_default_bridge(self):
         if not self._default_bridge:
@@ -135,7 +135,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         return self._type
     def set_type(self, val):
         if val not in self.network_types:
-            raise ValueError, _("Unknown network type %s") % val
+            raise ValueError(_("Unknown network type %s") % val)
         self._type = val
     type = _xml_property(get_type, set_type,
                          xpath="./@type")

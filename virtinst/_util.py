@@ -133,17 +133,17 @@ def libvirt_collision(collision_cb, val):
 
 def validate_uuid(val):
     if type(val) is not str:
-        raise ValueError, _("UUID must be a string.")
+        raise ValueError(_("UUID must be a string."))
 
     form = re.match("[a-fA-F0-9]{8}[-]([a-fA-F0-9]{4}[-]){3}[a-fA-F0-9]{12}$",
                     val)
     if form is None:
         form = re.match("[a-fA-F0-9]{32}$", val)
         if form is None:
-            raise ValueError, \
+            raise ValueError(
                   _("UUID must be a 32-digit hexadecimal number. It may take "
                     "the form XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX or may omit "
-                    "hyphens altogether.")
+                    "hyphens altogether."))
 
         else:   # UUID had no dashes, so add them in
             val = (val[0:8] + "-" + val[8:12] + "-" + val[12:16] +
@@ -152,21 +152,21 @@ def validate_uuid(val):
 
 def validate_name(name_type, val):
     if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
-        raise ValueError, _("%s name must be a string between 0 and 50 "
-                            "characters") % name_type
+        raise ValueError(_("%s name must be a string between 0 and 50 "
+                           "characters") % name_type)
     if re.match("^[0-9]+$", val):
-        raise ValueError, _("%s name can not be only numeric characters") % \
-                          name_type
+        raise ValueError(_("%s name can not be only numeric characters") %
+                          name_type)
     if re.match("^[a-zA-Z0-9._-]+$", val) == None:
-        raise ValueError, _("%s name can only contain alphanumeric, '_', '.', "
-                            "or '-' characters") % name_type
+        raise ValueError(_("%s name can only contain alphanumeric, '_', '.', "
+                           "or '-' characters") % name_type)
 
 def validate_macaddr(val):
     if val is None:
         return
 
     if type(val) is not str:
-        raise ValueError, _("MAC address must be a string.")
+        raise ValueError(_("MAC address must be a string."))
 
     form = re.match("^([0-9a-fA-F]{1,2}:){5}[0-9a-fA-F]{1,2}$", val)
     if form is None:
@@ -369,7 +369,7 @@ def default_nic():
 
     return dev
 
-def default_bridge2(conn = None):
+def default_bridge2(conn=None):
     if platform.system() == 'SunOS':
         return ["bridge", default_nic()]
 

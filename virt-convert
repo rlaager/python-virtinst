@@ -140,7 +140,7 @@ def parse_args():
     if os.path.isdir(args[0]):
         (options.input_file, ignore) = formats.find_input(args[0],
             options.input_format)
-        options.input_dir =  args[0]
+        options.input_dir = args[0]
     else:
         options.input_file = args[0]
         options.input_dir = os.path.dirname(os.path.realpath(args[0]))
@@ -278,4 +278,3 @@ if __name__ == "__main__":
         print >> sys.stderr, _("Aborted at user request")
     except Exception, main_e:
         fail(main_e)
-
