@@ -251,13 +251,6 @@ class Guest(object):
         return domains[-1]
 
     def bestDomainType(self, accelerated=None, dtype=None, machine=None):
-        if len(self.domains) == 0:
-            raise CapabilitiesParserException(_("No domains available for "
-                                                "virt type '%(type)s', arch "
-                                                "%(arch)s.") %
-                                                {'type': self.os_type,
-                                                 'arch': self.arch})
-
         domains = []
         for d in self.domains:
             if dtype and d.hypervisor_type != dtype.lower():
@@ -265,6 +258,21 @@ class Guest(object):
             if machine and machine not in d.machines:
                 continue
             domains.append(d)
+
+        if len(domains) == 0:
+            domainerr = ""
+            machineerr = ""
+            if dtype:
+                domainerr = _(", domain type '%s'") % dtype
+            if machine:
+                machineerr = _(", machine type '%s'") % machine
+
+            error = (_("No domains available for virt type '%(type)s', "
+                      "arch '%(arch)s'") %
+                      {'type': self.os_type, 'arch': self.arch})
+            error += domainerr
+            error += machineerr
+            raise CapabilitiesParserException(error)
 
         return self._favoredDomain(accelerated, domains)
 
