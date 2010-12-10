@@ -308,6 +308,9 @@ class Domain(object):
         if len(machines) > 0:
             self.machines = machines
 
+    def is_accelerated(self):
+        return self.hypervisor_type in ["kvm", "kqemu"]
+
 class Topology(object):
     def __init__(self, node=None):
         self.cells = []

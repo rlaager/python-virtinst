@@ -539,7 +539,7 @@ def prompt_virt(caps, arch, req_virt_type, req_accel):
     for guest in caps.guests:
         if guest.os_type == req_virt_type and guest.arch == arch:
             for dom in guest.domains:
-                if dom.hypervisor_type in [ "kvm", "kqemu" ]:
+                if dom.is_accelerated():
                     supports_accel = True
                     accel_type = dom.hypervisor_type.upper()
 
@@ -597,6 +597,14 @@ def get_virt_type(conn, options):
                         machine=options.machine)
     except Exception, e:
         fail(e)
+
+    if (not req_virt_type and
+        req_accel and
+        _util.is_qemu(conn) and
+        capsguest.arch in ["i686", "x86_64"] and
+        not capsdomain.is_accelerated()):
+        logging.warn("KVM acceleration not available, using '%s'" %
+                     capsdomain.hypervisor_type)
 
     return (capsguest, capsdomain)
 

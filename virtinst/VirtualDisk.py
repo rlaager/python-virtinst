@@ -957,8 +957,8 @@ class VirtualDisk(VirtualDevice):
         drvtype = self._driverType
 
         if self.conn:
-            driver = _util.get_uri_driver(self._get_uri())
-            if driver.lower() == "qemu" and not drvname:
+            is_qemu = _util.is_qemu(self.conn)
+            if is_qemu and not drvname:
                 drvname = self.DRIVER_QEMU
 
         if self.format:

@@ -405,6 +405,18 @@ def is_qemu_system(conn):
         return True
     return False
 
+def is_qemu(conn):
+    if not conn:
+        return False
+
+    if type(conn) is str:
+        uri = conn
+    else:
+        uri = conn.getURI()
+
+    scheme = uri_split(uri)[0]
+    return scheme.startswith("qemu")
+
 def parse_node_helper(xml, root_name, callback, exec_class=ValueError):
     """
     Parse the passed XML, expecting root as root_name, and pass the
