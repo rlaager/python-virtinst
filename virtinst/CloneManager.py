@@ -34,6 +34,7 @@ General workflow for cloning:
 
 import logging
 import re
+import os
 
 import libxml2
 import urlgrabber.progress as progress
@@ -55,8 +56,10 @@ def _listify(val):
     else:
         return False, [val]
 
-def generate_clone_disk_path(origpath, design):
-    basename = origpath
+def generate_clone_disk_path(origpath, design, newname=None):
+    origname = design.original_guest
+    newname = newname or design.clone_name
+    path = origpath
     suffix = ""
 
     # Try to split the suffix off the existing disk name. Ex.
@@ -65,14 +68,23 @@ def generate_clone_disk_path(origpath, design):
     # If the suffix is greater than 7 characters, assume it isn't
     # a file extension and is part of the disk name, at which point
     # just stick '-clone' on the end.
-    if basename.count(".") and len(basename.rsplit(".", 1)[1]) <= 7:
-        basename, suffix = basename.rsplit(".", 1)
+    if origpath.count(".") and len(origpath.rsplit(".", 1)[1]) <= 7:
+        path, suffix = origpath.rsplit(".", 1)
         suffix = "." + suffix
 
-    return _util.generate_name(basename + "-clone",
-                               lambda p: VirtualDisk.path_exists(design.original_conn, p),
-                               suffix,
-                               lib_collision=False)
+    dirname = os.path.dirname(path)
+    basename = os.path.basename(path)
+
+    clonebase = basename + "-clone"
+    if origname and basename == origname:
+        clonebase = newname
+
+    clonebase = os.path.join(dirname, clonebase)
+    return _util.generate_name(
+                    clonebase,
+                    lambda p: VirtualDisk.path_exists(design.original_conn, p),
+                    suffix,
+                    lib_collision=False)
 
 def generate_clone_name(design):
     # If the orig name is "foo-clone", we don't want the clone to be
