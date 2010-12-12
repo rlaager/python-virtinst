@@ -927,10 +927,15 @@ class TestXMLConfig(unittest.TestCase):
 
         gdev3 = virtinst.VirtualGraphics(conn=g.conn, type="sdl")
         gdev4 = virtinst.VirtualGraphics(conn=g.conn, type="spice")
+
+        gdev5 = virtinst.VirtualGraphics(conn=g.conn, type="sdl")
+        gdev5.xauth = "fooxauth"
+        gdev5.display = "foodisplay"
         g.add_device(gdev1)
         g.add_device(gdev2)
         g.add_device(gdev3)
         g.add_device(gdev4)
+        g.add_device(gdev5)
 
         g.clock.offset = "localtime"
 

@@ -401,6 +401,8 @@ class XMLParseTest(unittest.TestCase):
 
         check = self._make_checker(dev2)
         check("type", "sdl")
+        check("xauth", "/tmp/.Xauthority", "fooauth")
+        check("display", "1:2", "6:1")
 
         check = self._make_checker(dev3)
         check("type", "rdp")

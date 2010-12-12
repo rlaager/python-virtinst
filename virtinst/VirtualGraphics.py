@@ -64,6 +64,23 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     KEYMAP_DEFAULT = "default"
     _special_keymaps = [KEYMAP_LOCAL, KEYMAP_DEFAULT]
 
+    @staticmethod
+    def valid_keymaps():
+        """
+        Return a list of valid keymap values.
+        """
+        import keytable
+
+        orig_list = keytable.keytable.values()
+        sort_list = []
+
+        orig_list.sort()
+        for k in orig_list:
+            if k not in sort_list:
+                sort_list.append(k)
+
+        return sort_list
+
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
                  keymap=KEYMAP_DEFAULT, conn=None, parsexml=None,
                  parsexmlnode=None, tlsPort=-1, channels=None,
@@ -78,6 +95,8 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         self._listen = None
         self._passwd = None
         self._keymap = None
+        self._xauth = None
+        self._display = None
         self._channels = {}
 
         if self._is_parse():
@@ -110,6 +129,20 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         self._type = val
     type = _xml_property(get_type, set_type,
                          xpath="./@type")
+
+    def _get_xauth(self):
+        return self._xauth
+    def _set_xauth(self, val):
+        self._xauth = val
+    xauth = _xml_property(_get_xauth, _set_xauth,
+                          xpath="./@xauth")
+
+    def _get_display(self):
+        return self._display
+    def _set_display(self, val):
+        self._display = val
+    display = _xml_property(_get_display, _set_display,
+                            xpath="./@display")
 
     def get_keymap(self):
         if self._keymap == self.KEYMAP_DEFAULT:
@@ -202,28 +235,12 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     channel_playback_mode = _get_mode_prop(CHANNEL_TYPE_PLAYBACK)
     channel_record_mode = _get_mode_prop(CHANNEL_TYPE_RECORD)
 
-    def valid_keymaps(self):
-        """
-        Return a list of valid keymap values.
-        """
-        import keytable
-
-        orig_list = keytable.keytable.values()
-        sort_list = []
-
-        orig_list.sort()
-        for k in orig_list:
-            if k not in sort_list:
-                sort_list.append(k)
-
-        return sort_list
-
     def _sdl_config(self):
-        if "DISPLAY" not in os.environ:
+        if "DISPLAY" not in os.environ and not self.display:
             raise RuntimeError("No DISPLAY environment variable set.")
 
-        disp  = os.environ["DISPLAY"]
-        xauth = os.path.expanduser("~/.Xauthority")
+        disp  = self.display or os.environ["DISPLAY"]
+        xauth = self.xauth or os.path.expanduser("~/.Xauthority")
 
         return """    <graphics type='sdl' display='%s' xauth='%s'/>""" % \
                (disp, xauth)
