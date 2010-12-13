@@ -121,6 +121,33 @@ def _is_dir_searchable(uid, username, path):
 
     return bool(re.search("user:%s:..x" % username, out))
 
+def _check_if_pool_source(conn, path):
+    """
+    If passed path is a host disk device like /dev/sda, want to let the user
+    use it
+    """
+    if not _util.is_storage_capable(conn):
+        return None
+
+    def check_pool(poolname, path):
+        pool = conn.storagePoolLookupByName(poolname)
+        xml = pool.XMLDesc(0)
+
+        for element in ["dir", "device", "adapter"]:
+            xml_path = _util.get_xml_path(xml,
+                                          "/pool/source/%s/@path" % element)
+            if xml_path == path:
+                return pool
+
+    running_list = conn.listStoragePools()
+    inactive_list = conn.listDefinedStoragePools()
+    for plist in [running_list, inactive_list]:
+        for name in plist:
+            p = check_pool(name, path)
+            if p:
+                return p
+    return None
+
 def _check_if_path_managed(conn, path):
     """
     Determine if we can use libvirt storage APIs to create or lookup
@@ -128,6 +155,7 @@ def _check_if_path_managed(conn, path):
     """
     vol = None
     verr = None
+    path_is_pool = False
 
     def lookup_vol_by_path():
         try:
@@ -159,10 +187,15 @@ def _check_if_path_managed(conn, path):
             pool = None
             verr = str(e)
 
+    if not (vol or pool):
+        # See if path is a pool source, and allow it through
+        pool = _check_if_pool_source(conn, path)
+        path_is_pool = bool(pool)
+
     if not vol and not pool:
         if not _util.is_uri_remote(conn.getURI()):
             # Building local disk
-            return None, None
+            return None, None, False
 
         if not verr:
             # Since there is no error, no pool was ever found
@@ -176,7 +209,7 @@ def _check_if_path_managed(conn, path):
 
         raise ValueError(err)
 
-    return vol, pool
+    return vol, pool, path_is_pool
 
 def _build_vol_install(path, pool, size, sparse):
     # Path wasn't a volume. See if base of path is a managed
@@ -323,12 +356,13 @@ class VirtualDisk(VirtualDevice):
         is_remote = _util.is_uri_remote(conn.getURI())
         try:
             vol = None
+            path_is_pool = False
             try:
-                vol = conn.storageVolLookupByPath(path)
+                vol, ignore, path_is_pool = _check_if_path_managed(conn, path)
             except:
                 pass
 
-            if vol:
+            if vol or path_is_pool:
                 return True
 
             if not is_remote:
@@ -539,6 +573,7 @@ class VirtualDisk(VirtualDevice):
         self._sparse = None
         self._readOnly = None
         self._vol_object = None
+        self._pool_object = None
         self._vol_install = None
         self._bus = None
         self._shareable = None
@@ -575,7 +610,9 @@ class VirtualDisk(VirtualDevice):
         self._set_selinux_label(selinuxLabel, validate=False)
         self._set_format(format, validate=False)
 
-        self.__change_storage(self.path, self.vol_object, self.vol_install)
+        self.__change_storage(self.path,
+                              self.vol_object,
+                              self.vol_install)
         self.__validate_params()
 
 
@@ -851,16 +888,21 @@ class VirtualDisk(VirtualDevice):
         elif not storage_capable:
             pass
         elif path:
-            vol_object, pool = _check_if_path_managed(self.conn, path)
-            if pool and not vol_object:
+            vol_object, pool, path_is_pool = _check_if_path_managed(self.conn,
+                                                                    path)
+            if pool and not vol_object and not path_is_pool:
                 vol_install = _build_vol_install(path, pool,
                                                  self.size,
                                                  self.sparse)
+
+            if not path_is_pool:
+                pool = None
 
         # Finally, set the relevant params
         self._set_path(path, validate=False)
         self._set_vol_object(vol_object, validate=False)
         self._set_vol_install(vol_install, validate=False)
+        self._pool_object = pool
 
         # XXX: Hack, we shouldn't have to conditionalize for parsing
         if self._is_parse():
@@ -901,6 +943,13 @@ class VirtualDisk(VirtualDevice):
                 newsize = float(newsize) / 1024.0 / 1024.0 / 1024.0
             except:
                 newsize = 0
+        elif self._pool_object:
+            newsize = _util.get_xml_path(self.vol_object.XMLDesc(0),
+                                         "/pool/capacity")
+            try:
+                newsize = float(newsize) / 1024.0 / 1024.0 / 1024.0
+            except:
+                newsize = 0
         elif self.path is None:
             newsize = 0
         else:
@@ -930,6 +979,15 @@ class VirtualDisk(VirtualDevice):
                 dtype = self.TYPE_FILE
             else:
                 dtype = self.TYPE_BLOCK
+        elif self._pool_object:
+            xml = self._pool_object.XMLDesc(0)
+            for source, source_type in [("dir", self.TYPE_DIR),
+                                        ("device", self.TYPE_BLOCK),
+                                        ("adapter", self.TYPE_BLOCK)]:
+                if _util.get_xml_path(xml, "/pool/source/%s/@dev" % source):
+                    dtype = source_type
+                    break
+
         elif self.path:
             if os.path.isdir(self.path):
                 dtype = self.TYPE_DIR
@@ -994,14 +1052,16 @@ class VirtualDisk(VirtualDevice):
         Return bool representing if managed storage parameters have
         been explicitly specified or filled in
         """
-        return (self.vol_object != None or self.vol_install != None)
+        return (self.vol_object != None or self.vol_install != None or
+                self._pool_object != None)
 
     def __creating_storage(self):
         """
         Return True if the user requested us to create a device
         """
         return not (self.__no_storage() or
-                    (self.__managed_storage() and self.vol_object) or
+                    (self.__managed_storage() and
+                     self.vol_object or self._pool_object) or
                     (self.path and os.path.exists(self.path)))
 
     def __no_storage(self):
@@ -1023,6 +1083,9 @@ class VirtualDisk(VirtualDevice):
         if self.vol_object:
             context = _util.get_xml_path(self.vol_object.XMLDesc(0),
                                          "/volume/target/permissions/label")
+        elif self._pool_object:
+            context = _util.get_xml_path(self._pool_object.XMLDesc(0),
+                                         "/pool/target/permissions/label")
         elif self.vol_install:
             # XXX: If user entered a manual label, should we sync this
             # to vol_install?

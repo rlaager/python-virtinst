@@ -204,6 +204,8 @@ args_dict = {
         "--disk %(EXISTIMG1)s,driver_name=qemu,driver_type=qcow2",
         # Unknown driver name and type options
         "--disk %(EXISTIMG1)s,driver_name=foobar,driver_type=foobaz",
+        # Using a storage pool source as a disk
+        "--disk /dev/hda",
       ],
 
       "invalid": [
