@@ -112,24 +112,44 @@ DEFAULTS = {
 }
 
 def sort_helper(tosort):
-    """Helps properly sorting os dictionary entires"""
-    key_mappings = {}
-    keys = []
+    """
+    Helps properly sorting os dictionary entires
+    """
+    sortby_mappings = {}
+    distro_mappings = {}
     retlist = []
 
-    for key in tosort.keys():
-        if tosort[key].get("skip"):
+    # Make sure we are sorting by 'sortby' if specified, and group distros
+    # by their 'distro' tag first and foremost
+    for key, osinfo in tosort.items():
+        if osinfo.get("skip"):
             continue
 
-        sortby = tosort[key].get("sortby")
+        sortby = osinfo.get("sortby")
         if not sortby:
             sortby = key
-        key_mappings[sortby] = key
-        keys.append(sortby)
+        sortby_mappings[sortby] = key
 
-    keys.sort()
-    for key in keys:
-        retlist.append(key_mappings[key])
+        distro = osinfo.get("distro") or "zzzzzzz"
+        if distro not in distro_mappings:
+            distro_mappings[distro] = []
+        distro_mappings[distro].append(sortby)
+
+    # We want returned lists to be sorted descending by 'distro', so we get
+    # debian5, debian4, fedora14, fedora13
+    #   rather than
+    # debian4, debian5, fedora13, fedora14
+    for distro_list in distro_mappings.values():
+        distro_list.sort()
+        distro_list.reverse()
+
+    sorted_distro_list = distro_mappings.keys()
+    sorted_distro_list.sort()
+    for distro in sorted_distro_list:
+        distro_list = distro_mappings[distro]
+        for key in distro_list:
+            orig_key = sortby_mappings[key]
+            retlist.append(orig_key)
 
     return retlist
 
@@ -296,13 +316,16 @@ OS_TYPES = {
                         NET  : VIRTIO_NET,
                     },
                   },
-        "debianetch": { "label": "Debian Etch", "distro": "debian" },
+        "debianetch": { "label": "Debian Etch", "distro": "debian",
+                        "sortby": "debian4" },
         "debianlenny": { "label": "Debian Lenny", "distro": "debian",
+                         "sortby": "debian5",
                       "devices" : {
                         DISK : VIRTIO_DISK,
                         NET  : VIRTIO_NET,
                       }},
         "debiansqueeze": { "label": "Debian Squeeze", "distro": "debian",
+                         "sortby": "debian6",
                       "devices" : {
                         DISK : VIRTIO_DISK,
                         NET  : VIRTIO_NET,
@@ -365,7 +388,8 @@ OS_TYPES = {
         VIDEO : VGA_VIDEO,
     },
     "variants": {
-        "winxp": { "label": "Microsoft Windows XP (x86)",
+        "winxp": { "label": "Microsoft Windows XP",
+                   "sortby": "mswin5", "distro" : "win",
                   "acpi": [
                     (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
                   ],
@@ -373,8 +397,10 @@ OS_TYPES = {
                     (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
                   ],
         },
-        "winxp64": { "label": "Microsoft Windows XP (x86_64)" },
+        "winxp64": { "label": "Microsoft Windows XP (x86_64)",
+                     "sortby": "mswin564", "distro": "win"},
         "win2k": { "label": "Microsoft Windows 2000",
+                     "sortby" : "mswin4", "distro": "win",
                   "acpi": [
                     (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
                   ],
@@ -382,10 +408,14 @@ OS_TYPES = {
                     (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
                   ],
         },
-        "win2k3": { "label": "Microsoft Windows 2003" },
-        "win2k8": { "label": "Microsoft Windows 2008" },
-        "vista": { "label": "Microsoft Windows Vista" },
-        "win7": { "label": "Microsoft Windows 7" }
+        "win2k3": { "label": "Microsoft Windows Server 2003",
+                     "sortby" : "mswinserv2003", "distro": "winserv"},
+        "win2k8": { "label": "Microsoft Windows Server 2008",
+                    "sortby": "mswinserv2008", "distro": "winserv" },
+        "vista": { "label": "Microsoft Windows Vista",
+                    "sortby": "mswin6", "distro": "win" },
+        "win7": { "label": "Microsoft Windows 7",
+                  "sortby": "mswin7", "distro": "win"}
     },
 },
 
