@@ -111,13 +111,14 @@ DEFAULTS = {
     }
 }
 
-def sort_helper(tosort):
+def sort_helper(tosort, sortpref=None):
     """
     Helps properly sorting os dictionary entires
     """
     sortby_mappings = {}
     distro_mappings = {}
     retlist = []
+    sortpref = sortpref or []
 
     # Make sure we are sorting by 'sortby' if specified, and group distros
     # by their 'distro' tag first and foremost
@@ -145,6 +146,13 @@ def sort_helper(tosort):
 
     sorted_distro_list = distro_mappings.keys()
     sorted_distro_list.sort()
+    sortpref.reverse()
+    for prefer in sortpref:
+        if not prefer in sorted_distro_list:
+            continue
+        sorted_distro_list.remove(prefer)
+        sorted_distro_list.insert(0, prefer)
+
     for distro in sorted_distro_list:
         distro_list = distro_mappings[distro]
         for key in distro_list:
