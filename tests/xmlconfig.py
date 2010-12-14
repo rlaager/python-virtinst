@@ -955,6 +955,17 @@ class TestXMLConfig(unittest.TestCase):
         g.cpuset = cpustr
         g.maxvcpus = 7
 
+        g.cpu.model = "footest"
+        g.cpu.vendor = "Intel"
+        g.cpu.match = "minimum"
+
+        g.cpu.threads = "2"
+        g.cpu.sockets = "4"
+        g.cpu.cores = "5"
+
+        g.cpu.add_feature("x2apic", "force")
+        g.cpu.add_feature("lahf_lm", "forbid")
+
         self._compare(g, "boot-cpuset", False)
 
 

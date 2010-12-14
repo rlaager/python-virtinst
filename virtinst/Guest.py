@@ -44,6 +44,7 @@ from VirtualInputDevice import VirtualInputDevice
 from VirtualCharDevice import VirtualCharDevice
 from Clock import Clock
 from Seclabel import Seclabel
+from CPU import CPU
 from DomainFeatures import DomainFeatures
 
 import osdict
@@ -267,6 +268,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._clock = Clock(self.conn)
         self._seclabel = Seclabel(self.conn)
         self._seclabel.model = None
+        self._cpu = CPU(self.conn)
 
     def is_xen(self):
         return (self.installer and
@@ -288,10 +290,12 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def get_clock(self):
         return self._clock
     clock = property(get_clock)
-
     def get_seclabel(self):
         return self._seclabel
     seclabel = property(get_seclabel)
+    def get_cpu(self):
+        return self._cpu
+    cpu = property(get_cpu)
 
     def _get_features(self):
         return self._features
@@ -806,6 +810,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._clock = Clock(self.conn, parsexmlnode=self._xml_node, caps=caps)
         self._seclabel = Seclabel(self.conn, parsexmlnode=self._xml_node,
                                   caps=caps)
+        self._cpu = CPU(self.conn, parsexmlnode=self._xml_node, caps=caps)
 
     def _get_default_input_device(self):
         """
@@ -901,8 +906,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         Return <cpu> XML
         """
-        # Just a stub for now
-        return ""
+        return self.cpu.get_xml_config()
 
     def _get_clock_xml(self):
         """

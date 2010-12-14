@@ -53,6 +53,7 @@ from ImageInstaller import ImageInstaller
 from CloneManager import CloneDesign
 from User import User
 from Clock import Clock
+from CPU import CPU
 from Seclabel import Seclabel
 from XMLBuilderDomain import XMLBuilderDomain
 import util
@@ -67,6 +68,7 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "ImportInstaller", "ImageInstaller", "CloneDesign",
            "Storage", "Interface",
            "User", "util", "support", "VirtualDevice", "Clock", "Seclabel",
+           "CPU",
            "VirtualHostDevice", "VirtualHostDeviceUSB", "VirtualVideoDevice",
            "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice",
            "VirtualController", "VirtualWatchdog"]

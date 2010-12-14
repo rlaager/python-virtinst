@@ -129,6 +129,21 @@ class XMLParseTest(unittest.TestCase):
         check("acpi", True, False)
         check("apic", True, False)
         check("pae", False, True)
+
+        check = self._make_checker(guest.cpu)
+        check("match", "exact", "strict")
+        check("model", "footest", "qemu64")
+        check("vendor", "Intel", "qemuvendor")
+        check("threads", 2, 1)
+        check("cores", 5, 3)
+        check("sockets", 4, 1)
+
+        check = self._make_checker(guest.cpu.features[0])
+        check("name", "x2apic", "foofeat")
+        check("policy", "force", "disable")
+        guest.cpu.remove_feature(guest.cpu.features[1])
+        guest.cpu.add_feature("addfeature")
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterMinimalGuest(self):
@@ -153,6 +168,13 @@ class XMLParseTest(unittest.TestCase):
         check("label", None, "frob")
         self.assertTrue(
             guest.seclabel.get_xml_config().startswith("<seclabel"))
+
+        # XXX: Find a way to set up default values here
+        #check = self._make_checker(guest.cpu)
+        #check("model", None, "foobar")
+        #check("cores", None, 4)
+        #guest.cpu.add_feature("x2apic", "forbid")
+        #self.assertTrue(guest.cpu.get_xml_config().startswith("<cpu"))
 
         self.assertTrue(guest.installer.get_xml_config().startswith("<os"))
 
