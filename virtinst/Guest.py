@@ -333,8 +333,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return int(self.memory) * 1024
     memory = _xml_property(get_memory, set_memory,
                            xpath="./currentMemory",
-                           get_converter=lambda x: int(x) / 1024,
-                           set_converter=lambda x: int(x) * 1024)
+                           get_converter=lambda s, x: int(x) / 1024,
+                           set_converter=lambda s, x: int(x) * 1024)
 
     # Memory allocated to the guest.  Should be given in MB
     def get_maxmemory(self):
@@ -348,8 +348,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return int(self.maxmemory) * 1024
     maxmemory = _xml_property(get_maxmemory, set_maxmemory,
                               xpath="./memory",
-                              get_converter=lambda x: int(x) / 1024,
-                              set_converter=lambda x: int(x) * 1024)
+                              get_converter=lambda s, x: int(x) / 1024,
+                              set_converter=lambda s, x: int(x) * 1024)
 
     # UUID for the guest
     def get_uuid(self):
@@ -373,7 +373,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._vcpus = val
     vcpus = _xml_property(get_vcpus, set_vcpus,
                           xpath="./vcpu",
-                          get_converter=int)
+                          get_converter=lambda s, x: int(x))
 
     # set phy-cpus for the guest
     def get_cpuset(self):

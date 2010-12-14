@@ -240,7 +240,7 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
             for node in nodes:
                 val = node.content
                 if get_converter:
-                    val = get_converter(val)
+                    val = get_converter(self, val)
                 elif is_bool:
                     val = True
 
@@ -265,7 +265,7 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
         # Convert from API value to XML value
         val = fget(self)
         if set_converter:
-            val = set_converter(val)
+            val = set_converter(self, val)
         elif default_converter and val == "default":
             val = default_converter(self)
 

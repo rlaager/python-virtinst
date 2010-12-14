@@ -122,8 +122,8 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
     def set_managed(self, val):
         self._managed = bool(val)
     managed = _xml_property(get_type, set_type,
-                            get_converter=lambda x: bool(x == "yes"),
-                            set_converter=lambda x: x and "yes" or "no",
+                            get_converter=lambda s, x: bool(x == "yes"),
+                            set_converter=lambda s, x: x and "yes" or "no",
                             xpath="./@managed")
 
     def get_vendor(self):
