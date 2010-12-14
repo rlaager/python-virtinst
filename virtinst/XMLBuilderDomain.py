@@ -252,6 +252,8 @@ def _xml_property(fget=None, fset=None, fdel=None, doc=None,
 
         elif is_bool:
             return False
+        elif get_converter:
+            getval = get_converter(self, None)
 
         return getval
 

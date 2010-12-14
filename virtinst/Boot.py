@@ -48,10 +48,15 @@ class Boot(XMLBuilderDomain.XMLBuilderDomain):
         return self._enable_bootmenu
     def _set_enable_bootmenu(self, val):
         self._enable_bootmenu = val
+    def _get_menu_converter(self, val):
+        ignore = self
+        if val == None:
+            return None
+        return bool(val == "yes")
     enable_bootmenu = _xml_property(_get_enable_bootmenu, _set_enable_bootmenu,
-                            get_converter=lambda s, x: bool(x == "yes"),
+                            get_converter=_get_menu_converter,
                             set_converter=lambda s, x: x and "yes" or "no",
-                                xpath="./os/bootmenu/@enable")
+                            xpath="./os/bootmenu/@enable")
 
     def _get_bootorder(self):
         return self._bootorder
