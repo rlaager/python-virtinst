@@ -953,6 +953,7 @@ class TestXMLConfig(unittest.TestCase):
         # Cpuset
         cpustr = g.generate_cpuset(g.conn, g.memory)
         g.cpuset = cpustr
+        g.maxvcpus = 7
 
         self._compare(g, "boot-cpuset", False)
 

@@ -204,6 +204,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._memory = None
         self._maxmemory = None
         self._vcpus = 1
+        self._maxvcpus = 1
         self._cpuset = None
         self._autostart = False
         self._clock = None
@@ -360,20 +361,41 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     uuid = _xml_property(get_uuid, set_uuid,
                          xpath="./uuid")
 
-    # number of vcpus for the guest
-    def get_vcpus(self):
-        return self._vcpus
-    def set_vcpus(self, val):
+    def __validate_cpus(self, val):
         maxvcpus = _util.get_max_vcpus(self.conn, self.type)
         if type(val) is not int or val < 1:
             raise ValueError(_("Number of vcpus must be a postive integer."))
         if val > maxvcpus:
             raise ValueError(_("Number of vcpus must be no greater than %d "
                                "for this vm type.") % maxvcpus)
+
+    # number of vcpus for the guest
+    def get_vcpus(self):
+        return self._vcpus
+    def set_vcpus(self, val):
+        self.__validate_cpus(val)
         self._vcpus = val
+
+        # Don't force set maxvcpus unless already specified
+        if self.maxvcpus is not None and self.maxvcpus < val:
+            self.maxvcpus = val
+    def _vcpus_get_converter(self, val):
+        # If no current VCPUs, return maxvcpus
+        if not val:
+            val = self.maxvcpus
+        return int(val)
     vcpus = _xml_property(get_vcpus, set_vcpus,
-                          xpath="./vcpu",
-                          get_converter=lambda s, x: int(x))
+                          xpath="./vcpu/@current",
+                          get_converter=_vcpus_get_converter)
+
+    def _get_maxvcpus(self):
+        return self._maxvcpus
+    def _set_maxvcpus(self, val):
+        self.__validate_cpus(val)
+        self._maxvcpus = val
+    maxvcpus = _xml_property(_get_maxvcpus, _set_maxvcpus,
+                             xpath="./vcpu",
+                             get_converter=lambda s, x: int(x))
 
     # set phy-cpus for the guest
     def get_cpuset(self):
@@ -912,6 +934,25 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                                self.installer.get_xml_config(self, install))
         return xml
 
+    def _get_vcpu_xml(self):
+        curvcpus_supported = virtinst.support.check_conn_support(
+                                    self.conn,
+                                    virtinst.support.SUPPORT_CONN_MAXVCPUS_XML)
+        cpuset = ""
+        if self.cpuset is not None:
+            cpuset = " cpuset='%s'" % self.cpuset
+
+        maxv = self.maxvcpus
+        curv = self.vcpus
+
+        curxml = ""
+        if maxv != curv and curvcpus_supported:
+            curxml = " current='%s'" % curv
+        else:
+            maxv = curv
+
+        return "  <vcpu%s%s>%d</vcpu>" % (cpuset, curxml, maxv)
+
     ############################
     # Install Helper functions #
     ############################
@@ -990,10 +1031,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             # This means there is no 'install' phase, so just return
             return None
 
-        cpuset = ""
-        if self.cpuset is not None:
-            cpuset = " cpuset='" + self.cpuset + "'"
-
         desc_xml = ""
         if self.description is not None:
             desc = str(self.description)
@@ -1016,7 +1053,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         xml = add("  <on_poweroff>destroy</on_poweroff>")
         xml = add("  <on_reboot>%s</on_reboot>" % action)
         xml = add("  <on_crash>%s</on_crash>" % action)
-        xml = add("  <vcpu%s>%d</vcpu>" % (cpuset, self.vcpus))
+        xml = add(self._get_vcpu_xml())
         xml = add("  <devices>")
         xml = add(self._get_device_xml(devs, install))
         xml = add("  </devices>")

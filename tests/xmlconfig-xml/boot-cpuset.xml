@@ -15,7 +15,7 @@
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
-  <vcpu cpuset='0,2,4,6,8,10,12,14'>5</vcpu>
+  <vcpu cpuset='0,2,4,6,8,10,12,14' current='5'>7</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <disk type='block' device='cdrom'>

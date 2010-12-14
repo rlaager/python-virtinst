@@ -33,6 +33,7 @@ SUPPORT_CONN_GETHOSTNAME = 4
 SUPPORT_CONN_DOMAIN_VIDEO = 5
 SUPPORT_CONN_NETWORK = 7
 SUPPORT_CONN_INTERFACE = 8
+SUPPORT_CONN_MAXVCPUS_XML = 9
 
 # Flags for check_domain_support
 SUPPORT_DOMAIN_GETVCPUS = 1000
@@ -41,6 +42,7 @@ SUPPORT_DOMAIN_XML_INACTIVE = 1002
 SUPPORT_DOMAIN_MANAGED_SAVE = 1003
 SUPPORT_DOMAIN_MIGRATE_DOWNTIME = 1004
 SUPPORT_DOMAIN_JOB_INFO = 1005
+SUPPORT_DOMAIN_MAXVCPUS_XML = 1006
 
 # Flags for check_pool_support
 SUPPORT_STORAGE_CREATEVOLFROM = 2000
@@ -124,6 +126,10 @@ _support_dict = {
     SUPPORT_CONN_INTERFACE : {
         "function" : "virConnect.listInterfaces",
         "args" : (),
+    },
+
+    SUPPORT_CONN_MAXVCPUS_XML : {
+        "version" : 8005,
     },
 
 
@@ -254,8 +260,10 @@ def _local_lib_ver():
     return libvirt.getVersion()
 
 # Version of libvirt library/daemon on the connection (could be remote)
-def _daemon_lib_ver(conn, force_version):
-    if force_version:
+def _daemon_lib_ver(conn, force_version, minimum_libvirt_version):
+    # Always force the required version if it's after the version which
+    # has getLibVersion
+    if force_version or minimum_libvirt_version >= 7004:
         default_ret = 0
     else:
         default_ret = 100000000000
@@ -340,7 +348,8 @@ def _check_support(conn, feature, data=None):
     flag = get_value("flag")
 
     actual_lib_ver = _local_lib_ver()
-    actual_daemon_ver = _daemon_lib_ver(conn, force_version)
+    actual_daemon_ver = _daemon_lib_ver(conn, force_version,
+                                        minimum_libvirt_version)
     actual_drv_ver = _hv_ver(conn)
 
     # Make sure there are no keys left in the key_list. This will
