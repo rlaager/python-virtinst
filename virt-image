@@ -81,14 +81,7 @@ def parse_args():
     geng.add_option("-u", "--uuid", type="string", dest="uuid",
                     action="callback", callback=cli.check_before_store,
                     help=_("UUID for the guest."))
-    geng.add_option("", "--vcpus", type="int", dest="vcpus",
-                    help=_("Number of vcpus to configure for your guest"))
-    geng.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
-                    help=_("Check that vcpus do not exceed physical CPUs "
-                           "and warn if they do."))
-    geng.add_option("", "--cpuset", type="string", dest="cpuset",
-                    action="callback", callback=cli.check_before_store,
-                    help=_("Set which physical CPUs Domain can use."))
+    cli.vcpu_cli_options(geng)
     geng.add_option("", "--os-type", type="string", dest="distro_type",
                     action="callback", callback=cli.check_before_store,
                     help=_("The OS type being installed, e.g. "

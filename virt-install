@@ -125,7 +125,7 @@ def parse_boot_option(guest, optstring):
     """
     Helper to parse --boot string
     """
-    opts = cli.parse_optstr(optstring)
+    ignore, opts = cli.parse_optstr(optstring)
     optlist = map(lambda x: x[0], cli.parse_optstr_tuples(optstring))
     menu = None
 
@@ -269,7 +269,7 @@ def get_security(security, guest):
         return
 
     # Parse security opts
-    opts = cli.parse_optstr(secopts)
+    ignore, opts = cli.parse_optstr(secopts)
     arglist = secopts.split(",")
     secmodel = guest.seclabel
 
@@ -336,7 +336,7 @@ def parse_disk_option(guest, path, size):
         path_type = "path="
 
     # Parse out comma separated options
-    opts = cli.parse_optstr(optstr)
+    ignore, opts = cli.parse_optstr(optstr)
     for opt_type, opt_val in opts.items():
         if opt_type not in option_whitelist:
             fail(_("Unknown --disk option '%s'.") % opt_type)
@@ -698,11 +698,7 @@ def parse_args():
     geng.add_option("-r", "--ram", type="int", dest="memory",
                     help=_("Memory to allocate for guest instance in "
                            "megabytes"))
-    geng.add_option("", "--vcpus", type="int", dest="vcpus",
-                    help=_("Number of vcpus to configure for your guest"))
-    geng.add_option("", "--cpuset", type="string", dest="cpuset",
-                    action="callback", callback=cli.check_before_store,
-                    help=_("Set which physical CPUs Domain can use."))
+    cli.vcpu_cli_options(geng)
     geng.add_option("", "--description", type="string", dest="description",
                     action="callback", callback=cli.check_before_store,
                     help=_("Human readable description of the VM to store in "
@@ -884,9 +880,6 @@ def parse_args():
     misc.add_option("", "--prompt", action="store_true", dest="prompt",
                     help=_("Request user input for ambiguous situations or "
                            "required options."), default=False)
-    misc.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
-                    help=_("Check that vcpus do not exceed physical CPUs "
-                           "and warn if they do."))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=_("Print debugging information"))
     parser.add_option_group(misc)

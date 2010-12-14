@@ -26,7 +26,7 @@ import logging.handlers
 import gettext
 import locale
 import optparse
-from optparse import OptionValueError, OptionParser
+from optparse import OptionValueError, OptionParser, OptionGroup
 import re
 import difflib
 import tempfile
@@ -58,7 +58,7 @@ def _open_test_uri(uri):
     uri = uri.replace(_virtinst_uri_magic, "")
     ret = uri.split(",", 1)
     uri = ret[0]
-    opts = parse_optstr(len(ret) > 1 and ret[1] or "")
+    ignore, opts = parse_optstr(len(ret) > 1 and ret[1] or "")
 
     conn = open_connection(uri)
 
@@ -497,9 +497,19 @@ def prompt_loop(prompt_txt, noprompt_err, passed_val, obj, param_name,
             passed_val = None
             failed = True
 
+def vcpu_cli_options(grp):
+    grp.add_option("", "--vcpus", type="string", dest="vcpus",
+        help=_("Number of vcpus to configure for your guest. Ex:\n"
+               "--vcpus 5\n"
+               "--vcpus 5,maxcpus=10"))
+    grp.add_option("", "--cpuset", type="string", dest="cpuset",
+                   action="callback", callback=check_before_store,
+                   help=_("Set which physical CPUs Domain can use."))
+    grp.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
+                   help=optparse.SUPPRESS_HELP)
+
 # Register vnc + sdl options for virt-install and virt-image
 def graphics_option_group(parser):
-    from optparse import OptionGroup
 
     vncg = OptionGroup(parser, _("Graphics Configuration"))
     vncg.add_option("", "--graphics", type="string", dest="graphics",
@@ -654,6 +664,25 @@ def get_uuid(uuid, guest):
         except ValueError, e:
             fail(e)
 
+def parse_vcpu_option(guest, optstring, default_vcpus):
+    """
+    Helper to parse --vcpu string
+    """
+    vcpus, opts = parse_optstr(optstring, remove_first=True)
+    vcpus = vcpus or default_vcpus
+
+    def set_param(paramname, dictname, val=None):
+        val = get_opt_param(opts, dictname, val)
+        if val == None:
+            return
+        setattr(guest, paramname, int(val))
+
+    set_param("vcpus", "vcpus", vcpus)
+    set_param("maxvcpus", "maxvcpus")
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+
 def get_vcpus(vcpus, check_cpu, guest, conn, image_vcpus=None):
     if check_cpu:
         hostinfo = conn.getInfo()
@@ -669,11 +698,8 @@ def get_vcpus(vcpus, check_cpu, guest, conn, image_vcpus=None):
 
     if vcpus is None and image_vcpus is not None:
         vcpus = int(image_vcpus)
-    if vcpus is not None:
-        try:
-            guest.vcpus = vcpus
-        except ValueError, e:
-            fail(e)
+
+    parse_vcpu_option(guest, vcpus, image_vcpus)
 
 def get_cpuset(cpuset, mem, guest, conn):
     if cpuset and cpuset != "auto":
@@ -753,9 +779,7 @@ def parse_optstr(optstr, basedict=None, remove_first=False):
     for opt, val in optlist:
         optdict[opt] = val
 
-    if remove_first:
-        return first, optdict
-    return optdict
+    return (first, optdict)
 
 def parse_network_opts(conn, mac, network):
     net_type = None
@@ -784,7 +808,7 @@ def parse_network_opts(conn, mac, network):
         bridge_name = netdata
 
     # Pass the remaining arg=value pairs
-    opts = parse_optstr(",".join(args))
+    ignore, opts = parse_optstr(",".join(args))
     for opt_type, ignore_val in opts.items():
         if opt_type not in option_whitelist:
             fail(_("Unknown network option '%s'") % opt_type)

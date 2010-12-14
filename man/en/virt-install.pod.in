@@ -106,10 +106,11 @@ specify UUID, you should use a 32-digit hexadecimal number. UUID are intended
 to be unique across the entire data center, and indeed world. Bear this in
 mind if manually specifying a UUID
 
-=item --vcpus=VCPUS
+=item --vcpus=VCPUS[,maxvcpus=MAX]
 
-Number of virtual cpus to configure for the guest. Not all hypervisors support
-SMP guests, in which case this argument will be silently ignored
+Number of virtual cpus to configure for the guest. If 'maxvcpus' is specified,
+the guest will be able to hotplug up to MAX vcpus while the guest is running,
+but will startup with VCPUS.
 
 =item --cpuset=CPUSET
 

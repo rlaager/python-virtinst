@@ -403,6 +403,8 @@ args_dict = {
         "--vcpus 4 --cpuset=auto",
         # Ram overcommit
         "--ram 100000000000",
+        # maxvcpus
+        "--vcpus 5,maxvcpus=10"
       ],
 
       "invalid" : [
@@ -412,6 +414,10 @@ args_dict = {
         "--vcpus 32 --cpuset=autofoo",
         # Over max vcpus
         "--vcpus 10000",
+        # Over host vcpus w/ --check-cpu
+        "--vcpus 20 --check-cpu",
+        # maxvcpus less than cpus
+        "--vcpus 5,maxvcpus=1"
       ],
 
     }, # category 'cpuram'

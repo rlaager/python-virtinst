@@ -1,10 +1,10 @@
 <node>
 
   <cpu>
-    <nodes>4</nodes>
+    <nodes>1</nodes>
     <sockets>4</sockets>
     <cores>4</cores>
-    <threads>4</threads>
+    <threads>1</threads>
     <active>4</active>
     <mhz>4000</mhz>
     <model>i686</model>
