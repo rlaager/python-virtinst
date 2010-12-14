@@ -708,6 +708,9 @@ def set_os_variant(guest, distro_type, distro_variant):
             guest.set_os_variant(distro_variant)
 
 def parse_optstr_tuples(optstr):
+    """
+    Parse optstr into a list of ordered tuples
+    """
     optstr = str(optstr or "")
     optlist = []
 
@@ -726,21 +729,32 @@ def parse_optstr_tuples(optstr):
 
     return optlist
 
-def parse_optstr(optstr, basedict=None):
+def parse_optstr(optstr, basedict=None, remove_first=False):
     """
     Helper function for parsing opt strings of the form
     opt1=val1,opt2=val2,...
-    'basedict' is a starting dictionary, so the caller can easily set
-    default values, etc.
+
+    @param basedict: starting dictionary, so the caller can easily set
+                     default values, etc.
+    @param remove_first: If true, remove the first options off the string
+                         and return it seperately. For example,
+                         --serial pty,foo=bar returns ("pty", {"foo" : "bar"})
 
     Returns a dictionary of {'opt1': 'val1', 'opt2': 'val2'}
     """
     optlist = parse_optstr_tuples(optstr)
     optdict = basedict or {}
+    first = None
+
+    if remove_first and optlist:
+        first = optlist[0][0]
+        optlist.remove(optlist[0])
 
     for opt, val in optlist:
         optdict[opt] = val
 
+    if remove_first:
+        return first, optdict
     return optdict
 
 def parse_network_opts(conn, mac, network):
@@ -851,8 +865,7 @@ def parse_graphics(guest, optstring, basedict):
         return None
 
     # Peel the model type off the front
-    gtype, ignore, optstring = partition(optstring, ",")
-    opts = parse_optstr(optstring, basedict)
+    gtype, opts = parse_optstr(optstring, basedict, remove_first=True)
     if gtype == "none" or basedict.get("type") == "none":
         return None
     dev = VirtualGraphics(conn=guest.conn)

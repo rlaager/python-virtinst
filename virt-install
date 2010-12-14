@@ -178,10 +178,7 @@ def parse_char_option(guest, char_type, optstring):
     Helper to parse --serial/--parallel options
     """
     # Peel the char type off the front
-    dev_type, ignore, optstring = cli.partition(optstring, ",")
-
-    opts = cli.parse_optstr(optstring)
-
+    dev_type, opts = cli.parse_optstr(optstring, remove_first=True)
     dev = VirtualCharDevice.get_dev_instance(guest.conn, char_type, dev_type)
 
     def set_param(paramname, dictname, val=None):
@@ -239,8 +236,7 @@ def get_chardevs(char_type, opts, guest):
 
 def parse_watchdog(guest, optstring):
     # Peel the model type off the front
-    model, ignore, optstring = cli.partition(optstring, ",")
-    opts = cli.parse_optstr(optstring)
+    model, opts = cli.parse_optstr(optstring, remove_first=True)
     dev = virtinst.VirtualWatchdog(guest.conn)
 
     def set_param(paramname, dictname, val=None):
