@@ -4,6 +4,7 @@
     <cpu>
       <arch>x86_64</arch>
       <model>core2duo</model>
+      <vendor>Intel</vendor>
       <topology sockets='7' cores='5' threads='3'/>
       <feature name='lahf_lm'/>
       <feature name='xtpr'/>

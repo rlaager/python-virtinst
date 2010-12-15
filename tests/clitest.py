@@ -430,6 +430,8 @@ args_dict = {
         "--vcpus 5,maxvcpus=1",
         # vcpus unknown option
         "--vcpus foo=bar",
+        # --cpu host, but no host CPU in caps
+        "--cpu host",
       ],
 
     }, # category 'cpuram'
@@ -610,7 +612,7 @@ args_dict = {
 
   "compare" : [
     # F14 Directory tree URL install with extra-args
-    ("--os-variant fedora14 --file %(EXISTIMG1)s --location %(TREEDIR)s --extra-args console=ttyS0", "kvm-f14-url"),
+    ("--os-variant fedora14 --file %(EXISTIMG1)s --location %(TREEDIR)s --extra-args console=ttyS0 --cpu host", "kvm-f14-url"),
     # Quiet URL install should make no noise
     ("--os-variant fedora14 --disk %(NEWIMG1)s,size=.01 --location %(TREEDIR)s --extra-args console=ttyS0 --quiet", "quiet-url"),
     # HVM windows install with disk

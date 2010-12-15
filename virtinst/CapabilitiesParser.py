@@ -105,6 +105,7 @@ class CPU(object):
         # e.g. "i686" or "x86_64"
         self.arch = None
         self.model = None
+        self.vendor = None
         self.sockets = 1
         self.cores = 1
         self.threads = 1
@@ -133,6 +134,8 @@ class CPU(object):
                 self.arch = child.content
             elif child.name == "model":
                 self.model = child.content
+            elif child.name == "vendor":
+                self.vendor = child.content
             elif child.name == "topology":
                 self.sockets = xpathString(child, "@sockets") or 1
                 self.cores = xpathString(child, "@cores") or 1

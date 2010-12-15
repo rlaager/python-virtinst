@@ -169,6 +169,7 @@ class TestCapabilities(unittest.TestCase):
             self.assertEquals(caps.host.features[f], feature_dict[f])
 
         self.assertEquals(caps.host.cpu.model, "core2duo")
+        self.assertEquals(caps.host.cpu.vendor, "Intel")
         self.assertEquals(caps.host.cpu.threads, "3")
         self.assertEquals(caps.host.cpu.cores, "5")
         self.assertEquals(caps.host.cpu.sockets, "7")

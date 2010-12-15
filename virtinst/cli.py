@@ -773,6 +773,10 @@ def parse_cpu(guest, optstring):
             guest.cpu.add_feature(name, policy)
         del(opts[policy])
 
+    if model == "host":
+        guest.cpu.copy_host_cpu()
+        model = None
+
     set_param("model", "model", model)
     set_param("match", "match")
     set_param("vendor", "vendor")

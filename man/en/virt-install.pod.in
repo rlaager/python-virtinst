@@ -145,6 +145,12 @@ Some examples:
 
 Expose the core2duo CPU model, force enable x2apic, but do not expose vmx
 
+=item B<--cpu host>
+
+Expose the host CPUs configuration to the guest. This enables the guest to
+take advantage of many of the host CPUs features (better performance), but
+may cause issues if migrating the guest to a host without an identical CPU.
+
 =back
 
 =item --description

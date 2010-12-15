@@ -12,6 +12,24 @@
   <features>
     <acpi/><apic/><pae/>
   </features>
+  <cpu match='exact'>
+    <model>core2duo</model>
+    <vendor>Intel</vendor>
+    <topology sockets='7' cores='5' threads='3'/>
+    <feature policy='require' name='pbe'/>
+    <feature policy='require' name='tm2'/>
+    <feature policy='require' name='est'/>
+    <feature policy='require' name='ss'/>
+    <feature policy='require' name='ht'/>
+    <feature policy='require' name='ds'/>
+    <feature policy='require' name='lahf_lm'/>
+    <feature policy='require' name='tm'/>
+    <feature policy='require' name='cx16'/>
+    <feature policy='require' name='vmx'/>
+    <feature policy='require' name='ds_cpl'/>
+    <feature policy='require' name='xtpr'/>
+    <feature policy='require' name='acpi'/>
+  </cpu>
   <clock offset="utc"/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>destroy</on_reboot>
@@ -49,6 +67,24 @@
   <features>
     <acpi/><apic/><pae/>
   </features>
+  <cpu match='exact'>
+    <model>core2duo</model>
+    <vendor>Intel</vendor>
+    <topology sockets='7' cores='5' threads='3'/>
+    <feature policy='require' name='pbe'/>
+    <feature policy='require' name='tm2'/>
+    <feature policy='require' name='est'/>
+    <feature policy='require' name='ss'/>
+    <feature policy='require' name='ht'/>
+    <feature policy='require' name='ds'/>
+    <feature policy='require' name='lahf_lm'/>
+    <feature policy='require' name='tm'/>
+    <feature policy='require' name='cx16'/>
+    <feature policy='require' name='vmx'/>
+    <feature policy='require' name='ds_cpl'/>
+    <feature policy='require' name='xtpr'/>
+    <feature policy='require' name='acpi'/>
+  </cpu>
   <clock offset="utc"/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>

@@ -175,13 +175,43 @@ class CPU(XMLBuilderDomain.XMLBuilderDomain):
                             get_converter=lambda s, x: _int_or_none(x),
                             xpath="./cpu/topology/@threads")
 
+    def copy_host_cpu(self):
+        """
+        Enact the equivalent of qemu -cpu host, pulling all info
+        from capabilities about the host CPU
+        """
+        cpu = self._get_caps().host.cpu
+        if not cpu.model:
+            raise ValueError(_("No host CPU reported in capabilities"))
+
+        self.match = "exact"
+        self.model = cpu.model
+        self.vendor = cpu.vendor
+
+        self.sockets = cpu.sockets
+        self.cores = cpu.cores
+        self.threads = cpu.threads
+
+        for feature in self.features:
+            self.remove_feature(feature)
+        for name in cpu.features.names():
+            self.add_feature(name)
+
     def vcpus_from_topology(self):
+        """
+        Determine the CPU count represented by topology, or 1 if
+        no topology is set
+        """
         self.set_topology_defaults()
         if self.sockets:
             return self.sockets * self.cores * self.threads
         return 1
 
     def set_topology_defaults(self, vcpus=None):
+        """
+        Fill in unset topology values, using the passed vcpus count if
+        required
+        """
         if (self.sockets is None and
             self.cores is None and
             self.threads is None):
