@@ -702,12 +702,13 @@ def parse_vcpu_option(guest, optstring, default_vcpus):
         raise ValueError(_("Unknown options %s") % opts.keys())
 
 
-def get_vcpus(vcpus, check_cpu, guest, conn, image_vcpus=None):
+def get_vcpus(vcpus, check_cpu, guest, image_vcpus=None):
     if vcpus is None and image_vcpus is not None:
         vcpus = int(image_vcpus)
 
     parse_vcpu_option(guest, vcpus, image_vcpus)
 
+    conn = guest.conn
     if check_cpu:
         hostinfo = conn.getInfo()
         cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
@@ -721,7 +722,8 @@ def get_vcpus(vcpus, check_cpu, guest, conn, image_vcpus=None):
                 nice_exit()
 
 
-def get_cpuset(cpuset, mem, guest, conn):
+def get_cpuset(cpuset, mem, guest):
+    conn = guest.conn
     if cpuset and cpuset != "auto":
         guest.cpuset = cpuset
 
