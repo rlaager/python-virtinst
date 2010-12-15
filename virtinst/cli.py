@@ -289,6 +289,7 @@ def print_stdout(msg, do_force=False):
         print msg
 
 def print_stderr(msg):
+    logging.debug(msg)
     print >> sys.stderr, msg
 
 def _fail_exit():

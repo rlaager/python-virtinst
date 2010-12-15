@@ -1037,6 +1037,9 @@ def start_install(guest, continue_inst, options):
         else:
             return txt_console(dom, guest.conn.getURI())
 
+    virshcmd = ("virsh --connect %s start %s" %
+                (guest.conn.getURI(), guest.name))
+
     # There are two main cases we care about:
     #
     # Scripts: these should specify --wait always, maintaining the
@@ -1080,11 +1083,11 @@ def start_install(guest, continue_inst, options):
 
         # This should be valid even before doing continue install
         if not guest.post_install_check():
-            logging.warn(
-                  _("Domain installation does not appear to have been\n "
-                    "successful.  If it was, you can restart your domain\n "
-                    "by running 'virsh start %s'; otherwise, please\n "
-                    "restart your installation.") % guest.name)
+            print_stderr(
+            _("Domain installation does not appear to have been successful.\n"
+              "If it was, you can restart your domain by running:\n"
+              "  %s\n"
+              "otherwise, please restart your installation.") % virshcmd)
             sys.exit(1)
 
         if continue_inst:
@@ -1096,8 +1099,8 @@ def start_install(guest, continue_inst, options):
             # XXX: --noreboot doesn't work with say import/livecd. what
             # should it do? never startup the guest?
             print_stdout(
-                  _("Guest creation complete... you can restart your "
-                    "domain\nby running 'virsh start %s'") % guest.name)
+            _("Domain creation completed. You can restart your domain by "
+              "running:\n  %s") % virshcmd)
         else:
             print_stdout(
                 _("Guest installation complete... restarting guest."))
@@ -1107,18 +1110,18 @@ def start_install(guest, continue_inst, options):
     except KeyboardInterrupt, e:
         cli.log_exception()
         guest.terminate_console()
-        print_stderr(_("Guest install interrupted."))
+        print_stderr(_("Domain install interrupted."))
     except RuntimeError, e:
         fail(e)
     except SystemExit, e:
         sys.exit(e.code)
     except Exception, e:
         fail(e, do_exit=False)
-        logging.warn(
-              _("Domain installation does not appear to have been\n"
-                "successful. If it was, you can restart your domain\n"
-                "by running 'virsh start %s'; otherwise, please\n"
-                "restart your installation.") % guest.name)
+        print_stderr(
+        _("Domain installation does not appear to have been successful.\n"
+          "If it was, you can restart your domain by running:\n"
+          "  %s\n"
+          "otherwise, please restart your installation.") % virshcmd)
         sys.exit(1)
 
 def check_domain(guest, dom, conscb, wait_for_install, wait_time, start_time):
