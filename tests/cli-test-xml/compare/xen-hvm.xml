@@ -7,6 +7,7 @@
     <type arch='x86_64'>hvm</type>
     <loader>/usr/lib/xen/boot/hvmloader</loader>
     <boot dev='cdrom'/>
+    <boot dev='hd'/>
   </os>
   <features>
     <acpi/><apic/><pae/>

@@ -265,6 +265,21 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
     def _get_bootdev(self, isinstall, guest):
         raise NotImplementedError
 
+    def _build_boot_order(self, isinstall, guest):
+        bootorder = [self._get_bootdev(isinstall, guest)]
+
+        # If guest has an attached disk, always have 'hd' in the boot
+        # list, so disks are marked as bootable/installable (needed for
+        # windows virtio installs, and booting local disk from PXE)
+        for disk in guest.get_devices("disk"):
+            if disk.device == disk.DEVICE_DISK:
+                bootdev = self.bootconfig.BOOT_DEVICE_HARDDISK
+                if bootdev not in bootorder:
+                    bootorder.append(bootdev)
+                break
+
+        return bootorder
+
     def _get_osblob_helper(self, guest, isinstall, bootconfig):
         ishvm = self.os_type == "hvm"
         conn = guest.conn
@@ -321,10 +336,10 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         if isinstall and not self.has_install_phase():
             return
 
-        bootdev = self._get_bootdev(isinstall, guest)
+        bootorder = self._build_boot_order(isinstall, guest)
         bootconfig = copy.copy(bootconfig)
         if not bootconfig.bootorder:
-            bootconfig.bootorder = [bootdev]
+            bootconfig.bootorder = bootorder
 
         return self._get_osblob_helper(guest, isinstall, bootconfig)
 

@@ -6,6 +6,7 @@
   <os>
     <type arch='x86_64'>hvm</type>
     <boot dev='cdrom'/>
+    <boot dev='hd'/>
   </os>
   <features>
     <acpi/><apic/><pae/>

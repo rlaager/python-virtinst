@@ -6,6 +6,7 @@
   <os>
     <type arch='i686'>hvm</type>
     <boot dev='network'/>
+    <boot dev='hd'/>
   </os>
   <features>
     <acpi/><apic/>
