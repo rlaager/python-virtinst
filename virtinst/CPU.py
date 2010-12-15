@@ -42,9 +42,6 @@ class CPUFeature(XMLBuilderDomain.XMLBuilderDomain):
         if self._is_parse():
             return
 
-        # Libvirt >= 0.8.5 defaults to this, earlier requires a policy
-        self.policy = "require"
-
     def _get_name(self):
         return self._name
     def _set_name(self, val):
@@ -95,9 +92,6 @@ class CPU(XMLBuilderDomain.XMLBuilderDomain):
         if self._is_parse():
             return
 
-        # Libvirt >= 0.8.5 defaults to this, earlier requires a match value
-        self.match = "exact"
-
     def _parsexml(self, xml, node):
         XMLBuilderDomain.XMLBuilderDomain._parsexml(self, xml, node)
 
@@ -111,11 +105,10 @@ class CPU(XMLBuilderDomain.XMLBuilderDomain):
         return self._features[:]
     features = _xml_property(_get_features)
 
-    def add_feature(self, name, policy=None):
+    def add_feature(self, name, policy="require"):
         feature = CPUFeature(self.conn)
         feature.name = name
-        if policy:
-            feature.policy = policy
+        feature.policy = policy
 
         if self._is_parse():
             xml = feature.get_xml_config()
@@ -137,6 +130,8 @@ class CPU(XMLBuilderDomain.XMLBuilderDomain):
     def _get_model(self):
         return self._model
     def _set_model(self, val):
+        if val and not self.match:
+            self.match = "exact"
         self._model = val
     model = _xml_property(_get_model, _set_model,
                           xpath="./cpu/model")
@@ -179,6 +174,44 @@ class CPU(XMLBuilderDomain.XMLBuilderDomain):
     threads = _xml_property(_get_threads, _set_threads,
                             get_converter=lambda s, x: _int_or_none(x),
                             xpath="./cpu/topology/@threads")
+
+    def vcpus_from_topology(self):
+        self.set_topology_defaults()
+        if self.sockets:
+            return self.sockets * self.cores * self.threads
+        return 1
+
+    def set_topology_defaults(self, vcpus=None):
+        if (self.sockets is None and
+            self.cores is None and
+            self.threads is None):
+            return
+
+        if vcpus is None:
+            if self.sockets is None:
+                self.sockets = 1
+            if self.threads is None:
+                self.threads = 1
+            if self.cores is None:
+                self.cores = 1
+
+        vcpus = int(vcpus or 0)
+        if not self.sockets:
+            if not self.cores:
+                self.sockets = vcpus / self.threads
+            else:
+                self.sockets = vcpus / self.cores
+
+        if not self.cores:
+            if not self.threads:
+                self.cores = vcpus / self.sockets
+            else:
+                self.cores = vcpus / (self.sockets * self.threads)
+
+        if not self.threads:
+            self.threads = vcpus / (self.sockets * self.cores)
+
+        return
 
     def _get_topology_xml(self):
         xml = ""

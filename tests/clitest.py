@@ -404,7 +404,13 @@ args_dict = {
         # Ram overcommit
         "--ram 100000000000",
         # maxvcpus
-        "--vcpus 5,maxvcpus=10"
+        "--vcpus 5,maxvcpus=10",
+        # Topology
+        "--vcpus 4,cores=2,threads=2,sockets=2",
+        # Topology auto-fill
+        "--vcpus 4,cores=1",
+        # Topology only
+        "--vcpus sockets=2,threads=2",
       ],
 
       "invalid" : [
@@ -417,7 +423,9 @@ args_dict = {
         # Over host vcpus w/ --check-cpu
         "--vcpus 20 --check-cpu",
         # maxvcpus less than cpus
-        "--vcpus 5,maxvcpus=1"
+        "--vcpus 5,maxvcpus=1",
+        # vcpus unknown option
+        "--vcpus foo=bar",
       ],
 
     }, # category 'cpuram'
@@ -487,7 +495,7 @@ args_dict = {
         # Diskless PXE install
         ("--hvm --nodisks --pxe --print-step all", "simple-pxe"),
         # HVM windows install with disk
-        ("--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0", "w2k3-cdrom"),
+        ("--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --vcpus cores=4", "w2k3-cdrom"),
       ],
 
      }, # category "misc"

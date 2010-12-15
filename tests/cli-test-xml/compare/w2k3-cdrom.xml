@@ -10,11 +10,14 @@
   <features>
     <acpi/><apic/><pae/>
   </features>
+  <cpu>
+    <topology sockets='1' cores='4' threads='1'/>
+  </cpu>
   <clock offset="localtime"/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>destroy</on_reboot>
   <on_crash>destroy</on_crash>
-  <vcpu>1</vcpu>
+  <vcpu>4</vcpu>
   <devices>
     <emulator>/usr/bin/test-hv</emulator>
     <disk type='file' device='disk'>
@@ -45,11 +48,14 @@
   <features>
     <acpi/><apic/><pae/>
   </features>
+  <cpu>
+    <topology sockets='1' cores='4' threads='1'/>
+  </cpu>
   <clock offset="localtime"/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>destroy</on_reboot>
   <on_crash>destroy</on_crash>
-  <vcpu>1</vcpu>
+  <vcpu>4</vcpu>
   <devices>
     <emulator>/usr/bin/test-hv</emulator>
     <disk type='file' device='disk'>
@@ -80,11 +86,14 @@
   <features>
     <acpi/><apic/><pae/>
   </features>
+  <cpu>
+    <topology sockets='1' cores='4' threads='1'/>
+  </cpu>
   <clock offset="localtime"/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
-  <vcpu>1</vcpu>
+  <vcpu>4</vcpu>
   <devices>
     <emulator>/usr/bin/test-hv</emulator>
     <disk type='file' device='disk'>

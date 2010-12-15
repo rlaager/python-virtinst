@@ -367,17 +367,19 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
     def __validate_cpus(self, val):
         maxvcpus = _util.get_max_vcpus(self.conn, self.type)
-        if type(val) is not int or val < 1:
+        val = int(val)
+        if val < 1:
             raise ValueError(_("Number of vcpus must be a postive integer."))
         if val > maxvcpus:
             raise ValueError(_("Number of vcpus must be no greater than %d "
                                "for this vm type.") % maxvcpus)
+        return val
 
     # number of vcpus for the guest
     def get_vcpus(self):
         return self._vcpus
     def set_vcpus(self, val):
-        self.__validate_cpus(val)
+        val = self.__validate_cpus(val)
         self._vcpus = val
 
         # Don't force set maxvcpus unless already specified
@@ -395,7 +397,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def _get_maxvcpus(self):
         return self._maxvcpus
     def _set_maxvcpus(self, val):
-        self.__validate_cpus(val)
+        val = self.__validate_cpus(val)
         self._maxvcpus = val
     maxvcpus = _xml_property(_get_maxvcpus, _set_maxvcpus,
                              xpath="./vcpu",
@@ -906,6 +908,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         Return <cpu> XML
         """
+        self.cpu.set_topology_defaults(self.vcpus)
         return self.cpu.get_xml_config()
 
     def _get_clock_xml(self):
@@ -955,7 +958,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         else:
             maxv = curv
 
-        return "  <vcpu%s%s>%d</vcpu>" % (cpuset, curxml, maxv)
+        return "  <vcpu%s%s>%s</vcpu>" % (cpuset, curxml, maxv)
 
     ############################
     # Install Helper functions #

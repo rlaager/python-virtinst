@@ -501,7 +501,8 @@ def vcpu_cli_options(grp):
     grp.add_option("", "--vcpus", type="string", dest="vcpus",
         help=_("Number of vcpus to configure for your guest. Ex:\n"
                "--vcpus 5\n"
-               "--vcpus 5,maxcpus=10"))
+               "--vcpus 5,maxcpus=10\n"
+               "--vcpus sockets=2,cores=4,threads=2"))
     grp.add_option("", "--cpuset", type="string", dest="cpuset",
                    action="callback", callback=check_before_store,
                    help=_("Set which physical CPUs Domain can use."))
@@ -664,6 +665,15 @@ def get_uuid(uuid, guest):
         except ValueError, e:
             fail(e)
 
+def _build_set_param(inst, opts):
+    def _set_param(paramname, keyname, val=None):
+        val = get_opt_param(opts, keyname, val)
+        if val == None:
+            return
+        setattr(inst, paramname, val)
+
+    return _set_param
+
 def parse_vcpu_option(guest, optstring, default_vcpus):
     """
     Helper to parse --vcpu string
@@ -671,19 +681,31 @@ def parse_vcpu_option(guest, optstring, default_vcpus):
     vcpus, opts = parse_optstr(optstring, remove_first=True)
     vcpus = vcpus or default_vcpus
 
-    def set_param(paramname, dictname, val=None):
-        val = get_opt_param(opts, dictname, val)
-        if val == None:
-            return
-        setattr(guest, paramname, int(val))
+    set_param = _build_set_param(guest, opts)
+    set_cpu_param = _build_set_param(guest.cpu, opts)
+    has_vcpus = ("vcpus" in opts or
+                 vcpus)
 
     set_param("vcpus", "vcpus", vcpus)
     set_param("maxvcpus", "maxvcpus")
 
+    set_cpu_param("sockets", "sockets")
+    set_cpu_param("cores", "cores")
+    set_cpu_param("threads", "threads")
+
+    if not has_vcpus:
+        guest.vcpus = guest.cpu.vcpus_from_topology()
+
     if opts:
         raise ValueError(_("Unknown options %s") % opts.keys())
 
+
 def get_vcpus(vcpus, check_cpu, guest, conn, image_vcpus=None):
+    if vcpus is None and image_vcpus is not None:
+        vcpus = int(image_vcpus)
+
+    parse_vcpu_option(guest, vcpus, image_vcpus)
+
     if check_cpu:
         hostinfo = conn.getInfo()
         cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
@@ -696,10 +718,6 @@ def get_vcpus(vcpus, check_cpu, guest, conn, image_vcpus=None):
             if not prompt_for_yes_or_no(msg, askmsg):
                 nice_exit()
 
-    if vcpus is None and image_vcpus is not None:
-        vcpus = int(image_vcpus)
-
-    parse_vcpu_option(guest, vcpus, image_vcpus)
 
 def get_cpuset(cpuset, mem, guest, conn):
     if cpuset and cpuset != "auto":
@@ -773,8 +791,10 @@ def parse_optstr(optstr, basedict=None, remove_first=False):
     first = None
 
     if remove_first and optlist:
-        first = optlist[0][0]
-        optlist.remove(optlist[0])
+        first_tuple = optlist[0]
+        if first_tuple[1] == None:
+            first = first_tuple[0]
+            optlist.remove(first_tuple)
 
     for opt, val in optlist:
         optdict[opt] = val
@@ -959,10 +979,10 @@ def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
     if not video_models:
         video_models.append(None)
     for model in video_models:
-        dev = virtinst.VirtualVideoDevice(guest.conn)
+        vdev = virtinst.VirtualVideoDevice(guest.conn)
         if model:
-            dev.model_type = model
-        guest.add_device(dev)
+            vdev.model_type = model
+        guest.add_device(vdev)
 
 def get_sound(old_sound_bool, sound_opts, guest):
     if not sound_opts:

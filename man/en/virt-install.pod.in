@@ -106,11 +106,15 @@ specify UUID, you should use a 32-digit hexadecimal number. UUID are intended
 to be unique across the entire data center, and indeed world. Bear this in
 mind if manually specifying a UUID
 
-=item --vcpus=VCPUS[,maxvcpus=MAX]
+=item --vcpus=VCPUS[,maxvcpus=MAX][,sockets=#][,cores=#][,threads=#]
 
 Number of virtual cpus to configure for the guest. If 'maxvcpus' is specified,
 the guest will be able to hotplug up to MAX vcpus while the guest is running,
 but will startup with VCPUS.
+
+CPU topology can additionally be specified with sockets, cores, and threads.
+If values are omitted, the rest will be autofilled prefering sockets over
+cores over threads.
 
 =item --cpuset=CPUSET
 

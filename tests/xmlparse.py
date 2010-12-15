@@ -169,12 +169,12 @@ class XMLParseTest(unittest.TestCase):
         self.assertTrue(
             guest.seclabel.get_xml_config().startswith("<seclabel"))
 
-        # XXX: Find a way to set up default values here
-        #check = self._make_checker(guest.cpu)
-        #check("model", None, "foobar")
-        #check("cores", None, 4)
-        #guest.cpu.add_feature("x2apic", "forbid")
-        #self.assertTrue(guest.cpu.get_xml_config().startswith("<cpu"))
+        check = self._make_checker(guest.cpu)
+        check("model", None, "foobar")
+        check("cores", None, 4)
+        guest.cpu.add_feature("x2apic", "forbid")
+        guest.cpu.set_topology_defaults(guest.vcpus)
+        self.assertTrue(guest.cpu.get_xml_config().startswith("<cpu"))
 
         self.assertTrue(guest.installer.get_xml_config().startswith("<os"))
 
