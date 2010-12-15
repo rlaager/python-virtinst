@@ -70,6 +70,9 @@ class LiveCDInstaller(Installer.Installer):
     def post_install_check(self, guest):
         return True
 
+    def has_install_phase(self):
+        return False
+
     # Internal methods
     def _get_bootdev(self, isinstall, guest):
         if isinstall:

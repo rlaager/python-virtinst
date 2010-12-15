@@ -329,6 +329,14 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
 
         return self._get_osblob_helper(guest, isinstall, bootconfig)
 
+    def has_install_phase(self):
+        """
+        Return True if the requested setup is actually installing an OS
+        into the guest. Things like LiveCDs, Import, or a manually specified
+        bootorder do not have an install phase.
+        """
+        return True
+
     def cleanup(self):
         """
         Remove any temporary files retrieved during installation

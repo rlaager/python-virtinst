@@ -1063,6 +1063,8 @@ def start_install(guest, continue_inst, options):
 
     conscb = options.autoconsole and show_console or None
     meter = options.quiet and progress.BaseMeter() or progress.TextMeter()
+    logging.debug("Guest.has_install_phase: %s" %
+                  guest.installer.has_install_phase())
 
     # we've got everything -- try to start the install
     print_stdout(_("\nStarting install..."))
@@ -1090,12 +1092,13 @@ def start_install(guest, continue_inst, options):
             dom = check_domain(guest, dom, conscb,
                                wait_on_install, wait_time, start_time)
 
-        if options.noreboot:
+        if options.noreboot or not guest.installer.has_install_phase():
+            # XXX: --noreboot doesn't work with say import/livecd. what
+            # should it do? never startup the guest?
             print_stdout(
-                  _("Guest installation complete... you can restart your "
+                  _("Guest creation complete... you can restart your "
                     "domain\nby running 'virsh start %s'") % guest.name)
         else:
-            # FIXME: Should we say 'installation' complete for livecd, import?
             print_stdout(
                 _("Guest installation complete... restarting guest."))
             dom.create()
@@ -1160,7 +1163,13 @@ def check_domain(guest, dom, conscb, wait_for_install, wait_time, start_time):
     logging.debug("Domain state after install: %s" % state)
 
     if not wait_for_install or wait_time == 0:
-        # User specified --wait 0 or --noautoconsole, so just exit.
+        # User either:
+        #   used --noautoconsole
+        #   used --wait 0
+        #   killed console and guest is still running
+        if not guest.installer.has_install_phase():
+            return dom
+
         print_stdout(
             _("Domain installation still in progress. You can reconnect"
               " to \nthe console to complete the installation process."))

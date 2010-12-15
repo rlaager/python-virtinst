@@ -1034,8 +1034,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             osblob_install = False
 
         osblob = self._get_osblob(osblob_install)
-        if not osblob:
-            # This means there is no 'install' phase, so just return
+        if osblob_install and not self.installer.has_install_phase():
             return None
 
         desc_xml = ""
@@ -1080,16 +1079,12 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         Return True if this guest requires a call to 'continue_install',
         which means the OS requires a 2 stage install (windows)
         """
-        val = self._lookup_osdict_key("continue")
-        if not val:
-            val = False
+        # If we are doing an 'import' or 'liveCD' install, there is
+        # no true install process, so continue install has no meaning
+        if not self.installer.has_install_phase():
+            return False
 
-        if val == True:
-            # If we are doing an 'import' or 'liveCD' install, there is
-            # no true install process, so continue install has no meaning
-            if not self.get_xml_config(install=True):
-                val = False
-        return val
+        return self._lookup_osdict_key("continue")
 
     def validate_parms(self):
         """
@@ -1244,7 +1239,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         @param is_initial: If running initial guest creation, else we
                            are continuing the install
         """
-        has_install_phase = bool(start_xml)
         if is_initial:
             meter_label = _("Creating domain...")
         else:
@@ -1263,13 +1257,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self.domain = dom
         meter.end(0)
 
-        if has_install_phase:
-            # Only connect to the console if we are actually 'installing',
-            # otherwise leave post-install console connection up to the
-            # client (virt-install)
-            logging.debug("Started guest, connecting to console if requested")
-            (self.domain,
-             self._consolechild) = self._wait_and_connect_console(consolecb)
+        logging.debug("Started guest, connecting to console if requested")
+        (self.domain,
+         self._consolechild) = self._wait_and_connect_console(consolecb)
 
         self.domain = self.conn.defineXML(final_xml)
 
