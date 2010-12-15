@@ -1264,7 +1264,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         meter.end(0)
 
         if has_install_phase:
-            logging.debug("Started guest, looking to see if it is running")
+            # Only connect to the console if we are actually 'installing',
+            # otherwise leave post-install console connection up to the
+            # client (virt-install)
+            logging.debug("Started guest, connecting to console if requested")
             (self.domain,
              self._consolechild) = self._wait_and_connect_console(consolecb)
 
