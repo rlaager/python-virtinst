@@ -173,13 +173,13 @@ def parse_boot_option(guest, optstring):
         raise ValueError(_("Unknown options %s") % opts.keys())
 
 
-def parse_char_option(guest, char_type, optstring):
+def parse_char_option(guest, dev_type, optstring):
     """
     Helper to parse --serial/--parallel options
     """
     # Peel the char type off the front
-    dev_type, opts = cli.parse_optstr(optstring, remove_first=True)
-    dev = VirtualCharDevice.get_dev_instance(guest.conn, char_type, dev_type)
+    char_type, opts = cli.parse_optstr(optstring, remove_first=True)
+    dev = VirtualCharDevice.get_dev_instance(guest.conn, dev_type, char_type)
 
     def set_param(paramname, dictname, val=None):
         val = cli.get_opt_param(opts, dictname, val)
@@ -189,7 +189,7 @@ def parse_char_option(guest, char_type, optstring):
         if not dev.supports_property(paramname):
             raise ValueError(_("%(chartype)s type %(devtype)s does not "
                                 "support '%(optname)s' option.") %
-                                {"chartype" : char_type, "devtype": dev_type,
+                                {"devtype" : dev_type, "chartype": char_type,
                                  "optname" : dictname} )
         setattr(dev, paramname, val)
 
