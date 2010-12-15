@@ -908,7 +908,7 @@ class VirtualDisk(VirtualDevice):
         if self._is_parse():
             self.type = self.get_type()
             self.driver_name = self.get_driver_name()
-            self.driver_name = self.get_driver_type()
+            self.driver_type = self.get_driver_type()
 
 
     def __set_format(self):

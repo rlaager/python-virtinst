@@ -23,6 +23,7 @@ import virtinst
 import utils
 
 conn = utils.open_testdriver()
+kvmconn = utils.open_testkvmdriver()
 
 def sanitize_file_xml(xml):
     # s/"/'/g from generated XML, matches what libxml dumps out
@@ -575,6 +576,36 @@ class XMLParseTest(unittest.TestCase):
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
+    def testChangeKVMMedia(self):
+        infile  = "tests/xmlparse-xml/change-media-in.xml"
+        outfile = "tests/xmlparse-xml/change-media-out.xml"
+        guest = virtinst.Guest(connection=kvmconn,
+                               parsexml=file(infile).read())
+
+        disk = guest.get_devices("disk")[0]
+        check = self._make_checker(disk)
+        check("path", None, "/default-pool/default-vol")
+
+        disk = guest.get_devices("disk")[1]
+        check = self._make_checker(disk)
+        check("path", None, "/default-pool/default-vol")
+        check("path", "/default-pool/default-vol", "/disk-pool/diskvol1")
+
+        disk = guest.get_devices("disk")[2]
+        check = self._make_checker(disk)
+        check("path", None, "/disk-pool/diskvol1")
+
+        disk = guest.get_devices("disk")[3]
+        check = self._make_checker(disk)
+        check("path", None, "/default-pool/default-vol")
+
+        disk = guest.get_devices("disk")[4]
+        check = self._make_checker(disk)
+        check("path", None, "/disk-pool/diskvol1")
+
+
+
+        self._alter_compare(guest.get_config_xml(), outfile)
 
 if __name__ == "__main__":
     unittest.main()

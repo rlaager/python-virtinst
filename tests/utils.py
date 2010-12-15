@@ -19,17 +19,27 @@ import os
 import logging
 
 import libvirt
+import virtinst.cli
 
 # Used to ensure consistent SDL xml output
 os.environ["HOME"] = "/tmp"
 os.environ["DISPLAY"] = ":3.4"
+
+_cwd        = os.getcwd()
+_testuri    = "test:///%s/tests/testdriver.xml" % _cwd
+_fakeuri    = "__virtinst_test__" + _testuri + ",predictable"
+_kvmcaps    = "%s/tests/capabilities-xml/libvirt-0.7.6-qemu-caps.xml" % _cwd
+_kvmuri     = "%s,caps=%s,qemu" % (_fakeuri, _kvmcaps)
 
 def get_debug():
     return ("DEBUG_TESTS" in os.environ and
             os.environ["DEBUG_TESTS"] == "1")
 
 def open_testdriver():
-    return libvirt.open("test:///%s/tests/testdriver.xml" % os.getcwd())
+    return virtinst.cli.getConnection(_testuri)
+
+def open_testkvmdriver():
+    return virtinst.cli.getConnection(_kvmuri)
 
 # Register libvirt handler
 def libvirt_callback(ignore, err):

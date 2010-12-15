@@ -28,7 +28,6 @@
       <target dev="hdb" bus="ide"/>
     </disk>
     <disk type="block" device="floppy">
-      <driver type="raw"/>
       <target dev="fde" bus="fdc"/>
     </disk>
     <disk type="block" device="disk">
