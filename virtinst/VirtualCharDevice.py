@@ -124,9 +124,6 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         # allow an API user to just use hasattr(obj, paramname) to see
         # what parameters apply, instead of having to hardcode all that
         # information.
-        if dev_type == VirtualCharDevice.DEV_CONSOLE:
-            return VirtualConsoleDevice(conn)
-
         if char_type == VirtualCharDevice.CHAR_PTY:
             c = VirtualCharPtyDevice
         elif char_type == VirtualCharDevice.CHAR_STDIO:
@@ -150,6 +147,9 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         else:
             raise ValueError(_("Unknown character device type '%s'.") %
                              char_type)
+
+        if dev_type == VirtualCharDevice.DEV_CONSOLE:
+            return VirtualConsoleDevice(conn)
 
         return c(conn, dev_type)
     get_dev_instance = staticmethod(get_dev_instance)
