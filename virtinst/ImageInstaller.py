@@ -109,8 +109,6 @@ class ImageInstaller(Installer.Installer):
 
     # Private methods
     def _get_bootdev(self, isinstall, guest):
-        if isinstall:
-            return None
         return self.boot_caps.bootdev
 
     def _make_disks(self):

@@ -75,6 +75,4 @@ class LiveCDInstaller(Installer.Installer):
 
     # Internal methods
     def _get_bootdev(self, isinstall, guest):
-        if isinstall:
-            return None
         return self.bootconfig.BOOT_DEVICE_CDROM

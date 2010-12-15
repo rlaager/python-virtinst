@@ -313,16 +313,15 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
                           'post-install' phase.
         @type isinstall: C{bool}
         """
-        bootdev = self._get_bootdev(isinstall, guest)
         if isinstall:
             bootconfig = self._install_bootconfig
         else:
             bootconfig = self.bootconfig
 
-        if isinstall and not bootdev:
-            # No install phase
+        if isinstall and not self.has_install_phase():
             return
 
+        bootdev = self._get_bootdev(isinstall, guest)
         bootconfig = copy.copy(bootconfig)
         if not bootconfig.bootorder:
             bootconfig.bootorder = [bootdev]

@@ -42,8 +42,6 @@ class ImportInstaller(Installer.Installer):
 
     # Private methods
     def _get_bootdev(self, isinstall, guest):
-        if isinstall:
-            return None
         if not guest.disks:
             return self.bootconfig.BOOT_DEVICE_HARDDISK
         return self._disk_to_bootdev(guest.disks[0])
