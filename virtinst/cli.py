@@ -506,6 +506,9 @@ def vcpu_cli_options(grp):
     grp.add_option("", "--cpuset", type="string", dest="cpuset",
                    action="callback", callback=check_before_store,
                    help=_("Set which physical CPUs Domain can use."))
+    grp.add_option("", "--cpu", type="string", dest="cpu",
+        action="callback", callback=check_before_store,
+        help=_("CPU model and features. Ex: --cpu coreduo,+x2apic"))
     grp.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
                    help=optparse.SUPPRESS_HELP)
 
@@ -683,8 +686,7 @@ def parse_vcpu_option(guest, optstring, default_vcpus):
 
     set_param = _build_set_param(guest, opts)
     set_cpu_param = _build_set_param(guest.cpu, opts)
-    has_vcpus = ("vcpus" in opts or
-                 vcpus)
+    has_vcpus = ("vcpus" in opts or vcpus)
 
     set_param("vcpus", "vcpus", vcpus)
     set_param("maxvcpus", "maxvcpus")
@@ -735,6 +737,52 @@ def get_cpuset(cpuset, mem, guest, conn):
             guest.cpuset = tmpset
 
     return
+
+def parse_cpu(guest, optstring):
+    default_dict = {
+        "force": [],
+        "require": [],
+        "optional": [],
+        "disable": [],
+        "forbid": [],
+    }
+    model, opts = parse_optstr(optstring,
+                               basedict=default_dict,
+                               remove_first=True)
+
+    # Convert +feature, -feature into expected format
+    for key, value in opts.items():
+        policy = None
+        if value or len(key) == 1:
+            continue
+
+        if key.startswith("+"):
+            policy = "force"
+        elif key.startswith("-"):
+            policy = "disable"
+
+        if policy:
+            del(opts[key])
+            opts[policy].append(key[1:])
+
+    set_param = _build_set_param(guest.cpu, opts)
+    def set_features(policy):
+        for name in opts.get(policy):
+            guest.cpu.add_feature(name, policy)
+        del(opts[policy])
+
+    set_param("model", "model", model)
+    set_param("match", "match")
+    set_param("vendor", "vendor")
+
+    set_features("force")
+    set_features("require")
+    set_features("optional")
+    set_features("disable")
+    set_features("forbid")
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
 
 def get_network(net_kwargs, guest):
     n = VirtualNetworkInterface(**net_kwargs)
@@ -797,7 +845,10 @@ def parse_optstr(optstr, basedict=None, remove_first=False):
             optlist.remove(first_tuple)
 
     for opt, val in optlist:
-        optdict[opt] = val
+        if type(optdict.get(opt)) is list:
+            optdict[opt].append(val)
+        else:
+            optdict[opt] = val
 
     return (first, optdict)
 

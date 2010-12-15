@@ -411,6 +411,10 @@ args_dict = {
         "--vcpus 4,cores=1",
         # Topology only
         "--vcpus sockets=2,threads=2",
+        # Simple --cpu
+        "--cpu somemodel",
+        # Crazy --cpu
+        "--cpu foobar,+x2apic,+x2apicagain,-distest,forbid=foo,forbid=bar,disable=distest2,optional=opttest,require=reqtest,match=strict,vendor=meee",
       ],
 
       "invalid" : [

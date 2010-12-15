@@ -191,6 +191,7 @@ def main():
     cli.get_uuid(options.uuid, guest)
     cli.get_vcpus(options.vcpus, options.check_cpu,
                   guest, conn, image.domain.vcpu)
+    cli.parse_cpu(guest, options.cpu)
     # For now, we only allow one NIC
     get_networks(image.domain, options.mac, options.bridge,
                  options.network, guest)

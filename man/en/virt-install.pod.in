@@ -126,6 +126,27 @@ Set which physical cpus the guest can use. C<CPUSET> is a comma separated list o
 If the value 'auto' is passed, virt-install attempts to automatically determine
 an optimal cpu pinning using NUMA data, if available.
 
+=item --cpu MODEL[,+feature][,-feature][,match=MATCH][,vendor=VENDOR]
+
+Configure the CPU model and CPU features exposed to the guest. The only
+required value is MODEL, which is a valid CPU model as listed in libvirt's
+cpu_map.xml file.
+
+Specific CPU features can be specified in a number of ways: using one of
+libvirt's feature policy values force, require, optional, disable, or forbid,
+or with the shorthand '+feature' and '-feature', which equal 'force=feature'
+and 'disable=feature' respectively
+
+Some examples:
+
+=over 2
+
+=item B<--cpu core2duo,+x2apic,disable=vmx>
+
+Expose the core2duo CPU model, force enable x2apic, but do not expose vmx
+
+=back
+
 =item --description
 
 Human readable text description of the virtual machine. This will be stored

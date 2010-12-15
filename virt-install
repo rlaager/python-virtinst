@@ -969,6 +969,7 @@ def build_guest_instance(conn, options):
     cli.get_uuid(options.uuid, guest)
     cli.get_vcpus(options.vcpus, options.check_cpu, guest, conn)
     cli.get_cpuset(options.cpuset, guest.memory, guest, conn)
+    cli.parse_cpu(guest, options.cpu)
     get_security(options.security, guest)
     parse_boot_option(guest, options.bootopts)
 
