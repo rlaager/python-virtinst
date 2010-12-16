@@ -62,10 +62,10 @@ exist_images = [
 ]
 
 # Images that need to exist ahead of time for virt-image
-virtimage_exist = [os.path.join(xmldir, "cli_root.raw")]
+virtimage_exist = ["/tmp/__virtinst__cli_root.raw"]
 
 # Images created by virt-image
-virtimage_new = [os.path.join(xmldir, "cli_scratch.raw")]
+virtimage_new = ["/tmp/__virtinst__cli_scratch.raw"]
 
 # virt-convert output dirs
 virtconv_dirs = [virtconv_out]
@@ -826,6 +826,12 @@ args_dict = {
         "--name test",
       ],
 
+      "compare" : [
+        ("--name foobar --ram 64 --os-variant winxp --boot 0", "image-boot0"),
+        ("--name foobar --ram 64 --network user,model=e1000 --boot 1",
+         "image-boot1"),
+      ]
+
      }, # category 'misc'
 
      "network": {
@@ -1001,10 +1007,17 @@ def run_tests(do_app, do_category):
                 cmdstr = cmdstr.replace("--debug ", "").replace("-d ", "")
                 if not cmdstr.count("--uuid"):
                     cmdstr += " --uuid 00000000-1111-2222-3333-444444444444"
-                if (not cmdstr.count("--print-xml") and
-                    not cmdstr.count("--print-step") and
-                    not cmdstr.count("--quiet")):
-                    cmdstr += " --print-step all"
+
+                if app == "virt-install":
+                    if (not cmdstr.count("--print-xml") and
+                        not cmdstr.count("--print-step") and
+                        not cmdstr.count("--quiet")):
+                        cmdstr += " --print-step all"
+
+                elif app == "virt-image":
+                    if not cmdstr.count("--print"):
+                        cmdstr += " --print"
+
                 if not cmdstr.count(fakeuri):
                     cmdstr += " --connect %s" % fakeuri
 
