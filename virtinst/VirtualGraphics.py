@@ -191,7 +191,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
                                "5900 and 65535, or -1 for auto allocation"))
         self._port = val
     port = _xml_property(get_port, set_port,
-                         get_converter=lambda s, x: int(x),
+                         get_converter=lambda s, x: int(x or -1),
                          xpath="./@port")
 
     def get_listen(self):
