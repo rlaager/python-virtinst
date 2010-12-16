@@ -15,7 +15,6 @@
   <cpu match='exact'>
     <model>core2duo</model>
     <vendor>Intel</vendor>
-    <topology sockets='7' cores='5' threads='3'/>
     <feature policy='require' name='pbe'/>
     <feature policy='require' name='tm2'/>
     <feature policy='require' name='est'/>
@@ -70,7 +69,6 @@
   <cpu match='exact'>
     <model>core2duo</model>
     <vendor>Intel</vendor>
-    <topology sockets='7' cores='5' threads='3'/>
     <feature policy='require' name='pbe'/>
     <feature policy='require' name='tm2'/>
     <feature policy='require' name='est'/>

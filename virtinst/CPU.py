@@ -188,10 +188,6 @@ class CPU(XMLBuilderDomain.XMLBuilderDomain):
         self.model = cpu.model
         self.vendor = cpu.vendor
 
-        self.sockets = cpu.sockets
-        self.cores = cpu.cores
-        self.threads = cpu.threads
-
         for feature in self.features:
             self.remove_feature(feature)
         for name in cpu.features.names():
