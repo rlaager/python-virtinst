@@ -28,7 +28,7 @@ import errno
 from optparse import OptionGroup
 
 import virtinst.cli as cli
-from virtinst.cli import fail
+from virtinst.cli import fail, print_stdout, print_stderr
 import virtinst.util as util
 import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
@@ -82,7 +82,7 @@ def parse_args():
 
     misc = OptionGroup(opts, "Miscellaneous Options")
     misc.add_option("-q", "--quiet", action="store_true", dest="quiet",
-                    help=_("Don't be verbose"))
+                    help=_("Suppress non-error output"))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=_("Print debugging information"))
     opts.add_option_group(misc)
@@ -90,7 +90,7 @@ def parse_args():
 
     (options, args) = opts.parse_args()
 
-    cli.setupLogging("virt-convert", options.debug)
+    cli.setupLogging("virt-convert", options.debug, options.quiet)
 
     if len(args) < 1:
         opts.error(_("You need to provide an input VM definition"))
@@ -146,11 +146,6 @@ def parse_args():
         options.input_dir = os.path.dirname(os.path.realpath(args[0]))
 
     return options
-
-def verbose(options, msg):
-    """Output a message if --quiet is not set."""
-    if not options.quiet:
-        print msg
 
 def cleanup(msg, options, vmdef, paths):
     """
@@ -226,9 +221,9 @@ def main():
     logging.debug("output_file: %s" % options.output_file)
     logging.debug("output_dir: %s" % options.input_dir)
 
-    verbose(options, _("Generating output in '%(format)s' format to %(dir)s/") %
+    print_stdout(options,
+        _("Generating output in '%(format)s' format to %(dir)s/") %
         {"format": options.output_format, "dir": options.output_dir})
-
 
     try:
         for d in vmdef.disks.values():
@@ -247,8 +242,8 @@ def main():
                     dformat = "raw"
 
             if d.path and dformat != "none":
-                verbose(options, _("Converting disk '%(path)s' to type "
-                                   "%(format)s...") % {"path": d.path,
+                print_stdout(options, _("Converting disk '%(path)s' to type "
+                                      "%(format)s...") % {"path": d.path,
                                                        "format": dformat})
 
             d.convert(options.input_dir, options.output_dir, dformat)
@@ -266,7 +261,7 @@ def main():
         cleanup(_("Couldn't export to file \"%s\": %s") %
             (options.output_file, e), options, vmdef, clean)
 
-    verbose(options, "Done.")
+    print_stdout(options, "Done.")
 
 
 if __name__ == "__main__":
@@ -275,6 +270,6 @@ if __name__ == "__main__":
     except SystemExit, sys_e:
         sys.exit(sys_e.code)
     except KeyboardInterrupt:
-        print >> sys.stderr, _("Aborted at user request")
+        print_stderr(_("Aborted at user request"))
     except Exception, main_e:
         fail(main_e)

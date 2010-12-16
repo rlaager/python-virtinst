@@ -27,7 +27,7 @@ import urlgrabber.progress as progress
 
 from optparse import OptionGroup
 import virtinst.cli as cli
-from virtinst.cli import fail
+from virtinst.cli import fail, print_stdout, print_stderr
 from virtinst.User import User
 
 cli.setupGettext()
@@ -190,6 +190,8 @@ def parse_args():
                     help=_("Do not prompt for input. Answers yes where "
                            "applicable, terminates for all other prompts"),
                     default=False)
+    misc.add_option("-q", "--quiet", action="store_true", dest="quiet",
+                    help=_("Suppress non-error output"))
     misc.add_option("", "--clone-running", action="store_true",
                     dest="clone_running", default=False,
                     help=_("Allow cloning a running domain"))
@@ -203,7 +205,7 @@ def main():
     cli.earlyLogging()
     options, parseargs = parse_args()
 
-    cli.setupLogging("virt-clone", options.debug)
+    cli.setupLogging("virt-clone", options.debug, options.quiet)
     if parseargs:
         fail(_("Unknown argument '%s'") % parseargs[0])
 
@@ -242,7 +244,8 @@ def main():
     meter = progress.TextMeter()
     clmgr.start_duplicate(design, meter)
 
-    print _("\nClone '%s' created successfully.") % design.clone_name
+    print_stdout("")
+    print_stdout(_("Clone '%s' created successfully.") % design.clone_name)
     logging.debug("end clone")
 
 if __name__ == "__main__":
@@ -251,6 +254,6 @@ if __name__ == "__main__":
     except SystemExit, sys_e:
         sys.exit(sys_e.code)
     except KeyboardInterrupt:
-        print >> sys.stderr, _("Installation aborted at user request")
+        print_stderr(_("Installation aborted at user request"))
     except Exception, main_e:
         fail(main_e)

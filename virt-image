@@ -28,7 +28,7 @@ import virtinst
 import virtinst.ImageParser
 import virtinst.CapabilitiesParser
 import virtinst.cli as cli
-from virtinst.cli import fail
+from virtinst.cli import fail, print_stdout, print_stderr
 
 import optparse
 from optparse import OptionGroup
@@ -142,6 +142,8 @@ def parse_args():
                     help=_("Do not prompt for input. Answers yes where "
                            "applicable, terminates for all other prompts"),
                     default=False)
+    misc.add_option("-q", "--quiet", action="store_true", dest="quiet",
+                    help=_("Suppress non-error output"))
     parser.add_option_group(misc)
 
     (options, args) = parser.parse_args()
@@ -156,7 +158,8 @@ def main():
     cli.earlyLogging()
     options = parse_args()
 
-    cli.setupLogging("virt-image", options.debug)
+    options.quiet = options.print_only or options.quiet
+    cli.setupLogging("virt-image", options.debug, options.quiet)
     cli.set_prompt(options.prompt)
     cli.set_force(options.force)
 
@@ -209,37 +212,29 @@ def main():
         if options.noapic:
             guest.features["apic"] = False
 
-    if not options.skipchecksum:
-        meter = progress.TextMeter()
-        for disk in image.storage.values():
-            disk.check_disk_signature(meter=meter)
-
 
     # we've got everything -- try to start the install
     if options.print_only:
         start_xml, final_xml = guest.start_install(return_xml=True)
-        print start_xml or final_xml
+        print_stdout(start_xml or final_xml, do_force=True)
         return
+
+    meter = progress.TextMeter()
+
+    if not options.skipchecksum:
+        for disk in image.storage.values():
+            disk.check_disk_signature(meter=meter)
+
     try:
-        progresscb = progress.TextMeter()
+        print_stdout("\n")
+        print_stdout(_("Creating guest %s...") % guest.name)
 
-        print _("\n\nCreating guest %s...") % guest.name
-
-        dom = guest.start_install(None, progresscb)
-        if dom is None:
-            print _("Guest creation failed")
-            sys.exit(1)
-
+        guest.start_install(None, meter)
     except RuntimeError:
         raise
     except Exception, e:
         fail(e, do_exit=False)
-        print
-        print _("Domain creation may not have been\n"
-                "successful.  If it was, you can restart your domain\n"
-                "by running 'virsh start %s'; otherwise, please\n"
-                "restart your installation.") % guest.name
-        sys.exit(1)
+        cli.install_fail(guest)
 
 if __name__ == "__main__":
     try:
@@ -247,6 +242,6 @@ if __name__ == "__main__":
     except SystemExit, sys_e:
         sys.exit(sys_e.code)
     except KeyboardInterrupt:
-        print >> sys.stderr, _("Installation aborted at user request")
+        print_stderr(_("Installation aborted at user request"))
     except Exception, main_e:
         fail(main_e)

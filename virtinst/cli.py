@@ -299,6 +299,19 @@ def nice_exit():
     print_stdout(_("Exiting at user request."))
     sys.exit(0)
 
+def virsh_start_cmd(guest):
+    return ("virsh --connect %s start %s" % (guest.conn.getURI(), guest.name))
+
+def install_fail(guest):
+    virshcmd = virsh_start_cmd(guest)
+
+    print_stderr(
+        _("Domain installation does not appear to have been successful.\n"
+          "If it was, you can restart your domain by running:\n"
+          "  %s\n"
+          "otherwise, please restart your installation.") % virshcmd)
+    sys.exit(1)
+
 # Connection opening helper functions
 def getConnection(uri):
     if (uri and not User.current().has_priv(User.PRIV_CREATE_DOMAIN, uri)):

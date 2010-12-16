@@ -1037,9 +1037,6 @@ def start_install(guest, continue_inst, options):
         else:
             return txt_console(dom, guest.conn.getURI())
 
-    virshcmd = ("virsh --connect %s start %s" %
-                (guest.conn.getURI(), guest.name))
-
     # There are two main cases we care about:
     #
     # Scripts: these should specify --wait always, maintaining the
@@ -1083,12 +1080,7 @@ def start_install(guest, continue_inst, options):
 
         # This should be valid even before doing continue install
         if not guest.post_install_check():
-            print_stderr(
-            _("Domain installation does not appear to have been successful.\n"
-              "If it was, you can restart your domain by running:\n"
-              "  %s\n"
-              "otherwise, please restart your installation.") % virshcmd)
-            sys.exit(1)
+            cli.install_fail(guest)
 
         if continue_inst:
             dom = guest.continue_install(conscb, meter, wait=wait_on_console)
@@ -1100,7 +1092,7 @@ def start_install(guest, continue_inst, options):
             # should it do? never startup the guest?
             print_stdout(
             _("Domain creation completed. You can restart your domain by "
-              "running:\n  %s") % virshcmd)
+              "running:\n  %s") % cli.virsh_start_cmd(guest))
         else:
             print_stdout(
                 _("Guest installation complete... restarting guest."))
@@ -1117,12 +1109,7 @@ def start_install(guest, continue_inst, options):
         sys.exit(e.code)
     except Exception, e:
         fail(e, do_exit=False)
-        print_stderr(
-        _("Domain installation does not appear to have been successful.\n"
-          "If it was, you can restart your domain by running:\n"
-          "  %s\n"
-          "otherwise, please restart your installation.") % virshcmd)
-        sys.exit(1)
+        cli.install_fail(guest)
 
 def check_domain(guest, dom, conscb, wait_for_install, wait_time, start_time):
     """
