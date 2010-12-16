@@ -35,6 +35,20 @@ class VirtualController(VirtualDevice.VirtualDevice):
                         CONTROLLER_TYPE_VIRTIOSERIAL]
 
     @staticmethod
+    def pretty_type(ctype):
+        pretty_mappings = {
+            VirtualController.CONTROLLER_TYPE_IDE           : "IDE",
+            VirtualController.CONTROLLER_TYPE_FDC           : "Floppy",
+            VirtualController.CONTROLLER_TYPE_SCSI          : "SCSI",
+            VirtualController.CONTROLLER_TYPE_SATA          : "SATA",
+            VirtualController.CONTROLLER_TYPE_VIRTIOSERIAL  : "Virtio Serial"
+        }
+
+        if ctype not in pretty_mappings:
+            return ctype
+        return pretty_mappings[ctype]
+
+    @staticmethod
     def get_class_for_type(ctype):
         if ctype not in VirtualController.CONTROLLER_TYPES:
             raise ValueError("Unknown controller type '%s'" % ctype)
