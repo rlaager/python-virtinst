@@ -199,5 +199,53 @@ class TestCapabilities(unittest.TestCase):
         test_utils(rhel_kvm_caps, False, True, True, False, False)
         test_utils(new_caps_no_kvm, False, True, False, False, False)
 
+    def testCPUMap(self):
+        caps = self._buildCaps("libvirt-0.7.6-qemu-caps.xml")
+        cpu_64 = caps.get_cpu_values("x86_64")
+        cpu_32 = caps.get_cpu_values("i486")
+        cpu_random = caps.get_cpu_values("mips")
+
+        def test_cpu_map(cpumap, vendors, features, cpus):
+            cpunames = sorted(map(lambda c: c.model, cpumap.cpus),
+                              key=str.lower)
+
+            self.assertEquals(cpumap.vendors, vendors)
+            self.assertEquals(cpumap.features, features)
+            self.assertEquals(cpunames, cpus)
+
+        def test_single_cpu(cpumap, model, vendor, features):
+            cpu = cpumap.get_cpu(model)
+            self.assertEquals(cpu.vendor, vendor)
+            self.assertEquals(cpu.features, features)
+
+        self.assertEquals(cpu_64, cpu_32)
+
+        x86_vendors = ["AMD", "Intel"]
+        x86_features = [
+            '3dnow', '3dnowext', '3dnowprefetch', 'abm', 'acpi', 'apic',
+            'cid', 'clflush', 'cmov', 'cmp_legacy', 'cr8legacy', 'cx16',
+            'cx8', 'dca', 'de', 'ds', 'ds_cpl', 'est', 'extapic', 'fpu',
+            'fxsr', 'fxsr_opt', 'ht', 'hypervisor', 'ia64', 'lahf_lm', 'lm',
+            'mca', 'mce', 'misalignsse', 'mmx', 'mmxext', 'monitor', 'msr',
+            'mtrr', 'nx', 'osvw', 'pae', 'pat', 'pbe', 'pdpe1gb', 'pge', 'pn',
+            'pni', 'popcnt', 'pse', 'pse36', 'rdtscp', 'sep', 'skinit', 'ss',
+            'sse', 'sse2', 'sse4.1', 'sse4.2', 'sse4a', 'ssse3', 'svm',
+            'syscall', 'tm', 'tm2', 'tsc', 'vme', 'vmx', 'wdt', 'x2apic',
+            'xtpr']
+        x86_cpunames = [
+            '486', 'athlon', 'Conroe', 'core2duo', 'coreduo', 'n270',
+            'Nehalem', 'Opteron_G1', 'Opteron_G2', 'Opteron_G3', 'Penryn',
+            'pentium', 'pentium2', 'pentium3', 'pentiumpro', 'phenom',
+            'qemu32', 'qemu64']
+
+        test_cpu_map(cpu_64, x86_vendors, x86_features, x86_cpunames)
+        test_cpu_map(cpu_random, [], [], [])
+
+        athlon_features = [
+            '3dnow', '3dnowext', 'apic', 'cmov', 'cx8', 'de', 'fpu', 'fxsr',
+            'mce', 'mmx', 'mmxext', 'msr', 'mtrr', 'pae', 'pat', 'pge', 'pse',
+            'pse36', 'sep', 'sse', 'sse2', 'tsc', 'vme']
+        test_single_cpu(cpu_64, "athlon", "AMD", athlon_features)
+
 if __name__ == "__main__":
     unittest.main()

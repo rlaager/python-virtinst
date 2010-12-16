@@ -19,6 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import re
+
 from virtinst import _virtinst as _
 import _util
 
@@ -29,6 +31,114 @@ class CapabilitiesParserException(Exception):
 # Whether a guest can be created with a certain feature on resp. off
 FEATURE_ON      = 0x01
 FEATURE_OFF     = 0x02
+
+class CPUValuesModel(object):
+    """
+    Single <model> definition from cpu_map
+    """
+    def __init__(self, node):
+        self.model = node.prop("name")
+        self.features = []
+        self.parent = None
+        self.vendor = None
+
+        self._parseXML(node)
+
+    def _parseXML(self, node):
+        child = node.children
+        while child:
+            if child.name == "model":
+                self.parent = child.prop("name")
+            if child.name == "vendor":
+                self.vendor = child.prop("name")
+            if child.name == "feature":
+                self.features.append(child.prop("name"))
+
+            child = child.next
+
+        self.features.sort()
+
+    def inheritParent(self, parentcpu):
+        self.vendor = parentcpu.vendor or self.vendor
+        self.features += parentcpu.features
+        self.features.sort()
+
+
+class CPUValuesArch(object):
+    """
+    Single <arch> instance of valid CPUs
+    """
+    def __init__(self, arch, node=None):
+        self.arch = arch
+        self.vendors = []
+        self.cpus = []
+        self.features = []
+
+        if node:
+            self._parseXML(node)
+
+    def _parseXML(self, node):
+        child = node.children
+        while child:
+            if child.name == "vendor":
+                self.vendors.append(child.prop("name"))
+            if child.name == "feature":
+                self.features.append(child.prop("name"))
+            if child.name == "model":
+                newcpu = CPUValuesModel(child)
+                if newcpu.parent:
+                    for chkcpu in self.cpus:
+                        if chkcpu.model == newcpu.parent:
+                            newcpu.inheritParent(chkcpu)
+                self.cpus.append(newcpu)
+
+            child = child.next
+
+        self.vendors.sort()
+        self.features.sort()
+
+    def get_cpu(self, model):
+        for c in self.cpus:
+            if c.model == model:
+                return c
+        raise ValueError(_("Unknown CPU model '%s'") % model)
+
+class CPUValues(object):
+    """
+    Lists valid values for domain <cpu> parameters, parsed from libvirt's
+    local cpu_map.xml
+    """
+    def __init__(self, cpu_filename=None):
+        self.archmap = {}
+        if not cpu_filename:
+            cpu_filename = "/usr/share/libvirt/cpu_map.xml"
+        xml = file(cpu_filename).read()
+
+        _util.parse_node_helper(xml, "cpus",
+                                self._parseXML,
+                                CapabilitiesParserException)
+
+    def _parseXML(self, node):
+        child = node.children
+        while child:
+            if child.name == "arch":
+                arch = child.prop("name")
+                self.archmap[arch] = CPUValuesArch(arch, child)
+
+            child = child.next
+
+    def get_arch(self, arch):
+        if re.match(r'i[4-9]86', arch):
+            arch = "x86"
+        elif arch == "x86_64":
+            arch = "x86"
+
+        cpumap = self.archmap.get(arch)
+        if not cpumap:
+            cpumap = CPUValuesArch(arch)
+            self.archmap[arch] = cpumap
+
+        return cpumap
 
 class Features(object):
     """Represent a set of features. For each feature, store a bit mask of
@@ -375,6 +485,7 @@ class Capabilities(object):
         self.host = None
         self.guests = []
         self._topology = None
+        self._cpu_values = None
 
         if not node is None:
             self.parseXML(node)
@@ -544,6 +655,12 @@ class Capabilities(object):
         # rather than the host level. This is just for back compat
         if self.host.topology is None:
             self.host.topology = self._topology
+
+    def get_cpu_values(self, arch):
+        if not self._cpu_values:
+            self._cpu_values = CPUValues()
+
+        return self._cpu_values.get_arch(arch)
 
 def parse(xml):
     return _util.parse_node_helper(xml, "capabilities",
