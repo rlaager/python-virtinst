@@ -83,6 +83,7 @@ def _open_test_uri(uri):
         tempfile.mkstemp = fakemkstemp
 
         _util.randomMAC = lambda type_: "00:11:22:33:44:55"
+        _util.uuidToString = lambda r: "00000000-1111-2222-3333-444444444444"
 
     # Fake remote status
     if "remote" in opts:

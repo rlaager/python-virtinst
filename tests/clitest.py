@@ -1005,9 +1005,6 @@ def run_tests(do_app, do_category):
 
                 # Strip --debug to get reasonable output
                 cmdstr = cmdstr.replace("--debug ", "").replace("-d ", "")
-                if not cmdstr.count("--uuid"):
-                    cmdstr += " --uuid 00000000-1111-2222-3333-444444444444"
-
                 if app == "virt-install":
                     if (not cmdstr.count("--print-xml") and
                         not cmdstr.count("--print-step") and
