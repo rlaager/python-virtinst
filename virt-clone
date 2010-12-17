@@ -181,6 +181,9 @@ def parse_args():
     parser.add_option_group(netg)
 
     misc = OptionGroup(parser, _("Miscellaneous Options"))
+    misc.add_option("", "--print-xml", action="store_true", dest="xmlonly",
+                    help=_("Print the generated domain XML rather than define "
+                           "and clone the guest."))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                       help=_("Print debugging information"))
     misc.add_option("", "--prompt", action="store_true", dest="prompt",
@@ -205,6 +208,7 @@ def main():
     cli.earlyLogging()
     options, parseargs = parse_args()
 
+    options.quiet = options.quiet or options.xmlonly
     cli.setupLogging("virt-clone", options.debug, options.quiet)
     if parseargs:
         fail(_("Unknown argument '%s'") % parseargs[0])
@@ -240,9 +244,12 @@ def main():
     # setup design object
     design.setup()
 
-    # start cloning
-    meter = progress.TextMeter()
-    clmgr.start_duplicate(design, meter)
+    if options.xmlonly:
+        print_stdout(design.clone_xml, do_force=True)
+    else:
+        # start cloning
+        meter = progress.TextMeter()
+        clmgr.start_duplicate(design, meter)
 
     print_stdout("")
     print_stdout(_("Clone '%s' created successfully.") % design.clone_name)

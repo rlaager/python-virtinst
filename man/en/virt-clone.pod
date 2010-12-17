@@ -134,6 +134,10 @@ guest XML.
 
 =over 2
 
+=item --print-xml
+
+Print the generated clone XML and exit without cloning.
+
 =item -d, --debug
 
 Print debugging information to the terminal when running the install process.

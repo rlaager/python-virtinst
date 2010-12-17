@@ -746,7 +746,13 @@ args_dict = {
         "--auto-clone"
         # Auto flag, actual VM, without state skip
         "-o test-for-clone --auto-clone",
-      ]
+      ],
+
+      "compare" : [
+        ("-o test-for-clone --auto-clone --clone-running", "clone-auto1"),
+        ("-o test-clone-simple --name newvm --auto-clone --clone-running",
+         "clone-auto2"),
+      ],
     }, # category "misc"
 
      "remote" : {
@@ -1014,6 +1020,10 @@ def run_tests(do_app, do_category):
                 elif app == "virt-image":
                     if not cmdstr.count("--print"):
                         cmdstr += " --print"
+
+                elif app == "virt-clone":
+                    if not cmdstr.count("--print-xml"):
+                        cmdstr += " --print-xml"
 
                 if not cmdstr.count(fakeuri):
                     cmdstr += " --connect %s" % fakeuri

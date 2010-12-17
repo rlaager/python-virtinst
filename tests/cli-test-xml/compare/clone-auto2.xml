@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<domain type="xen" id="2">
+  <name>newvm</name>
+  <uuid>00000000-1111-2222-3333-444444444444</uuid>
+  <memory>409600</memory>
+  <currentMemory>204800</currentMemory>
+  <vcpu>5</vcpu>
+  <os>
+    <type arch="i686">hvm</type>
+    <loader>/usr/lib/xen/boot/hvmloader</loader>
+    <boot dev="hd"/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  <clock offset="utc"/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <devices>
+    <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
+    <disk type="file" device="disk">
+      <source file="/default-pool/newvm.img"/>
+      <target dev="hda" bus="ide"/>
+      <address type="drive" controller="0" bus="0" unit="0"/>
+    </disk>
+    <controller type="ide" index="0"/>
+    <interface type="user">
+      <mac address="00:11:22:33:44:55"/>
+      <target dev="testnet0"/>
+    </interface>
+    <parallel type="file">
+      <source path="/tmp/foo.log"/>
+      <target port="0"/>
+    </parallel>
+    <memballoon model="xen"/>
+  </devices>
+</domain>
