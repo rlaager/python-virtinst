@@ -1449,11 +1449,16 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         # Generate UUID
         if self.uuid is None:
-            while 1:
+            found = False
+            for ignore in range(256):
                 self.uuid = _util.uuidToString(_util.randomUUID())
                 if _util.vm_uuid_collision(self.conn, self.uuid):
                     continue
+                found = True
                 break
+
+            if not found:
+                logging.debug("Failed to generate non-conflicting UUID")
 
 
     ###################################

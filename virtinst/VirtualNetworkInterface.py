@@ -108,12 +108,17 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
     def _generate_random_mac(self):
         if self.conn and not self._random_mac:
-            while 1:
+            found = False
+            for ignore in range(256):
                 self._random_mac = _util.randomMAC(self.conn.getType().lower())
                 ret = self.is_conflict_net(self.conn, self._random_mac)
                 if ret[1] is not None:
                     continue
+                found = True
                 break
+
+            if not found:
+                logging.debug("Failed to generate non-conflicting MAC")
         return self._random_mac
 
     def get_source(self):
