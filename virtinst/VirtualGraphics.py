@@ -274,11 +274,11 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         if self.keymap:
             keymapxml = " keymap='%s'" % self.keymap
         if self.listen:
-            listenxml = " listen='%s'" % self._listen
+            listenxml = " listen='%s'" % self.listen
         if self.passwd:
-            passwdxml = " passwd='%s'" % self._passwd
+            passwdxml = " passwd='%s'" % self.passwd
         if self.passwdValidTo:
-            passwdValidToxml = " passwdValidTo='%s'" % self._passwd
+            passwdValidToxml = " passwdValidTo='%s'" % self.passwdValidTo
 
         xml = "    <graphics type='%(type)s' " % { "type" : self._type } + \
                    "port='%(port)d'" % { "port" : self._port } + \
