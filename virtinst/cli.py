@@ -1001,6 +1001,7 @@ def parse_graphics(guest, optstring, basedict):
     set_param("listen", "listen")
     set_param("keymap", "keymap")
     set_param("passwd", "password")
+    set_param("passwdValidTo", "passwordvalidto")
 
     if opts:
         raise ValueError(_("Unknown options %s") % opts.keys())

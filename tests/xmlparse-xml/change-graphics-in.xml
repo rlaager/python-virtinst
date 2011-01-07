@@ -27,7 +27,7 @@
     <graphics type="sdl" xauth="/tmp/.Xauthority" display="1:2"/>
     <graphics type="rdp"/>
     <graphics type="vnc" port="-1"/>
-    <graphics type="spice" passwd="foobar" port="100" tlsPort="101" listen="0.0.0.0">
+    <graphics type="spice" passwd="foobar" port="100" tlsPort="101" listen="0.0.0.0" passwdValidTo="2010-04-09T15:51:00">
       <channel name='inputs' mode='insecure'/>
       <channel name='main' mode='secure'/>
       <channel name='record' mode='any'/>

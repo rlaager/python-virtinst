@@ -84,7 +84,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
                  keymap=KEYMAP_DEFAULT, conn=None, parsexml=None,
                  parsexmlnode=None, tlsPort=-1, channels=None,
-                 caps=None):
+                 caps=None, passwdValidTo=None):
 
         VirtualDevice.VirtualDevice.__init__(self, conn,
                                              parsexml, parsexmlnode, caps)
@@ -94,6 +94,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         self._tlsPort = None
         self._listen = None
         self._passwd = None
+        self._passwdValidTo = None
         self._keymap = None
         self._xauth = None
         self._display = None
@@ -108,6 +109,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         self.keymap = keymap
         self.listen = listen
         self.passwd = passwd
+        self.passwdValidTo = passwdValidTo
         if channels:
             self.channels = channels
 
@@ -208,6 +210,13 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     passwd = _xml_property(get_passwd, set_passwd,
                            xpath="./@passwd")
 
+    def get_passwdValidTo(self):
+        return self._passwdValidTo
+    def set_passwdValidTo(self, val):
+        self._passwdValidTo = val
+    passwdValidTo = _xml_property(get_passwdValidTo, set_passwdValidTo,
+                                  xpath="./@passwdValidTo")
+
     def get_tlsPort(self):
         return self._tlsPort
     def set_tlsPort(self, val):
@@ -245,53 +254,39 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         return """    <graphics type='sdl' display='%s' xauth='%s'/>""" % \
                (disp, xauth)
 
-    def _spice_config(self):
+    def _get_xml_config(self):
+        if self._type == self.TYPE_SDL:
+            return self._sdl_config()
+
+        if self._type not in [self.TYPE_VNC, self.TYPE_SPICE]:
+            raise ValueError(_("Unknown graphics type %r" % self._type))
+
+        tlsportxml = ""
         autoportxml = ""
         keymapxml = ""
         listenxml = ""
         passwdxml = ""
-        if self._port == -1 or self._tlsPort == -1:
-            autoportxml = "autoport='yes'"
+        passwdValidToxml = ""
+        if self._type == self.TYPE_SPICE:
+            if self._port == -1 or self._tlsPort == -1:
+                autoportxml = "autoport='yes'"
+            tlsportxml = " tlsPort='%(tlsPort)d' " % { "tlsPort" : self._tlsPort }
         if self.keymap:
             keymapxml = " keymap='%s'" % self.keymap
         if self.listen:
             listenxml = " listen='%s'" % self._listen
         if self.passwd:
             passwdxml = " passwd='%s'" % self._passwd
+        if self.passwdValidTo:
+            passwdValidToxml = " passwdValidTo='%s'" % self._passwd
 
-        xml = "    <graphics type='spice' " + \
-                   "port='%(port)d' " % { "port" : self._port } + \
-                   "tlsPort='%(tlsPort)d' " % { "tlsPort" : self._tlsPort } + \
+        xml = "    <graphics type='%(type)s' " % { "type" : self._type } + \
+                   "port='%(port)d'" % { "port" : self._port } + \
+                   "%(tlsport)s" % { "tlsport" : tlsportxml } + \
                    "%(autoport)s" % { "autoport" : autoportxml } + \
                    "%(keymapxml)s" % { "keymapxml" : keymapxml } + \
                    "%(listenxml)s" % { "listenxml" : listenxml } + \
-                   "%(passwdxml)s/>" % { "passwdxml" : passwdxml }
-        return xml
-
-    def _vnc_config(self):
-        keymapxml = ""
-        listenxml = ""
-        passwdxml = ""
-        if self.keymap:
-            keymapxml = " keymap='%s'" % self.keymap
-        if self.listen:
-            listenxml = " listen='%s'" % self._listen
-        if self.passwd:
-            passwdxml = " passwd='%s'" % self._passwd
-        xml = "    <graphics type='vnc' " + \
-                   "port='%(port)d'" % { "port" : self._port } + \
-                   "%(keymapxml)s"   % { "keymapxml" : keymapxml } + \
-                   "%(listenxml)s"   % { "listenxml" : listenxml } + \
-                   "%(passwdxml)s"   % { "passwdxml" : passwdxml } + \
+                   "%(passwdxml)s" % { "passwdxml" : passwdxml } + \
+                   "%(passwdValidToxml)s" % { "passwdValidToxml" : passwdValidToxml } + \
                    "/>"
         return xml
-
-    def _get_xml_config(self):
-        if self._type == self.TYPE_SDL:
-            return self._sdl_config()
-        if self._type == self.TYPE_SPICE:
-            return self._spice_config()
-        if self._type == self.TYPE_VNC:
-            return self._vnc_config()
-        else:
-            raise ValueError(_("Unknown graphics type"))

@@ -444,6 +444,7 @@ class XMLParseTest(unittest.TestCase):
         check("channel_inputs_mode", "insecure", "secure")
         check("channel_main_mode", "secure", "any")
         check("channel_record_mode", "any", "insecure")
+        check("passwdValidTo", "2010-04-09T15:51:00", "2011-01-07T19:08:00")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
