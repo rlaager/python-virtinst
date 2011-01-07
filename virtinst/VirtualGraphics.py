@@ -225,7 +225,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
                                "5900 and 65535, or -1 for auto allocation"))
         self._tlsPort = val
     tlsPort = _xml_property(get_tlsPort, set_tlsPort,
-                            get_converter=lambda s, x: int(x),
+                            get_converter=lambda s, x: int(x or -1),
                             xpath="./@tlsPort")
 
     channel_main_mode = _get_mode_prop(CHANNEL_TYPE_MAIN)
