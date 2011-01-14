@@ -233,7 +233,8 @@ class DistroInstaller(Installer.Installer):
                                readOnly=True,
                                transient=True)
 
-        if self._install_bootconfig.kernel:
+        # Make sure we always fetch kernel here if required
+        if self._install_bootconfig.kernel and not self.scratchdir_required():
             return disk
 
         # Need to fetch the kernel & initrd from a remote site, or
@@ -279,18 +280,13 @@ class DistroInstaller(Installer.Installer):
     # General Installer methods
 
     def scratchdir_required(self):
+        if not self.location:
+            return False
+
         is_url = not self._location_is_path
         mount_dvd = self._location_is_path and not self.cdrom
 
         return bool(is_url or mount_dvd)
-
-    def cleanup(self):
-        Installer.Installer.cleanup(self)
-
-        if self.scratchdir_required():
-            # Reruns of the install process should refetch kernel
-            self._install_bootconfig.kernel = None
-            self._install_bootconfig.initrd = None
 
     def prepare(self, guest, meter):
         self.cleanup()
