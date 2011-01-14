@@ -98,6 +98,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         self._keymap = None
         self._xauth = None
         self._display = None
+        self._socket = None
         self._channels = {}
 
         if self._is_parse():
@@ -217,6 +218,13 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     passwdValidTo = _xml_property(get_passwdValidTo, set_passwdValidTo,
                                   xpath="./@passwdValidTo")
 
+    def _get_socket(self):
+        return self._socket
+    def _set_socket(self, val):
+        self._socket = val
+    socket = _xml_property(_get_socket, _set_socket,
+                           xpath="./@socket")
+
     def get_tlsPort(self):
         return self._tlsPort
     def set_tlsPort(self, val):
@@ -246,7 +254,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
     def _build_xml(self, port=None, listen=None, keymap=None, passwd=None,
                    display=None, xauth=None, tlsPort=None, autoport=False,
-                   passwdValidTo=None):
+                   passwdValidTo=None, socket=None):
 
         doautoport = (autoport and (port == -1 or tlsPort == -1))
         portxml     = (port != None and (" port='%d'" % port) or "")
@@ -262,7 +270,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         xauthxml    = (xauth and  (" xauth='%s'" % xauth) or "")
         displayxml  = (display and (" display='%s'" % display) or "")
 
-        #socketxml   = (socket and (" socket='%s'" % socket) or "")
+        socketxml   = (socket and (" socket='%s'" % socket) or "")
 
         xml = ("    " +
                "<graphics type='%s'" % self.type +
@@ -273,7 +281,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
                listenxml +
                passwdxml +
                passwdValidToxml +
-               #socketxml +
+               socketxml +
                displayxml +
                xauthxml +
                "/>")
@@ -297,7 +305,8 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     def _vnc_config(self):
         return self._build_xml(port=self.port, keymap=self.keymap,
                                passwd=self.passwd, listen=self.listen,
-                               passwdValidTo=self.passwdValidTo)
+                               passwdValidTo=self.passwdValidTo,
+                               socket=self.socket)
 
     def _get_xml_config(self):
         if self._type == self.TYPE_SDL:

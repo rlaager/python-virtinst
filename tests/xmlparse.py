@@ -434,6 +434,7 @@ class XMLParseTest(unittest.TestCase):
         check = self._make_checker(dev4)
         check("type", "vnc")
         check("port", -1)
+        check("socket", "/tmp/foobar", "/var/lib/libvirt/socket/foo")
 
         check = self._make_checker(dev5)
         check("type", "spice")

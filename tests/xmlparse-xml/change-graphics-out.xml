@@ -26,7 +26,7 @@
     <graphics type="vnc" passwd="newpass" port="6000" listen="1.2.3.4"/>
     <graphics type="sdl" xauth="fooauth" display="6:1"/>
     <graphics type="rdp"/>
-    <graphics type="vnc" port="-1"/>
+    <graphics type="vnc" port="-1" socket="/var/lib/libvirt/socket/foo"/>
     <graphics type="spice" passwd="newpass" port="6000" tlsPort="6001" listen="1.2.3.4" passwdValidTo="2011-01-07T19:08:00">
       <channel name="inputs" mode="secure"/>
       <channel name="main" mode="any"/>
