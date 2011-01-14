@@ -244,6 +244,41 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     channel_playback_mode = _get_mode_prop(CHANNEL_TYPE_PLAYBACK)
     channel_record_mode = _get_mode_prop(CHANNEL_TYPE_RECORD)
 
+    def _build_xml(self, port=None, listen=None, keymap=None, passwd=None,
+                   display=None, xauth=None, tlsPort=None, autoport=False,
+                   passwdValidTo=None):
+
+        doautoport = (autoport and (port == -1 or tlsPort == -1))
+        portxml     = (port != None and (" port='%d'" % port) or "")
+        tlsportxml  = (tlsPort != None and (" tlsPort='%d'" % tlsPort) or "")
+        autoportxml = (doautoport and " autoport='yes'" or "")
+
+        keymapxml   = (keymap and (" keymap='%s'" % keymap) or "")
+        listenxml   = (listen and (" listen='%s'" % listen) or "")
+        passwdxml   = (passwd and (" passwd='%s'" % passwd) or "")
+        passwdValidToxml = (passwdValidTo and
+                            ( "passwdValidTo='%s'" % passwdValidTo) or "")
+
+        xauthxml    = (xauth and  (" xauth='%s'" % xauth) or "")
+        displayxml  = (display and (" display='%s'" % display) or "")
+
+        #socketxml   = (socket and (" socket='%s'" % socket) or "")
+
+        xml = ("    " +
+               "<graphics type='%s'" % self.type +
+               portxml +
+               tlsportxml +
+               autoportxml +
+               keymapxml +
+               listenxml +
+               passwdxml +
+               passwdValidToxml +
+               #socketxml +
+               displayxml +
+               xauthxml +
+               "/>")
+        return xml
+
     def _sdl_config(self):
         if "DISPLAY" not in os.environ and not self.display:
             raise RuntimeError("No DISPLAY environment variable set.")
@@ -251,42 +286,25 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         disp  = self.display or os.environ["DISPLAY"]
         xauth = self.xauth or os.path.expanduser("~/.Xauthority")
 
-        return """    <graphics type='sdl' display='%s' xauth='%s'/>""" % \
-               (disp, xauth)
+        return self._build_xml(display=disp, xauth=xauth)
+
+    def _spice_config(self):
+        return self._build_xml(port=self.port, keymap=self.keymap,
+                               passwd=self.passwd, listen=self.listen,
+                               tlsPort=self.tlsPort, autoport=True,
+                               passwdValidTo=self.passwdValidTo)
+
+    def _vnc_config(self):
+        return self._build_xml(port=self.port, keymap=self.keymap,
+                               passwd=self.passwd, listen=self.listen,
+                               passwdValidTo=self.passwdValidTo)
 
     def _get_xml_config(self):
         if self._type == self.TYPE_SDL:
             return self._sdl_config()
-
-        if self._type not in [self.TYPE_VNC, self.TYPE_SPICE]:
-            raise ValueError(_("Unknown graphics type %r" % self._type))
-
-        tlsportxml = ""
-        autoportxml = ""
-        keymapxml = ""
-        listenxml = ""
-        passwdxml = ""
-        passwdValidToxml = ""
         if self._type == self.TYPE_SPICE:
-            if self._port == -1 or self._tlsPort == -1:
-                autoportxml = "autoport='yes'"
-            tlsportxml = " tlsPort='%(tlsPort)d' " % { "tlsPort" : self._tlsPort }
-        if self.keymap:
-            keymapxml = " keymap='%s'" % self.keymap
-        if self.listen:
-            listenxml = " listen='%s'" % self.listen
-        if self.passwd:
-            passwdxml = " passwd='%s'" % self.passwd
-        if self.passwdValidTo:
-            passwdValidToxml = " passwdValidTo='%s'" % self.passwdValidTo
-
-        xml = "    <graphics type='%(type)s' " % { "type" : self._type } + \
-                   "port='%(port)d'" % { "port" : self._port } + \
-                   "%(tlsport)s" % { "tlsport" : tlsportxml } + \
-                   "%(autoport)s" % { "autoport" : autoportxml } + \
-                   "%(keymapxml)s" % { "keymapxml" : keymapxml } + \
-                   "%(listenxml)s" % { "listenxml" : listenxml } + \
-                   "%(passwdxml)s" % { "passwdxml" : passwdxml } + \
-                   "%(passwdValidToxml)s" % { "passwdValidToxml" : passwdValidToxml } + \
-                   "/>"
-        return xml
+            return self._spice_config()
+        if self._type == self.TYPE_VNC:
+            return self._vnc_config()
+        else:
+            raise ValueError(_("Unknown graphics type"))
