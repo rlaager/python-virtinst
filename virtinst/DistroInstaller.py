@@ -284,6 +284,14 @@ class DistroInstaller(Installer.Installer):
 
         return bool(is_url or mount_dvd)
 
+    def cleanup(self):
+        Installer.Installer.cleanup(self)
+
+        if self.scratchdir_required():
+            # Reruns of the install process should refetch kernel
+            self._install_bootconfig.kernel = None
+            self._install_bootconfig.initrd = None
+
     def prepare(self, guest, meter):
         self.cleanup()
 
