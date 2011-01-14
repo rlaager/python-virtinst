@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2010-12-14" "" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2011-01-14" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -248,8 +248,12 @@ Some examples:
 .RS 2
 .IP "\fB\-\-cpu core2duo,+x2apic,disable=vmx\fR" 2
 .IX Item "--cpu core2duo,+x2apic,disable=vmx"
-Expose the core2duo \s-1CPU\s0 mode, force enable x2apic, but do not expose
-vmx
+Expose the core2duo \s-1CPU\s0 model, force enable x2apic, but do not expose vmx
+.IP "\fB\-\-cpu host\fR" 2
+.IX Item "--cpu host"
+Expose the host CPUs configuration to the guest. This enables the guest to
+take advantage of many of the host CPUs features (better performance), but
+may cause issues if migrating the guest to a host without an identical \s-1CPU\s0.
 .RE
 .RS 2
 .RE

@@ -1,6 +1,13 @@
    Virtinst News
    =================
 
+Release 0.500.5 (Jan 14, 2011)
+----------------------------------
+- New virt-install --cpu option for configuring CPU model/features
+- virt-install --vcpus option can not specify topology and maxvcpus
+- New virt-install --graphics option to unify --vnc, --sdl, spice config
+- New virt-install --print-xml option to skip install and print XML
+
 Release 0.500.4 (August 24, 2010)
 ---------------------------------
 - New virt-install --console option for specifying virtio console device
