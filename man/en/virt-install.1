@@ -849,7 +849,15 @@ by 'vnc'
 .IX Item "password"
 Request a \s-1VNC\s0 password, required at connection time. Beware, this info may
 end up in virt-install log files, so don't use an important password. This
-is used by 'vnc'
+is used by 'vnc' and 'spice'
+.IP "\fBpasswordvalidto\fR" 4
+.IX Item "passwordvalidto"
+Set an expiration date for password. After the date/time has passed,
+all new graphical connections are denyed until a new password is set.
+This is used by 'vnc' and 'spice'
+.Sp
+The format for this value is \s-1YYYY\-MM\-DDTHH:MM:SS\s0, for example
+2011\-04\-01T14:30:15
 .RE
 .RS 2
 .RE
