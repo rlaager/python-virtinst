@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-01-14 11:02-0500\n"
-"PO-Revision-Date: 2010-08-25 19:55+0200\n"
+"PO-Revision-Date: 2011-01-16 15:43+0100\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <trans-pl@lists.fedoraproject.org>\n"
 "Language: pl\n"
@@ -15,26 +15,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: virtinst/CapabilitiesParser.py:104
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown CPU model '%s'"
-msgstr "Nieznany tryb pamięci podręcznej \"%s\""
+msgstr "Nieznany model procesora \"%s\""
 
 #: virtinst/CapabilitiesParser.py:379
-#, fuzzy, python-format
+#, python-format
 msgid ", domain type '%s'"
-msgstr "typ wirtualizacji \"%s\""
+msgstr ", typu domeny \"%s\""
 
 #: virtinst/CapabilitiesParser.py:381
-#, fuzzy, python-format
+#, python-format
 msgid ", machine type '%s'"
-msgstr "Nieznany typ urządzenia \"%s\""
+msgstr ", typu maszyny \"%s\""
 
 #: virtinst/CapabilitiesParser.py:383
-#, fuzzy, python-format
+#, python-format
 msgid "No domains available for virt type '%(type)s', arch '%(arch)s'"
 msgstr ""
 "Brak dostępnych domen dla typu wirtualizacji \"%(type)s\", architektury "
-"%(arch)s."
+"\"%(arch)s\""
 
 #: virtinst/CapabilitiesParser.py:712
 #, python-format
@@ -56,39 +56,38 @@ msgid "Host does not support %(virttype)s %(arch)s"
 msgstr "Gospodarz nie obsługuje %(virttype)s %(arch)s"
 
 #: virtinst/CapabilitiesParser.py:731
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Host does not support domain type %(domain)s%(machine)s for virtualization "
 "type '%(virttype)s' arch '%(arch)s'"
 msgstr ""
-"Gospodarz nie obsługuje typu domeny \"%(domain)s\" dla typu wirtualizacji "
-"\"%(virttype)s\" architektury \"%(arch)s\""
+"Gospodarz nie obsługuje typu domeny %(domain)s%(machine)s dla typu "
+"wirtualizacji \"%(virttype)s\" architektury \"%(arch)s\""
 
 #: virtinst/cli.py:300
 msgid "Exiting at user request."
 msgstr "Kończenie działania na żądanie użytkownika."
 
 #: virtinst/cli.py:310
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Domain installation does not appear to have been successful.\n"
 "If it was, you can restart your domain by running:\n"
 "  %s\n"
 "otherwise, please restart your installation."
 msgstr ""
-"Instalacja domeny chyba nie powiodła się. Jeśli jednak\n"
-" powiodła się, można ponownie uruchomić domenę\n"
-" wykonując \"virsh start %s\"; w innym przypadku\n"
-" proszę ponownie uruchomić instalację."
+"Instalacja domeny nie powiodła się. Jeśli jednak powiodła\n"
+"się, można ponownie uruchomić domenę wykonując polecenie:\n"
+"  %s\n"
+"w innym przypadku proszę ponownie uruchomić instalację."
 
 #: virtinst/cli.py:319
 msgid "Must be root to create Xen guests"
 msgstr "Tylko root może tworzyć gości Xena"
 
 #: virtinst/cli.py:471
-#, fuzzy
 msgid "A yes or no response is required"
-msgstr "Nazwa adaptera jest wymagana"
+msgstr "Wymagana jest odpowiedź \"yes\" lub \"no\""
 
 #: virtinst/cli.py:480
 msgid " (Use --prompt or --force to override)"
@@ -101,6 +100,10 @@ msgid ""
 "--vcpus 5,maxcpus=10\n"
 "--vcpus sockets=2,cores=4,threads=2"
 msgstr ""
+"Liczba wirtualnych procesorów do skonfigurowania dla gościa. Np.:\n"
+"--vcpus 5\n"
+"--vcpus 5,maxcpus=10\n"
+"--vcpus sockets=2,cores=4,threads=2"
 
 #: virtinst/cli.py:523
 msgid "Set which physical CPUs Domain can use."
@@ -108,7 +111,7 @@ msgstr "Ustawia, których procesorów fizycznych domena może używać."
 
 #: virtinst/cli.py:526
 msgid "CPU model and features. Ex: --cpu coreduo,+x2apic"
-msgstr ""
+msgstr "Model i funkcje procesora. Np. --cpu coreduo,+x2apic"
 
 #: virtinst/cli.py:533
 msgid "Graphics Configuration"
@@ -122,6 +125,11 @@ msgid ""
 "--graphics none\n"
 "--graphics vnc,password=foobar,port=5910,keymap=ja"
 msgstr ""
+"Podanie konfiguracji ekranu. Np.:\n"
+"--graphics vnc\n"
+"--graphics spice,port=1,tlsport=2\n"
+"--graphics none\n"
+"--graphics vnc,password=foobar,port=5910,keymap=ja"
 
 #: virtinst/cli.py:577
 msgid "A disk path must be specified."
@@ -174,14 +182,12 @@ msgid "Disk %s is already in use by another guest"
 msgstr "Dysk %s jest już używany przez innego gościa"
 
 #: virtinst/cli.py:652
-#, fuzzy
 msgid "--name is required"
-msgstr "Nazwa gospodarza jest wymagana"
+msgstr "--name jest wymagane"
 
 #: virtinst/cli.py:653
-#, fuzzy
 msgid "--ram amount in MB is required"
-msgstr "Nazwa gospodarza jest wymagana"
+msgstr "Liczba pamięci --ram w megabajtach jest wymagana"
 
 #: virtinst/cli.py:656
 msgid "What is the name of your virtual machine?"
@@ -238,16 +244,17 @@ msgstr "Nie pasuje do mapy klawiszy \"%s\" w tablicy klawiszy."
 #: virtinst/cli.py:1015
 msgid "Cannot mix --graphics and old style graphical options"
 msgstr ""
+"Nie można mieszać opcji --graphics z opcjami graficznymi w starym stylu"
 
 #: virtinst/cli.py:1027
-#, fuzzy
 msgid "Can't specify more than one of VNC, SDL, --graphics or --nographics"
-msgstr "Nie można podać więcej niż jedno z VNC, SDL lub --nographics"
+msgstr ""
+"Nie można podać więcej niż jedno z VNC, SDL, --graphics lub --nographics"
 
 #: virtinst/cli.py:1043
-#, fuzzy, python-format
+#, python-format
 msgid "Error in graphics device parameters: %s"
-msgstr "Błąd parametrów urządzenia watchdog: %s"
+msgstr "Błąd parametrów urządzenia graficznego: %s"
 
 #: virtinst/cli.py:1084 virtinst/cli.py:1089
 #, python-format
@@ -325,9 +332,8 @@ msgid "Domain '%s' was not found."
 msgstr "Nie odnaleziono domeny \"%s\"."
 
 #: virtinst/CPU.py:185
-#, fuzzy
 msgid "No host CPU reported in capabilities"
-msgstr "Brak sekcji topologii w pliku XML możliwości."
+msgstr "Nie zgłoszono procesora gospodarza w możliwościach"
 
 #: virtinst/DistroInstaller.py:61
 msgid "Invalid NFS format: No path specified."
@@ -1573,11 +1579,10 @@ msgstr ""
 "przydzielenia"
 
 #: virtinst/VirtualGraphics.py:232
-#, fuzzy
 msgid ""
 "TLS port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
-"Port VNC musi być liczbą między 5900 a 65535 lub -1 dla automatycznego "
+"Port TLS musi być liczbą między 5900 a 65535 lub -1 dla automatycznego "
 "przydzielenia"
 
 #: virtinst/VirtualHostDevice.py:50
@@ -1780,9 +1785,9 @@ msgid "No Name defined in '%s'"
 msgstr "Nie określono Nazwy w \"%s\""
 
 #: virtconv/parsers/virtimage.py:242
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown disk format '%s'"
-msgstr "Nieznany format dysku: %s"
+msgstr "Nieznany format dysku \"%s\""
 
 #: virtconv/parsers/virtimage.py:271
 msgid "VM must have a memory setting"
@@ -1898,7 +1903,7 @@ msgstr "Różne opcje"
 
 #: virt-clone:185
 msgid "Print the generated domain XML rather than define and clone the guest."
-msgstr ""
+msgstr "Wyświetla utworzony XML domeny zamiast określić i sklonować gościa."
 
 #: virt-clone:188 virt-convert:87 virt-image:138 virt-install:884
 #: virt-install.orig:884
@@ -1921,27 +1926,25 @@ msgstr ""
 #: virt-clone:197 virt-convert:85 virt-image:146 virt-install:879
 #: virt-install.orig:879
 msgid "Suppress non-error output"
-msgstr ""
+msgstr "Bez wyświetlania wyjścia poza błędami"
 
 #: virt-clone:200
 msgid "Allow cloning a running domain"
 msgstr "Zezwolenie na klonowanie uruchomionej domeny"
 
 #: virt-clone:214 virt-install:1250 virt-install.orig:1250
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown argument '%s'"
-msgstr "Nieznany wariant systemu operacyjnego \"%s\""
+msgstr "Nieznany parametr \"%s\""
 
 #: virt-clone:222
 msgid "Must be privileged to clone Xen guests"
 msgstr "Należy mieć uprawnienia, aby klonować gości Xena"
 
 #: virt-clone:255
-#, fuzzy, python-format
+#, python-format
 msgid "Clone '%s' created successfully."
-msgstr ""
-"\n"
-"Klon \"%s\" został pomyślnie utworzony."
+msgstr "Klon \"%s\" został pomyślnie utworzony."
 
 #: virt-clone:264 virt-image:245 virt-install:1279 virt-install.orig:1279
 msgid "Installation aborted at user request"
@@ -2171,24 +2174,23 @@ msgid "The index for --boot must be between 0 and %d"
 msgstr "Indeks dla --boot musi być między 0 a %d"
 
 #: virt-image:230
-#, fuzzy, python-format
+#, python-format
 msgid "Creating guest %s..."
-msgstr ""
-"\n"
-"\n"
-"Tworzenie gościa %s..."
+msgstr "Tworzenie gościa %s..."
 
 #: virt-install:51 virt-install.orig:51
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "An install method must be specified\n"
 "(%(methods)s)"
-msgstr "Ścieżka dysku musi zostać podana."
+msgstr ""
+"Metoda instalacji musi zostać podana\n"
+"(%(methods)s)"
 
 #: virt-install:53 virt-install.orig:53
-#, fuzzy
 msgid "--disk storage must be specified (override with --nodisks)"
-msgstr "Dysk musi zostać podany (należy użyć --nodisks, aby zastąpić)"
+msgstr ""
+"Pamięć masowa --disk musi zostać podana (należy użyć --nodisks, aby zastąpić)"
 
 #: virt-install:97
 #, python-format
@@ -2244,16 +2246,15 @@ msgstr ""
 
 #: virt-install:457 virt-install.orig:457
 msgid "Cannot specify storage and use --nodisks"
-msgstr ""
+msgstr "Nie można podać pamięci podręcznej i użyć opcji --nodisks"
 
 #: virt-install:460 virt-install.orig:460
-#, fuzzy
 msgid ""
 "Cannot mix --file, --nonsparse, or --file-size with --disk options. Use --"
 "disk PATH[,size=SIZE][,sparse=yes|no]"
 msgstr ""
-"Nie można mieszać --file, --nonsparse lub --file-size z opcją --disk. Proszę "
-"zobaczyć podręcznik, aby uzyskać informacje o składni --disk."
+"Nie można mieszać --file, --nonsparse lub --file-size z opcjami --disk. "
+"Proszę użyć --disk ŚCIEŻKA[,size=ROZMIAR][,sparse=yes|no]"
 
 #: virt-install:472 virt-install.orig:472
 msgid "Need to pass size for each disk"
@@ -2294,9 +2295,9 @@ msgid "default"
 msgstr "domyślnie"
 
 #: virt-install:615 virt-install.orig:615
-#, fuzzy, python-format
+#, python-format
 msgid "Only one install method can be used (%(methods)s)"
-msgstr "Można użyć tylko jednej metody instalacji (%s)"
+msgstr "Można użyć tylko jednej metody instalacji (%(methods)s)"
 
 #: virt-install:621 virt-install.orig:621
 msgid "Network PXE boot is not supported for paravirtualized guests"
@@ -2473,9 +2474,8 @@ msgid "The CPU architecture to simulate"
 msgstr "Symulowana architektura procesora"
 
 #: virt-install:842 virt-install.orig:842
-#, fuzzy
 msgid "The machine type to emulate"
-msgstr "Symulowana architektura procesora"
+msgstr "Emulowany typ maszyny"
 
 #: virt-install:859 virt-install.orig:859
 msgid "Have domain autostart on host boot up."
@@ -2483,13 +2483,15 @@ msgstr "Automatyczne uruchamianie domeny podczas uruchamiania gospodarza."
 
 #: virt-install:861 virt-install.orig:861
 msgid "Print the generated domain XML rather than define the guest."
-msgstr ""
+msgstr "Wyświetla utworzony XML domeny zamiast określić gościa."
 
 #: virt-install:864 virt-install.orig:864
 msgid ""
 "Print XML of a specific install step (1, 2, 3, all) rather than define the "
 "guest."
 msgstr ""
+"Wyświetla XML konkretnego kroku instalacji (1, 2, 3, all) zamiast określić "
+"gościa."
 
 #: virt-install:867 virt-install.orig:867
 msgid "Disables the automatic rebooting when the installation is complete."
@@ -2503,6 +2505,8 @@ msgstr "Czas oczekiwania (w minutach)"
 msgid ""
 "Run through install process, but do not create devices or define the guest."
 msgstr ""
+"Przechodzi przez proces instalacji, ale nie tworzy urządzeń ani nie określa "
+"gościa."
 
 #: virt-install:875 virt-install.orig:875
 msgid "Forces 'yes' for any applicable prompts, terminates for all others"
@@ -2532,7 +2536,7 @@ msgstr "--extra-args działa tylko, jeśli zostało podane za pomocą --location
 
 #: virt-install:1025 virt-install.orig:1025
 msgid "The guest's network configuration does not support PXE"
-msgstr ""
+msgstr "Konfiguracja sieci gościa nie obsługuje PXE"
 
 #: virt-install:1070 virt-install.orig:1070
 msgid ""
@@ -2543,22 +2547,22 @@ msgstr ""
 "Uruchamianie instalacji..."
 
 #: virt-install:1094 virt-install.orig:1094
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Domain creation completed. You can restart your domain by running:\n"
 "  %s"
 msgstr ""
-"Instalacja gościa została ukończona... Można ponownie\n"
-"uruchomić domenę wykonując \"virsh start %s\""
+"Utworzenie domeny zostało ukończone. Można ponownie\n"
+"uruchomić domenę wykonując polecenie:\n"
+"  %s"
 
 #: virt-install:1098 virt-install.orig:1098
 msgid "Guest installation complete... restarting guest."
 msgstr "Instalacja gościa została ukończona... Ponowne uruchamianie gościa."
 
 #: virt-install:1105 virt-install.orig:1105
-#, fuzzy
 msgid "Domain install interrupted."
-msgstr "Przerwano instalację gościa."
+msgstr "Przerwano instalację domeny."
 
 #: virt-install:1127 virt-install.orig:1127
 msgid "Domain has crashed."
@@ -2600,11 +2604,8 @@ msgstr ""
 "aplikacji."
 
 #: virt-install:1211 virt-install.orig:1211
-#, fuzzy
 msgid "Dry run completed successfully"
-msgstr ""
-"\n"
-"Klon \"%s\" został pomyślnie utworzony."
+msgstr "Uruchomienie na sucho zostało pomyślnie ukończone."
 
 #: virt-install:1217 virt-install.orig:1217
 msgid ""
@@ -2612,111 +2613,27 @@ msgid ""
 "phase (--import, --boot, etc.). To see allall generated XML, please use --"
 "xml-step all."
 msgstr ""
+"--xml-only można używać tylko na gościach, którzy nie posiadają fazy "
+"instalacji (--import, --boot itp.). Aby zobaczyć cały utworzony XML, proszę "
+"użyć opcji --xml-step all."
 
 #: virt-install:1227 virt-install.orig:1227
 msgid "Requested installation does not have XML step 2"
-msgstr ""
+msgstr "Żądana instalacja nie posiada XML kroku drugiego"
 
 #: virt-install:1231 virt-install.orig:1231
 msgid "Requested installation does not have XML step 3"
-msgstr ""
+msgstr "Żądana instalacja nie posiada XML kroku trzeciego"
 
 #: virt-install:1257 virt-install.orig:1257
 msgid "--print-step must be 1, 2, 3, or all"
-msgstr ""
+msgstr "--print-step musi wynosić 1, 2, 3 lub all"
 
 #: virt-install.orig:97
-#, fuzzy, python-format
+#, python-format
 msgid "Couldn't create default storage pool '%s'"
-msgstr "Nie można utworzyć domyślnej puli pamięci masowej \"%s\": %s"
+msgstr "Nie można utworzyć domyślnej puli pamięci masowej \"%s\""
 
 #: virt-install.orig:352 virt-install.orig:364
-#, fuzzy
 msgid "Unknown value"
-msgstr "Nieznana \"%s\" wartość \"%s\""
-
-#~ msgid "(use --prompt to run interactively)"
-#~ msgstr "(należy użyć --prompt, aby uruchomić interaktywnie)"
-
-#~ msgid "Use VNC for graphics support"
-#~ msgstr "Użycie VNC dla obsługi grafiki"
-
-#~ msgid "Port to use for VNC"
-#~ msgstr "Użyty port dla VNC"
-
-#~ msgid "Address to listen on for VNC connections."
-#~ msgstr "Adres do nasłuchiwania połączeń VNC."
-
-#~ msgid "set up keymap for the VNC console"
-#~ msgstr "ustawia mapę klawiatury dla konsoli VNC"
-
-#~ msgid "Use SDL for graphics support"
-#~ msgstr "Użycie SDL do obsługi grafiki"
-
-#~ msgid "Don't set up a graphical console for the guest."
-#~ msgstr "Bez ustawiania graficznej konsoli dla gościa."
-
-#~ msgid "A name is required for the virtual machine."
-#~ msgstr "Nazwa maszyny wirtualnej jest wymagana."
-
-#~ msgid "Memory amount is required for the virtual machine."
-#~ msgstr "Ilość pamięci dla maszyny wirtualnej jest wymagana."
-
-#~ msgid "'capabilities' must be a Capabilities instance."
-#~ msgstr "\"capabilities\" muszą być instancją możliwości."
-
-#~ msgid "Unknown storage volume type."
-#~ msgstr "Nieznany typ woluminu pamięci masowej."
-
-#~ msgid "Passed type '%s' does not match detected storage type '%s'"
-#~ msgstr ""
-#~ "Przekazany typ \"%s\" nie zgadza się z wykrytym typem pamięci masowej \"%s"
-#~ "\""
-
-#~ msgid "Unknown network type '%s'"
-#~ msgstr "Nieznany typ sieci \"%s\""
-
-#~ msgid "Unable to determine disk format"
-#~ msgstr "Nie można ustalić formatu dysku"
-
-#~ msgid "Don't be verbose"
-#~ msgstr "Mało komunikatów"
-
-#~ msgid "Number of vcpus to configure for your guest"
-#~ msgstr "Liczba wirtualnych procesorów do skonfigurowania dla gościa"
-
-#~ msgid "Check that vcpus do not exceed physical CPUs and warn if they do."
-#~ msgstr ""
-#~ "Sprawdza, czy wirtualne procesory nie przekraczają liczby fizycznych "
-#~ "procesorów i ostrzega, jeśli tak."
-
-#~ msgid "Guest creation failed"
-#~ msgstr "Utworzenie gościa nie powiodło się"
-
-#~ msgid ""
-#~ "Domain creation may not have been\n"
-#~ "successful.  If it was, you can restart your domain\n"
-#~ "by running 'virsh start %s'; otherwise, please\n"
-#~ "restart your installation."
-#~ msgstr ""
-#~ "Utworzenie domeny mogło się nie powieść.\n"
-#~ "Jeśli jednak powiodła się, można ponownie uruchomić\n"
-#~ "domenę wykonując \"virsh start %s\"; w innym\n"
-#~ "przypadku proszę uruchomić ponownie instalację."
-
-#~ msgid "Cannot use --file, --file-size, or --disk with --nodisks"
-#~ msgstr "Nie można używać --file, --file-size lub --disk z --nodisks"
-
-#~ msgid "One of %s, or cdrom media must be specified."
-#~ msgstr "Tylko jedno z %s lub nośnik CD-ROM musi zostać podane."
-
-#~ msgid ""
-#~ "Domain installation does not appear to have been\n"
-#~ "successful. If it was, you can restart your domain\n"
-#~ "by running 'virsh start %s'; otherwise, please\n"
-#~ "restart your installation."
-#~ msgstr ""
-#~ "Instalacja domeny chyba nie powiodła się. Jeśli jednak\n"
-#~ "powiodła się, można ponownie uruchomić domenę\n"
-#~ "wykonując polecenie \"virsh start %s\"; w innym\n"
-#~ "przypadku proszę ponownie uruchomić instalację."
+msgstr "Nieznana wartość"
