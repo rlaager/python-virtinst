@@ -725,12 +725,14 @@ def get_vcpus(vcpus, check_cpu, guest, image_vcpus=None):
 
     conn = guest.conn
     if check_cpu:
+        vcpucount = str(guest.vcpus)
+
         hostinfo = conn.getInfo()
         cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
         if not vcpus <= cpu_num:
-            msg = _("You have asked for more virtual CPUs (%d) than there "
-                    "are physical CPUs (%d) on the host. This will work, "
-                    "but performance will be poor. ") % (vcpus, cpu_num)
+            msg = _("You have asked for more virtual CPUs (%s) than there "
+                    "are physical CPUs (%s) on the host. This will work, "
+                    "but performance will be poor. ") % (vcpucount, cpu_num)
             askmsg = _("Are you sure? (yes or no)")
 
             if not prompt_for_yes_or_no(msg, askmsg):
