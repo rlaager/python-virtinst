@@ -209,9 +209,12 @@ class TestCapabilities(unittest.TestCase):
             cpunames = sorted(map(lambda c: c.model, cpumap.cpus),
                               key=str.lower)
 
-            self.assertEquals(cpumap.vendors, vendors)
-            self.assertEquals(cpumap.features, features)
-            self.assertEquals(cpunames, cpus)
+            for v in vendors:
+                self.assertTrue(v in cpumap.vendors)
+            for f in features:
+                self.assertTrue(f in cpumap.features)
+            for c in cpus:
+                self.assertTrue(c in cpunames)
 
         def test_single_cpu(cpumap, model, vendor, features):
             cpu = cpumap.get_cpu(model)
