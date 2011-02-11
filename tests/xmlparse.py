@@ -363,9 +363,9 @@ class XMLParseTest(unittest.TestCase):
 
         check = self._make_checker(dev2)
         self.assertEquals(dev2.get_source(), "default")
-        check("type", "network", "bridge")
         check("network", "default", None)
         check("bridge", None, "newbr0")
+        check("type", "network", "bridge")
         check("model", "e1000", "virtio")
 
         check = self._make_checker(dev3)

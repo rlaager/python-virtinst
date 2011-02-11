@@ -20,9 +20,9 @@ import virtinst
 
 import utils
 
-# Force is_blktap_capable to return a consistent value, so test suite
-# won't change based on the system
+# Force certain helpers to return consistent values
 virtinst._util.is_blktap_capable = lambda: False
+virtinst._util.default_bridge2 = lambda ignore1: ["bridge", "eth0"]
 
 # Setup logging
 rootLogger = logging.getLogger()
