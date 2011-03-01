@@ -900,8 +900,12 @@ args_dict = {
         "%(VC_IMG1)s -o virt-image -D foobarfmt %(VIRTCONV_OUT)s",
         # virt-image to ovf (has no output formatter)
         "%(VC_IMG1)s -o ovf %(VIRTCONV_OUT)s",
-     ]
+     ],
 
+     "compare": [
+        # virt-image to default (virt-image) w/ no convert
+        ("%(VC_IMG1)s -D none %(VIRTCONV_OUT)s", "convert-default"),
+     ],
     }, # category 'misc'
 
   }, # app 'virt-conver'
@@ -1025,7 +1029,7 @@ def run_tests(do_app, do_category):
                     if not cmdstr.count("--print-xml"):
                         cmdstr += " --print-xml"
 
-                if not cmdstr.count(fakeuri):
+                if app != "virt-convert" and not cmdstr.count(fakeuri):
                     cmdstr += " --connect %s" % fakeuri
 
                 check_fail = filename.endswith("fail.xml")
