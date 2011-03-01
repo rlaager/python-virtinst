@@ -752,9 +752,9 @@ PCI device (via lspci).
 =item --soundhw MODEL
 
 Attach a virtual audio device to the guest. MODEL specifies the emulated
-sound card model. Possible values are ac97, es1370, sb16, pcspk, or default.
-'default' willl be AC97 if the hypervisor supports it, otherwise it will be
-ES1370.
+sound card model. Possible values are ich6, ac97, es1370, sb16, pcspk,
+or default. 'default' will be AC97 if the hypervisor supports it,
+otherwise it will be ES1370.
 
 This deprecates the old boolean --sound model (which still works the same
 as a single '--soundhw default')
