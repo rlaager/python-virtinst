@@ -131,6 +131,15 @@ class XMLParseTest(unittest.TestCase):
         check("apic", True, False)
         check("pae", False, True)
 
+        def feature_checker(prop, origval, newval):
+            self.assertEqual(guest.features[prop], origval)
+            guest.features[prop] = newval
+            self.assertEqual(guest.features[prop], newval)
+
+        feature_checker("acpi", False, False)
+        feature_checker("apic", False, True)
+        feature_checker("pae", True, False)
+
         check = self._make_checker(guest.cpu)
         check("match", "exact", "strict")
         check("model", "footest", "qemu64")

@@ -61,11 +61,11 @@ class DomainFeatures(XMLBuilderDomain.XMLBuilderDomain):
                         xpath="./features/pae", is_bool=True)
 
     def __setitem__(self, attr, val):
-        setattr(self, attr, val)
+        return setattr(self, attr, val)
     def __getitem__(self, attr):
-        getattr(self, attr)
+        return getattr(self, attr)
     def __delitem__(self, attr):
-        setattr(self, attr, None)
+        return setattr(self, attr, None)
 
 
     def _get_xml_config(self, defaults=None):

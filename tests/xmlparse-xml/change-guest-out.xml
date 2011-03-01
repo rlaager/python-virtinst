@@ -9,7 +9,7 @@
     <bootmenu enable="no"/>
   </os>
   <features>
-    <pae/>
+    <apic/>
   </features>
   <cpu match="strict">
     <model>qemu64</model>
