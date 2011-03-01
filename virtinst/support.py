@@ -58,6 +58,7 @@ SUPPORT_CONN_HV_VIRTIO = 5000
 SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI = 5001
 SUPPORT_CONN_HV_SOUND_AC97 = 5002
 SUPPORT_CONN_HV_SOUND_ICH6 = 5003
+SUPPORT_CONN_HV_GRAPHICS_SPICE = 5004
 
 """
 Possible keys:
@@ -211,6 +212,12 @@ _support_dict = {
         "force_version" : True,
         "drv_version" : [ ("qemu", 14000), ],
     },
+
+    SUPPORT_CONN_HV_GRAPHICS_SPICE : {
+        "version" : 8006,
+        "force_version" : True,
+        "drv_version" : [ ("qemu", 14000), ],
+    }
 }
 
 # Pull a connection object from the passed libvirt object
