@@ -1216,7 +1216,7 @@ def xml_to_print(guest, continue_inst, xmlonly, xmlstep, dry):
         if second_xml or final_xml:
             fail(_("--xml-only can only be used with guests that do not have "
                    "an installation phase (--import, --boot, etc.). To see all"
-                   "all generated XML, please use --xml-step all."))
+                   "all generated XML, please use --print-step all."))
         return start_xml
 
     # --xml-step
