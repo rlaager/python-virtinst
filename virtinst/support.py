@@ -57,6 +57,7 @@ SUPPORT_INTERFACE_XML_INACTIVE = 4000
 SUPPORT_CONN_HV_VIRTIO = 5000
 SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI = 5001
 SUPPORT_CONN_HV_SOUND_AC97 = 5002
+SUPPORT_CONN_HV_SOUND_ICH6 = 5003
 
 """
 Possible keys:
@@ -203,6 +204,12 @@ _support_dict = {
         "version" : 6000,
         "force_version" : True,
         "drv_version" : [ ("qemu", 11000), ],
+    },
+
+    SUPPORT_CONN_HV_SOUND_ICH6 : {
+        "version" : 8008,
+        "force_version" : True,
+        "drv_version" : [ ("qemu", 14000), ],
     },
 }
 
