@@ -221,8 +221,7 @@ def main():
     logging.debug("output_file: %s" % options.output_file)
     logging.debug("output_dir: %s" % options.input_dir)
 
-    print_stdout(options,
-        _("Generating output in '%(format)s' format to %(dir)s/") %
+    print_stdout(_("Generating output in '%(format)s' format to %(dir)s/") %
         {"format": options.output_format, "dir": options.output_dir})
 
     try:
@@ -242,9 +241,9 @@ def main():
                     dformat = "raw"
 
             if d.path and dformat != "none":
-                print_stdout(options, _("Converting disk '%(path)s' to type "
-                                      "%(format)s...") % {"path": d.path,
-                                                       "format": dformat})
+                print_stdout(_("Converting disk '%(path)s' to type "
+                               "%(format)s...") % {"path": d.path,
+                                                   "format": dformat})
 
             d.convert(options.input_dir, options.output_dir, dformat)
 
@@ -261,7 +260,7 @@ def main():
         cleanup(_("Couldn't export to file \"%s\": %s") %
             (options.output_file, e), options, vmdef, clean)
 
-    print_stdout(options, "Done.")
+    print_stdout("Done.")
 
 
 if __name__ == "__main__":
