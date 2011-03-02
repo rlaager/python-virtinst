@@ -42,7 +42,7 @@ ro_dir = image_prefix + "clitest_rodir"
 ro_img = "%s/cli_exist3ro.img" % ro_dir
 ro_noexist_img = "%s/idontexist.img" % ro_dir
 compare_xmldir = "%s/compare" % xmldir
-virtconv_out = "virtconv-outdir"
+virtconv_out = "/tmp/__virtinst_tests__virtconv-outdir"
 
 # Images that will be created by virt-install/virt-clone, and removed before
 # each run
@@ -904,7 +904,7 @@ args_dict = {
 
      "compare": [
         # virt-image to default (virt-image) w/ no convert
-        ("%(VC_IMG1)s -D none %(VIRTCONV_OUT)s", "convert-default"),
+        ("%(VC_IMG1)s %(VIRTCONV_OUT)s", "convert-default"),
      ],
     }, # category 'misc'
 
