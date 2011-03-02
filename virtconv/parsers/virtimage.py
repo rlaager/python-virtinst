@@ -30,8 +30,8 @@ import re
 
 ide_letters = list("abcdefghijklmnopqrstuvwxyz")
 
-pv_boot_template = """
-  <boot type="xen">
+pv_boot_template = \
+"""  <boot type="xen">
    <guest>
     <arch>%(arch)s</arch>
     <features>
@@ -41,38 +41,36 @@ pv_boot_template = """
    <os>
     <loader>pygrub</loader>
    </os>
-   %(disks)s
-  </boot>
-"""
+%(disks)s
+  </boot>"""
 
-hvm_boot_template = """
-  <boot type="hvm">
+hvm_boot_template = \
+"""  <boot type="hvm">
    <guest>
     <arch>%(arch)s</arch>
    </guest>
    <os>
     <loader dev="hd"/>
    </os>
-   %(disks)s
-  </boot>
-"""
+%(disks)s
+  </boot>"""
 
-image_template = """
-<image>
+image_template = \
+"""<image>
  <name>%(name)s</name>
  <label>%(name)s</label>
  <description>%(description)s</description>
  <domain>
-  %(boot_template)s
+%(boot_template)s
   <devices>
    <vcpu>%(nr_vcpus)s</vcpu>
    <memory>%(memory)s</memory>
-   %(interface)s
-   <graphics />
+%(interface)s
+   <graphics/>
   </devices>
  </domain>
  <storage>
-  %(storage)s
+%(storage)s
  </storage>
 </image>
 """
@@ -166,14 +164,14 @@ def export_disks(vm):
 
         # FIXME: needs updating for later Xen enhancements; need to
         # implement capabilities checking for max disks etc.
-        diskout.append("""<drive disk="%s" target="%s%s" />\n""" %
+        diskout.append("""   <drive disk="%s" target="%s%s"/>\n""" %
             (path, disk_prefix, drive_nr))
 
         typ = "raw"
         if disk.type == diskcfg.DISK_TYPE_ISO:
             typ = "iso"
         storage.append(
-            """<disk file="%s" use="system" format="%s"/>\n""" %
+            """  <disk file="%s" use="system" format="%s"/>\n""" %
                 (path, typ))
 
     return storage, diskout
@@ -277,7 +275,7 @@ class virtimage_parser(formats.parser):
         # Hmm.  Any interface is a good interface?
         interface = None
         if len(vm.netdevs):
-            interface = "<interface />"
+            interface = "   <interface/>"
 
         acpi, apic = export_os_params(vm)
 
@@ -289,7 +287,7 @@ class virtimage_parser(formats.parser):
         (storage, disks) = export_disks(vm)
 
         boot_xml = boot_template % {
-            "disks" : "".join(disks),
+            "disks" : "".join(disks).strip("\n"),
             "arch" : vm.arch,
             "acpi" : acpi,
             "apic" : apic,
@@ -303,7 +301,7 @@ class virtimage_parser(formats.parser):
             # Mb to Kb
             "memory" : int(vm.memory) * 1024,
             "interface" : interface,
-            "storage" : "".join(storage),
+            "storage" : "".join(storage).strip("\n"),
         }
 
         return out

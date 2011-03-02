@@ -1,10 +1,8 @@
-
 <image>
  <name>test.ovf</name>
  <label>test.ovf</label>
  <description>This is the description, created by RWMJ.</description>
  <domain>
-  
   <boot type="hvm">
    <guest>
     <arch>i686</arch>
@@ -12,21 +10,18 @@
    <os>
     <loader dev="hd"/>
    </os>
-   <drive disk="test.ovf-disk1.vmdk" target="hda" />
-<drive disk="testfile" target="hdb" />
-
+   <drive disk="test.ovf-disk1.vmdk" target="hda"/>
+   <drive disk="testfile" target="hdb"/>
   </boot>
-
   <devices>
    <vcpu>3</vcpu>
    <memory>795648</memory>
-   <interface />
-   <graphics />
+   <interface/>
+   <graphics/>
   </devices>
  </domain>
  <storage>
   <disk file="test.ovf-disk1.vmdk" use="system" format="raw"/>
-<disk file="testfile" use="system" format="raw"/>
-
+  <disk file="testfile" use="system" format="raw"/>
  </storage>
 </image>

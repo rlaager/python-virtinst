@@ -62,6 +62,7 @@ class TestVirtConv(unittest.TestCase):
                                                     out_dir, out_type)
             else:
                 out_path = in_path
+
             self._convert_helper(in_path, out_path, in_type, out_type)
 
     def testVMX2VirtImage(self):
