@@ -168,8 +168,11 @@ def export_disks(vm):
             (path, disk_prefix, drive_nr))
 
         typ = "raw"
-        if disk.type == diskcfg.DISK_TYPE_ISO:
+        if disk.format in diskcfg.qemu_formats:
+            typ = diskcfg.qemu_formats[disk.format]
+        elif disk.typ == diskcfg.DISK_TYPE_ISO:
             typ = "iso"
+
         storage.append(
             """  <disk file="%s" use="system" format="%s"/>\n""" %
                 (path, typ))
