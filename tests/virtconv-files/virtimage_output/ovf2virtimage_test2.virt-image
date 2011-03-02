@@ -20,6 +20,6 @@
   </devices>
  </domain>
  <storage>
-  <disk file="w2k3 32bit-disk1.vmdk" use="system" format="raw"/>
+  <disk file="w2k3 32bit-disk1.vmdk" use="system" format="vmdk"/>
  </storage>
 </image>

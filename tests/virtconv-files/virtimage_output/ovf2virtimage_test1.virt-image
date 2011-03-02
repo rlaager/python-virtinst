@@ -21,7 +21,7 @@
   </devices>
  </domain>
  <storage>
-  <disk file="test.ovf-disk1.vmdk" use="system" format="raw"/>
-  <disk file="testfile" use="system" format="raw"/>
+  <disk file="test.ovf-disk1.vmdk" use="system" format="vmdk"/>
+  <disk file="testfile" use="system" format="vmdk"/>
  </storage>
 </image>
