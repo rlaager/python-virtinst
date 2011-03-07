@@ -373,7 +373,20 @@ OS_TYPES = {
             "devices" : {
                 DISK : VIRTIO_DISK,
                 NET  : VIRTIO_NET,
-                INPUT: USB_TABLET,
+            }},
+        "ubuntunatty": {
+            "label": "Ubuntu 11.04 (Natty Narwhal)",
+            "distro": "ubuntu",
+            "devices" : {
+                DISK : VIRTIO_DISK,
+                NET  : VIRTIO_NET,
+            }},
+        "ubuntuoneiric": {
+            "label": "Ubuntu 11.10 (Oneiric Ocelot)",
+            "distro": "ubuntu",
+            "devices" : {
+                DISK : VIRTIO_DISK,
+                NET  : VIRTIO_NET,
             }},
         "generic24": { "label": "Generic 2.4.x kernel" },
         "generic26": { "label": "Generic 2.6.x kernel" },
