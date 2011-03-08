@@ -1164,6 +1164,7 @@ class StorageVolume(StorageObject):
                 if support.is_error_nosupport(e):
                     raise RuntimeError("Libvirt version does not support "
                                        "storage cloning.")
+                raise
             except Exception, e:
                 raise RuntimeError("Couldn't create storage volume "
                                    "'%s': '%s'" % (self.name, str(e)))
