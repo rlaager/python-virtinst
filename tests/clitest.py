@@ -502,6 +502,11 @@ args_dict = {
         ("--hvm --nodisks --pxe --print-step all", "simple-pxe"),
         # HVM windows install with disk
         ("--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --vcpus cores=4", "w2k3-cdrom"),
+        # Lot's of devices
+        ("--hvm --pxe "
+         "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh "
+         "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro",
+         "many-devices"),
       ],
 
      }, # category "misc"
