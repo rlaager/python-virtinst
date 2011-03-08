@@ -253,10 +253,12 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     channel_record_mode = _get_mode_prop(CHANNEL_TYPE_RECORD)
 
     def _build_xml(self, port=None, listen=None, keymap=None, passwd=None,
-                   display=None, xauth=None, tlsPort=None, autoport=False,
+                   display=None, xauth=None, tlsPort=None, canautoport=False,
                    passwdValidTo=None, socket=None):
 
-        doautoport = (autoport and (port == -1 or tlsPort == -1))
+        doautoport = (canautoport and
+                      (port in [None, -1] and
+                       tlsPort in [None, -1]))
         portxml     = (port != None and (" port='%d'" % port) or "")
         tlsportxml  = (tlsPort != None and (" tlsPort='%d'" % tlsPort) or "")
         autoportxml = (doautoport and " autoport='yes'" or "")
@@ -299,12 +301,15 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
     def _spice_config(self):
         return self._build_xml(port=self.port, keymap=self.keymap,
                                passwd=self.passwd, listen=self.listen,
-                               tlsPort=self.tlsPort, autoport=True,
+                               tlsPort=self.tlsPort, canautoport=True,
                                passwdValidTo=self.passwdValidTo)
 
     def _vnc_config(self):
         return self._build_xml(port=self.port, keymap=self.keymap,
                                passwd=self.passwd, listen=self.listen,
+                               # VNC supports autoport, but use legacy
+                               # syntax to not break XML tests
+                               canautoport=False,
                                passwdValidTo=self.passwdValidTo,
                                socket=self.socket)
 
