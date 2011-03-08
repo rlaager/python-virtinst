@@ -1230,21 +1230,31 @@ class VirtualDisk(VirtualDevice):
         Helper function which attempts to build self.path
         """
         fd = None
+        path = self.path
+        sparse = self.sparse
 
         try:
             try:
-                fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_DSYNC)
-                if self.sparse:
+                fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_DSYNC)
+
+                if sparse:
                     os.ftruncate(fd, size_bytes)
-                    progresscb.update(self.size)
                 else:
-                    buf = '\x00' * 1024 * 1024 # 1 meg of nulls
-                    for i in range(0, long(self.size * 1024L)):
+                    # 1 meg of nulls
+                    mb = 1024 * 1024
+                    buf = '\x00' * mb
+
+                    left = size_bytes
+                    while left > 0:
+                        if left < mb:
+                            buf = '\x00' * left
+                        left = max(left - mb, 0)
+
                         os.write(fd, buf)
-                        progresscb.update(long(i * 1024L * 1024L))
+                        progresscb.update(size_bytes - left)
             except OSError, e:
                 raise RuntimeError(_("Error creating diskimage %s: %s") %
-                                   (self.path, str(e)))
+                                   (path, str(e)))
         finally:
             if fd is not None:
                 os.close(fd)

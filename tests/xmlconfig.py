@@ -1019,5 +1019,22 @@ class TestXMLConfig(unittest.TestCase):
         self.conn_function_wrappers(g, fargs, func=self._testInstall,
                                     conn_uri=qemu_uri)
 
+    def testCreateDisk(self):
+        """
+        Doesn't really belong here, but what the hell :)
+        """
+        path = "/tmp/__virtinst_create_test__.img"
+        sizegigs = .001
+        sizebytes = long(sizegigs * 1024L * 1024L * 1024L)
+
+        for sparse in [True, False]:
+            disk = VirtualDisk(conn=conn, path=path, size=sizegigs,
+                               sparse=sparse)
+            disk.setup()
+
+            actualsize = long(os.path.getsize(path))
+            os.unlink(path)
+            self.assertEquals(sizebytes, actualsize)
+
 if __name__ == "__main__":
     unittest.main()
