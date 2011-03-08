@@ -535,7 +535,7 @@ def graphics_option_group(parser):
                     action="callback", callback=check_before_store,
       help=_("Specify display configuration. Ex:\n"
              "--graphics vnc\n"
-             "--graphics spice,port=1,tlsport=2\n"
+             "--graphics spice,port=5901,tlsport=5902\n"
              "--graphics none\n"
              "--graphics vnc,password=foobar,port=5910,keymap=ja"))
     vncg.add_option("", "--vnc", action="store_true", dest="vnc",
