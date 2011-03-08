@@ -725,9 +725,11 @@ class TestXMLConfig(unittest.TestCase):
         g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
                                    device=VirtualDisk.DEVICE_FLOPPY,
                                    driverName="phy", driverCache="none"))
-        g.disks.append(VirtualDisk(conn=g.conn, path="/dev/loop0",
-                                   bus="virtio", driverName="qemu",
-                                   driverType="qcow2", driverCache="none"))
+        disk = VirtualDisk(conn=g.conn, path="/dev/loop0",
+                           bus="virtio", driverName="qemu",
+                           driverType="qcow2", driverCache="none")
+        disk.driver_io = "threads"
+        g.disks.append(disk)
 
         self._compare(g, "boot-many-disks2", False)
 

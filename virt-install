@@ -317,7 +317,7 @@ def parse_disk_option(guest, path, size):
     shared = False
     sparse = True
     option_whitelist = ["perms", "cache", "bus", "device", "size", "sparse",
-                        "format", "driver_name", "driver_type"]
+                        "format", "driver_name", "driver_type", "io"]
 
     # Strip media type
     path, ignore, optstr = cli.partition(path, ",")
@@ -370,6 +370,7 @@ def parse_disk_option(guest, path, size):
     fmt     = opts.get("format")
     drvname = opts.get("driver_name")
     drvtype = opts.get("driver_type")
+    drvio   = opts.get("io")
 
     # We return (path, (poolname, volname), volinst, device, bus, readonly,
     #            shared)
@@ -429,7 +430,8 @@ def parse_disk_option(guest, path, size):
                'driverCache': cache,
                'format': fmt,
                'driverName': drvname,
-               'driverType': drvtype}
+               'driverType': drvtype,
+               'driverIO' : drvio}
 
     logging.debug("parse_disk: returning %s" % str(kwargs))
     return kwargs

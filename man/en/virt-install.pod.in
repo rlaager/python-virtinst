@@ -431,6 +431,10 @@ storage. Typically does not need to be set by the user.
 Driver format/type the hypervisor should use when accessing the specified
 storage. Typically does not need to be set by the user.
 
+=item B<io>
+
+Disk IO backend. Can be either "threads" or "native".
+
 =back
 
 See the examples section for some uses. This option deprecates C<--file>,

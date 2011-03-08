@@ -163,7 +163,7 @@ args_dict = {
         "--file %(NEWIMG1)s --file-size .00001 --nonsparse",
 
         # Existing disk, lots of opts
-        "--disk path=%(EXISTIMG1)s,perms=ro,size=.0001,cache=writethrough",
+        "--disk path=%(EXISTIMG1)s,perms=ro,size=.0001,cache=writethrough,io=threads",
         # Existing disk, rw perms
         "--disk path=%(EXISTIMG1)s,perms=rw",
         # Existing floppy

@@ -43,7 +43,7 @@
       <target dev="fda" bus="fdc"/>
       <source file="/default-pool/default-vol"/>
       <shareable/>
-      <driver cache="writeback"/>
+      <driver cache="writeback" io="native"/>
     </disk>
     <disk type="block" device="floppy">
       <driver name="phy" cache="none"/>

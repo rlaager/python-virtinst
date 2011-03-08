@@ -321,6 +321,7 @@ class VirtualDisk(VirtualDevice):
     types = [TYPE_FILE, TYPE_BLOCK, TYPE_DIR]
 
     _target_props = ["file", "dev", "dir"]
+    io_modes = ["native", "threads"]
 
     @staticmethod
     def disk_type_to_xen_driver_name(disk_type):
@@ -517,7 +518,8 @@ class VirtualDisk(VirtualDevice):
                  readOnly=False, sparse=True, conn=None, volObject=None,
                  volInstall=None, volName=None, bus=None, shareable=False,
                  driverCache=None, selinuxLabel=None, format=None,
-                 validate=True, parsexml=None, parsexmlnode=None, caps=None):
+                 validate=True, parsexml=None, parsexmlnode=None, caps=None,
+                 driverIO=None):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -583,6 +585,7 @@ class VirtualDisk(VirtualDevice):
         self._format = None
         self._driverName = driverName
         self._driverType = driverType
+        self._driver_io = None
         self._target = None
         self._validate = validate
 
@@ -609,6 +612,7 @@ class VirtualDisk(VirtualDevice):
         self._set_driver_cache(driverCache, validate=False)
         self._set_selinux_label(selinuxLabel, validate=False)
         self._set_format(format, validate=False)
+        self._set_driver_io(driverIO, validate=False)
 
         self.__change_storage(self.path,
                               self.vol_object,
@@ -819,6 +823,19 @@ class VirtualDisk(VirtualDevice):
                                 self.driver_cache)
     driver_cache = _xml_property(_get_driver_cache, _set_driver_cache,
                                  xpath="./driver/@cache")
+
+
+    def _get_driver_io(self):
+        return self._driver_io
+    def _set_driver_io(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "driver_io")
+            if val not in self.io_modes:
+                raise ValueError(_("Unknown io mode '%s'" % val))
+        self.__validate_wrapper("_driver_io", val, validate,
+                                self.driver_io)
+    driver_io = _xml_property(_get_driver_io, _set_driver_io,
+                              xpath="./driver/@io")
 
     # If there is no selinux support on the libvirt connection or the
     # system, we won't throw errors if this is set, just silently ignore.
@@ -1384,12 +1401,12 @@ class VirtualDisk(VirtualDevice):
             drvxml = ""
             if not self.driver_name is None:
                 drvxml += " name='%s'" % self.driver_name
-
             if not self.driver_type is None:
                 drvxml += " type='%s'" % self.driver_type
-
             if not self.driver_cache is None:
                 drvxml += " cache='%s'" % self.driver_cache
+            if not self.driver_io is None:
+                drvxml += " io='%s'" % self.driver_io
 
             if drvxml:
                 ret += "      <driver%s/>\n" % drvxml

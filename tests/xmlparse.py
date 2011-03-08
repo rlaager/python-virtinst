@@ -62,7 +62,7 @@ class XMLParseTest(unittest.TestCase):
         if failed:
             raise AssertionError("Roundtrip parse tests failed:\n%s" % error)
 
-    def _set_and_check(self, obj, param, initval, newval="SENTINEL"):
+    def _set_and_check(self, obj, param, initval, *args):
         """
         Check expected initial value obj.param == initval, then
         set newval, and make sure it is returned properly
@@ -70,15 +70,14 @@ class XMLParseTest(unittest.TestCase):
         curval = getattr(obj, param)
         self.assertEquals(initval, curval)
 
-        if newval == "SENTINEL":
-            return
-        setattr(obj, param, newval)
-        curval = getattr(obj, param)
-        self.assertEquals(newval, curval)
+        for newval in args:
+            setattr(obj, param, newval)
+            curval = getattr(obj, param)
+            self.assertEquals(newval, curval)
 
     def _make_checker(self, obj):
-        def check(name, initval, newval="SENTINEL"):
-            return self._set_and_check(obj, name, initval, newval)
+        def check(name, initval, *args):
+            return self._set_and_check(obj, name, initval, *args)
         return check
 
     def testAlterGuest(self):
@@ -256,6 +255,8 @@ class XMLParseTest(unittest.TestCase):
         check("path", None, "/default-pool/default-vol")
         check("shareable", False, True)
         check("driver_cache", None, "writeback")
+        check("driver_io", None, "threads")
+        check("driver_io", "threads", "native")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
