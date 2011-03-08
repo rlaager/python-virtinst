@@ -178,19 +178,19 @@ def _check_if_path_managed(conn, path):
         try:
             # Pool may need to be refreshed, but if it errors,
             # invalidate it
-            if pool:
-                pool.refresh(0)
-
+            pool.refresh(0)
             vol, verr = lookup_vol_by_path()
         except Exception, e:
             vol = None
             pool = None
             verr = str(e)
 
-    if not (vol or pool):
+    if not vol:
         # See if path is a pool source, and allow it through
-        pool = _check_if_pool_source(conn, path)
-        path_is_pool = bool(pool)
+        trypool = _check_if_pool_source(conn, path)
+        if trypool:
+            path_is_pool = True
+            pool = trypool
 
     if not vol and not pool:
         if not _util.is_uri_remote(conn.getURI()):
