@@ -930,10 +930,6 @@ def runcomm(comm):
             print ret[1]
             print "\n"
 
-        if not debug:
-            sys.stdout.write(".")
-            sys.stdout.flush()
-
         return ret
     except Exception, e:
         return (-1, str(e))
@@ -941,6 +937,16 @@ def runcomm(comm):
 def run_prompt_comm(comm):
     print comm
     os.system(comm % test_files)
+
+def write_pass():
+    if not debug:
+        sys.stdout.write(".")
+        sys.stdout.flush()
+
+def write_fail():
+    if not debug:
+        sys.stdout.write("F")
+        sys.stdout.flush()
 
 def assertPass(comm):
     ret = runcomm(comm)
@@ -961,8 +967,38 @@ def assertFail(comm):
     return ret
 
 
+class Command(object):
+    def __init__(self, cmdstr):
+        self.cmdstr = cmdstr
+        self.check_success = True
+        self.compare_file = None
+
+    def run(self):
+        filename = self.compare_file
+        err = None
+
+        try:
+            if self.check_success:
+                ignore, output = assertPass(self.cmdstr)
+            else:
+                ignore, output = assertFail(self.cmdstr)
+
+            if filename:
+                # Uncomment to generate new test files
+                if not os.path.exists(filename):
+                    file(filename, "w").write(output)
+
+                utils.diff_compare(output, filename)
+
+            write_pass()
+        except AssertionError, e:
+            write_fail()
+            err = self.cmdstr + "\n" + str(e)
+
+        return err
+
 # Setup: build cliarg dict, which uses
-def run_tests(do_app, do_category):
+def run_tests(do_app, do_category, error_ret):
     if do_app and do_app not in args_dict.keys():
         raise ValueError("Unknown app '%s'" % do_app)
 
@@ -1003,15 +1039,21 @@ def run_tests(do_app, do_category):
             catdict = unique[category]
             category_args = catdict["args"]
 
+            cmdlist = []
+
             for optstr in catdict["valid"]:
                 cmdstr = "./%s %s %s %s" % (app, globalargs,
                                             category_args, optstr)
-                assertPass(cmdstr)
+                cmd = Command(cmdstr)
+                cmd.check_success = True
+                cmdlist.append(cmd)
 
             for optstr in catdict["invalid"]:
                 cmdstr = "./%s %s %s %s" % (app, globalargs,
                                             category_args, optstr)
-                assertFail(cmdstr)
+                cmd = Command(cmdstr)
+                cmd.check_success = False
+                cmdlist.append(cmd)
 
             for optstr, filename in catdict.get("compare") or []:
                 filename = "%s/%s.xml" % (compare_xmldir, filename)
@@ -1038,22 +1080,16 @@ def run_tests(do_app, do_category):
                 if app != "virt-convert" and not cmdstr.count(fakeuri):
                     cmdstr += " --connect %s" % fakeuri
 
-                check_fail = filename.endswith("fail.xml")
+                cmd = Command(cmdstr)
+                cmd.check_success = not filename.endswith("fail.xml")
+                cmd.compare_file = filename
+                cmdlist.append(cmd)
 
-                try:
-                    if check_fail:
-                        ignore, output = assertFail(cmdstr)
-                    else:
-                        ignore, output = assertPass(cmdstr)
-
-                    # Uncomment to generate new test files
-                    if not os.path.exists(filename):
-                        file(filename, "w").write(output)
-
-                    utils.diff_compare(output, filename)
-                except:
-                    print cmdstr
-                    raise
+            # Run commands
+            for cmd in cmdlist:
+                err = cmd.run()
+                if err:
+                    error_ret.append(err)
 
 def main():
     # CLI Args
@@ -1089,12 +1125,16 @@ def main():
     os.system("chmod 444 %s" % ro_img)
     os.system("chmod 555 %s" % ro_dir)
 
+    error_ret = []
     try:
-        run_tests(do_app, do_category)
+        run_tests(do_app, do_category, error_ret)
     finally:
         cleanup()
+        for err in error_ret:
+            print err + "\n\n"
 
-    print "\nAll tests completed successfully."
+    if not error_ret:
+        print "\nAll tests completed successfully."
 
 def cleanup():
     # Cleanup files
@@ -1103,4 +1143,7 @@ def cleanup():
         os.system("rm -rf %s > /dev/null 2>&1" % i)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print "Tests interrupted"
