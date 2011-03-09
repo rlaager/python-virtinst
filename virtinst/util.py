@@ -189,18 +189,18 @@ def randomMAC(type="xen"):
     The remaining 3 fields are random, with the first bit of the first
     random field set 0.
 
-    >>> randomMAC().startswith("00:16:36")
+    >>> randomMAC().startswith("00:16:3E")
     True
-    >>> randomMAC("foobar").startswith("00:16:36")
+    >>> randomMAC("foobar").startswith("00:16:3E")
     True
-    >>> randomMAC("xen").startswith("00:16:36")
+    >>> randomMAC("xen").startswith("00:16:3E")
     True
     >>> randomMAC("qemu").startswith("52:54:00")
     True
 
     @return: MAC address string
     """
-    ouis = { 'xen': [ 0x00, 0x16, 0x36 ], 'qemu': [ 0x52, 0x54, 0x00 ] }
+    ouis = { 'xen': [ 0x00, 0x16, 0x3E ], 'qemu': [ 0x52, 0x54, 0x00 ] }
 
     try:
         oui = ouis[type]
