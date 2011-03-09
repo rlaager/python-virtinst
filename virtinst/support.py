@@ -211,6 +211,8 @@ _support_dict = {
         "version" : 8008,
         "force_version" : True,
         "drv_version" : [ ("qemu", 14000), ],
+        "rhel6_drv_version" : [ ("qemu", 12001) ],
+        "rhel6_version" : 8007,
     },
 
     SUPPORT_CONN_HV_GRAPHICS_SPICE : {
@@ -219,6 +221,16 @@ _support_dict = {
         "drv_version" : [ ("qemu", 14000), ],
     }
 }
+
+# XXX: RHEL6 has lots of feature backports, and since libvirt doesn't
+# really offer any XML feature introspection, we have to use hacks to
+# make sure we aren't generating bogus config on non RHEL
+_rhel6 = False
+def _set_rhel6(val):
+    global _rhel6
+    _rhel6 = bool(val)
+def _get_rhel6():
+    return _rhel6
 
 # Pull a connection object from the passed libvirt object
 def _get_conn_from_object(obj):
@@ -353,9 +365,19 @@ def _check_support(conn, feature, data=None):
         return support_info.get(key)
 
     drv_type = _util.get_uri_driver(conn.getURI())
-    minimum_libvirt_version = get_value("version") or 0
+    is_rhel6 = _get_rhel6()
     force_version = get_value("force_version") or False
+
+    minimum_libvirt_version = get_value("version") or 0
+    rhel6_min = get_value("rhel6_version") or minimum_libvirt_version
+    if is_rhel6:
+        minimum_libvirt_version = rhel6_min
+
     drv_version = get_value("drv_version") or []
+    rhel6_drv_version = get_value("rhel6_drv_version") or drv_version
+    if is_rhel6:
+        drv_version = rhel6_drv_version
+
     hv_version = get_value("hv_version") or []
     object_name, function_name = _split_function_name(get_value("function"))
     args = get_value("args")

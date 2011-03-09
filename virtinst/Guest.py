@@ -1465,21 +1465,33 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     # Guest Dictionary Helper methods #
     ###################################
 
+    def _is_rhel6(self):
+        emulator = self.emulator or ""
+
+        return (self.type in ["qemu", "kvm"] and
+                emulator.startswith("/usr/libexec/qemu"))
+
     def _lookup_osdict_key(self, key):
         """
         Using self.os_type and self.os_variant to find key in OSTYPES
         @returns: dict value, or None if os_type/variant wasn't set
         """
-        return osdict.lookup_osdict_key(self.conn, self.type, self.os_type,
-                                        self.os_variant, key)
+        return osdict.lookup_osdict_key(self.conn, self.type,
+                                        self.os_type, self.os_variant,
+                                        key)
 
     def _lookup_device_param(self, device_key, param):
         """
         Check the OS dictionary for the prefered device setting for passed
         device type and param (bus, model, etc.)
         """
-        return osdict.lookup_device_param(self.conn, self.type, self.os_type,
-                                          self.os_variant, device_key, param)
+        try:
+            support._set_rhel6(self._is_rhel6())
+            return osdict.lookup_device_param(self.conn, self.type,
+                                              self.os_type, self.os_variant,
+                                              device_key, param)
+        finally:
+            support._set_rhel6(False)
 
 
 def _wait_for_domain(conn, name):

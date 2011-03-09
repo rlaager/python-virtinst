@@ -36,7 +36,7 @@
     <input type='tablet' bus='usb'/>
     <graphics type='vnc' port='-1'/>
     <console type='pty'/>
-    <sound model='ac97'/>
+    <sound model='ich6'/>
     <video>
       <model type='vga'/>
     </video>
@@ -79,7 +79,7 @@
     <input type='tablet' bus='usb'/>
     <graphics type='vnc' port='-1'/>
     <console type='pty'/>
-    <sound model='ac97'/>
+    <sound model='ich6'/>
     <video>
       <model type='vga'/>
     </video>
@@ -122,7 +122,7 @@
     <input type='tablet' bus='usb'/>
     <graphics type='vnc' port='-1'/>
     <console type='pty'/>
-    <sound model='ac97'/>
+    <sound model='ich6'/>
     <video>
       <model type='vga'/>
     </video>

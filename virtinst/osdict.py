@@ -98,6 +98,7 @@ DEFAULTS = {
 
         SOUND : {
             "model": [
+                (support.SUPPORT_CONN_HV_SOUND_ICH6, "ich6"),
                 (support.SUPPORT_CONN_HV_SOUND_AC97, "ac97"),
                 (HV_ALL, "es1370"),
             ]
