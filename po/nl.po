@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: virt-inst\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-14 11:02-0500\n"
+"POT-Creation-Date: 2011-03-15 15:07-0400\n"
 "PO-Revision-Date: 2011-01-16 12:51+0200\n"
 "Last-Translator: Geert Warrink <geert.warrink@onsnet.nu>\n"
 "Language-Team: Fedora\n"
@@ -119,10 +119,11 @@ msgid "Graphics Configuration"
 msgstr "Grafische configuratie"
 
 #: virtinst/cli.py:536
+#, fuzzy
 msgid ""
 "Specify display configuration. Ex:\n"
 "--graphics vnc\n"
-"--graphics spice,port=1,tlsport=2\n"
+"--graphics spice,port=5901,tlsport=5902\n"
 "--graphics none\n"
 "--graphics vnc,password=foobar,port=5910,keymap=ja"
 msgstr ""
@@ -151,8 +152,8 @@ msgid ""
 "Please enter the path to the file you would like to use for storage. It will "
 "have size %sGB."
 msgstr ""
-"Vul het pad in naar het bestand dat je wilt gebruiken voor opslag. Het zal %"
-"sGB groot zijn."
+"Vul het pad in naar het bestand dat je wilt gebruiken voor opslag. Het zal "
+"%sGB groot zijn."
 
 #: virtinst/cli.py:595
 msgid "A size must be specified for non-existent disks."
@@ -163,7 +164,7 @@ msgstr "Een grootte moet opgegeven worden voor niet-bestaande schijven."
 msgid "How large would you like the disk (%s) to be (in gigabytes)?"
 msgstr "Hoe groot wil je dat de schijf (%s) moet zijn (in gigabytes)?"
 
-#: virtinst/cli.py:618 virt-install:450 virt-install.orig:450
+#: virtinst/cli.py:618 virt-install:452
 #, python-format
 msgid "Error with storage parameters: %s"
 msgstr "Fout met opslag parameters: %s"
@@ -203,59 +204,57 @@ msgstr "Hoeveel RAM moet toegewezen worden (in megabytes)?"
 msgid "Installs currently require %d megs of RAM."
 msgstr "Installaties vereisen op de moment %d megs RAM."
 
-#: virtinst/cli.py:717 virtinst/cli.py:806 virtinst/cli.py:1006
+#: virtinst/cli.py:717 virtinst/cli.py:808 virtinst/cli.py:1009
 #: virt-install:173 virt-install:220 virt-install:253 virt-install:306
-#: virt-install.orig:173 virt-install.orig:220 virt-install.orig:253
-#: virt-install.orig:306
 #, python-format
 msgid "Unknown options %s"
 msgstr "Onbekende opties %s"
 
-#: virtinst/cli.py:731
-#, python-format
+#: virtinst/cli.py:733
+#, fuzzy, python-format
 msgid ""
-"You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
+"You have asked for more virtual CPUs (%s) than there are physical CPUs (%s) "
 "on the host. This will work, but performance will be poor. "
 msgstr ""
 "Je hebt gevraagd voor meer virtuele CPU's (%d) dan fysieke CPU's beschikbaar "
 "op de host (%d). Dat zal werken, maar de performance zal slecht zijn."
 
-#: virtinst/cli.py:734
+#: virtinst/cli.py:736
 msgid "Are you sure? (yes or no)"
 msgstr "Weet je het zeker (ja of nee)"
 
-#: virtinst/cli.py:906
+#: virtinst/cli.py:908
 #, python-format
 msgid "Unknown network option '%s'"
 msgstr "Onbekend netwerk optie '%s'"
 
-#: virtinst/cli.py:924
+#: virtinst/cli.py:926
 msgid "Cannot mix both --bridge and --network arguments"
 msgstr "Kan de --bridge en --network argumenten niet tezamen gebruiken"
 
-#: virtinst/cli.py:939
+#: virtinst/cli.py:941
 msgid "Cannot pass more mac addresses than networks."
 msgstr "Kan niet meer mac adressen doorgeven dan er netwerken zijn."
 
-#: virtinst/cli.py:974
+#: virtinst/cli.py:976
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
 msgstr "Komt niet overeen met toetsenbord indeling '%s' in keytable!"
 
-#: virtinst/cli.py:1015
+#: virtinst/cli.py:1018
 msgid "Cannot mix --graphics and old style graphical options"
 msgstr "Kan --graphics en oude stijl grafische opties niet vermengen"
 
-#: virtinst/cli.py:1027
+#: virtinst/cli.py:1030
 msgid "Can't specify more than one of VNC, SDL, --graphics or --nographics"
 msgstr "Kan slechts één van VNC, SDL, --graphics of --nographics speciferen"
 
-#: virtinst/cli.py:1043
+#: virtinst/cli.py:1046
 #, python-format
 msgid "Error in graphics device parameters: %s"
 msgstr "Fout in grafische apparaat parameters: %s"
 
-#: virtinst/cli.py:1084 virtinst/cli.py:1089
+#: virtinst/cli.py:1087 virtinst/cli.py:1092
 #, python-format
 msgid "%s option requires an argument"
 msgstr "%s optie vereist een argument"
@@ -309,8 +308,8 @@ msgstr ""
 #: virtinst/CloneManager.py:478
 #, python-format
 msgid ""
-"More disks to clone than new paths specified. (%(passed)d specified, %(need)"
-"d needed"
+"More disks to clone than new paths specified. (%(passed)d specified, "
+"%(need)d needed"
 msgstr ""
 "Er zijn meer te klonen schijven gespecificeerd dan nieuwe paden (%(passed)d "
 "gespecificeerd, %(need)d nodig)"
@@ -787,7 +786,7 @@ msgstr "Kon formaat van '%s' niet bepalen"
 msgid "Did not find a matching node device for '%s'"
 msgstr "Vond geen overeenkomend node apparaat voor '%s'"
 
-#: virtinst/osdict.py:221
+#: virtinst/osdict.py:222
 #, python-format
 msgid "Invalid dictionary entry for device '%s %s'"
 msgstr "Ongeldige woordenboek ingang voor apparaat '%s %s'"
@@ -1085,7 +1084,7 @@ msgstr "\"pool\" moet een virStoragePool aanhaling zijn"
 msgid "pool '%s' must be active."
 msgstr "pool '%s' moet actief zijn."
 
-#: virtinst/Storage.py:1074 virtinst/Storage.py:1313
+#: virtinst/Storage.py:1074 virtinst/Storage.py:1315
 msgid "input_vol must be a virStorageVol"
 msgstr "input_vol moet een virStorageVol zijn"
 
@@ -1116,7 +1115,7 @@ msgstr "De naam '%s' is al in gebruik door een ander volume."
 msgid "Allocating '%s'"
 msgstr "Toewijzing van '%s'"
 
-#: virtinst/Storage.py:1215
+#: virtinst/Storage.py:1216
 #, python-format
 msgid ""
 "There is not enough free space on the storage pool to create the volume. (%d "
@@ -1125,7 +1124,7 @@ msgstr ""
 "Er is niet voldoende vrije ruimte op de opslag pool om het volume aan te "
 "maken. (%d M gevraagde toewijzing > %d M beschikbaar)"
 
-#: virtinst/Storage.py:1221
+#: virtinst/Storage.py:1222
 #, python-format
 msgid ""
 "The requested volume capacity will exceed the available pool space when the "
@@ -1135,7 +1134,7 @@ msgstr ""
 "ruimte als het volume volledig wordt toegewezen. (%d M gevraagde capaciteit "
 "> %d M beschikbare)"
 
-#: virtinst/support.py:334 virtinst/XMLBuilderDomain.py:359
+#: virtinst/support.py:360 virtinst/XMLBuilderDomain.py:359
 msgid "'conn' must be a virConnect instance."
 msgstr "'conn' moet een 'virConnect' aanhaling zijn."
 
@@ -1402,129 +1401,134 @@ msgstr "Verbinding ondersteunt geen opslag opzoeken."
 msgid "Couldn't lookup volume object: %s"
 msgstr "Kon volume object niet opzoeken: %s"
 
-#: virtinst/VirtualDisk.py:659
+#: virtinst/VirtualDisk.py:663
 msgid "vol_object must be a virStorageVol instance"
 msgstr "vol_object moet een virStorageVol aanhaling zijn"
 
-#: virtinst/VirtualDisk.py:670
+#: virtinst/VirtualDisk.py:674
 msgid "vol_install must be a StorageVolume  instance."
 msgstr "vol_install moet een StorageVolume aanhaling zijn."
 
-#: virtinst/VirtualDisk.py:697
+#: virtinst/VirtualDisk.py:701
 #, python-format
 msgid "Error validating clone path: %s"
 msgstr "Fout bij het valideren van kloon pad: %s"
 
-#: virtinst/VirtualDisk.py:713
+#: virtinst/VirtualDisk.py:717
 msgid "'size' must be a number greater than 0."
 msgstr "\"size\" moet een getal groter dan 0 zijn."
 
-#: virtinst/VirtualDisk.py:726
+#: virtinst/VirtualDisk.py:730
 #, python-format
 msgid "Unknown storage type '%s'"
 msgstr "Onbekend opslag type '%s'"
 
-#: virtinst/VirtualDisk.py:736
+#: virtinst/VirtualDisk.py:740
 #, python-format
 msgid "Unknown device type '%s'"
 msgstr "Onbekend apparaat type '%s'"
 
-#: virtinst/VirtualDisk.py:817
+#: virtinst/VirtualDisk.py:821
 #, python-format
 msgid "Unknown cache mode '%s'"
 msgstr "Onbekende cache mode '%s'"
 
-#: virtinst/VirtualDisk.py:846
+#: virtinst/VirtualDisk.py:834
+#, fuzzy, python-format
+msgid "Unknown io mode '%s'"
+msgstr "Onbekend CPU model '%s'"
+
+#: virtinst/VirtualDisk.py:863
 #, python-format
 msgid "SELinux label '%s' is not valid."
 msgstr "SELinux label '%s' is niet geldig."
 
-#: virtinst/VirtualDisk.py:923
+#: virtinst/VirtualDisk.py:940
 msgid "Storage type does not support format parameter."
 msgstr "Opslag type ondersteunt geen formaat parameter."
 
-#: virtinst/VirtualDisk.py:929
+#: virtinst/VirtualDisk.py:946
 msgid "Format cannot be specified for unmanaged storage."
 msgstr "Formaat kan niet gespecificeerd worden voor niet-beheerde opslag."
 
-#: virtinst/VirtualDisk.py:1113
+#: virtinst/VirtualDisk.py:1130
 #, python-format
 msgid "Device type '%s' requires a path"
 msgstr "Apparaat type '%s' vereist een pad"
 
-#: virtinst/VirtualDisk.py:1123
+#: virtinst/VirtualDisk.py:1140
 msgid "Connection doesn't support remote storage."
 msgstr "Verbinding ondersteunt geen opslag op afstand."
 
-#: virtinst/VirtualDisk.py:1126
+#: virtinst/VirtualDisk.py:1143
 msgid "Must specify libvirt managed storage if on a remote connection"
 msgstr ""
 "Met een verbinding op afstand moet libvirt beheerde opslag gespecificeerd "
 "worden"
 
-#: virtinst/VirtualDisk.py:1145
+#: virtinst/VirtualDisk.py:1162
 #, python-format
 msgid "The path '%s' must be a file or a device, not a directory"
 msgstr "Het pad '%s' moet een bestand of een apparaat zijn, geen map"
 
-#: virtinst/VirtualDisk.py:1153
+#: virtinst/VirtualDisk.py:1170
 #, python-format
 msgid "Cannot create storage for %s device."
 msgstr "Kan opslag voor %s apparaat niet aanmaken."
 
-#: virtinst/VirtualDisk.py:1158
+#: virtinst/VirtualDisk.py:1175
 #, python-format
 msgid "Local block device path '%s' must exist."
 msgstr "Lokaal blok apparaat pad '%s' moet bestaan."
 
-#: virtinst/VirtualDisk.py:1166
+#: virtinst/VirtualDisk.py:1183
 #, python-format
 msgid "size is required for non-existent disk '%s'"
 msgstr "grootte is vereist voor niet-bestaande schijf '%s'"
 
-#: virtinst/VirtualDisk.py:1169
+#: virtinst/VirtualDisk.py:1186
 #, python-format
 msgid "No write access to directory '%s'"
 msgstr "Geen schrijf toegang tot map '%s'"
 
-#: virtinst/VirtualDisk.py:1191
+#: virtinst/VirtualDisk.py:1208
 #, python-format
 msgid "Cloning %(srcfile)s"
 msgstr "Klonen van %(srcfile)s"
 
-#: virtinst/VirtualDisk.py:1194
+#: virtinst/VirtualDisk.py:1211
 #, python-format
 msgid "Creating storage file %s"
 msgstr "Opslag bestand %s aanmaken"
 
-#: virtinst/VirtualDisk.py:1207
+#: virtinst/VirtualDisk.py:1224
 msgid "copying to an existing vdisk is not supported"
 msgstr "kopiëren naar een bestaande vdisk wordt niet ondersteund"
 
-#: virtinst/VirtualDisk.py:1210
+#: virtinst/VirtualDisk.py:1227
 msgid "failed to clone disk"
 msgstr "klonen van schijf mislukte"
 
-#: virtinst/VirtualDisk.py:1221
+#: virtinst/VirtualDisk.py:1238
 #, python-format
 msgid "Error creating vdisk %s"
 msgstr "Fout bij het aanmaken van vdisk %s"
 
-#: virtinst/VirtualDisk.py:1246
+#: virtinst/VirtualDisk.py:1273
 #, python-format
 msgid "Error creating diskimage %s: %s"
 msgstr "Fout bij het aanmaken van disk image %s: %s"
 
-#: virtinst/VirtualDisk.py:1301
+#: virtinst/VirtualDisk.py:1328
 #, python-format
 msgid "Error cloning diskimage %s to %s: %s"
 msgstr "Fout bij het klonen van disk image %s naar %s: %s"
 
-#: virtinst/VirtualDisk.py:1357
+#: virtinst/VirtualDisk.py:1384
 msgid "'disknode' or self.target must be set!"
 msgstr "'disknode' of self.target moet ingesteld worden!"
 
-#: virtinst/VirtualDisk.py:1430
+#: virtinst/VirtualDisk.py:1457
 msgid ""
 "The filesystem will not have enough free space to fully allocate the sparse "
 "file when the guest is running."
@@ -1532,49 +1536,49 @@ msgstr ""
 "Het bestandssysteem zal niet genoeg vrije ruimte hebben om het sparse-"
 "bestand volledig toe te wijzen als de gast draait."
 
-#: virtinst/VirtualDisk.py:1435
+#: virtinst/VirtualDisk.py:1462
 msgid "There is not enough free space to create the disk."
 msgstr "Er is niet genoeg vrije ruimte op de schijf aan te maken."
 
-#: virtinst/VirtualDisk.py:1439
+#: virtinst/VirtualDisk.py:1466
 #, python-format
 msgid " %d M requested > %d M available"
 msgstr "%d M gevraagd > %d M beschikbaar"
 
-#: virtinst/VirtualDisk.py:1593
+#: virtinst/VirtualDisk.py:1620
 msgid "Cannot determine device bus/type."
 msgstr "Kan apparaat bus/type niet bepalen."
 
-#: virtinst/VirtualDisk.py:1615
+#: virtinst/VirtualDisk.py:1642
 #, python-format
 msgid "No more space for disks of type '%s'"
 msgstr "Geen ruimte meer voor schijven van het type '%s'"
 
-#: virtinst/VirtualGraphics.py:128 virtinst/VirtualGraphics.py:304
+#: virtinst/VirtualGraphics.py:130 virtinst/VirtualGraphics.py:324
 msgid "Unknown graphics type"
 msgstr "Onbekende grafisch type"
 
-#: virtinst/VirtualGraphics.py:165
+#: virtinst/VirtualGraphics.py:167
 msgid "Keymap must be a string"
 msgstr "Toetsenbord indeling moet een tekenreeks zijn."
 
-#: virtinst/VirtualGraphics.py:169
+#: virtinst/VirtualGraphics.py:171
 msgid "Keymap must be less than 16 characters"
 msgstr "Toetsenbord indeling moet minder dan 16 karakters hebben"
 
-#: virtinst/VirtualGraphics.py:171
+#: virtinst/VirtualGraphics.py:173
 msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr ""
 "Toetsenbord indeling kan alleen alfanumerieke, '_', of '-' karakters bevatten"
 
-#: virtinst/VirtualGraphics.py:191
+#: virtinst/VirtualGraphics.py:193
 msgid ""
 "VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
 "VNC poort moet een getal tussen 5900 en 65535 zijn, of -1 voor automatische "
 "toekenning"
 
-#: virtinst/VirtualGraphics.py:232
+#: virtinst/VirtualGraphics.py:241
 msgid ""
 "TLS port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
@@ -1772,22 +1776,22 @@ msgstr ""
 "OVF sectie '%s' wordt vermeld als vereist, maar de parser weet niet hoe deze "
 "af te handelen."
 
-#: virtconv/parsers/virtimage.py:212
+#: virtconv/parsers/virtimage.py:213
 #, python-format
 msgid "Couldn't import file '%s': %s"
 msgstr "Kon bestand '%s' niet importeren: %s"
 
-#: virtconv/parsers/virtimage.py:219
+#: virtconv/parsers/virtimage.py:220
 #, python-format
 msgid "No Name defined in '%s'"
 msgstr "Geen naam gedefinieerd in '%s'"
 
-#: virtconv/parsers/virtimage.py:242
+#: virtconv/parsers/virtimage.py:244
 #, python-format
 msgid "Unknown disk format '%s'"
 msgstr "Onbekend schijf formaat '%s'"
 
-#: virtconv/parsers/virtimage.py:271
+#: virtconv/parsers/virtimage.py:273
 msgid "VM must have a memory setting"
 msgstr "VM moet een geheugen instelling hebben"
 
@@ -1822,11 +1826,11 @@ msgstr "Een originele machine naam of xml bestand is vereist."
 msgid "What would you like to use as the cloned disk (file path) for '%s'?"
 msgstr "Wat wil je gebruiken voor de gekloonde schijf (bestand pad) voor '%s'?"
 
-#: virt-clone:129 virt-image:71 virt-install:691 virt-install.orig:691
+#: virt-clone:129 virt-image:71 virt-install:693
 msgid "Connect to hypervisor with URI"
 msgstr "Verbind met hypervisor met URI"
 
-#: virt-clone:132 virt-image:74 virt-install:694 virt-install.orig:694
+#: virt-clone:132 virt-image:74 virt-install:696
 msgid "General Options"
 msgstr "Algemene opties"
 
@@ -1857,7 +1861,7 @@ msgstr ""
 "Nieuwe UUID voor de kloon gast; standaard is dit een willekeurig "
 "gegenereerde UUID"
 
-#: virt-clone:154 virt-install:746 virt-install.orig:746
+#: virt-clone:154 virt-install:748
 msgid "Storage Configuration"
 msgstr "Opslag configuratie"
 
@@ -1885,7 +1889,7 @@ msgstr ""
 "Kloon geen opslag, nieuwe schijf images gespecificeerd met --file blijven "
 "ongewijzigd behouden"
 
-#: virt-clone:175 virt-image:104 virt-install:768 virt-install.orig:768
+#: virt-clone:175 virt-image:104 virt-install:770
 msgid "Networking Configuration"
 msgstr "Netwerk configuratie"
 
@@ -1897,7 +1901,7 @@ msgstr ""
 "Nieuw vast MAC adres voor de kloon gast. Standaard is dit een willekeurig "
 "gegenereerde MAC"
 
-#: virt-clone:183 virt-image:124 virt-install:856 virt-install.orig:856
+#: virt-clone:183 virt-image:124 virt-install:858
 msgid "Miscellaneous Options"
 msgstr "Diverse opties"
 
@@ -1907,12 +1911,11 @@ msgstr ""
 "Druk de gegenereerde domein XML af in plaats van definiëren en klonen van de "
 "gast."
 
-#: virt-clone:188 virt-convert:87 virt-image:138 virt-install:884
-#: virt-install.orig:884
+#: virt-clone:188 virt-convert:87 virt-image:138 virt-install:886
 msgid "Print debugging information"
 msgstr "Debug informatie afdrukken"
 
-#: virt-clone:190 virt-install:881 virt-install.orig:881
+#: virt-clone:190 virt-install:883
 msgid "Request user input for ambiguous situations or required options."
 msgstr ""
 "Verzoek gebruiker input voor onduidelijke situaties of vereiste opties."
@@ -1925,8 +1928,7 @@ msgstr ""
 "Vraag niet om input. Antwoord ja waar toepasbaar, en beëindig voor alle "
 "andere vragen"
 
-#: virt-clone:197 virt-convert:85 virt-image:146 virt-install:879
-#: virt-install.orig:879
+#: virt-clone:197 virt-convert:85 virt-image:146 virt-install:881
 msgid "Suppress non-error output"
 msgstr "Onderdruk niet-fout output"
 
@@ -1934,7 +1936,7 @@ msgstr "Onderdruk niet-fout output"
 msgid "Allow cloning a running domain"
 msgstr "Sta klonen van een draaiende gast toe"
 
-#: virt-clone:214 virt-install:1250 virt-install.orig:1250
+#: virt-clone:214 virt-install:1252
 #, python-format
 msgid "Unknown argument '%s'"
 msgstr "Onbekend argument '%s'"
@@ -1948,7 +1950,7 @@ msgstr "Je moet rechten hebben om Xen gasten te klonen"
 msgid "Clone '%s' created successfully."
 msgstr "Kloon '%s' is met succes aangemaakt."
 
-#: virt-clone:264 virt-image:245 virt-install:1279 virt-install.orig:1279
+#: virt-clone:264 virt-image:245 virt-install:1281
 msgid "Installation aborted at user request"
 msgstr "Installatie afgebroken op verzoek van de gebruiker"
 
@@ -1964,11 +1966,11 @@ msgstr "Output formaat, b.v. 'virt-image'"
 msgid "Output disk format"
 msgstr "Output schijf formaat"
 
-#: virt-convert:56 virt-install:828 virt-install.orig:828
+#: virt-convert:56 virt-install:830
 msgid "This guest should be a fully virtualized guest"
 msgstr "Deze gast moet een volledig gevirtualiseerde gast zijn"
 
-#: virt-convert:58 virt-install:830 virt-install.orig:830
+#: virt-convert:58 virt-install:832
 msgid "This guest should be a paravirtualized guest"
 msgstr "Deze gast moet een volledig para-gevirtualiseerde gast zijn"
 
@@ -1991,7 +1993,7 @@ msgstr ""
 "De OS variant voor volledig gevirtualiseerde gasten, b.v. 'fedora6', "
 "'rhel5', 'solaris10', 'win2k', 'vista'"
 
-#: virt-convert:74 virt-install:845 virt-install.orig:845
+#: virt-convert:74 virt-install:847
 msgid ""
 "Disables APIC for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
@@ -1999,7 +2001,7 @@ msgstr ""
 "Zet APIC uit voor volledig gevirtualiseerde gast (overschrijft waarde in os-"
 "type/os-variant db)"
 
-#: virt-convert:78 virt-install:849 virt-install.orig:849
+#: virt-convert:78 virt-install:851
 msgid ""
 "Disables ACPI for fully virtualized guest (overrides value in os-type/os-"
 "variant db)"
@@ -2060,27 +2062,27 @@ msgstr "Kon output map \"%s\" niet opschonen: %s"
 msgid "Couldn't import file \"%s\": %s"
 msgstr "Kon bestand \"%s\" niet importeren: %s"
 
-#: virt-convert:225
+#: virt-convert:224
 #, python-format
 msgid "Generating output in '%(format)s' format to %(dir)s/"
 msgstr "Genereren van output in '%(format)s' format naar %(dir)s/"
 
-#: virt-convert:245
+#: virt-convert:244
 #, python-format
 msgid "Converting disk '%(path)s' to type %(format)s..."
 msgstr "Converteren van schijf '%(path)s' naar type %(format)s..."
 
-#: virt-convert:252 virt-convert:255
+#: virt-convert:251 virt-convert:254
 #, python-format
 msgid "Couldn't convert disks: %s"
 msgstr "Kon schijven niet converteren: %s"
 
-#: virt-convert:261
+#: virt-convert:260
 #, python-format
 msgid "Couldn't export to file \"%s\": %s"
 msgstr "Kon niet exporteren naar bestand \"%s\": %s"
 
-#: virt-convert:273
+#: virt-convert:272
 msgid "Aborted at user request"
 msgstr "Afgebroken op verzoek van de gebruiker"
 
@@ -2098,19 +2100,19 @@ msgstr ""
 msgid "The image requires %i network interface."
 msgstr "De image vereist %i netwerk interface."
 
-#: virt-image:77 virt-install:697 virt-install.orig:697
+#: virt-image:77 virt-install:699
 msgid "Name of the guest instance"
 msgstr "Naam van gast aanhaling"
 
-#: virt-image:79 virt-install:699 virt-install.orig:699
+#: virt-image:79 virt-install:701
 msgid "Memory to allocate for guest instance in megabytes"
 msgstr "Geheugen toe te wijzen aan gast aanhaling in megabytes"
 
-#: virt-image:83 virt-install:853 virt-install.orig:853
+#: virt-image:83 virt-install:855
 msgid "UUID for the guest."
 msgstr "UUID voor de gast."
 
-#: virt-image:87 virt-install:735 virt-install.orig:735
+#: virt-image:87 virt-install:737
 msgid "The OS type being installed, e.g. 'linux', 'unix', 'windows'"
 msgstr "Het OS type dat geïnstalleerd wordt, b.v. 'linux', 'unix', 'windows'"
 
@@ -2179,7 +2181,7 @@ msgstr "De index voor --boot moet tussen 0 en %d zijn"
 msgid "Creating guest %s..."
 msgstr "Gast %s aanmaken..."
 
-#: virt-install:51 virt-install.orig:51
+#: virt-install:51
 #, python-format
 msgid ""
 "An install method must be specified\n"
@@ -2188,7 +2190,7 @@ msgstr ""
 "Een installatie methode moet opgegeven worden\n"
 "(%(methods)s)"
 
-#: virt-install:53 virt-install.orig:53
+#: virt-install:53
 msgid "--disk storage must be specified (override with --nodisks)"
 msgstr ""
 "--disk opslag moet gespecificeerd worden (gebruik --nodisks om dit te "
@@ -2199,26 +2201,26 @@ msgstr ""
 msgid "Couldn't create default storage pool '%s': %s"
 msgstr "Kon standaard opslag pool '%s' niet aanmaken: %s"
 
-#: virt-install:152 virt-install.orig:152
+#: virt-install:152
 msgid "--boot menu must be 'on' or 'off'"
 msgstr "--boot menu moet 'on' of 'off' zijn"
 
-#: virt-install:190 virt-install.orig:190
+#: virt-install:190
 #, python-format
 msgid "%(chartype)s type %(devtype)s does not support '%(optname)s' option."
 msgstr "%(chartype)s type %(devtype)s ondersteunt '%(optname)s' optie niet."
 
-#: virt-install:234 virt-install.orig:234
+#: virt-install:234
 #, python-format
 msgid "Error in %(chartype)s device parameters: %(err)s"
 msgstr "Fout in %(chartype)s apparaat parameters: %(err)s"
 
-#: virt-install:263 virt-install.orig:263
+#: virt-install:263
 #, python-format
 msgid "Error in watchdog device parameters: %s"
 msgstr "Fout in bewaker apparaat parameters: %s"
 
-#: virt-install:342 virt-install.orig:342
+#: virt-install:342
 #, python-format
 msgid "Unknown --disk option '%s'."
 msgstr "onbekende --disk optie '%s'."
@@ -2228,28 +2230,28 @@ msgstr "onbekende --disk optie '%s'."
 msgid "Unknown '%s' value '%s'"
 msgstr "Onbekende '%s' waarde '%s'"
 
-#: virt-install:357 virt-install.orig:357
+#: virt-install:357
 #, python-format
 msgid "Improper value for 'size': %s"
 msgstr "Onjuiste waarde voor 'size': %s"
 
-#: virt-install:383 virt-install.orig:383
+#: virt-install:384
 msgid "Size must be specified with all 'pool='"
 msgstr "Grootte moet gespecificeerd worden voor alle 'pool='"
 
-#: virt-install:397 virt-install.orig:397
+#: virt-install:398
 msgid "Format attribute not supported for this volume type"
 msgstr "Formaat attribuut niet ondersteund voor dit volume type"
 
-#: virt-install:406 virt-install.orig:406
+#: virt-install:407
 msgid "Storage volume must be specified as vol=poolname/volname"
 msgstr "Opslag volume moet gespecificeerd worden als vol=poolnaam/volnaam"
 
-#: virt-install:457 virt-install.orig:457
+#: virt-install:459
 msgid "Cannot specify storage and use --nodisks"
 msgstr "Kan opslag niet specificeren en gebruik --nodisks"
 
-#: virt-install:460 virt-install.orig:460
+#: virt-install:462
 msgid ""
 "Cannot mix --file, --nonsparse, or --file-size with --disk options. Use --"
 "disk PATH[,size=SIZE][,sparse=yes|no]"
@@ -2257,23 +2259,23 @@ msgstr ""
 "Kan --file, --nonsparse of --file-size niet combineren met --disk opties. "
 "Gebruik --disk PAD[,size=GROOTTE][,sparse=yes|no]"
 
-#: virt-install:472 virt-install.orig:472
+#: virt-install:474
 msgid "Need to pass size for each disk"
 msgstr "Grootte doorgeven voor iedere schijf is nodig"
 
-#: virt-install:487 virt-install.orig:487
+#: virt-install:489
 msgid "Cannot use --mac with --nonetworks"
 msgstr "Kan --mac niet gebruiken met --nonetworks"
 
-#: virt-install:489 virt-install.orig:489
+#: virt-install:491
 msgid "Cannot use --bridges with --nonetworks"
 msgstr "Kan --bridges niet gebruiken met --nonetworks"
 
-#: virt-install:491 virt-install.orig:491
+#: virt-install:493
 msgid "Cannot use --network with --nonetworks"
 msgstr "Kan --network niet gebruiken met --nonetworks"
 
-#: virt-install:518 virt-install.orig:518
+#: virt-install:520
 msgid ""
 "Would you like a fully virtualized guest (yes or no)? This will allow you to "
 "run unmodified operating systems."
@@ -2281,101 +2283,100 @@ msgstr ""
 "Wil je een volledig gevirtualiseerde gast (ja of nee)? Dit staat je toe om "
 "onveranderde besturingssystemen te draaien."
 
-#: virt-install:543 virt-install.orig:543
+#: virt-install:545
 #, python-format
 msgid "Would you like to use %s acceleration? (yes or no)"
 msgstr "Wil je %s versnelling gebruiken? (ja of nee)"
 
-#: virt-install:555 virt-install.orig:555
+#: virt-install:557
 msgid "Can't do both --hvm and --paravirt"
 msgstr "Zowel --hvm als --paravirt is niet mogelijk"
 
-#: virt-install:577 virt-install:578 virt-install.orig:577
-#: virt-install.orig:578
+#: virt-install:579 virt-install:580
 msgid "default"
 msgstr "standaard"
 
-#: virt-install:615 virt-install.orig:615
+#: virt-install:617
 #, python-format
 msgid "Only one install method can be used (%(methods)s)"
 msgstr "Slechts één installatie methode (%(methods)s) kan gebruikt worden"
 
-#: virt-install:621 virt-install.orig:621
+#: virt-install:623
 msgid "Network PXE boot is not supported for paravirtualized guests"
 msgstr ""
 "Netwerk PXE opstarten wordt niet ondersteund voor para-gevirtualiseerde "
 "gasten"
 
-#: virt-install:624 virt-install.orig:624
+#: virt-install:626
 msgid "Paravirtualized guests cannot install off cdrom media."
 msgstr ""
 "Para-gevirtualiseerde gasten kunnen niet geïnstalleerd worden vanaf cdrom "
 "media."
 
-#: virt-install:627 virt-install.orig:627
+#: virt-install:629
 msgid "--location can not be specified for remote connections."
 msgstr ""
 "--location kan niet gespecificeerd worden voor verbindingen op afstand."
 
-#: virt-install:646 virt-install.orig:646
+#: virt-install:648
 #, python-format
 msgid "Error creating cdrom disk: %s"
 msgstr "Fout bij het aanmaken van cdrom schijf: %s"
 
-#: virt-install:651 virt-install.orig:651
+#: virt-install:653
 msgid "What is the install CD-ROM/ISO or URL?"
 msgstr "Wat is de installeer CD-ROM/ISO of URL?"
 
-#: virt-install:653 virt-install.orig:653
+#: virt-install:655
 msgid "What is the install URL?"
 msgstr "Wat is de installeer URL?"
 
-#: virt-install:704 virt-install.orig:704
+#: virt-install:706
 msgid "Human readable description of the VM to store in the generated XML."
 msgstr "Leesbare beschrijving van de VM om op te slaan in de gegenereerde XML."
 
-#: virt-install:708 virt-install.orig:708
+#: virt-install:710
 msgid "Set domain security driver configuration."
 msgstr "Stel domein beveiliging driver configuratie in."
 
-#: virt-install:711 virt-install.orig:711
+#: virt-install:713
 msgid "Installation Method Options"
 msgstr "Installatie methode opties"
 
-#: virt-install:714 virt-install.orig:714
+#: virt-install:716
 msgid "CD-ROM installation media"
 msgstr "CD-ROM installatie media"
 
-#: virt-install:717 virt-install.orig:717
+#: virt-install:719
 msgid ""
 "Installation source (eg, nfs:host:/path, http://host/path, ftp://host/path)"
 msgstr ""
 "Installatie bron (b.v., nfs:host:/pad, http://host/pad, ftp://host/pad)"
 
-#: virt-install:720 virt-install.orig:720
+#: virt-install:722
 msgid "Boot from the network using the PXE protocol"
 msgstr "Opstarten vanaf het netwerk met het PXE protocol"
 
-#: virt-install:722 virt-install.orig:722
+#: virt-install:724
 msgid "Build guest around an existing disk image"
 msgstr "Bouw gast met een bestaande schijf image"
 
-#: virt-install:724 virt-install.orig:724
+#: virt-install:726
 msgid "Treat the CD-ROM media as a Live CD"
 msgstr "Behandel de CD-ROM als een live CD"
 
-#: virt-install:727 virt-install.orig:727
+#: virt-install:729
 msgid ""
 "Additional arguments to pass to the install kernel booted from --location"
 msgstr ""
 "Extra argumenten om door te geven aan de installatie kernel opgestart vanaf "
 "--location"
 
-#: virt-install:732 virt-install.orig:732
+#: virt-install:734
 msgid "Add given file to root of initrd from --location"
 msgstr "Voeg gegeven bestand toe aan de root van initrd van --location"
 
-#: virt-install:739 virt-install.orig:739
+#: virt-install:741
 msgid ""
 "The OS variant being installed guests, e.g. 'fedora6', 'rhel5', 'solaris10', "
 "'win2k'"
@@ -2383,7 +2384,7 @@ msgstr ""
 "De OS variant die geïnstalleerd wordt voor gasten, b.v. 'fedora6', 'rhel5', "
 "'solaris10', 'win2k'"
 
-#: virt-install:742 virt-install.orig:742
+#: virt-install:744
 msgid ""
 "Optionally configure post-install boot order, menu, permanent kernel boot, "
 "etc."
@@ -2391,7 +2392,7 @@ msgstr ""
 "Configureer optioneel post-install boot volgorde, menu, permanente kernel "
 "boot, enz."
 
-#: virt-install:749 virt-install.orig:749
+#: virt-install:751
 msgid ""
 "Specify storage with various options. Ex.\n"
 "--disk path=/my/existing/disk\n"
@@ -2403,11 +2404,11 @@ msgstr ""
 "--disk path=/mijn/nieuwe/schijf,size=5 (in gigabytes)\n"
 "--disk vol=poolnaam:volnaam,device=cdrom,bus=scsi,..."
 
-#: virt-install:754 virt-install.orig:754
+#: virt-install:756
 msgid "Don't set up any disks for the guest."
 msgstr "Stel geen schijven in voor de gast."
 
-#: virt-install:771 virt-install.orig:771
+#: virt-install:773
 msgid ""
 "Specify a network interface. Ex:\n"
 "--network bridge=mybr0\n"
@@ -2419,76 +2420,76 @@ msgstr ""
 "--network network=my_libvirt_virtual_net\n"
 "--network network=mijnnet,model=virtio,mac=00:11..."
 
-#: virt-install:776 virt-install.orig:776
+#: virt-install:778
 msgid "Don't create network interfaces for the guest."
 msgstr "Maak geen netwerk interfaces voor de gast aan."
 
-#: virt-install:790 virt-install.orig:790
+#: virt-install:792
 msgid "Don't automatically try to connect to the guest console"
 msgstr "Probeer niet automatisch met de gast console te verbinden"
 
-#: virt-install:794 virt-install.orig:794
+#: virt-install:796
 msgid "Device Options"
 msgstr "Apparaat opties"
 
-#: virt-install:797 virt-install.orig:797
+#: virt-install:799
 msgid "Add a serial device to the domain."
 msgstr "Voeg een serieel apparaat toe aan het domein."
 
-#: virt-install:800 virt-install.orig:800
+#: virt-install:802
 msgid "Add a parallel device to the domain."
 msgstr "Voeg een parallel apparaat toe aan het domein."
 
-#: virt-install:803 virt-install.orig:803
+#: virt-install:805
 msgid "Add a guest communication channel."
 msgstr "Voeg een gast communicatie kanaal toe."
 
-#: virt-install:806 virt-install.orig:806
+#: virt-install:808
 msgid "Add a text console connection between the guest and host."
 msgstr "voeg een tekst console verbinding toe tussen de gast en de host."
 
-#: virt-install:810 virt-install.orig:810
+#: virt-install:812
 msgid "Physical host device to attach to the domain."
 msgstr "Fysieke host apparaat aan te sluiten op het domein."
 
-#: virt-install:813 virt-install.orig:813
+#: virt-install:815
 msgid "Use sound device emulation"
 msgstr "Gebruik geluid apparaat emulatie."
 
-#: virt-install:816 virt-install.orig:816
+#: virt-install:818
 msgid "Add a watchdog device to the domain."
 msgstr "Voeg een bewaker apparaat toe aan het domein."
 
-#: virt-install:819 virt-install.orig:819
+#: virt-install:821
 msgid "Specify video hardware type."
 msgstr "Specificeer video hardware type."
 
-#: virt-install:826 virt-install.orig:826
+#: virt-install:828
 msgid "Virtualization Platform Options"
 msgstr "Virtualisatie platform opties"
 
-#: virt-install:833 virt-install.orig:833
+#: virt-install:835
 msgid "Hypervisor name to use (kvm, qemu, xen, ...)"
 msgstr "Te gebruiken hypervisor naam (kvm, qemu, xen, ...)"
 
-#: virt-install:839 virt-install.orig:839
+#: virt-install:841
 msgid "The CPU architecture to simulate"
 msgstr "Te simuleren CPU architectuur"
 
-#: virt-install:842 virt-install.orig:842
+#: virt-install:844
 msgid "The machine type to emulate"
 msgstr "Te emuleren machine type"
 
-#: virt-install:859 virt-install.orig:859
+#: virt-install:861
 msgid "Have domain autostart on host boot up."
 msgstr "Laat domein automatisch starten bij opstarten."
 
-#: virt-install:861 virt-install.orig:861
+#: virt-install:863
 msgid "Print the generated domain XML rather than define the guest."
 msgstr ""
 "Druk de gegenereerde domein XML af in plaats van definiëren van de gast."
 
-#: virt-install:864 virt-install.orig:864
+#: virt-install:866
 msgid ""
 "Print XML of a specific install step (1, 2, 3, all) rather than define the "
 "guest."
@@ -2496,26 +2497,26 @@ msgstr ""
 "XML voor een specifieke installatie stap afdrukken (1, 2, 3, all) in plaats "
 "van definiëren van de gast."
 
-#: virt-install:867 virt-install.orig:867
+#: virt-install:869
 msgid "Disables the automatic rebooting when the installation is complete."
 msgstr "Zet automatisch opstarten nadat de installatie voltooid is uit."
 
-#: virt-install:870 virt-install.orig:870
+#: virt-install:872
 msgid "Time to wait (in minutes)"
 msgstr "Wachttijd (in minuten)"
 
-#: virt-install:872 virt-install.orig:872
+#: virt-install:874
 msgid ""
 "Run through install process, but do not create devices or define the guest."
 msgstr ""
 "Loop door het installatie proces, maar maak geen apparaten aan en definieer "
 "geen gast."
 
-#: virt-install:875 virt-install.orig:875
+#: virt-install:877
 msgid "Forces 'yes' for any applicable prompts, terminates for all others"
 msgstr "Forceer 'ja' voor elke toepasselijke vraag, beëindig voor alle andere"
 
-#: virt-install:902 virt-install.orig:902
+#: virt-install:904
 msgid ""
 "Unable to connect to graphical console: virt-viewer not installed. Please "
 "install the 'virt-viewer' package."
@@ -2523,23 +2524,23 @@ msgstr ""
 "Kan niet verbinden met de grafische console: virt-viewer is niet "
 "geïnstalleerd. Installeer het 'virt-viewer' pakket."
 
-#: virt-install:937 virt-install.orig:937
+#: virt-install:939
 msgid "Can't use --pxe with --nonetworks"
 msgstr "Kan --pxe niet gebruiken met --nonetworks"
 
-#: virt-install:944 virt-install.orig:944
+#: virt-install:946
 msgid "A disk device must be specified with --import."
 msgstr "Een schijf apparaat moet gespecificeerd worden met --import."
 
-#: virt-install:1022 virt-install.orig:1022
+#: virt-install:1024
 msgid "--extra-args only work if specified with --location."
 msgstr "--extra-args werkt alleen als het opgegeven wordt met --location."
 
-#: virt-install:1025 virt-install.orig:1025
+#: virt-install:1027
 msgid "The guest's network configuration does not support PXE"
 msgstr "De netwerk configuratie van de gast ondersteunt PXE niet"
 
-#: virt-install:1070 virt-install.orig:1070
+#: virt-install:1072
 msgid ""
 "\n"
 "Starting install..."
@@ -2547,7 +2548,7 @@ msgstr ""
 "\n"
 "Installatie wordt gestart..."
 
-#: virt-install:1094 virt-install.orig:1094
+#: virt-install:1096
 #, python-format
 msgid ""
 "Domain creation completed. You can restart your domain by running:\n"
@@ -2556,19 +2557,19 @@ msgstr ""
 "Domein aanmaken voltooid. Je kunt jouw domein herstarten met uitvoeren van:\n"
 "  %s"
 
-#: virt-install:1098 virt-install.orig:1098
+#: virt-install:1100
 msgid "Guest installation complete... restarting guest."
 msgstr "Gast installatie voltooid... gast wordt opnieuw opgestart."
 
-#: virt-install:1105 virt-install.orig:1105
+#: virt-install:1107
 msgid "Domain install interrupted."
 msgstr "Domein installatie onderbroken."
 
-#: virt-install:1127 virt-install.orig:1127
+#: virt-install:1129
 msgid "Domain has crashed."
 msgstr "Domein is gecrasht."
 
-#: virt-install:1164 virt-install.orig:1164
+#: virt-install:1166
 msgid ""
 "Domain installation still in progress. You can reconnect to \n"
 "the console to complete the installation process."
@@ -2576,12 +2577,12 @@ msgstr ""
 "Domein installatie is nog bezig. Je kunt opnieuw verbinden met\n"
 "de console om het installatie proces te voltooien."
 
-#: virt-install:1169 virt-install.orig:1169
+#: virt-install:1171
 #, python-format
 msgid "%d minutes "
 msgstr "%d minuten"
 
-#: virt-install:1171 virt-install.orig:1171
+#: virt-install:1173
 #, python-format
 msgid ""
 "Domain installation still in progress. Waiting %sfor installation to "
@@ -2589,55 +2590,53 @@ msgid ""
 msgstr ""
 "Domein installatie is nog bezig. Wacht %s om de installatie te voltooien."
 
-#: virt-install:1177 virt-install.orig:1177
+#: virt-install:1179
 msgid "Domain has shutdown. Continuing."
 msgstr "Domein is afgesloten. Ga verder."
 
-#: virt-install:1184 virt-install.orig:1184
+#: virt-install:1186
 #, python-format
 msgid "Could not lookup domain after install: %s"
 msgstr "Kan domein na installatie niet vinden: %s"
 
-#: virt-install:1191 virt-install.orig:1191
+#: virt-install:1193
 msgid "Installation has exceeded specified time limit. Exiting application."
 msgstr ""
 "Installatie heeft de gespecificeerde tijdslimiet overschreden. Toepassing "
 "wordt afgesloten."
 
-#: virt-install:1211 virt-install.orig:1211
+#: virt-install:1213
 msgid "Dry run completed successfully"
 msgstr "Uitprobeer uitvoering met succes aangemaakt."
 
-#: virt-install:1217 virt-install.orig:1217
+#: virt-install:1219
+#, fuzzy
 msgid ""
 "--xml-only can only be used with guests that do not have an installation "
-"phase (--import, --boot, etc.). To see allall generated XML, please use --"
-"xml-step all."
+"phase (--import, --boot, etc.). To see all generated XML, please use --print-"
+"step all."
 msgstr ""
 "--xml-only kan alleen worden gebruikt met gasten die nog geen installatie "
 "fase hebben (--import, --boot, enz.). Om alle gegenereerd XML te bekijken, "
 "gebruik je --xml-step all."
 
-#: virt-install:1227 virt-install.orig:1227
+#: virt-install:1229
 msgid "Requested installation does not have XML step 2"
 msgstr "Gevraagde installatie heeft geen XML stap 2"
 
-#: virt-install:1231 virt-install.orig:1231
+#: virt-install:1233
 msgid "Requested installation does not have XML step 3"
 msgstr "Gevraagde installatie heeft geen XML stap 3"
 
-#: virt-install:1257 virt-install.orig:1257
+#: virt-install:1259
 msgid "--print-step must be 1, 2, 3, or all"
 msgstr "--print-step moet 1, 2, 3 of all zijn"
 
-#: virt-install.orig:97
-#, python-format
-msgid "Couldn't create default storage pool '%s'"
-msgstr "Kon standaard opslag pool '%s' niet aanmaken"
+#~ msgid "Couldn't create default storage pool '%s'"
+#~ msgstr "Kon standaard opslag pool '%s' niet aanmaken"
 
-#: virt-install.orig:352 virt-install.orig:364
-msgid "Unknown value"
-msgstr "Onbekende waarde"
+#~ msgid "Unknown value"
+#~ msgstr "Onbekende waarde"
 
 #~ msgid "(use --prompt to run interactively)"
 #~ msgstr "(gebruik --prompt om interactief te draaien)"
@@ -2732,8 +2731,8 @@ msgstr "Onbekende waarde"
 #~ msgstr "Schijf %s is al in gebruik door een andere gast!\n"
 
 #~ msgid ""
-#~ "More disks to clone that new paths specified. (%(passed)d specified, %"
-#~ "(need)d needed"
+#~ "More disks to clone that new paths specified. (%(passed)d specified, "
+#~ "%(need)d needed"
 #~ msgstr ""
 #~ "Er zijn meer te klonen schijven gespecificeerd dan nieuwe paden (%(passed)"
 #~ "d gespecificeerd, %(need)d nodig)"

@@ -1,0 +1,8 @@
+[main]
+host = https://www.transifex.net
+
+[virtinst.virtinstpot]
+file_filter = po/<lang>.po
+source_file = po/virtinst.pot
+source_lang = en
+
