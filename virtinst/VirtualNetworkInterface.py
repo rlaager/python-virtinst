@@ -22,6 +22,7 @@ import libvirt
 
 import _util
 import VirtualDevice
+import XMLBuilderDomain
 from XMLBuilderDomain import _xml_property
 from virtinst import _virtinst as _
 
@@ -43,6 +44,56 @@ def _countMACaddr(vms, searchmac):
         xml = vm.XMLDesc(0)
         count += _util.get_xml_path(xml, func=count_cb)
     return count
+
+class VirtualPort(XMLBuilderDomain.XMLBuilderDomain):
+
+    def __init__(self, conn, parsexml=None, parsexmlnode=None, caps=None):
+        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
+                                                   parsexmlnode, caps=caps)
+        self._type = None
+        self._managerid = None
+        self._typeid = None
+        self._typeidversion = None
+        self._instanceid = None
+
+    def get_type(self):
+        return self._type
+    def set_type(self, val):
+        self._type = val
+    type = _xml_property(get_type, set_type,
+                                  xpath="./virtualport/@type")
+
+    def get_managerid(self):
+        return self._managerid
+    def set_managerid(self, val):
+        self._managerid = val
+    managerid = _xml_property(get_managerid, set_managerid,
+                                  xpath="./virtualport/parameters/@managerid")
+
+    def get_typeid(self):
+        return self._typeid
+    def set_typeid(self, val):
+        self._typeid = val
+    typeid = _xml_property(get_typeid, set_typeid,
+                               xpath="./virtualport/parameters/@typeid")
+
+    def get_typeidversion(self):
+        return self._typeidversion
+    def set_typeidversion(self, val):
+        self._typeidversion = val
+    typeidversion = _xml_property(get_typeidversion, set_typeidversion,
+                               xpath="./virtualport/parameters/@typeidversion")
+
+    def get_instanceid(self):
+        return self._instanceid
+    def set_instanceid(self, val):
+        self._instanceid = val
+    instanceid = _xml_property(get_instanceid, set_instanceid,
+                               xpath="./virtualport/parameters/@instanceid")
+
+    def _get_xml_config(self):
+        # FIXME: This should be implemented, currently we can only parse
+        return ""
 
 class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
@@ -83,6 +134,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         self._model = None
         self._target_dev = None
         self._source_dev = None
+        self._virtualport = VirtualPort(conn, parsexml, parsexmlnode, caps)
 
         # Generate _random_mac
         self._random_mac = None
@@ -135,6 +187,10 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         if self.type == self.TYPE_USER:
             return None
         return self.network or self.bridge or self.source_dev
+
+    def _get_virtualport(self):
+        return self._virtualport
+    virtualport = property(_get_virtualport)
 
     def get_type(self):
         return self._type

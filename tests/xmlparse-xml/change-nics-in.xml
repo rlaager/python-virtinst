@@ -36,6 +36,14 @@
       <script path="/etc/qemu-ifup"/>
       <target dev="nic02"/>
     </interface>
+    <interface type="direct">
+      <mac address="00:11:22:33:44:55"/>
+      <source dev="eth0.1" mode="vepa"/>
+      <virtualport type="802.1Qbg">
+        <parameters managerid="12" typeid="1193046" typeidversion="1" instanceid="09b11c53-8b5c-4eeb-8f00-d84eaa0aaa3b"/>
+      </virtualport>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x07" function="0x0"/>
+    </interface>
     <input type="mouse" bus="ps2"/>
     <graphics type="sdl" display=":3.4" xauth="/tmp/.Xauthority"/>
     <console type="pty"/>

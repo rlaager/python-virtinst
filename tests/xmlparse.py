@@ -362,6 +362,7 @@ class XMLParseTest(unittest.TestCase):
         dev2 = guest.get_devices("interface")[1]
         dev3 = guest.get_devices("interface")[2]
         dev4 = guest.get_devices("interface")[3]
+        dev5 = guest.get_devices("interface")[4]
 
         check = self._make_checker(dev1)
         check("type", "user")
@@ -392,6 +393,19 @@ class XMLParseTest(unittest.TestCase):
         check("target_dev", "nic02", "nic03")
         check("target_dev", "nic03", None)
         self.assertEquals(dev4.get_source(), "eth1")
+
+        check = self._make_checker(dev5)
+        check("type", "direct")
+        check("source_dev", "eth0.1")
+
+        virtualport = dev5.virtualport
+        check = self._make_checker(virtualport)
+        check("type", "802.1Qbg")
+        check("managerid", "12", "11")
+        check("typeid", "1193046", "1193047")
+        check("typeidversion", "1", "2")
+        check("instanceid", "09b11c53-8b5c-4eeb-8f00-d84eaa0aaa3b",
+                            "09b11c53-8b5c-4eeb-8f00-d84eaa0aaa4f")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
