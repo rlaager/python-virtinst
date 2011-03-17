@@ -592,6 +592,10 @@ Export the guest's console using the Spice protocol. Spice allows advanced
 features like audio and USB device streaming, as well as improved graphical
 performance.
 
+Using spice graphic type will work as if those arguments were given:
+
+    --video qxl --channel spicevmc
+
 none
 
 No graphical console will be allocated for the guest. Fully virtualized guests

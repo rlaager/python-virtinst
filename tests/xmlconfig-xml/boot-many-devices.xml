@@ -69,7 +69,7 @@
       <model type='cirrus' vram='10240' heads='3'/>
     </video>
     <video>
-      <model type='cirrus'/>
+      <model type='qxl'/>
     </video>
     <video>
       <model type='qxl'/>

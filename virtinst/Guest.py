@@ -1412,6 +1412,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         soundtype = VirtualDevice.VIRTUAL_DEV_AUDIO
         videotype = VirtualDevice.VIRTUAL_DEV_VIDEO
         inputtype = VirtualDevice.VIRTUAL_DEV_INPUT
+        gfxtype = VirtualDevice.VIRTUAL_DEV_GRAPHICS
+        channeltype = VirtualDevice.VIRTUAL_DEV_CHANNEL
 
         # Set default input values
         input_type = self._lookup_device_param(inputtype, "type")
@@ -1442,10 +1444,34 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 sound.model = sound_model
 
         # Set video device model
-        video_model  = self._lookup_device_param(videotype, "model_type")
+        # QXL device (only if we use spice) - safe even if guest is VGA only
+        def has_spice():
+            for gfx in devlist_func(gfxtype):
+                if gfx.type == gfx.TYPE_SPICE:
+                    return True
+        if has_spice():
+            video_model  = "qxl"
+        else:
+            video_model  = self._lookup_device_param(videotype, "model_type")
+
         for video in devlist_func(videotype):
             if video.model_type == video.MODEL_DEFAULT:
                 video.model_type = video_model
+
+        # Spice agent channel (only if we use spice)
+        def has_spice_agent():
+            for chn in devlist_func(channeltype):
+                if chn.char_type == chn.CHAR_SPICEVMC:
+                    return True
+
+        if (has_spice() and
+            not has_spice_agent() and
+            support.check_conn_support(self.conn,
+                                       support.SUPPORT_CONN_HV_CHAR_SPICEVMC)):
+            agentdev = VirtualCharDevice.get_dev_instance(self.conn,
+                                            VirtualCharDevice.DEV_CHANNEL,
+                                            VirtualCharDevice.CHAR_SPICEVMC)
+            self.add_device(agentdev)
 
         # Generate UUID
         if self.uuid is None:

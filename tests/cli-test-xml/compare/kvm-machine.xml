@@ -25,8 +25,11 @@
     <input type='tablet' bus='usb'/>
     <graphics type='spice' port='-1' tlsPort='-1' autoport='yes'/>
     <console type='pty'/>
+    <channel type='spicevmc'>
+      <target type='virtio' name='com.redhat.spice.0'/>
+    </channel>
     <video>
-      <model type='cirrus'/>
+      <model type='qxl'/>
     </video>
   </devices>
 </domain>
