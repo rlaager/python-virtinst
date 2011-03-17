@@ -63,6 +63,9 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     target_types = [ CHAR_CHANNEL_TARGET_GUESTFWD,
                      CHAR_CHANNEL_TARGET_VIRTIO ]
 
+    CHAR_CHANNEL_ADDRESS_VIRTIO_SERIAL = "virtio-serial"
+    address_types = [ CHAR_CHANNEL_ADDRESS_VIRTIO_SERIAL ]
+
     CHAR_CONSOLE_TARGET_SERIAL = "serial"
     CHAR_CONSOLE_TARGET_UML = "uml"
     CHAR_CONSOLE_TARGET_XEN = "xen"
@@ -182,6 +185,7 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         self._bind_host = None
         self._bind_port = None
         self._protocol = self.CHAR_PROTOCOL_RAW
+        self._address_type = None
 
         if self.char_type == self.CHAR_UDP:
             self._source_mode = self.CHAR_MODE_CONNECT
@@ -329,6 +333,17 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
                            doc=_("Sysfs Name of virtio port in the guest"),
                            xpath="./target/@name")
 
+    def get_address_type(self):
+        return self._address_type
+    def set_address_type(self, val):
+        if val not in self.address_types:
+            raise ValueError(_("Unknown address type '%s'. Must be in: ") % val,
+                             self.address_types)
+        self._address_type = val
+    address_type = _xml_property(get_address_type, set_address_type,
+                                doc=_("Channel type as exposed in the guest."),
+                                xpath="./address/@type")
+
     # XML building helpers
     def _char_empty_xml(self):
         """
@@ -381,6 +396,15 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         xml += "/>\n"
         return xml
 
+    def _get_address_xml(self):
+        xml = ""
+        if not self.address_type:
+            return xml
+
+        xml = "      <address type='%s'" % self.address_type
+        xml += "/>\n"
+        return xml
+
 
     def _get_xml_config(self):
         xml  = "    <%s type='%s'" % (self._dev_type, self._char_type)
@@ -394,12 +418,22 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
                 "Target parameters not used with '%s' devices, only '%s'" %
                 (self._dev_type, self.DEV_CHANNEL))
 
-        if char_xml or target_xml:
+        address_xml = self._get_address_xml()
+        has_address = self._target_type == self.CHAR_CHANNEL_TARGET_VIRTIO
+        if address_xml and not has_address:
+            raise RuntimeError(
+                "Address parameters not used with '%s' target, only '%s'" %
+                (self._target_type, self.CHAR_CHANNEL_TARGET_VIRTIO))
+
+        if char_xml or target_xml or address_xml:
             xml += ">"
             if char_xml:
                 xml += "\n%s" % char_xml
 
             if target_xml:
+                xml += "\n%s" % target_xml
+
+            if address_xml:
                 xml += "\n%s" % target_xml
 
             xml += "    </%s>" % self._dev_type
