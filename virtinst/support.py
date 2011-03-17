@@ -59,6 +59,7 @@ SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI = 5001
 SUPPORT_CONN_HV_SOUND_AC97 = 5002
 SUPPORT_CONN_HV_SOUND_ICH6 = 5003
 SUPPORT_CONN_HV_GRAPHICS_SPICE = 5004
+SUPPORT_CONN_HV_CHAR_SPICEVMC = 5005
 
 """
 Possible keys:
@@ -219,7 +220,13 @@ _support_dict = {
         "version" : 8006,
         "force_version" : True,
         "drv_version" : [ ("qemu", 14000), ],
-    }
+    },
+
+    SUPPORT_CONN_HV_CHAR_SPICEVMC : {
+        "version" : 8008,
+        "force_version" : True,
+        "drv_version" : [ ("qemu", 14000), ],
+    },
 }
 
 # XXX: RHEL6 has lots of feature backports, and since libvirt doesn't
