@@ -103,7 +103,9 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     TYPE_VIRTUAL    = "network"
     TYPE_USER       = "user"
     TYPE_ETHERNET   = "ethernet"
-    network_types = [TYPE_BRIDGE, TYPE_VIRTUAL, TYPE_USER, TYPE_ETHERNET]
+    TYPE_DIRECT   = "direct"
+    network_types = [TYPE_BRIDGE, TYPE_VIRTUAL, TYPE_USER, TYPE_ETHERNET,
+                     TYPE_DIRECT]
 
     def get_network_type_desc(net_type):
         """
@@ -182,11 +184,25 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             return self.network
         if self.type == self.TYPE_BRIDGE:
             return self.bridge
-        if self.type == self.TYPE_ETHERNET:
+        if self.type == self.TYPE_ETHERNET or self.type == self.TYPE_DIRECT:
             return self.source_dev
         if self.type == self.TYPE_USER:
             return None
         return self.network or self.bridge or self.source_dev
+
+    def set_source(self, newsource):
+        """
+        Conveninece function, try to set the relevant <source> value
+        per the network type
+        """
+        if   self.type == self.TYPE_VIRTUAL:
+            self.network = newsource
+        elif self.type == self.TYPE_BRIDGE:
+            self.bridge = newsource
+        elif self.type == self.TYPE_ETHERNET or self.type == self.TYPE_DIRECT:
+            self.source_dev = newsource
+        return
+    source = property(get_source, set_source)
 
     def _get_virtualport(self):
         return self._virtualport
