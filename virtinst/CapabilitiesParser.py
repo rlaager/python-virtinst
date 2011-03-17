@@ -522,6 +522,12 @@ class Capabilities(object):
         sufficiently provided, so we will return True in cases that we
         aren't sure.
         """
+        has_hvm_guests = False
+        for g in self.guests:
+            if g.os_type == "hvm":
+                has_hvm_guests = True
+                break
+
         # Obvious case of feature being specified
         if (self.host.features["vmx"] == FEATURE_ON or
             self.host.features["svm"] == FEATURE_ON):
@@ -534,7 +540,10 @@ class Capabilities(object):
 
         # Xen caps have always shown this info, so if we didn't find any
         # features, the host really doesn't have the necc support
-        if self._is_xen():
+        #
+        # Although new xen seems to block the vmx/svm feature bits from
+        # cpuinfo? so make sure no hvm guests are listed
+        if self._is_xen() and not has_hvm_guests:
             return False
 
         # Otherwise, we can't be sure, because there was a period for along
