@@ -907,6 +907,13 @@ can be any string, such as org.linux-kvm.virtioport1.
 If specified, this will be exposed in the guest at
 /sys/class/virtio-ports/vport0p1/NAME
 
+=item B<--channel spicevmc,target_type=virtio[,name=NAME]>
+
+Communication channel for QEMU spice agent, using virtio serial
+(requires 2.6.34 or later host and guest). NAME is optional metadata,
+and can be any string, such as the default com.redhat.spice.0 that
+specifies how the guest will see the channel.
+
 =back
 
 =item --console

@@ -35,18 +35,20 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     DEV_CHANNEL  = "channel"
     dev_types    = [ DEV_SERIAL, DEV_PARALLEL, DEV_CONSOLE, DEV_CHANNEL]
 
-    CHAR_PTY    = "pty"
-    CHAR_DEV    = "dev"
-    CHAR_STDIO  = "stdio"
-    CHAR_PIPE   = "pipe"
-    CHAR_FILE   = "file"
-    CHAR_VC     = "vc"
-    CHAR_NULL   = "null"
-    CHAR_TCP    = "tcp"
-    CHAR_UDP    = "udp"
-    CHAR_UNIX   = "unix"
+    CHAR_PTY      = "pty"
+    CHAR_DEV      = "dev"
+    CHAR_STDIO    = "stdio"
+    CHAR_PIPE     = "pipe"
+    CHAR_FILE     = "file"
+    CHAR_VC       = "vc"
+    CHAR_NULL     = "null"
+    CHAR_TCP      = "tcp"
+    CHAR_UDP      = "udp"
+    CHAR_UNIX     = "unix"
+    CHAR_SPICEVMC = "spicevmc"
     char_types  = [ CHAR_PTY, CHAR_DEV, CHAR_STDIO, CHAR_FILE, CHAR_VC,
-                    CHAR_PIPE, CHAR_NULL, CHAR_TCP, CHAR_UDP, CHAR_UNIX ]
+                    CHAR_PIPE, CHAR_NULL, CHAR_TCP, CHAR_UDP, CHAR_UNIX,
+                    CHAR_SPICEVMC ]
 
     CHAR_MODE_CONNECT = "connect"
     CHAR_MODE_BIND = "bind"
@@ -92,6 +94,8 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
             desc = _("UDP net console")
         elif char_type == VirtualCharDevice.CHAR_UNIX:
             desc = _("Unix socket")
+        elif char_type == VirtualCharDevice.CHAR_SPICEVMC:
+            desc = _("Spice agent")
 
         return desc
     get_char_type_desc = staticmethod(get_char_type_desc)
@@ -144,6 +148,8 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
             c = VirtualCharUnixDevice
         elif char_type == VirtualCharDevice.CHAR_UDP:
             c = VirtualCharUdpDevice
+        elif char_type == VirtualCharDevice.CHAR_SPICEVMC:
+            c = VirtualCharSpicevmcDevice
         else:
             raise ValueError(_("Unknown character device type '%s'.") %
                              char_type)
@@ -332,7 +338,7 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
 
     def _char_file_xml(self):
         """
-        Provide source xml for devs that require only a patch (dev, pipe)
+        Provide source xml for devs that require only a path (dev, pipe)
         """
         file_xml = ""
         mode_xml = ""
@@ -530,3 +536,15 @@ class VirtualCharUdpDevice(VirtualCharDevice):
         xml += ("      <source mode='connect'%s service='%s'/>\n" %
                 (source_host_xml, self.source_port))
         return xml
+
+class VirtualCharSpicevmcDevice(VirtualCharDevice):
+    _char_type = VirtualCharDevice.CHAR_SPICEVMC
+    _char_xml = VirtualCharDevice._char_empty_xml
+    target_types = [ VirtualCharDevice.CHAR_CHANNEL_TARGET_VIRTIO ]
+
+    def __init__(self, conn, dev_type,
+                 parsexml=None, parsexmlnode=None, caps=None):
+        VirtualCharDevice.__init__(self, conn, dev_type,
+                                   parsexml, parsexmlnode, caps)
+        self._target_type = VirtualCharDevice.CHAR_CHANNEL_TARGET_VIRTIO
+        self._target_name = "com.redhat.spice.0"

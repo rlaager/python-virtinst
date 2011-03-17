@@ -892,8 +892,12 @@ class TestXMLConfig(unittest.TestCase):
                                                    VirtualCharDevice.DEV_PARALLEL,
                                                    VirtualCharDevice.CHAR_UNIX)
         cdev2.source_path = "/tmp/foobar"
+        cdev3 = VirtualCharDevice.get_dev_instance(g.conn,
+                                                   VirtualCharDevice.DEV_CHANNEL,
+                                                   VirtualCharDevice.CHAR_SPICEVMC)
         g.add_device(cdev1)
         g.add_device(cdev2)
+        g.add_device(cdev3)
 
         # Video Devices
         vdev1 = VirtualVideoDevice(g.conn)

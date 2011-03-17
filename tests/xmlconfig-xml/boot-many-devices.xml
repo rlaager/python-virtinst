@@ -57,6 +57,9 @@
     <parallel type='unix'>
       <source mode='bind' path='/tmp/foobar'/>
     </parallel>
+    <channel type='spicevmc'>
+      <target type='virtio' name='com.redhat.spice.0'/>
+    </channel>
     <sound model='sb16'/>
     <sound model='es1370'/>
     <video>
