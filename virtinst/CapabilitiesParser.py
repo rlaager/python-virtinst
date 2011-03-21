@@ -533,6 +533,11 @@ class Capabilities(object):
             self.host.features["svm"] == FEATURE_ON):
             return True
 
+        # Xen seems to block the vmx/svm feature bits from cpuinfo?
+        # so make sure no hvm guests are listed
+        if self._is_xen() and has_hvm_guests:
+            return True
+
         # If there is other features, but no virt bit, then HW virt
         # isn't supported
         if len(self.host.features.names()):
@@ -540,10 +545,7 @@ class Capabilities(object):
 
         # Xen caps have always shown this info, so if we didn't find any
         # features, the host really doesn't have the necc support
-        #
-        # Although new xen seems to block the vmx/svm feature bits from
-        # cpuinfo? so make sure no hvm guests are listed
-        if self._is_xen() and not has_hvm_guests:
+        if self._is_xen():
             return False
 
         # Otherwise, we can't be sure, because there was a period for along
