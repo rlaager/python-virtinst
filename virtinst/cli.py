@@ -695,13 +695,17 @@ def _build_set_param(inst, opts):
 def parse_vcpu_option(guest, optstring, default_vcpus):
     """
     Helper to parse --vcpu string
+
+    @param  guest: virtinst.Guest instance (object)
+    @param  optstring: value of the option '--vcpus' (str)
+    @param  default_vcpus: ? (it should be None at present.)
     """
     vcpus, opts = parse_optstr(optstring, remove_first=True)
     vcpus = vcpus or default_vcpus
 
     set_param = _build_set_param(guest, opts)
     set_cpu_param = _build_set_param(guest.cpu, opts)
-    has_vcpus = ("vcpus" in opts or vcpus)
+    has_vcpus = ("vcpus" in opts or (vcpus is not None))
 
     set_param("vcpus", "vcpus", vcpus)
     set_param("maxvcpus", "maxvcpus")
@@ -718,21 +722,29 @@ def parse_vcpu_option(guest, optstring, default_vcpus):
 
 
 def get_vcpus(vcpus, check_cpu, guest, image_vcpus=None):
-    if vcpus is None and image_vcpus is not None:
-        vcpus = int(image_vcpus)
+    """
+    @param vcpus: value of the option '--vcpus' (str or None)
+    @param check_cpu: Whether to check that the number virtual cpus requested
+                      does not exceed physical CPUs (bool)
+    @param guest: virtinst.Guest instance (object)
+    @param image_vcpus: ? (It's not used currently and should be None.)
+    """
+    if vcpus is None:
+        if image_vcpus is not None:
+            vcpus = image_vcpus
+        else:
+            vcpus = ""
 
     parse_vcpu_option(guest, vcpus, image_vcpus)
 
-    conn = guest.conn
     if check_cpu:
-        vcpucount = str(guest.vcpus)
+        hostinfo = guest.conn.getInfo()
+        pcpus = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
 
-        hostinfo = conn.getInfo()
-        cpu_num = hostinfo[4] * hostinfo[5] * hostinfo[6] * hostinfo[7]
-        if not vcpus <= cpu_num:
-            msg = _("You have asked for more virtual CPUs (%s) than there "
-                    "are physical CPUs (%s) on the host. This will work, "
-                    "but performance will be poor. ") % (vcpucount, cpu_num)
+        if guest.vcpus > pcpus:
+            msg = _("You have asked for more virtual CPUs (%d) than there "
+                    "are physical CPUs (%d) on the host. This will work, "
+                    "but performance will be poor. ") % (guest.vcpus, pcpus)
             askmsg = _("Are you sure? (yes or no)")
 
             if not prompt_for_yes_or_no(msg, askmsg):
