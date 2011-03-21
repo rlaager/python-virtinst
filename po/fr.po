@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: virtinst.tip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-15 15:07-0400\n"
+"POT-Creation-Date: 2011-03-21 10:50-0400\n"
 "PO-Revision-Date: 2010-09-24 12:32+0200\n"
 "Last-Translator: Boris BARNIER <b.barnier@gmail.com>\n"
 "Language-Team: French <trans-fr@lists.fedoraproject.org>\n"
@@ -41,26 +41,26 @@ msgstr ""
 "Il n'y a pas de domaine disponibles pour une virtualisation de type « "
 "%(type)s » et d'architecture %(arch)s."
 
-#: virtinst/CapabilitiesParser.py:712
+#: virtinst/CapabilitiesParser.py:723
 #, python-format
 msgid "for arch '%s'"
 msgstr "pour l'architecture « %s »"
 
-#: virtinst/CapabilitiesParser.py:716
+#: virtinst/CapabilitiesParser.py:727
 #, python-format
 msgid "virtualization type '%s'"
 msgstr "type de virtualisation « %s »,"
 
-#: virtinst/CapabilitiesParser.py:718
+#: virtinst/CapabilitiesParser.py:729
 msgid "any virtualization options"
 msgstr ""
 
-#: virtinst/CapabilitiesParser.py:720
+#: virtinst/CapabilitiesParser.py:731
 #, python-format
 msgid "Host does not support %(virttype)s %(arch)s"
 msgstr "La machine hôte ne supporte pas %(virttype)s %(arch)s"
 
-#: virtinst/CapabilitiesParser.py:731
+#: virtinst/CapabilitiesParser.py:742
 #, fuzzy, python-format
 msgid ""
 "Host does not support domain type %(domain)s%(machine)s for virtualization "
@@ -424,7 +424,8 @@ msgid "Max Memory value must be an integer greater than 0"
 msgstr "La valeur de la mémoire maximale doit être un entier supérieur à 0"
 
 #: virtinst/Guest.py:372
-msgid "Number of vcpus must be a postive integer."
+#, fuzzy
+msgid "Number of vcpus must be a positive integer."
 msgstr "Le nombre d'UC virtuelles doit être un entier positif."
 
 #: virtinst/Guest.py:374
@@ -655,7 +656,7 @@ msgid "Name for the interface object."
 msgstr "Nom du nouvel invité"
 
 #: virtinst/Interface.py:138
-msgid "Maxmimum transmit size in bytes"
+msgid "Maximum transmit size in bytes"
 msgstr ""
 
 #: virtinst/Interface.py:146
@@ -1150,7 +1151,7 @@ msgid ""
 "volume is fully allocated. (%d M requested capacity > %d M available)"
 msgstr ""
 
-#: virtinst/support.py:360 virtinst/XMLBuilderDomain.py:359
+#: virtinst/support.py:367 virtinst/XMLBuilderDomain.py:359
 msgid "'conn' must be a virConnect instance."
 msgstr ""
 
@@ -1222,159 +1223,168 @@ msgstr "La mémoire doit être un entier, mais elle est à « %s »"
 msgid "Unsupported sound model '%s'"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:76
+#: virtinst/VirtualCharDevice.py:81
 msgid "Pseudo TTY"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:78
+#: virtinst/VirtualCharDevice.py:83
 msgid "Physical host character device"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:80
+#: virtinst/VirtualCharDevice.py:85
 msgid "Standard input/output"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:82
+#: virtinst/VirtualCharDevice.py:87
 msgid "Named pipe"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:84
+#: virtinst/VirtualCharDevice.py:89
 msgid "Output to a file"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:86
+#: virtinst/VirtualCharDevice.py:91
 msgid "Virtual console"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:88
+#: virtinst/VirtualCharDevice.py:93
 msgid "Null device"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:90
+#: virtinst/VirtualCharDevice.py:95
 msgid "TCP net console"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:92
+#: virtinst/VirtualCharDevice.py:97
 msgid "UDP net console"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:94
+#: virtinst/VirtualCharDevice.py:99
 msgid "Unix socket"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:106
+#: virtinst/VirtualCharDevice.py:101
+msgid "Spice agent"
+msgstr ""
+
+#: virtinst/VirtualCharDevice.py:113
 msgid "Client mode."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:108
+#: virtinst/VirtualCharDevice.py:115
 msgid "Server mode."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:148
+#: virtinst/VirtualCharDevice.py:157
 #, fuzzy, python-format
 msgid "Unknown character device type '%s'."
 msgstr "Type de réseau %s inconnu"
 
-#: virtinst/VirtualCharDevice.py:160 virtinst/VirtualCharDevice.py:215
+#: virtinst/VirtualCharDevice.py:169 virtinst/VirtualCharDevice.py:225
 #, fuzzy, python-format
 msgid "Unknown character device type '%s'"
 msgstr "Type de réseau %s inconnu"
 
-#: virtinst/VirtualCharDevice.py:219
+#: virtinst/VirtualCharDevice.py:229
 msgid "Method used to expose character device in the host."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:237
+#: virtinst/VirtualCharDevice.py:247
 #, fuzzy, python-format
 msgid "Unknown character mode '%s'."
 msgstr "Type de réseau %s inconnu"
 
-#: virtinst/VirtualCharDevice.py:285
+#: virtinst/VirtualCharDevice.py:295
 #, fuzzy, python-format
 msgid "Unknown protocol '%s'."
 msgstr "Type de réseau %s inconnu"
 
-#: virtinst/VirtualCharDevice.py:295
+#: virtinst/VirtualCharDevice.py:305
 #, fuzzy, python-format
 msgid "Unknown target type '%s'. Must be in: "
 msgstr "Type de réseau %s inconnu"
 
-#: virtinst/VirtualCharDevice.py:299
+#: virtinst/VirtualCharDevice.py:309 virtinst/VirtualCharDevice.py:344
 msgid "Channel type as exposed in the guest."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:307
+#: virtinst/VirtualCharDevice.py:317
 msgid "Guest forward channel address in the guest."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:315
+#: virtinst/VirtualCharDevice.py:325
 msgid "Guest forward channel port in the guest."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:323
+#: virtinst/VirtualCharDevice.py:333
 #, fuzzy
 msgid "Sysfs Name of virtio port in the guest"
 msgstr "Nom du nouvel invité"
 
-#: virtinst/VirtualCharDevice.py:342
+#: virtinst/VirtualCharDevice.py:340
+#, fuzzy, python-format
+msgid "Unknown address type '%s'. Must be in: "
+msgstr "Type de réseau %s inconnu"
+
+#: virtinst/VirtualCharDevice.py:363
 #, python-format
 msgid "A source path is required for character device type '%s'"
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:439
+#: virtinst/VirtualCharDevice.py:479
 msgid "Host character device to attach to guest."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:445
+#: virtinst/VirtualCharDevice.py:485
 msgid "Named pipe to use for input and output."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:451
+#: virtinst/VirtualCharDevice.py:491
 msgid "File path to record device output."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:459 virtinst/VirtualCharDevice.py:469
+#: virtinst/VirtualCharDevice.py:499 virtinst/VirtualCharDevice.py:509
 msgid "Target connect/listen mode."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:462
+#: virtinst/VirtualCharDevice.py:502
 msgid "Unix socket path."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:472
+#: virtinst/VirtualCharDevice.py:512
 msgid "Address to connect/listen to."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:475
+#: virtinst/VirtualCharDevice.py:515
 msgid "Port on target host to connect/listen to."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:478
+#: virtinst/VirtualCharDevice.py:518
 msgid "Format used when sending data."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:482
+#: virtinst/VirtualCharDevice.py:522
 #, fuzzy
 msgid "A host and port must be specified."
 msgstr "Un emplacement depuis lequel installer doit être spécifié"
 
-#: virtinst/VirtualCharDevice.py:494
+#: virtinst/VirtualCharDevice.py:534
 msgid "Host address to bind to."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:497
+#: virtinst/VirtualCharDevice.py:537
 msgid "Host port to bind to."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:500
+#: virtinst/VirtualCharDevice.py:540
 msgid "Host address to send output to."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:503
+#: virtinst/VirtualCharDevice.py:543
 msgid "Host port to send output to."
 msgstr ""
 
-#: virtinst/VirtualCharDevice.py:508
+#: virtinst/VirtualCharDevice.py:548
 #, fuzzy
 msgid "A connection port must be specified."
 msgstr "Un emplacement depuis lequel installer doit être spécifié"
@@ -1643,38 +1653,38 @@ msgstr "Type de réseau %s inconnu"
 msgid "Unknown input bus '%s'."
 msgstr "Type de réseau %s inconnu"
 
-#: virtinst/VirtualNetworkInterface.py:64
+#: virtinst/VirtualNetworkInterface.py:117
 msgid "Shared physical device"
 msgstr ""
 
-#: virtinst/VirtualNetworkInterface.py:66
+#: virtinst/VirtualNetworkInterface.py:119
 msgid "Virtual networking"
 msgstr ""
 
-#: virtinst/VirtualNetworkInterface.py:68
+#: virtinst/VirtualNetworkInterface.py:121
 msgid "Usermode networking"
 msgstr ""
 
-#: virtinst/VirtualNetworkInterface.py:102
+#: virtinst/VirtualNetworkInterface.py:156
 msgid "A network name was not provided"
 msgstr "Aucun nom de réseau n'a été spécifié"
 
-#: virtinst/VirtualNetworkInterface.py:143
+#: virtinst/VirtualNetworkInterface.py:215
 #, python-format
 msgid "Unknown network type %s"
 msgstr "Type de réseau %s inconnu"
 
-#: virtinst/VirtualNetworkInterface.py:172
+#: virtinst/VirtualNetworkInterface.py:244
 #, fuzzy, python-format
 msgid "Virtual network '%s' does not exist: %s"
 msgstr "L'image du CD live « %s » n'existe pas"
 
-#: virtinst/VirtualNetworkInterface.py:175
+#: virtinst/VirtualNetworkInterface.py:247
 #, python-format
 msgid "Virtual network '%s' has not been started."
 msgstr ""
 
-#: virtinst/VirtualNetworkInterface.py:237
+#: virtinst/VirtualNetworkInterface.py:309
 #, fuzzy
 msgid ""
 "The MAC address you entered is already in use by another active virtual "
@@ -1683,14 +1693,14 @@ msgstr ""
 "L'adresse MAC que vous avez donnée est déjà utilisée par une autre machine "
 "virtuelle inactive !"
 
-#: virtinst/VirtualNetworkInterface.py:243
+#: virtinst/VirtualNetworkInterface.py:315
 #, fuzzy
 msgid ""
 "The MAC address you entered conflicts with a device on the physical host."
 msgstr ""
 "L'adresse MAC que vous avez entrée est en conflit avec le NIC physique."
 
-#: virtinst/VirtualNetworkInterface.py:247
+#: virtinst/VirtualNetworkInterface.py:319
 #, fuzzy
 msgid ""
 "The MAC address you entered is already in use by another inactive virtual "
@@ -1826,73 +1836,73 @@ msgstr ""
 msgid "No displayName defined in \"%s\""
 msgstr ""
 
-#: virt-clone:42
+#: virt-clone:43
 msgid "What is the name for the cloned virtual machine?"
 msgstr "Quel est le nom de la machine virtuelle clonée ?"
 
-#: virt-clone:43
+#: virt-clone:44
 #, fuzzy
 msgid "A name is required for the new virtual machine."
 msgstr "Quel est le nom de la machine virtuelle clonée ?"
 
-#: virt-clone:60
+#: virt-clone:61
 #, fuzzy
 msgid "What is the name of the original virtual machine?"
 msgstr "Quel est le nom ou l'UUID de la machine virtuelle originale ?"
 
-#: virt-clone:61
+#: virt-clone:62
 #, fuzzy
 msgid "An original machine name or xml file is required."
 msgstr "Le nom du réseau n'est pas requis pour %s"
 
-#: virt-clone:107
+#: virt-clone:108
 #, fuzzy, python-format
 msgid "What would you like to use as the cloned disk (file path) for '%s'?"
 msgstr "Que souhaitez-vous utiliser comme disque (chemin d'accès) ?"
 
-#: virt-clone:129 virt-image:71 virt-install:693
+#: virt-clone:130 virt-image:71 virt-install:693
 msgid "Connect to hypervisor with URI"
 msgstr "Se connecter à l'hyperviseur via l'URI"
 
-#: virt-clone:132 virt-image:74 virt-install:696
+#: virt-clone:133 virt-image:74 virt-install:696
 msgid "General Options"
 msgstr ""
 
-#: virt-clone:135
+#: virt-clone:136
 #, fuzzy
 msgid "Name of the original guest; The status must be shut off or paused."
 msgstr "Nom ou UUID pour l'invité original ; son statut doit être « arrêté »"
 
-#: virt-clone:140
+#: virt-clone:141
 #, fuzzy
 msgid "XML file to use as the original guest."
 msgstr "Fichier à utiliser en tant qu'image de disque"
 
-#: virt-clone:142
+#: virt-clone:143
 msgid ""
 "Auto generate clone name and storage paths from the original guest "
 "configuration."
 msgstr ""
 
-#: virt-clone:146
+#: virt-clone:147
 msgid "Name for the new guest"
 msgstr "Nom du nouvel invité"
 
-#: virt-clone:150
+#: virt-clone:151
 msgid "New UUID for the clone guest; Default is a randomly generated UUID"
 msgstr ""
 "Nouvel UUID pour l'invité cloné ; par défaut, un UUID aléatoire est généré"
 
-#: virt-clone:154 virt-install:748
+#: virt-clone:155 virt-install:748
 msgid "Storage Configuration"
 msgstr ""
 
-#: virt-clone:158
+#: virt-clone:159
 msgid "New file to use as the disk image for the new guest"
 msgstr ""
 "Nouveau fichier à utiliser en tant qu'image de disque pour le nouvel invité"
 
-#: virt-clone:163
+#: virt-clone:164
 msgid ""
 "Force to copy devices (eg, if 'hdc' is a readonly cdrom device, --force-"
 "copy=hdc)"
@@ -1900,22 +1910,22 @@ msgstr ""
 "Forcer la copie des périphériques (par exemple, si « hdc » est un lecteur de "
 "CD-ROM, -- force-copy=hdc)"
 
-#: virt-clone:167
+#: virt-clone:168
 msgid "Do not use a sparse file for the clone's disk image"
 msgstr ""
 "Ne pas utiliser un fichier dynamique pour le clone de l'image de disque"
 
-#: virt-clone:171
+#: virt-clone:172
 msgid ""
 "Do not clone storage, new disk images specified via --file are preserved "
 "unchanged"
 msgstr ""
 
-#: virt-clone:175 virt-image:104 virt-install:770
+#: virt-clone:176 virt-image:104 virt-install:770
 msgid "Networking Configuration"
 msgstr ""
 
-#: virt-clone:179
+#: virt-clone:180
 msgid ""
 "New fixed MAC address for the clone guest. Default is a randomly generated "
 "MAC"
@@ -1923,52 +1933,48 @@ msgstr ""
 "Nouvelle adresse MAC fixe pour l'invité cloné ; par défaut, une adresse "
 "aléatoire est générée"
 
-#: virt-clone:183 virt-image:124 virt-install:858
+#: virt-clone:184 virt-image:124 virt-install:858
 msgid "Miscellaneous Options"
 msgstr ""
 
-#: virt-clone:185
+#: virt-clone:186
 msgid "Print the generated domain XML rather than define and clone the guest."
 msgstr ""
 
-#: virt-clone:188 virt-convert:87 virt-image:138 virt-install:886
+#: virt-clone:189 virt-convert:87 virt-image:138 virt-install:886
 msgid "Print debugging information"
 msgstr "Imprime des informations de débogage"
 
-#: virt-clone:190 virt-install:883
+#: virt-clone:191 virt-install:883
 msgid "Request user input for ambiguous situations or required options."
 msgstr ""
 
-#: virt-clone:193 virt-image:142
+#: virt-clone:194 virt-image:142
 msgid ""
 "Do not prompt for input. Answers yes where applicable, terminates for all "
 "other prompts"
 msgstr ""
 
-#: virt-clone:197 virt-convert:85 virt-image:146 virt-install:881
+#: virt-clone:198 virt-convert:85 virt-image:146 virt-install:881
 msgid "Suppress non-error output"
 msgstr ""
 
-#: virt-clone:200
-msgid "Allow cloning a running domain"
-msgstr ""
-
-#: virt-clone:214 virt-install:1252
+#: virt-clone:215 virt-install:1252
 #, fuzzy, python-format
 msgid "Unknown argument '%s'"
 msgstr "La variante du système d'exploitation « %s » est inconnue"
 
-#: virt-clone:222
+#: virt-clone:223
 #, fuzzy
 msgid "Must be privileged to clone Xen guests"
 msgstr "Il faut être superutilisateur pour cloner des invités Xen"
 
-#: virt-clone:255
+#: virt-clone:256
 #, python-format
 msgid "Clone '%s' created successfully."
 msgstr ""
 
-#: virt-clone:264 virt-image:245 virt-install:1281
+#: virt-clone:265 virt-image:245 virt-install:1281
 #, fuzzy
 msgid "Installation aborted at user request"
 msgstr ""

@@ -135,7 +135,7 @@ class Interface(object):
     def _set_mtu(self, val):
         self._mtu = val
     mtu = property(_get_mtu, _set_mtu,
-                   doc=_("Maxmimum transmit size in bytes"))
+                   doc=_("Maximum transmit size in bytes"))
 
     def _get_macaddr(self):
         return self._macaddr

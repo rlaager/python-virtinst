@@ -369,7 +369,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         maxvcpus = _util.get_max_vcpus(self.conn, self.type)
         val = int(val)
         if val < 1:
-            raise ValueError(_("Number of vcpus must be a postive integer."))
+            raise ValueError(_("Number of vcpus must be a positive integer."))
         if val > maxvcpus:
             raise ValueError(_("Number of vcpus must be no greater than %d "
                                "for this vm type.") % maxvcpus)
