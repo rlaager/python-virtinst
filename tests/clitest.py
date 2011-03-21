@@ -403,8 +403,8 @@ args_dict = {
         "--vcpus 4 --cpuset=auto",
         # Ram overcommit
         "--ram 100000000000",
-        # maxvcpus
-        "--vcpus 5,maxvcpus=10",
+        # maxvcpus, --check-cpu shouldn't error
+        "--vcpus 5,maxvcpus=10 --check-cpu",
         # Topology
         "--vcpus 4,cores=2,threads=2,sockets=2",
         # Topology auto-fill
