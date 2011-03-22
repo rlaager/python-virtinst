@@ -863,12 +863,12 @@ connect interactively to this console via 'telnet localhost 2222':
 
 --serial tcp,host=:2222,mode=bind,protocol=telnet
 
-=item B<--serial udp,host=CONNECT_HOST:PORT,bind_port=BIND_HOST:BIND_PORT>
+=item B<--serial udp,host=CONNECT_HOST:PORT,bind_host=BIND_HOST:BIND_PORT>
 
 UDP net console. HOST:PORT is the destination to send output to (default
-HOST is '127.0.0.1', PORT is required. BIND_HOST:PORT is the optional local
-address to bind to (default BIND_HOST is 127.0.0.1, but is only set if
-BIND_PORT is specified.) Some examples:
+HOST is '127.0.0.1', PORT is required). BIND_HOST:BIND_PORT is the optional
+local address to bind to (default BIND_HOST is 127.0.0.1, but is only set if
+BIND_PORT is specified). Some examples:
 
 Send output to default syslog port (may need to edit /etc/rsyslog.conf
 accordingly):
@@ -876,7 +876,7 @@ accordingly):
 --serial udp,host=:514
 
 Send output to remote host 192.168.10.20, port 4444 (this output can be
-read on the remote host using 'nc -u -l 4444':
+read on the remote host using 'nc -u -l 4444'):
 
 --serial udp,host=192.168.10.20:4444
 
