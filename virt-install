@@ -1213,15 +1213,15 @@ def xml_to_print(guest, continue_inst, xmlonly, xmlstep, dry):
         print_stdout(_("Dry run completed successfully"))
         return
 
-    # --xml-only
+    # --print-xml
     if xmlonly and not xmlstep:
         if second_xml or final_xml:
-            fail(_("--xml-only can only be used with guests that do not have "
+            fail(_("--print-xml can only be used with guests that do not have "
                    "an installation phase (--import, --boot, etc.). To see all"
                    " generated XML, please use --print-step all."))
         return start_xml
 
-    # --xml-step
+    # --print-step
     if xmlstep == "1":
         return start_xml
     if xmlstep == "2":
