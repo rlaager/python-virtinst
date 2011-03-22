@@ -33,7 +33,10 @@
       <mac address='00:11:22:33:44:55'/>
     </interface>
     <input type='mouse' bus='ps2'/>
-    <console type='pty'/>
+    <serial type='tcp'>
+      <source mode='bind' host='127.0.0.1' service='2222'/>
+      <protocol type='telnet'/>
+    </serial>
   </devices>
 </domain>
 <domain type='test'>
@@ -70,6 +73,9 @@
       <mac address='00:11:22:33:44:55'/>
     </interface>
     <input type='mouse' bus='ps2'/>
-    <console type='pty'/>
+    <serial type='tcp'>
+      <source mode='bind' host='127.0.0.1' service='2222'/>
+      <protocol type='telnet'/>
+    </serial>
   </devices>
 </domain>

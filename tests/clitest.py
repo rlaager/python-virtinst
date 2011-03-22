@@ -505,7 +505,8 @@ args_dict = {
         # Lot's of devices
         ("--hvm --pxe "
          "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh "
-         "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro",
+         "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro "
+         "--serial tcp,host=:2222,mode=bind,protocol=telnet ",
          "many-devices"),
       ],
 

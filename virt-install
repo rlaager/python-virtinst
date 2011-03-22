@@ -198,7 +198,7 @@ def parse_char_option(guest, dev_type, optstring):
         if key in opts:
             del(opts[key])
 
-        return host, port
+        return host or None, port or None
 
     host, port = parse_host("host")
     bind_host, bind_port = parse_host("bind_host")
