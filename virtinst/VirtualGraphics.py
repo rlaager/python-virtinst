@@ -81,6 +81,15 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
 
         return sort_list
 
+    @staticmethod
+    def pretty_type_simple(gtype):
+        if (gtype in [VirtualGraphics.TYPE_VNC,
+                      VirtualGraphics.TYPE_SDL,
+                      VirtualGraphics.TYPE_RDP]):
+            return str(gtype).upper()
+
+        return str(gtype).capitalize()
+
     def __init__(self, type=TYPE_VNC, port=-1, listen=None, passwd=None,
                  keymap=KEYMAP_DEFAULT, conn=None, parsexml=None,
                  parsexmlnode=None, tlsPort=-1, channels=None,
