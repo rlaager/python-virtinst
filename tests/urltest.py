@@ -53,7 +53,7 @@ DEBIAN_BASEURL = "http://ftp.us.debian.org/debian/dists/%s/main/installer-%s/"
 # Static URLs
 CURCENTOS_BASEURL = "http://ftp.linux.ncsu.edu/pub/CentOS/%s/os/%s/"
 OLDCENTOS_BASEURL = "http://vault.centos.org/%s/os/%s"
-MANDRIVA_BASEURL = "ftp://ftp.uwsg.indiana.edu/linux/mandrake/official/%s/%s/"
+MANDRIVA_BASEURL = "http://ftp.uwsg.indiana.edu/linux/mandrake/official/%s/%s/"
 SCIENTIFIC_BASEURL = "http://ftp.scientificlinux.org/linux/scientific/%s/%s/"
 
 # Regex matching distro names that don't have xen kernels.
@@ -89,25 +89,18 @@ def distroClass(distname):
 urls = {
 
     # Fedora Distros
-    "fedora11" : {
-        'i386'  : FEDORA_BASEURL % ("11", "i386"),
-        'x86_64': FEDORA_BASEURL % ("11", "x86_64"),
-        'distro': ("linux", "fedora11")
-    },
-    "fedora12" : {
-        'i386'  : FEDORA_BASEURL % ("12", "i386"),
-        'x86_64': FEDORA_BASEURL % ("12", "x86_64"),
-        'distro': ("linux", "fedora12")
-    },
     "fedora13" : {
-        'i386'  : FEDORA_BASEURL % ("13", "i386"),
         'x86_64': FEDORA_BASEURL % ("13", "x86_64"),
         'distro': ("linux", "fedora13")
     },
+    "fedora14" : {
+        'x86_64': FEDORA_BASEURL % ("14", "x86_64"),
+        'distro': ("linux", "fedora14")
+    },
     "fedora-rawhide" : {
-        #'i386'  : FEDORA_RAWHIDE_BASEURL % ("i386"),
-        #'x86_64': FEDORA_RAWHIDE_BASEURL % ("x86_64"),
-        #'distro': ("linux", "fedora13")
+        'i386'  : FEDORA_RAWHIDE_BASEURL % ("i386"),
+        'x86_64': FEDORA_RAWHIDE_BASEURL % ("x86_64"),
+        'distro': ("linux", "fedora15")
     },
 
     # SUSE Distros
@@ -116,24 +109,17 @@ urls = {
         'x86_64': "http://ftp.hosteurope.de/mirror/ftp.opensuse.org/discontinued/10.0/",
     },
     "opensuse10.2" : {
-        'i386'  : OLD_OPENSUSE_BASEURL % ("10.2"),
         'x86_64': OLD_OPENSUSE_BASEURL % ("10.2")
     },
     "opensuse10.3" : {
-        'i386'  : OLD_OPENSUSE_BASEURL % ("10.3"),
         'x86_64': OLD_OPENSUSE_BASEURL % ("10.3")
     },
-    "opensuse11" : {
-        'i386'  : OPENSUSE_BASEURL % ("11.0"),
-        'x86_64': OPENSUSE_BASEURL % ("11.0")
+    "opensuse11.4" : {
+        'i386'  : OPENSUSE_BASEURL % ("11.4"),
+        'x86_64': OPENSUSE_BASEURL % ("11.4")
     },
 
     # Debian Distros
-    "debian-etch" : {
-        'i386' : DEBIAN_BASEURL % ("etch", "i386"),
-        'x86_64': DEBIAN_BASEURL % ("etch", "amd64"),
-        'distro': ("linux", None)
-    },
     "debian-lenny-32" : {
         'i386' : DEBIAN_BASEURL % ("lenny", "i386"),
         'distro': ("linux", None)
@@ -159,68 +145,54 @@ urls = {
         'distro': ("linux", None)
     },
     "centos-5.0" : {
-        'i386' : OLDCENTOS_BASEURL % ("5.0", "i386"),
         'x86_64' : OLDCENTOS_BASEURL % ("5.0", "x86_64"),
         'distro': ("linux", None)
     },
     "centos-4.0" : {
-        'i386' : OLDCENTOS_BASEURL % ("4.0", "i386"),
         'x86_64' : OLDCENTOS_BASEURL % ("4.0", "x86_64"),
         'distro': ("linux", None)
     },
 
     # Scientific Linux
     "scientific-5.4" : {
-        'i386'  : SCIENTIFIC_BASEURL % ("54", "i386"),
         'x86_64': SCIENTIFIC_BASEURL % ("54", "x86_64"),
         'distro': ("linux", "rhel5.4")
     },
     "scientific-5.2" : {
-        'i386'  : SCIENTIFIC_BASEURL % ("52", "i386"),
         'x86_64': SCIENTIFIC_BASEURL % ("52", "x86_64"),
         'distro': ("linux", "rhel5")
     },
     "scientific-5.0" : {
-        'i386'  : SCIENTIFIC_BASEURL % ("50", "i386"),
         'x86_64': SCIENTIFIC_BASEURL % ("50", "x86_64"),
         'distro': ("linux", None)
     },
     "scientific-4.7" : {
-        'i386'  : SCIENTIFIC_BASEURL % ("47", "i386"),
         'x86_64': SCIENTIFIC_BASEURL % ("47", "x86_64"),
         'distro': ("linux", None)
     },
     "scientific-4.0" : {
-        'i386'  : SCIENTIFIC_BASEURL % ("40", "i386"),
         'x86_64': SCIENTIFIC_BASEURL % ("40", "x86_64"),
         'distro': ("linux", None)
     },
 
     # Ubuntu
-    "ubuntu-gutsy" : {
-        'i386': UBUNTU_BASEURL % ("gutsy", "i386"),
-        'x86_64': UBUNTU_BASEURL % ("gutsy", "amd64"),
-        'distro': ("linux", None)
-    },
     "ubuntu-hardy" : {
         'i386': UBUNTU_BASEURL % ("hardy", "i386"),
         'x86_64': UBUNTU_BASEURL % ("hardy", "amd64"),
         'distro': ("linux", None)
     },
-    "ubuntu-intrepid" : {
-        'i386': UBUNTU_BASEURL % ("intrepid", "i386"),
-        'x86_64': UBUNTU_BASEURL % ("intrepid", "amd64"),
+    "ubuntu-natty" : {
+        'i386': UBUNTU_BASEURL % ("natty", "i386"),
+        'x86_64': UBUNTU_BASEURL % ("natty", "amd64"),
         'distro': ("linux", None)
     },
 
     # Mandriva
     "mandriva-2007.1" : {
-        'i386': MANDRIVA_BASEURL % ("2007.1", "i586"),
         'x86_64': MANDRIVA_BASEURL % ("2007.1", "x86_64"),
         'distro': ("linux", None)
     },
     "mandriva-2008.1" : {
-        'i386': MANDRIVA_BASEURL % ("2008.1", "i586"),
         'x86_64': MANDRIVA_BASEURL % ("2008.1", "x86_64"),
         'distro': ("linux", None)
     },
