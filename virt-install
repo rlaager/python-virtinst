@@ -645,7 +645,7 @@ def get_install_media(location, cdpath, pxe, livecd, import_install,
         else:
             validate_install_media(guest, location, cdpath, cdinstall)
     except ValueError, e:
-        fail(_("Error creating cdrom disk: %s" % str(e)))
+        fail(_("Error validating install location: %s" % str(e)))
 
 def media_prompt(guest, ishvm):
 
