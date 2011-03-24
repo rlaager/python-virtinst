@@ -889,20 +889,11 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         return emu_xml
 
-    def _get_features_xml(self):
+    def _get_features_xml(self, features):
         """
         Return features (pae, acpi, apic) xml
         """
-        defaults = {}
-        if self.is_hvm():
-            for f in ["acpi", "apic"]:
-                defaults[f] = self._lookup_osdict_key(f)
-
-            caps = self._get_caps()
-            if caps:
-                defaults["pae"] = caps.support_pae()
-
-        return self.features.get_xml_config(defaults)
+        return features.get_xml_config()
 
     def _get_cpu_xml(self):
         """
@@ -1014,6 +1005,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         for dev in origdevs:
             newdev = copy.copy(dev)
             devs.append(newdev)
+        tmpfeat = copy.copy(self.features)
 
         def get_transient_devices(devtype):
             return self._dev_build_list(devtype, devs)
@@ -1022,7 +1014,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         # Set device defaults so we can validly generate XML
         self._set_defaults(get_transient_devices,
-                           remove_transient_device)
+                           remove_transient_device,
+                           tmpfeat)
 
         if install:
             action = "destroy"
@@ -1053,7 +1046,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         xml = add("  <uuid>%s</uuid>" % self.uuid)
         xml = add(desc_xml)
         xml = add("  %s" % osblob)
-        xml = add(self._get_features_xml())
+        xml = add(self._get_features_xml(tmpfeat))
         xml = add(self._get_cpu_xml())
         xml = add(self._get_clock_xml())
         xml = add("  <on_poweroff>destroy</on_poweroff>")
@@ -1364,9 +1357,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         The install process will call a non-persistent version, so calling
         this manually isn't required.
         """
-        self._set_defaults(self.get_devices, self.remove_device)
+        self._set_defaults(self.get_devices, self.remove_device,
+                           self.features)
 
-    def _set_hvm_defaults(self, devlist_func):
+    def _set_hvm_defaults(self, devlist_func, features):
         disktype = VirtualDevice.VIRTUAL_DEV_DISK
         nettype = VirtualDevice.VIRTUAL_DEV_NET
         disk_bus  = self._lookup_device_param(disktype, "bus")
@@ -1384,6 +1378,14 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         if self.clock.offset == None:
             self.clock.offset = self._lookup_osdict_key("clock")
+
+        if features["acpi"] is None:
+            features["acpi"] = self._lookup_osdict_key("acpi")
+        if features["apic"] is None:
+            features["apic"] = self._lookup_osdict_key("apic")
+        if features["pae"] is None and self._get_caps():
+            features["pae"] = self._get_caps().support_pae()
+
 
     def _set_pv_defaults(self, devlist_func, remove_func):
         # Default file backed PV guests to tap driver
@@ -1403,9 +1405,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             if hasattr(d, "virtinst_default"):
                 remove_func(d)
 
-    def _set_defaults(self, devlist_func, remove_func):
+    def _set_defaults(self, devlist_func, remove_func, features):
         if self.is_hvm():
-            self._set_hvm_defaults(devlist_func)
+            self._set_hvm_defaults(devlist_func, features)
         if self.is_xen():
             self._set_pv_defaults(devlist_func, remove_func)
 
