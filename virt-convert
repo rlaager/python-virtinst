@@ -219,7 +219,7 @@ def main():
     logging.debug("input_file: %s" % options.input_file)
     logging.debug("input_dir: %s" % options.input_dir)
     logging.debug("output_file: %s" % options.output_file)
-    logging.debug("output_dir: %s" % options.input_dir)
+    logging.debug("output_dir: %s" % options.output_dir)
 
     print_stdout(_("Generating output in '%(format)s' format to %(dir)s/") %
         {"format": options.output_format, "dir": options.output_dir})
