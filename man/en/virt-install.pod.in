@@ -882,7 +882,8 @@ read on the remote host using 'nc -u -l 4444'):
 
 =item B<--serial unix,path=UNIXPATH,mode=MODE>
 
-Unix socket (see unix(7). MODE has similar behavior and defaults as 'tcp'.
+Unix socket, see unix(7). MODE has similar behavior and defaults as
+--serial tcp,mode=MODE
 
 =back
 
