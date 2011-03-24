@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2011-01-14" "" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2011-03-24" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -466,6 +466,9 @@ Debian Lenny
 .IP "debianetch" 4
 .IX Item "debianetch"
 Debian Etch
+.IP "fedora15" 4
+.IX Item "fedora15"
+Fedora 15
 .IP "fedora14" 4
 .IX Item "fedora14"
 Fedora 14
@@ -532,6 +535,12 @@ Suse Linux Enterprise Server 11
 .IP "sles10" 4
 .IX Item "sles10"
 Suse Linux Enterprise Server
+.IP "ubuntuoneiric" 4
+.IX Item "ubuntuoneiric"
+Ubuntu 11.10 (Oneiric Ocelot)
+.IP "ubuntunatty" 4
+.IX Item "ubuntunatty"
+Ubuntu 11.04 (Natty Narwhal)
 .IP "ubuntumaverick" 4
 .IX Item "ubuntumaverick"
 Ubuntu 10.10 (Maverick Meerkat)
@@ -688,6 +697,9 @@ storage. Typically does not need to be set by the user.
 .IX Item "driver_type"
 Driver format/type the hypervisor should use when accessing the specified
 storage. Typically does not need to be set by the user.
+.IP "\fBio\fR" 4
+.IX Item "io"
+Disk \s-1IO\s0 backend. Can be either \*(L"threads\*(R" or \*(L"native\*(R".
 .RE
 .RS 2
 .Sp
@@ -816,6 +828,12 @@ Export the guest's console using the Spice protocol. Spice allows advanced
 features like audio and \s-1USB\s0 device streaming, as well as improved graphical
 performance.
 .Sp
+Using spice graphic type will work as if those arguments were given:
+.Sp
+.Vb 1
+\&    \-\-video qxl \-\-channel spicevmc
+.Ve
+.Sp
 none
 .Sp
 No graphical console will be allocated for the guest. Fully virtualized guests
@@ -940,9 +958,9 @@ A node device name via libvirt, as shown by 'virsh nodedev\-list'
 .IP "\-\-soundhw \s-1MODEL\s0" 2
 .IX Item "--soundhw MODEL"
 Attach a virtual audio device to the guest. \s-1MODEL\s0 specifies the emulated
-sound card model. Possible values are ac97, es1370, sb16, pcspk, or default.
-\&'default' willl be \s-1AC97\s0 if the hypervisor supports it, otherwise it will be
-\&\s-1ES1370\s0.
+sound card model. Possible values are ich6, ac97, es1370, sb16, pcspk,
+or default. 'default' will be \s-1AC97\s0 if the hypervisor supports it,
+otherwise it will be \s-1ES1370\s0.
 .Sp
 This deprecates the old boolean \-\-sound model (which still works the same
 as a single '\-\-soundhw default')
@@ -1033,12 +1051,12 @@ Wait for telnet connection on localhost, port 2222. The user could then
 connect interactively to this console via 'telnet localhost 2222':
 .Sp
 \&\-\-serial tcp,host=:2222,mode=bind,protocol=telnet
-.IP "\fB\-\-serial udp,host=CONNECT_HOST:PORT,bind_port=BIND_HOST:BIND_PORT\fR" 4
-.IX Item "--serial udp,host=CONNECT_HOST:PORT,bind_port=BIND_HOST:BIND_PORT"
+.IP "\fB\-\-serial udp,host=CONNECT_HOST:PORT,bind_host=BIND_HOST:BIND_PORT\fR" 4
+.IX Item "--serial udp,host=CONNECT_HOST:PORT,bind_host=BIND_HOST:BIND_PORT"
 \&\s-1UDP\s0 net console. \s-1HOST:PORT\s0 is the destination to send output to (default
-\&\s-1HOST\s0 is '127.0.0.1', \s-1PORT\s0 is required. \s-1BIND_HOST:PORT\s0 is the optional local
-address to bind to (default \s-1BIND_HOST\s0 is 127.0.0.1, but is only set if
-\&\s-1BIND_PORT\s0 is specified.) Some examples:
+\&\s-1HOST\s0 is '127.0.0.1', \s-1PORT\s0 is required). \s-1BIND_HOST:BIND_PORT\s0 is the optional
+local address to bind to (default \s-1BIND_HOST\s0 is 127.0.0.1, but is only set if
+\&\s-1BIND_PORT\s0 is specified). Some examples:
 .Sp
 Send output to default syslog port (may need to edit /etc/rsyslog.conf
 accordingly):
@@ -1046,12 +1064,13 @@ accordingly):
 \&\-\-serial udp,host=:514
 .Sp
 Send output to remote host 192.168.10.20, port 4444 (this output can be
-read on the remote host using 'nc \-u \-l 4444':
+read on the remote host using 'nc \-u \-l 4444'):
 .Sp
 \&\-\-serial udp,host=192.168.10.20:4444
 .IP "\fB\-\-serial unix,path=UNIXPATH,mode=MODE\fR" 4
 .IX Item "--serial unix,path=UNIXPATH,mode=MODE"
-Unix socket (see \fIunix\fR\|(7). \s-1MODE\s0 has similar behavior and defaults as 'tcp'.
+Unix socket, see \fIunix\fR\|(7). \s-1MODE\s0 has similar behavior and defaults as
+\&\-\-serial tcp,mode=MODE
 .RE
 .RS 2
 .RE
@@ -1076,6 +1095,12 @@ guest as /dev/vport0p1, /dev/vport0p2, etc. \s-1NAME\s0 is optional metadata, an
 can be any string, such as org.linux\-kvm.virtioport1.
 If specified, this will be exposed in the guest at
 /sys/class/virtio\-ports/vport0p1/NAME
+.IP "\fB\-\-channel spicevmc,target_type=virtio[,name=NAME]\fR" 4
+.IX Item "--channel spicevmc,target_type=virtio[,name=NAME]"
+Communication channel for \s-1QEMU\s0 spice agent, using virtio serial
+(requires 2.6.34 or later host and guest). \s-1NAME\s0 is optional metadata,
+and can be any string, such as the default com.redhat.spice.0 that
+specifies how the guest will see the channel.
 .RE
 .RS 2
 .RE

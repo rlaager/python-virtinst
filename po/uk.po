@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-21 10:50-0400\n"
+"POT-Creation-Date: 2011-03-24 16:14-0400\n"
 "PO-Revision-Date: 2010-03-22 14:51+0300\n"
 "Last-Translator: Maxim V. Dziumanenko <dziumanenko@gmail.com>\n"
 "Language-Team: Ukrainian <uk@li.org>\n"
@@ -194,55 +194,55 @@ msgstr ""
 msgid "Installs currently require %d megs of RAM."
 msgstr ""
 
-#: virtinst/cli.py:717 virtinst/cli.py:808 virtinst/cli.py:1009
+#: virtinst/cli.py:721 virtinst/cli.py:820 virtinst/cli.py:1021
 #: virt-install:173 virt-install:220 virt-install:253 virt-install:306
 #, fuzzy, python-format
 msgid "Unknown options %s"
 msgstr "Невідома опція '%s'"
 
-#: virtinst/cli.py:733
+#: virtinst/cli.py:745
 #, python-format
 msgid ""
-"You have asked for more virtual CPUs (%s) than there are physical CPUs (%s) "
+"You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
 "on the host. This will work, but performance will be poor. "
 msgstr ""
 
-#: virtinst/cli.py:736
+#: virtinst/cli.py:748
 msgid "Are you sure? (yes or no)"
 msgstr ""
 
-#: virtinst/cli.py:908
+#: virtinst/cli.py:920
 #, fuzzy, python-format
 msgid "Unknown network option '%s'"
 msgstr "Невідомий параметр %c у %s(%s)\n"
 
-#: virtinst/cli.py:926
+#: virtinst/cli.py:938
 msgid "Cannot mix both --bridge and --network arguments"
 msgstr ""
 
-#: virtinst/cli.py:941
+#: virtinst/cli.py:953
 msgid "Cannot pass more mac addresses than networks."
 msgstr ""
 
-#: virtinst/cli.py:976
+#: virtinst/cli.py:988
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
 msgstr ""
 
-#: virtinst/cli.py:1018
+#: virtinst/cli.py:1030
 msgid "Cannot mix --graphics and old style graphical options"
 msgstr ""
 
-#: virtinst/cli.py:1030
+#: virtinst/cli.py:1042
 msgid "Can't specify more than one of VNC, SDL, --graphics or --nographics"
 msgstr ""
 
-#: virtinst/cli.py:1046
+#: virtinst/cli.py:1058
 #, fuzzy, python-format
 msgid "Error in graphics device parameters: %s"
 msgstr "Пристрої зі знімними носіями"
 
-#: virtinst/cli.py:1087 virtinst/cli.py:1092
+#: virtinst/cli.py:1099 virtinst/cli.py:1104
 #, fuzzy, python-format
 msgid "%s option requires an argument"
 msgstr "%s: параметр потребує вказування аргументу -- %s\n"
@@ -462,47 +462,47 @@ msgstr ""
 "Не вдалось знайти додатковий пристрій на\n"
 "%1"
 
-#: virtinst/Guest.py:1094
+#: virtinst/Guest.py:1087
 #, fuzzy
 msgid "Domain has already been started!"
 msgstr "Компакт-диск вже був записаний."
 
-#: virtinst/Guest.py:1097
+#: virtinst/Guest.py:1090
 msgid "Name and memory must be specified for all guests!"
 msgstr ""
 
-#: virtinst/Guest.py:1101
+#: virtinst/Guest.py:1094
 msgid "The UUID you entered is already in use by another guest!"
 msgstr ""
 
-#: virtinst/Guest.py:1243
+#: virtinst/Guest.py:1236
 #, fuzzy
 msgid "Creating domain..."
 msgstr "--check-domain"
 
-#: virtinst/Guest.py:1245
+#: virtinst/Guest.py:1238
 #, fuzzy
 msgid "Starting domain..."
 msgstr "--check-domain"
 
-#: virtinst/Guest.py:1281
+#: virtinst/Guest.py:1274
 msgid ""
 "Domain has not existed.  You should be able to find more information in the "
 "logs"
 msgstr ""
 
-#: virtinst/Guest.py:1284
+#: virtinst/Guest.py:1277
 msgid ""
 "Domain has not run yet.  You should be able to find more information in the "
 "logs"
 msgstr ""
 
-#: virtinst/Guest.py:1324
+#: virtinst/Guest.py:1317
 #, fuzzy, python-format
 msgid "Domain named %s already exists!"
 msgstr "Каталог з іменем %s вже існує."
 
-#: virtinst/Guest.py:1335
+#: virtinst/Guest.py:1328
 #, fuzzy, python-format
 msgid "Could not remove old vm '%s': %s"
 msgstr "Не вдається видалити старий архів."
@@ -522,7 +522,7 @@ msgstr "Не вдається відкрити файл '%s': %s"
 msgid "Opening URL %s failed."
 msgstr "Не вдається зв'язатися через проксі.\n"
 
-#: virtinst/ImageFetcher.py:189
+#: virtinst/ImageFetcher.py:200
 #, fuzzy, python-format
 msgid "Mounting location '%s' failed"
 msgstr "Не вдається зв'язатися через проксі.\n"
@@ -801,49 +801,49 @@ msgstr ""
 "Не вдалось знайти додатковий пристрій на\n"
 "%1"
 
-#: virtinst/OSDistro.py:123
+#: virtinst/OSDistro.py:124
 #, fuzzy
 msgid "Invalid install location: "
 msgstr "Неприпустимий код розташування\n"
 
-#: virtinst/OSDistro.py:271
+#: virtinst/OSDistro.py:272
 #, python-format
 msgid "Couldn't find %(type)s kernel for %(distro)s tree."
 msgstr ""
 
-#: virtinst/OSDistro.py:286
+#: virtinst/OSDistro.py:287
 #, python-format
 msgid "Could not find boot.iso in %s tree."
 msgstr ""
 
-#: virtinst/OSDistro.py:449
+#: virtinst/OSDistro.py:450
 #, python-format
 msgid "Could not find a kernel path for virt type '%s'"
 msgstr ""
 
-#: virtinst/OSDistro.py:458
+#: virtinst/OSDistro.py:459
 msgid "Could not find a boot iso path for this tree."
 msgstr ""
 
-#: virtinst/OSDistro.py:767
+#: virtinst/OSDistro.py:768
 msgid "Unable to determine kernel RPM path"
 msgstr ""
 
-#: virtinst/OSDistro.py:769
+#: virtinst/OSDistro.py:770
 msgid "Unable to determine install-initrd RPM path"
 msgstr ""
 
-#: virtinst/OSDistro.py:780
+#: virtinst/OSDistro.py:781
 #, fuzzy
 msgid "Building initrd"
 msgstr "Створення документу."
 
-#: virtinst/OSDistro.py:1142
+#: virtinst/OSDistro.py:1143
 #, python-format
 msgid "Solaris miniroot not found at %s"
 msgstr ""
 
-#: virtinst/OSDistro.py:1180
+#: virtinst/OSDistro.py:1181
 #, python-format
 msgid "OpenSolaris PV kernel not found at %s"
 msgstr ""
@@ -1609,32 +1609,32 @@ msgstr "Пристрій типу %s не можна редагувати!"
 msgid "No more space for disks of type '%s'"
 msgstr ""
 
-#: virtinst/VirtualGraphics.py:130 virtinst/VirtualGraphics.py:324
+#: virtinst/VirtualGraphics.py:139 virtinst/VirtualGraphics.py:333
 #, fuzzy
 msgid "Unknown graphics type"
 msgstr "Невідомий тип графічного фільтра."
 
-#: virtinst/VirtualGraphics.py:167
+#: virtinst/VirtualGraphics.py:176
 #, fuzzy
 msgid "Keymap must be a string"
 msgstr "Рядок заміни не може бути порожнім."
 
-#: virtinst/VirtualGraphics.py:171
+#: virtinst/VirtualGraphics.py:180
 #, fuzzy
 msgid "Keymap must be less than 16 characters"
 msgstr "Довжина назви групи томів не повинна перевищувати 128 символів"
 
-#: virtinst/VirtualGraphics.py:173
+#: virtinst/VirtualGraphics.py:182
 #, fuzzy
 msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr "Назва джерела даних може містити лише алфавітно-цифрові символи"
 
-#: virtinst/VirtualGraphics.py:193
+#: virtinst/VirtualGraphics.py:202
 msgid ""
 "VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
 
-#: virtinst/VirtualGraphics.py:241
+#: virtinst/VirtualGraphics.py:250
 msgid ""
 "TLS port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
@@ -2356,8 +2356,8 @@ msgstr ""
 
 #: virt-install:648
 #, fuzzy, python-format
-msgid "Error creating cdrom disk: %s"
-msgstr "Створення дискети скидання пароля"
+msgid "Error validating install location: %s"
+msgstr "Неприпустимий код розташування\n"
 
 #: virt-install:653
 msgid "What is the install CD-ROM/ISO or URL?"
@@ -2639,7 +2639,7 @@ msgstr "Файл Cache успішно створено.\n"
 
 #: virt-install:1219
 msgid ""
-"--xml-only can only be used with guests that do not have an installation "
+"--print-xml can only be used with guests that do not have an installation "
 "phase (--import, --boot, etc.). To see all generated XML, please use --print-"
 "step all."
 msgstr ""
@@ -2655,6 +2655,10 @@ msgstr ""
 #: virt-install:1259
 msgid "--print-step must be 1, 2, 3, or all"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Error creating cdrom disk: %s"
+#~ msgstr "Створення дискети скидання пароля"
 
 #, fuzzy
 #~ msgid "Couldn't create default storage pool '%s'"

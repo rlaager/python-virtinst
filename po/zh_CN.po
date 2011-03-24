@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: virt-inst.tip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-21 10:50-0400\n"
+"POT-Creation-Date: 2011-03-24 16:14-0400\n"
 "PO-Revision-Date: 2010-09-30 17:34+0800\n"
 "Last-Translator: Aron Xu <happyaron.xu@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
@@ -193,58 +193,58 @@ msgstr "要分配多少 RAM(以 MB 为单位)？"
 msgid "Installs currently require %d megs of RAM."
 msgstr "安装目前需要 %d MB 内存。"
 
-#: virtinst/cli.py:717 virtinst/cli.py:808 virtinst/cli.py:1009
+#: virtinst/cli.py:721 virtinst/cli.py:820 virtinst/cli.py:1021
 #: virt-install:173 virt-install:220 virt-install:253 virt-install:306
 #, python-format
 msgid "Unknown options %s"
 msgstr "未知选项 %s"
 
-#: virtinst/cli.py:733
+#: virtinst/cli.py:745
 #, fuzzy, python-format
 msgid ""
-"You have asked for more virtual CPUs (%s) than there are physical CPUs (%s) "
+"You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
 "on the host. This will work, but performance will be poor. "
 msgstr ""
 "您要求的虚拟 CPU 数(%d)已经超过了主机中的物理 CPU(%d)。这样也可以，但性能会很"
 "差。"
 
-#: virtinst/cli.py:736
+#: virtinst/cli.py:748
 msgid "Are you sure? (yes or no)"
 msgstr "您确定吗？(yes/no)"
 
-#: virtinst/cli.py:908
+#: virtinst/cli.py:920
 #, python-format
 msgid "Unknown network option '%s'"
 msgstr "未知网络选项 '%s'"
 
-#: virtinst/cli.py:926
+#: virtinst/cli.py:938
 msgid "Cannot mix both --bridge and --network arguments"
 msgstr "不能混合使用 --bridge 和 --network 参数"
 
-#: virtinst/cli.py:941
+#: virtinst/cli.py:953
 msgid "Cannot pass more mac addresses than networks."
 msgstr "无法通过超过网络的 mac 地址。"
 
-#: virtinst/cli.py:976
+#: virtinst/cli.py:988
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
 msgstr "与键盘表中的 keymap '%s' 不匹配！"
 
-#: virtinst/cli.py:1018
+#: virtinst/cli.py:1030
 msgid "Cannot mix --graphics and old style graphical options"
 msgstr ""
 
-#: virtinst/cli.py:1030
+#: virtinst/cli.py:1042
 #, fuzzy
 msgid "Can't specify more than one of VNC, SDL, --graphics or --nographics"
 msgstr "无法指定超过一个 VNC、SDL 或者 --nographics"
 
-#: virtinst/cli.py:1046
+#: virtinst/cli.py:1058
 #, fuzzy, python-format
 msgid "Error in graphics device parameters: %s"
 msgstr "%(chartype)s 设备参数中的错误：%(err)s"
 
-#: virtinst/cli.py:1087 virtinst/cli.py:1092
+#: virtinst/cli.py:1099 virtinst/cli.py:1104
 #, python-format
 msgid "%s option requires an argument"
 msgstr "%s 选项需要参数"
@@ -453,44 +453,44 @@ msgstr "必须指定虚拟设备事件。"
 msgid "Did not find device %s"
 msgstr "无法分离 PCI 设备：%s"
 
-#: virtinst/Guest.py:1094
+#: virtinst/Guest.py:1087
 msgid "Domain has already been started!"
 msgstr "域已经启动！"
 
-#: virtinst/Guest.py:1097
+#: virtinst/Guest.py:1090
 msgid "Name and memory must be specified for all guests!"
 msgstr "必须指定的名称和内存！"
 
-#: virtinst/Guest.py:1101
+#: virtinst/Guest.py:1094
 msgid "The UUID you entered is already in use by another guest!"
 msgstr "您输入的 UUID 已经被另一个客户端使用！"
 
-#: virtinst/Guest.py:1243
+#: virtinst/Guest.py:1236
 msgid "Creating domain..."
 msgstr "创建域......"
 
-#: virtinst/Guest.py:1245
+#: virtinst/Guest.py:1238
 msgid "Starting domain..."
 msgstr "启动域......"
 
-#: virtinst/Guest.py:1281
+#: virtinst/Guest.py:1274
 msgid ""
 "Domain has not existed.  You should be able to find more information in the "
 "logs"
 msgstr "域不存在。您应该可以在日志中找到更多信息。"
 
-#: virtinst/Guest.py:1284
+#: virtinst/Guest.py:1277
 msgid ""
 "Domain has not run yet.  You should be able to find more information in the "
 "logs"
 msgstr "域没有运行。您应该可以在日志中找到更多信息。"
 
-#: virtinst/Guest.py:1324
+#: virtinst/Guest.py:1317
 #, python-format
 msgid "Domain named %s already exists!"
 msgstr "域名 %s 以存在！"
 
-#: virtinst/Guest.py:1335
+#: virtinst/Guest.py:1328
 #, python-format
 msgid "Could not remove old vm '%s': %s"
 msgstr "无法删除旧的 vm '%s'：%s"
@@ -510,7 +510,7 @@ msgstr "无法获得文件 %s：%s"
 msgid "Opening URL %s failed."
 msgstr "打开 URL %s 失败。"
 
-#: virtinst/ImageFetcher.py:189
+#: virtinst/ImageFetcher.py:200
 #, python-format
 msgid "Mounting location '%s' failed"
 msgstr "挂载位置 '%s' 失败"
@@ -772,47 +772,47 @@ msgid ""
 "The location must be the root directory of an install tree."
 msgstr "在 '%s' 无法找到可安装的发行本"
 
-#: virtinst/OSDistro.py:123
+#: virtinst/OSDistro.py:124
 msgid "Invalid install location: "
 msgstr "无效安装位置："
 
-#: virtinst/OSDistro.py:271
+#: virtinst/OSDistro.py:272
 #, python-format
 msgid "Couldn't find %(type)s kernel for %(distro)s tree."
 msgstr "无法为 %(distro)s 树找到 %(type)s 内核。"
 
-#: virtinst/OSDistro.py:286
+#: virtinst/OSDistro.py:287
 #, python-format
 msgid "Could not find boot.iso in %s tree."
 msgstr "无法在 %s 树中找到 boot.iso。"
 
-#: virtinst/OSDistro.py:449
+#: virtinst/OSDistro.py:450
 #, python-format
 msgid "Could not find a kernel path for virt type '%s'"
 msgstr "无法为 virt 类型 '%s' 找到内核路径"
 
-#: virtinst/OSDistro.py:458
+#: virtinst/OSDistro.py:459
 msgid "Could not find a boot iso path for this tree."
 msgstr "无法为这个树找到引导 iso 路径。"
 
-#: virtinst/OSDistro.py:767
+#: virtinst/OSDistro.py:768
 msgid "Unable to determine kernel RPM path"
 msgstr "无法确定内核 RPM 路径"
 
-#: virtinst/OSDistro.py:769
+#: virtinst/OSDistro.py:770
 msgid "Unable to determine install-initrd RPM path"
 msgstr "无法确定 install-initrd RPM 路径"
 
-#: virtinst/OSDistro.py:780
+#: virtinst/OSDistro.py:781
 msgid "Building initrd"
 msgstr "创建 initrd"
 
-#: virtinst/OSDistro.py:1142
+#: virtinst/OSDistro.py:1143
 #, python-format
 msgid "Solaris miniroot not found at %s"
 msgstr "在 %s 中没有找到 Solaris miniroot"
 
-#: virtinst/OSDistro.py:1180
+#: virtinst/OSDistro.py:1181
 #, python-format
 msgid "OpenSolaris PV kernel not found at %s"
 msgstr "在 %s 中没有找到 OpenSolaris PV 内核"
@@ -1522,28 +1522,28 @@ msgstr "无法确定设备总线/类型。"
 msgid "No more space for disks of type '%s'"
 msgstr "没有 '%s' 类型磁盘可用的空间"
 
-#: virtinst/VirtualGraphics.py:130 virtinst/VirtualGraphics.py:324
+#: virtinst/VirtualGraphics.py:139 virtinst/VirtualGraphics.py:333
 msgid "Unknown graphics type"
 msgstr "未知图形类型"
 
-#: virtinst/VirtualGraphics.py:167
+#: virtinst/VirtualGraphics.py:176
 msgid "Keymap must be a string"
 msgstr "Keymap 必须是一个字符串"
 
-#: virtinst/VirtualGraphics.py:171
+#: virtinst/VirtualGraphics.py:180
 msgid "Keymap must be less than 16 characters"
 msgstr "Keymap 必须少于 16 个字符"
 
-#: virtinst/VirtualGraphics.py:173
+#: virtinst/VirtualGraphics.py:182
 msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr "Keyap 只能包含数字字母、'_' 或者 '-' 字符。"
 
-#: virtinst/VirtualGraphics.py:193
+#: virtinst/VirtualGraphics.py:202
 msgid ""
 "VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr "VNC 端口必须是 5900 和 65535 之间的，使用 -l 可自动分配"
 
-#: virtinst/VirtualGraphics.py:241
+#: virtinst/VirtualGraphics.py:250
 #, fuzzy
 msgid ""
 "TLS port must be a number between 5900 and 65535, or -1 for auto allocation"
@@ -2242,9 +2242,9 @@ msgid "--location can not be specified for remote connections."
 msgstr "无法为远程连接指定 --location。"
 
 #: virt-install:648
-#, python-format
-msgid "Error creating cdrom disk: %s"
-msgstr "创建光盘失败：%s"
+#, fuzzy, python-format
+msgid "Error validating install location: %s"
+msgstr "无效安装位置："
 
 #: virt-install:653
 msgid "What is the install CD-ROM/ISO or URL?"
@@ -2522,7 +2522,7 @@ msgstr ""
 
 #: virt-install:1219
 msgid ""
-"--xml-only can only be used with guests that do not have an installation "
+"--print-xml can only be used with guests that do not have an installation "
 "phase (--import, --boot, etc.). To see all generated XML, please use --print-"
 "step all."
 msgstr ""
@@ -2538,6 +2538,9 @@ msgstr ""
 #: virt-install:1259
 msgid "--print-step must be 1, 2, 3, or all"
 msgstr ""
+
+#~ msgid "Error creating cdrom disk: %s"
+#~ msgstr "创建光盘失败：%s"
 
 #, fuzzy
 #~ msgid "Couldn't create default storage pool '%s'"

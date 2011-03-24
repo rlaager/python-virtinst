@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ja\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-21 10:50-0400\n"
+"POT-Creation-Date: 2011-03-24 16:14-0400\n"
 "PO-Revision-Date: 2010-07-25 17:41+0900\n"
 "Last-Translator: Hajime Taira <htaira@redhat.com>\n"
 "Language-Team: Japanese <gnome-translation@gnome.gr.jp>\n"
@@ -200,60 +200,60 @@ msgstr "どれだけの RAM を割り当てますか (メガバイト単位で)?
 msgid "Installs currently require %d megs of RAM."
 msgstr "エラー: インストールには現在 %d メガの RAM が必要です。"
 
-#: virtinst/cli.py:717 virtinst/cli.py:808 virtinst/cli.py:1009
+#: virtinst/cli.py:721 virtinst/cli.py:820 virtinst/cli.py:1021
 #: virt-install:173 virt-install:220 virt-install:253 virt-install:306
 #, fuzzy, python-format
 msgid "Unknown options %s"
 msgstr "不明なオプション %s"
 
-#: virtinst/cli.py:733
+#: virtinst/cli.py:745
 #, fuzzy, python-format
 msgid ""
-"You have asked for more virtual CPUs (%s) than there are physical CPUs (%s) "
+"You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
 "on the host. This will work, but performance will be poor. "
 msgstr ""
 "仮想 CPU (%(vcpu)d) 個という、ホスト上の物理 CPU (%(phys)d) よりも多くを要求"
 "しました。動作はしますが、性能が悪いです。いいですか? (yes または no)"
 
-#: virtinst/cli.py:736
+#: virtinst/cli.py:748
 msgid "Are you sure? (yes or no)"
 msgstr "本当によろしいですか？ (はい / いいえ)"
 
-#: virtinst/cli.py:908
+#: virtinst/cli.py:920
 #, fuzzy, python-format
 msgid "Unknown network option '%s'"
 msgstr "不明なネットワークタイプ %s"
 
-#: virtinst/cli.py:926
+#: virtinst/cli.py:938
 msgid "Cannot mix both --bridge and --network arguments"
 msgstr "--bridge と --network 引数の両方を混ぜることはできません"
 
-#: virtinst/cli.py:941
+#: virtinst/cli.py:953
 #, fuzzy
 msgid "Cannot pass more mac addresses than networks."
 msgstr "--bridge と --network 引数の両方を混ぜることはできません"
 
-#: virtinst/cli.py:976
+#: virtinst/cli.py:988
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
 msgstr "キー配列テーブルにキー配列 '%s' がありません。"
 
-#: virtinst/cli.py:1018
+#: virtinst/cli.py:1030
 #, fuzzy
 msgid "Cannot mix --graphics and old style graphical options"
 msgstr "VNC graphics と nographics の両方はできません"
 
-#: virtinst/cli.py:1030
+#: virtinst/cli.py:1042
 #, fuzzy
 msgid "Can't specify more than one of VNC, SDL, --graphics or --nographics"
 msgstr "VNC graphics と nographics の両方はできません"
 
-#: virtinst/cli.py:1046
+#: virtinst/cli.py:1058
 #, fuzzy, python-format
 msgid "Error in graphics device parameters: %s"
 msgstr "ストレージパラメーターにエラー: %s"
 
-#: virtinst/cli.py:1087 virtinst/cli.py:1092
+#: virtinst/cli.py:1099 virtinst/cli.py:1104
 #, python-format
 msgid "%s option requires an argument"
 msgstr "%s オプションには実引数が必要です"
@@ -473,46 +473,46 @@ msgstr ""
 msgid "Did not find device %s"
 msgstr "デバイス %s が見つかりません"
 
-#: virtinst/Guest.py:1094
+#: virtinst/Guest.py:1087
 msgid "Domain has already been started!"
 msgstr "ドメインは既に開始しています!"
 
-#: virtinst/Guest.py:1097
+#: virtinst/Guest.py:1090
 msgid "Name and memory must be specified for all guests!"
 msgstr "全てのゲストに対して名前とメモリーを指定しなければなりません!"
 
-#: virtinst/Guest.py:1101
+#: virtinst/Guest.py:1094
 msgid "The UUID you entered is already in use by another guest!"
 msgstr "入力した UUID は既に他のゲストで使用中です!"
 
-#: virtinst/Guest.py:1243
+#: virtinst/Guest.py:1236
 msgid "Creating domain..."
 msgstr "ドメインを作成中..."
 
-#: virtinst/Guest.py:1245
+#: virtinst/Guest.py:1238
 #, fuzzy
 msgid "Starting domain..."
 msgstr "ドメインを作成中..."
 
-#: virtinst/Guest.py:1281
+#: virtinst/Guest.py:1274
 msgid ""
 "Domain has not existed.  You should be able to find more information in the "
 "logs"
 msgstr "ドメインは存在しません。ログに詳細な情報を見つけることができます"
 
-#: virtinst/Guest.py:1284
+#: virtinst/Guest.py:1277
 msgid ""
 "Domain has not run yet.  You should be able to find more information in the "
 "logs"
 msgstr ""
 "ドメインはまだ実行していません。ログに詳細な情報を見つけることができます"
 
-#: virtinst/Guest.py:1324
+#: virtinst/Guest.py:1317
 #, python-format
 msgid "Domain named %s already exists!"
 msgstr "ドメイン名 %s は既に存在します!"
 
-#: virtinst/Guest.py:1335
+#: virtinst/Guest.py:1328
 #, python-format
 msgid "Could not remove old vm '%s': %s"
 msgstr "古い仮想マシン '%s' が削除できません: %s"
@@ -532,7 +532,7 @@ msgstr ""
 msgid "Opening URL %s failed."
 msgstr "URL %s のオープンに失敗しました。"
 
-#: virtinst/ImageFetcher.py:189
+#: virtinst/ImageFetcher.py:200
 #, fuzzy, python-format
 msgid "Mounting location '%s' failed"
 msgstr "場所 %s のマウントに失敗しました"
@@ -797,48 +797,48 @@ msgid ""
 "The location must be the root directory of an install tree."
 msgstr "インストール場所にインストールできる配布物が見つかりませんでした"
 
-#: virtinst/OSDistro.py:123
+#: virtinst/OSDistro.py:124
 msgid "Invalid install location: "
 msgstr "不当なインストール場所: "
 
-#: virtinst/OSDistro.py:271
+#: virtinst/OSDistro.py:272
 #, fuzzy, python-format
 msgid "Couldn't find %(type)s kernel for %(distro)s tree."
 msgstr "インストール場所にインストールできる配布物が見つかりませんでした"
 
-#: virtinst/OSDistro.py:286
+#: virtinst/OSDistro.py:287
 #, fuzzy, python-format
 msgid "Could not find boot.iso in %s tree."
 msgstr "インストール場所にインストールできる配布物が見つかりませんでした"
 
-#: virtinst/OSDistro.py:449
+#: virtinst/OSDistro.py:450
 #, fuzzy, python-format
 msgid "Could not find a kernel path for virt type '%s'"
 msgstr "インストール場所にインストールできる配布物が見つかりませんでした"
 
-#: virtinst/OSDistro.py:458
+#: virtinst/OSDistro.py:459
 #, fuzzy
 msgid "Could not find a boot iso path for this tree."
 msgstr "インストール場所にインストールできる配布物が見つかりませんでした"
 
-#: virtinst/OSDistro.py:767
+#: virtinst/OSDistro.py:768
 msgid "Unable to determine kernel RPM path"
 msgstr "カーネル RPM のパスを決定できません"
 
-#: virtinst/OSDistro.py:769
+#: virtinst/OSDistro.py:770
 msgid "Unable to determine install-initrd RPM path"
 msgstr "インストール-initrd RPM のパスを決定できません"
 
-#: virtinst/OSDistro.py:780
+#: virtinst/OSDistro.py:781
 msgid "Building initrd"
 msgstr "initrd を構築中"
 
-#: virtinst/OSDistro.py:1142
+#: virtinst/OSDistro.py:1143
 #, python-format
 msgid "Solaris miniroot not found at %s"
 msgstr "%s に Solaris miniroot が見つかりません"
 
-#: virtinst/OSDistro.py:1180
+#: virtinst/OSDistro.py:1181
 #, python-format
 msgid "OpenSolaris PV kernel not found at %s"
 msgstr "%s に OpenSolaris PVカーネルが見つかりません"
@@ -1556,28 +1556,28 @@ msgstr ""
 msgid "No more space for disks of type '%s'"
 msgstr ""
 
-#: virtinst/VirtualGraphics.py:130 virtinst/VirtualGraphics.py:324
+#: virtinst/VirtualGraphics.py:139 virtinst/VirtualGraphics.py:333
 msgid "Unknown graphics type"
 msgstr "不明なグラフィックのタイプ"
 
-#: virtinst/VirtualGraphics.py:167
+#: virtinst/VirtualGraphics.py:176
 msgid "Keymap must be a string"
 msgstr "キーマップは文字列でなければなりません"
 
-#: virtinst/VirtualGraphics.py:171
+#: virtinst/VirtualGraphics.py:180
 msgid "Keymap must be less than 16 characters"
 msgstr "キーマップは 16 文字未満でなければなりません"
 
-#: virtinst/VirtualGraphics.py:173
+#: virtinst/VirtualGraphics.py:182
 msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr "キーマップには英数字と'_'、'-' だけが使えます"
 
-#: virtinst/VirtualGraphics.py:193
+#: virtinst/VirtualGraphics.py:202
 msgid ""
 "VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
 
-#: virtinst/VirtualGraphics.py:241
+#: virtinst/VirtualGraphics.py:250
 msgid ""
 "TLS port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
@@ -2298,9 +2298,9 @@ msgid "--location can not be specified for remote connections."
 msgstr ""
 
 #: virt-install:648
-#, python-format
-msgid "Error creating cdrom disk: %s"
-msgstr ""
+#, fuzzy, python-format
+msgid "Error validating install location: %s"
+msgstr "不当なインストール場所: "
 
 #: virt-install:653
 msgid "What is the install CD-ROM/ISO or URL?"
@@ -2582,7 +2582,7 @@ msgstr ""
 
 #: virt-install:1219
 msgid ""
-"--xml-only can only be used with guests that do not have an installation "
+"--print-xml can only be used with guests that do not have an installation "
 "phase (--import, --boot, etc.). To see all generated XML, please use --print-"
 "step all."
 msgstr ""

@@ -77,6 +77,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/virt-convert
 
 %changelog
+* Thu Mar 24 2011 Cole Robinson <crobinso@redhat.com> - 0.500.6-1
+- virt-install: --graphics spice now enables spicevmc and qxl
+- virt-install: New --disk parameter io=native|threads
+
 * Fri Jan 14 2011 Cole Robinson <crobinso@redhat.com> - 0.500.5-1
 - New virt-install --cpu option for configuring CPU model/features
 - virt-install --vcpus option can not specify topology and maxvcpus

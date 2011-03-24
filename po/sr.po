@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: virtinst\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-21 10:50-0400\n"
+"POT-Creation-Date: 2011-03-24 16:14-0400\n"
 "PO-Revision-Date: 2008-04-07 00:24+0200\n"
 "Last-Translator: Jovan Krunic <jovan.krunic@gmail.com>\n"
 "Language-Team: Serbian (sr) <fedora-trans-sr@redhat.com>\n"
@@ -205,61 +205,61 @@ msgstr "Колико RAM меморије треба да буде алоцир�
 msgid "Installs currently require %d megs of RAM."
 msgstr "ГРЕШКА: инсталација тренутно захтева %d мегабајта RAM меморије."
 
-#: virtinst/cli.py:717 virtinst/cli.py:808 virtinst/cli.py:1009
+#: virtinst/cli.py:721 virtinst/cli.py:820 virtinst/cli.py:1021
 #: virt-install:173 virt-install:220 virt-install:253 virt-install:306
 #, fuzzy, python-format
 msgid "Unknown options %s"
 msgstr "Непозната врста мреже %s"
 
-#: virtinst/cli.py:733
+#: virtinst/cli.py:745
 #, fuzzy, python-format
 msgid ""
-"You have asked for more virtual CPUs (%s) than there are physical CPUs (%s) "
+"You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
 "on the host. This will work, but performance will be poor. "
 msgstr ""
 "Тражили сте више виртуелних процесора (%d) него што постоји физичких "
 "процесора (%d) на домаћину. Ово ће радити, али ће учинак бити слаб. Да ли "
 "сте сигурни? (да или не)"
 
-#: virtinst/cli.py:736
+#: virtinst/cli.py:748
 msgid "Are you sure? (yes or no)"
 msgstr ""
 
-#: virtinst/cli.py:908
+#: virtinst/cli.py:920
 #, fuzzy, python-format
 msgid "Unknown network option '%s'"
 msgstr "Непозната врста мреже %s"
 
-#: virtinst/cli.py:926
+#: virtinst/cli.py:938
 msgid "Cannot mix both --bridge and --network arguments"
 msgstr "Не могу истовремено да повежем аргументе --bridge и --network"
 
-#: virtinst/cli.py:941
+#: virtinst/cli.py:953
 #, fuzzy
 msgid "Cannot pass more mac addresses than networks."
 msgstr "Не могу истовремено да повежем аргументе --bridge и --network"
 
-#: virtinst/cli.py:976
+#: virtinst/cli.py:988
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
 msgstr ""
 
-#: virtinst/cli.py:1018
+#: virtinst/cli.py:1030
 #, fuzzy
 msgid "Cannot mix --graphics and old style graphical options"
 msgstr "Не могу истовремено да покренем графички и неграфички део VNC сервиса"
 
-#: virtinst/cli.py:1030
+#: virtinst/cli.py:1042
 #, fuzzy
 msgid "Can't specify more than one of VNC, SDL, --graphics or --nographics"
 msgstr "Не могу истовремено да покренем графички и неграфички део VNC сервиса"
 
-#: virtinst/cli.py:1046
+#: virtinst/cli.py:1058
 #, python-format
 msgid "Error in graphics device parameters: %s"
 msgstr ""
 
-#: virtinst/cli.py:1087 virtinst/cli.py:1092
+#: virtinst/cli.py:1099 virtinst/cli.py:1104
 #, python-format
 msgid "%s option requires an argument"
 msgstr "Опција %s је потребна као аргумент"
@@ -480,28 +480,28 @@ msgstr ""
 msgid "Did not find device %s"
 msgstr ""
 
-#: virtinst/Guest.py:1094
+#: virtinst/Guest.py:1087
 msgid "Domain has already been started!"
 msgstr "Домен је већ покренут!"
 
-#: virtinst/Guest.py:1097
+#: virtinst/Guest.py:1090
 msgid "Name and memory must be specified for all guests!"
 msgstr "Име и меморија морају бити назначени за све госте!"
 
-#: virtinst/Guest.py:1101
+#: virtinst/Guest.py:1094
 msgid "The UUID you entered is already in use by another guest!"
 msgstr "Други гост већ користи јединствени идентификатор који сте унели"
 
-#: virtinst/Guest.py:1243
+#: virtinst/Guest.py:1236
 msgid "Creating domain..."
 msgstr "Правим домен..."
 
-#: virtinst/Guest.py:1245
+#: virtinst/Guest.py:1238
 #, fuzzy
 msgid "Starting domain..."
 msgstr "Правим домен..."
 
-#: virtinst/Guest.py:1281
+#: virtinst/Guest.py:1274
 msgid ""
 "Domain has not existed.  You should be able to find more information in the "
 "logs"
@@ -509,7 +509,7 @@ msgstr ""
 "Домен није постојао. Требало би да можете да пронађете више информација у "
 "евиденцијама"
 
-#: virtinst/Guest.py:1284
+#: virtinst/Guest.py:1277
 msgid ""
 "Domain has not run yet.  You should be able to find more information in the "
 "logs"
@@ -517,12 +517,12 @@ msgstr ""
 "Домен још није покренут. Требало би да можете да пронађете више информација "
 "у евиденцијама"
 
-#: virtinst/Guest.py:1324
+#: virtinst/Guest.py:1317
 #, python-format
 msgid "Domain named %s already exists!"
 msgstr "Домен са именом %s већ постоји!"
 
-#: virtinst/Guest.py:1335
+#: virtinst/Guest.py:1328
 #, fuzzy, python-format
 msgid "Could not remove old vm '%s': %s"
 msgstr "Не могу да прибавим датотеку %s: %s"
@@ -542,7 +542,7 @@ msgstr "Не могу да прибавим датотеку %s: %s"
 msgid "Opening URL %s failed."
 msgstr "Отварање УРЛ-а %s није успело: %s"
 
-#: virtinst/ImageFetcher.py:189
+#: virtinst/ImageFetcher.py:200
 #, fuzzy, python-format
 msgid "Mounting location '%s' failed"
 msgstr "Локација монтирања %s није успешна"
@@ -808,52 +808,52 @@ msgid ""
 "The location must be the root directory of an install tree."
 msgstr "Нисам могао да пронађем инсталациону дистрибуцију на „%s“"
 
-#: virtinst/OSDistro.py:123
+#: virtinst/OSDistro.py:124
 msgid "Invalid install location: "
 msgstr "Неисправна локација за инсталацију:"
 
-#: virtinst/OSDistro.py:271
+#: virtinst/OSDistro.py:272
 #, fuzzy, python-format
 msgid "Couldn't find %(type)s kernel for %(distro)s tree."
 msgstr "Нисам могао да пронађем инсталациону дистрибуцију на „%s“"
 
-#: virtinst/OSDistro.py:286
+#: virtinst/OSDistro.py:287
 #, fuzzy, python-format
 msgid "Could not find boot.iso in %s tree."
 msgstr ""
 "Нисам могао да пронађем одговарајући дескриптор подизања система за овог "
 "домаћина"
 
-#: virtinst/OSDistro.py:449
+#: virtinst/OSDistro.py:450
 #, fuzzy, python-format
 msgid "Could not find a kernel path for virt type '%s'"
 msgstr "Нисам могао да пронађем инсталациону дистрибуцију на „%s“"
 
-#: virtinst/OSDistro.py:458
+#: virtinst/OSDistro.py:459
 #, fuzzy
 msgid "Could not find a boot iso path for this tree."
 msgstr ""
 "Нисам могао да пронађем одговарајући дескриптор подизања система за овог "
 "домаћина"
 
-#: virtinst/OSDistro.py:767
+#: virtinst/OSDistro.py:768
 msgid "Unable to determine kernel RPM path"
 msgstr "Не могу да утврдим путању за RPM језгра"
 
-#: virtinst/OSDistro.py:769
+#: virtinst/OSDistro.py:770
 msgid "Unable to determine install-initrd RPM path"
 msgstr "Не могу да утврдим путању за install-initrd RPM"
 
-#: virtinst/OSDistro.py:780
+#: virtinst/OSDistro.py:781
 msgid "Building initrd"
 msgstr "Изграђујем initrd"
 
-#: virtinst/OSDistro.py:1142
+#: virtinst/OSDistro.py:1143
 #, python-format
 msgid "Solaris miniroot not found at %s"
 msgstr ""
 
-#: virtinst/OSDistro.py:1180
+#: virtinst/OSDistro.py:1181
 #, python-format
 msgid "OpenSolaris PV kernel not found at %s"
 msgstr ""
@@ -1574,28 +1574,28 @@ msgstr ""
 msgid "No more space for disks of type '%s'"
 msgstr ""
 
-#: virtinst/VirtualGraphics.py:130 virtinst/VirtualGraphics.py:324
+#: virtinst/VirtualGraphics.py:139 virtinst/VirtualGraphics.py:333
 msgid "Unknown graphics type"
 msgstr "Непозната врста графике"
 
-#: virtinst/VirtualGraphics.py:167
+#: virtinst/VirtualGraphics.py:176
 msgid "Keymap must be a string"
 msgstr "Вредност Keymap мора бити низ знакова"
 
-#: virtinst/VirtualGraphics.py:171
+#: virtinst/VirtualGraphics.py:180
 msgid "Keymap must be less than 16 characters"
 msgstr "Вредност Keymap мора бити краћа од 16 знакова"
 
-#: virtinst/VirtualGraphics.py:173
+#: virtinst/VirtualGraphics.py:182
 msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr "Вредност Keymap може само садржати алфанумеречке, „_“, или „-“ знакове"
 
-#: virtinst/VirtualGraphics.py:193
+#: virtinst/VirtualGraphics.py:202
 msgid ""
 "VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
 
-#: virtinst/VirtualGraphics.py:241
+#: virtinst/VirtualGraphics.py:250
 msgid ""
 "TLS port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
@@ -2328,9 +2328,9 @@ msgid "--location can not be specified for remote connections."
 msgstr ""
 
 #: virt-install:648
-#, python-format
-msgid "Error creating cdrom disk: %s"
-msgstr ""
+#, fuzzy, python-format
+msgid "Error validating install location: %s"
+msgstr "Неисправна локација за инсталацију:"
 
 #: virt-install:653
 #, fuzzy
@@ -2622,7 +2622,7 @@ msgstr ""
 
 #: virt-install:1219
 msgid ""
-"--xml-only can only be used with guests that do not have an installation "
+"--print-xml can only be used with guests that do not have an installation "
 "phase (--import, --boot, etc.). To see all generated XML, please use --print-"
 "step all."
 msgstr ""

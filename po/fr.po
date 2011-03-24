@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: virtinst.tip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-21 10:50-0400\n"
+"POT-Creation-Date: 2011-03-24 16:14-0400\n"
 "PO-Revision-Date: 2010-09-24 12:32+0200\n"
 "Last-Translator: Boris BARNIER <b.barnier@gmail.com>\n"
 "Language-Team: French <trans-fr@lists.fedoraproject.org>\n"
@@ -201,62 +201,62 @@ msgstr "Quelle quantité de RAM devrait être allouée (en Mo) ?"
 msgid "Installs currently require %d megs of RAM."
 msgstr "Les installations exigent actuellement %d Mo de RAM."
 
-#: virtinst/cli.py:717 virtinst/cli.py:808 virtinst/cli.py:1009
+#: virtinst/cli.py:721 virtinst/cli.py:820 virtinst/cli.py:1021
 #: virt-install:173 virt-install:220 virt-install:253 virt-install:306
 #, fuzzy, python-format
 msgid "Unknown options %s"
 msgstr "Type de réseau %s inconnu"
 
-#: virtinst/cli.py:733
+#: virtinst/cli.py:745
 #, fuzzy, python-format
 msgid ""
-"You have asked for more virtual CPUs (%s) than there are physical CPUs (%s) "
+"You have asked for more virtual CPUs (%d) than there are physical CPUs (%d) "
 "on the host. This will work, but performance will be poor. "
 msgstr ""
 "Vous avez demandé à avoir plus d'UC virtuelles (%d) qu'il n'y a d'UC "
 "physiques (%d) sur l'hôte. Ceci peut fonctionner, mais les performances "
 "seront faibles."
 
-#: virtinst/cli.py:736
+#: virtinst/cli.py:748
 msgid "Are you sure? (yes or no)"
 msgstr "Êtes-vous certains ? (« yes » ou « no »)"
 
-#: virtinst/cli.py:908
+#: virtinst/cli.py:920
 #, python-format
 msgid "Unknown network option '%s'"
 msgstr "Option de réseau « %s » inconnue"
 
-#: virtinst/cli.py:926
+#: virtinst/cli.py:938
 msgid "Cannot mix both --bridge and --network arguments"
 msgstr "Impossible de mélanger les arguments de --bridge et de --network"
 
-#: virtinst/cli.py:941
+#: virtinst/cli.py:953
 msgid "Cannot pass more mac addresses than networks."
 msgstr "Impossible de passer plus d'adresses MAC que d'adresses de réseaux."
 
-#: virtinst/cli.py:976
+#: virtinst/cli.py:988
 #, python-format
 msgid "Didn't match keymap '%s' in keytable!"
 msgstr ""
 "Le mappage clavier « %s » ne correspond à aucun enregistrement dans la table "
 "des clés."
 
-#: virtinst/cli.py:1018
+#: virtinst/cli.py:1030
 #, fuzzy
 msgid "Cannot mix --graphics and old style graphical options"
 msgstr "VNC graphics et nographics ne sont pas compatibles"
 
-#: virtinst/cli.py:1030
+#: virtinst/cli.py:1042
 #, fuzzy
 msgid "Can't specify more than one of VNC, SDL, --graphics or --nographics"
 msgstr "Vous ne pouvez définir plus d'un VNC, SDL ou --nographics"
 
-#: virtinst/cli.py:1046
+#: virtinst/cli.py:1058
 #, fuzzy, python-format
 msgid "Error in graphics device parameters: %s"
 msgstr "Erreur avec les paramètres de stockage : %s"
 
-#: virtinst/cli.py:1087 virtinst/cli.py:1092
+#: virtinst/cli.py:1099 virtinst/cli.py:1104
 #, python-format
 msgid "%s option requires an argument"
 msgstr "L'option %s exige un argument"
@@ -484,29 +484,29 @@ msgstr "Il faut passer une instance d'une VirtualDevice."
 msgid "Did not find device %s"
 msgstr "Le périphérique %s n'a pas été trouvé"
 
-#: virtinst/Guest.py:1094
+#: virtinst/Guest.py:1087
 msgid "Domain has already been started!"
 msgstr "Le domaine est déjà démarré !"
 
-#: virtinst/Guest.py:1097
+#: virtinst/Guest.py:1090
 msgid "Name and memory must be specified for all guests!"
 msgstr "Le nom et la mémoire doivent être spécifiés pour tous les invités !"
 
-#: virtinst/Guest.py:1101
+#: virtinst/Guest.py:1094
 msgid "The UUID you entered is already in use by another guest!"
 msgstr ""
 "L'UUID que vous avez entré est déjà en cours d'utilisation par un autre "
 "invité !"
 
-#: virtinst/Guest.py:1243
+#: virtinst/Guest.py:1236
 msgid "Creating domain..."
 msgstr "Création du domaine..."
 
-#: virtinst/Guest.py:1245
+#: virtinst/Guest.py:1238
 msgid "Starting domain..."
 msgstr "Démarrage du domaine..."
 
-#: virtinst/Guest.py:1281
+#: virtinst/Guest.py:1274
 msgid ""
 "Domain has not existed.  You should be able to find more information in the "
 "logs"
@@ -514,7 +514,7 @@ msgstr ""
 "Le domaine n'a encore jamais existé. Vous devriez pouvoir trouver des "
 "informations plus détaillées dans les fichiers journaux"
 
-#: virtinst/Guest.py:1284
+#: virtinst/Guest.py:1277
 msgid ""
 "Domain has not run yet.  You should be able to find more information in the "
 "logs"
@@ -522,12 +522,12 @@ msgstr ""
 "Le domaine n'a encore jamais été exécuté. Vous devriez pouvoir trouver des "
 "informations plus détaillées dans les fichiers journaux"
 
-#: virtinst/Guest.py:1324
+#: virtinst/Guest.py:1317
 #, python-format
 msgid "Domain named %s already exists!"
 msgstr "Le domaine de nom %s existe déjà !"
 
-#: virtinst/Guest.py:1335
+#: virtinst/Guest.py:1328
 #, python-format
 msgid "Could not remove old vm '%s': %s"
 msgstr "Impossible de retirer l'ancienne machine virtuelle « %s » : %s"
@@ -547,7 +547,7 @@ msgstr "Impossible d'obtenir le fichier %s : %s"
 msgid "Opening URL %s failed."
 msgstr "L'ouverture de l'URL %s a échoué."
 
-#: virtinst/ImageFetcher.py:189
+#: virtinst/ImageFetcher.py:200
 #, python-format
 msgid "Mounting location '%s' failed"
 msgstr "Le montage de l'emplacement « %s » a échoué"
@@ -816,50 +816,50 @@ msgid ""
 "The location must be the root directory of an install tree."
 msgstr "Impossible de trouver une distribution installable sur « %s »"
 
-#: virtinst/OSDistro.py:123
+#: virtinst/OSDistro.py:124
 msgid "Invalid install location: "
 msgstr "Emplacement d'installation invalide : "
 
-#: virtinst/OSDistro.py:271
+#: virtinst/OSDistro.py:272
 #, fuzzy, python-format
 msgid "Couldn't find %(type)s kernel for %(distro)s tree."
 msgstr "Impossible de trouver une distribution installable sur « %s »"
 
-#: virtinst/OSDistro.py:286
+#: virtinst/OSDistro.py:287
 #, fuzzy, python-format
 msgid "Could not find boot.iso in %s tree."
 msgstr ""
 "Impossible de trouver un descripteur de démarrage acceptable pour cet hôte"
 
-#: virtinst/OSDistro.py:449
+#: virtinst/OSDistro.py:450
 #, fuzzy, python-format
 msgid "Could not find a kernel path for virt type '%s'"
 msgstr "Impossible de trouver une distribution installable sur « %s »"
 
-#: virtinst/OSDistro.py:458
+#: virtinst/OSDistro.py:459
 #, fuzzy
 msgid "Could not find a boot iso path for this tree."
 msgstr ""
 "Impossible de trouver un descripteur de démarrage acceptable pour cet hôte"
 
-#: virtinst/OSDistro.py:767
+#: virtinst/OSDistro.py:768
 msgid "Unable to determine kernel RPM path"
 msgstr "Impossible de déterminer le chemin d'accès au RPM du noyau"
 
-#: virtinst/OSDistro.py:769
+#: virtinst/OSDistro.py:770
 msgid "Unable to determine install-initrd RPM path"
 msgstr "Impossible de déterminer le chemin d'accès au RPM d'install-initrd"
 
-#: virtinst/OSDistro.py:780
+#: virtinst/OSDistro.py:781
 msgid "Building initrd"
 msgstr "Construction de initrd"
 
-#: virtinst/OSDistro.py:1142
+#: virtinst/OSDistro.py:1143
 #, python-format
 msgid "Solaris miniroot not found at %s"
 msgstr ""
 
-#: virtinst/OSDistro.py:1180
+#: virtinst/OSDistro.py:1181
 #, python-format
 msgid "OpenSolaris PV kernel not found at %s"
 msgstr ""
@@ -1585,30 +1585,30 @@ msgstr ""
 msgid "No more space for disks of type '%s'"
 msgstr ""
 
-#: virtinst/VirtualGraphics.py:130 virtinst/VirtualGraphics.py:324
+#: virtinst/VirtualGraphics.py:139 virtinst/VirtualGraphics.py:333
 msgid "Unknown graphics type"
 msgstr "Type de graphique inconnu"
 
-#: virtinst/VirtualGraphics.py:167
+#: virtinst/VirtualGraphics.py:176
 msgid "Keymap must be a string"
 msgstr "« Keymap » doit être une chaîne de caractères"
 
-#: virtinst/VirtualGraphics.py:171
+#: virtinst/VirtualGraphics.py:180
 msgid "Keymap must be less than 16 characters"
 msgstr "« Keymap » doit contenir moins de 16 caractères"
 
-#: virtinst/VirtualGraphics.py:173
+#: virtinst/VirtualGraphics.py:182
 msgid "Keymap can only contain alphanumeric, '_', or '-' characters"
 msgstr ""
 "« Keymap » ne peut contenir que des caractères alphanumériques, « _ » ou « - "
 "»"
 
-#: virtinst/VirtualGraphics.py:193
+#: virtinst/VirtualGraphics.py:202
 msgid ""
 "VNC port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
 
-#: virtinst/VirtualGraphics.py:241
+#: virtinst/VirtualGraphics.py:250
 msgid ""
 "TLS port must be a number between 5900 and 65535, or -1 for auto allocation"
 msgstr ""
@@ -2352,9 +2352,9 @@ msgid "--location can not be specified for remote connections."
 msgstr ""
 
 #: virt-install:648
-#, python-format
-msgid "Error creating cdrom disk: %s"
-msgstr ""
+#, fuzzy, python-format
+msgid "Error validating install location: %s"
+msgstr "Emplacement d'installation invalide : "
 
 #: virt-install:653
 #, fuzzy
@@ -2647,7 +2647,7 @@ msgstr ""
 
 #: virt-install:1219
 msgid ""
-"--xml-only can only be used with guests that do not have an installation "
+"--print-xml can only be used with guests that do not have an installation "
 "phase (--import, --boot, etc.). To see all generated XML, please use --print-"
 "step all."
 msgstr ""

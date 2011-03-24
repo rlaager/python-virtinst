@@ -1,6 +1,11 @@
    Virtinst News
    =================
 
+Release 0.500.6 (March 24, 2011)
+--------------------------------
+- virt-install: --graphics spice now enables spicevmc and qxl
+- virt-install: New --disk parameter io=native|threads
+
 Release 0.500.5 (Jan 14, 2011)
 ----------------------------------
 - New virt-install --cpu option for configuring CPU model/features
