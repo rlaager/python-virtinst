@@ -120,28 +120,39 @@ class HTTPImageFetcher(URIImageFetcher):
             request = urllib2.Request(path)
             request.get_method = lambda: "HEAD"
             urllib2.urlopen(request)
-        except Exception:
-            logging.debug("HTTP hasFile: didn't find %s" % path)
+        except Exception, e:
+            logging.debug("HTTP hasFile: didn't find %s: %s" % (path, str(e)))
             return False
         return True
 
 class FTPImageFetcher(URIImageFetcher):
 
+    def __init__(self, location, scratchdir):
+        URIImageFetcher.__init__(self, location, scratchdir)
+
+        self.ftp = None
+
+    def prepareLocation(self):
+        url = urlparse.urlparse(self._make_path(""))
+        self.ftp = ftplib.FTP(url[1])
+        self.ftp.login()
+
     def hasFile(self, filename):
         path = self._make_path(filename)
-
         url = urlparse.urlparse(path)
+
         try:
-            ftp = ftplib.FTP(url[1])
-            ftp.login()
             try:
-                ftp.size(url[2])   # If a file
+                # If it's a file
+                self.ftp.size(url[2])
             except ftplib.all_errors:
-                ftp.cwd(url[2])    # If a dir
-        except ftplib.all_errors:
-            logging.debug("FTP hasFile: couldn't access %s/%s" % \
-                          (url[1], url[2]))
+                # If it's a dir
+                self.ftp.cwd(url[2])
+        except ftplib.all_errors, e:
+            logging.debug("FTP hasFile: couldn't access %s: %s" %
+                          (path, str(e)))
             return False
+
         return True
 
 class LocalImageFetcher(ImageFetcher):

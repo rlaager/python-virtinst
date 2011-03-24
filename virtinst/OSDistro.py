@@ -120,6 +120,7 @@ def _locationCheckWrapper(guest, baseuri, progresscb,
     try:
         fetcher.prepareLocation()
     except ValueError, e:
+        logging.exception("Error preparing install location")
         raise ValueError(_("Invalid install location: ") + str(e))
 
     try:
