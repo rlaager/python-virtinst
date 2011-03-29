@@ -1,5 +1,14 @@
 # -*- rpm-spec -*-
 
+%define _version ::VERSION::
+%define _release 1
+
+%define with_selinux 0
+
+%define with_sbin_compat 0
+
+# End local config
+
 %{!?python_sitelib: %define python_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 # This macro is used for the continuous automated builds. It just
@@ -19,8 +28,8 @@
 
 Summary: Python modules and utilities for installing virtual machines
 Name: python-%{appname}
-Version: ::VERSION::
-Release: 1%{_extra_release}
+Version: %{_version}
+Release: {_release}%{_extra_release}
 Source0: http://virt-manager.org/download/sources/%{appname}/%{appname}-%{version}.tar.gz
 License: GPLv2+
 Group: Development/Libraries
@@ -30,12 +39,14 @@ Url: http://virt-manager.org
 Provides: virt-install
 Provides: virt-clone
 Provides: virt-image
-Provides: virt-pack
 Provides: virt-convert
 Requires: libvirt-python >= 0.2.0
 Requires: urlgrabber
 Requires: libxml2-python
 Requires: python-urlgrabber
+%if %{with_selinux}
+Requires: libselinux-python
+%endif
 BuildRequires: gettext
 BuildRequires: python
 
@@ -54,6 +65,13 @@ python setup.py build
 %install
 rm -rf $RPM_BUILD_ROOT
 python setup.py install -O1 --root=$RPM_BUILD_ROOT
+
+%if %{with_sbin_compat}
+# Back compat in case people hardcoded old /usr/sbin/virt-install location
+mkdir -p $RPM_BUILD_ROOT/%{_sbindir}
+ln -s ../bin/virt-install $RPM_BUILD_ROOT/%{_sbindir}/virt-install
+%endif
+
 %find_lang %{appname} || echo 0
 
 %clean
@@ -71,6 +89,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 %{_mandir}/man1/*
 %{_mandir}/man5/*
+%if %{with_sbin_compat}
+%{_sbindir}/virt-install
+%endif
 %{_bindir}/virt-install
 %{_bindir}/virt-clone
 %{_bindir}/virt-image
