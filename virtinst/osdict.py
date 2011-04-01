@@ -368,7 +368,7 @@ OS_TYPES = {
                             DISK : VIRTIO_DISK,
                             NET  : VIRTIO_NET,
                         }},
-        "ubuntulucid": { "label": "Ubuntu 10.4 (Lucid Lynx)",
+        "ubuntulucid": { "label": "Ubuntu 10.04 (Lucid Lynx)",
                          "distro": "ubuntu",
                          "devices" : {
                             DISK : VIRTIO_DISK,
