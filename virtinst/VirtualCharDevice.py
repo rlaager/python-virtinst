@@ -50,6 +50,16 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
                     CHAR_PIPE, CHAR_NULL, CHAR_TCP, CHAR_UDP, CHAR_UNIX,
                     CHAR_SPICEVMC ]
 
+    _non_channel_types = char_types[:]
+    _non_channel_types.remove(CHAR_SPICEVMC)
+
+    char_types_for_dev_type = {
+        DEV_SERIAL: _non_channel_types,
+        DEV_PARALLEL: _non_channel_types,
+        DEV_CONSOLE: _non_channel_types,
+        DEV_CHANNEL: [ CHAR_SPICEVMC ],
+    }
+
     CHAR_MODE_CONNECT = "connect"
     CHAR_MODE_BIND = "bind"
     char_modes = [ CHAR_MODE_CONNECT, CHAR_MODE_BIND ]
@@ -70,6 +80,8 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     CHAR_CONSOLE_TARGET_UML = "uml"
     CHAR_CONSOLE_TARGET_XEN = "xen"
     CHAR_CONSOLE_TARGET_VIRTIO = "virtio"
+
+    has_target = False
 
     def get_char_type_desc(char_type):
         """
@@ -213,11 +225,22 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
             "bind_port"     : [self.CHAR_UDP],
         }
 
+        channel_users = {
+            "target_name"   : [self.CHAR_CHANNEL_TARGET_VIRTIO],
+        }
+
         if users.get(propname):
             return self.char_type in users[propname]
+        if channel_users.get(propname):
+            return (self.dev_type == self.DEV_CHANNEL and
+                    self.target_type in channel_users[propname])
         return hasattr(self, propname)
 
     # Properties
+    def get_dev_type(self):
+        return self._dev_type
+    dev_type = property(get_dev_type)
+
     def get_char_type(self):
         return self._char_type
     def set_char_type(self, val):
@@ -330,7 +353,7 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
     def get_target_name(self):
         return self._target_name
     target_name = _xml_property(get_target_name, set_target_name,
-                           doc=_("Sysfs Name of virtio port in the guest"),
+                           doc=_("Sysfs name of virtio port in the guest"),
                            xpath="./target/@name")
 
     def get_address_type(self):
@@ -411,7 +434,8 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         char_xml = self._char_xml()
         target_xml = self._get_target_xml()
         has_target = (self._dev_type == self.DEV_CHANNEL or
-                      self._dev_type == self.DEV_CONSOLE)
+                      self._dev_type == self.DEV_CONSOLE or
+                      self.has_target)
 
         if target_xml and not has_target:
             raise RuntimeError(
@@ -575,8 +599,9 @@ class VirtualCharSpicevmcDevice(VirtualCharDevice):
     _char_type = VirtualCharDevice.CHAR_SPICEVMC
     _char_xml = VirtualCharDevice._char_empty_xml
     target_types = [ VirtualCharDevice.CHAR_CHANNEL_TARGET_VIRTIO ]
+    has_target = True
 
-    def __init__(self, conn, dev_type,
+    def __init__(self, conn, dev_type=VirtualCharDevice.DEV_CHANNEL,
                  parsexml=None, parsexmlnode=None, caps=None):
         VirtualCharDevice.__init__(self, conn, dev_type,
                                    parsexml, parsexmlnode, caps)
