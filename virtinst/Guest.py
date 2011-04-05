@@ -790,7 +790,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             if node.name != "devices":
                 continue
 
-            children = filter(lambda x: x.name in device_mappings,
+            children = filter(lambda x: (x.name in device_mappings and
+                                         x.parent == node),
                               node.children)
             for devnode in children:
                 objclass = device_mappings.get(devnode.name)
