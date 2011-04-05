@@ -50,3 +50,4 @@ import nodedev
 import virtconvtest
 import interface
 import xmlparse
+import support
