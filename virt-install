@@ -187,7 +187,7 @@ def parse_char_option(guest, dev_type, optstring):
             return
 
         if not dev.supports_property(paramname):
-            raise ValueError(_("%(chartype)s type %(devtype)s does not "
+            raise ValueError(_("%(devtype)s type '%(chartype)s' does not "
                                 "support '%(optname)s' option.") %
                                 {"devtype" : dev_type, "chartype": char_type,
                                  "optname" : dictname} )
@@ -211,8 +211,8 @@ def parse_char_option(guest, dev_type, optstring):
     set_param("source_port", "host", port)
     set_param("bind_host", "bind_host", bind_host)
     set_param("bind_port", "bind_host", bind_port)
-    set_param("target_name", "name")
     set_param("target_type", "target_type")
+    set_param("target_name", "name")
     set_param("target_address", "target_address", target_addr)
     set_param("target_port", "target_address", target_port)
 
