@@ -148,6 +148,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         self.type = type
         self.macaddr = macaddr
         self.bridge = bridge
+        self.source_dev = bridge
         self.network = network
         self.model = model
 
@@ -352,6 +353,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             src_xml     = "      <source network='%s'/>\n" % self.network
         elif self.type == self.TYPE_ETHERNET and self.source_dev:
             src_xml     = "      <source dev='%s'/>\n" % self.source_dev
+        elif self.type == self.TYPE_DIRECT and self.source_dev:
+            src_xml     = "      <source dev='%s' mode='vepa'/>\n" % self.source_dev
 
         if self.model:
             model_xml   = "      <model type='%s'/>\n" % self.model

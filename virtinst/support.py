@@ -60,6 +60,7 @@ SUPPORT_CONN_HV_SOUND_AC97 = 5002
 SUPPORT_CONN_HV_SOUND_ICH6 = 5003
 SUPPORT_CONN_HV_GRAPHICS_SPICE = 5004
 SUPPORT_CONN_HV_CHAR_SPICEVMC = 5005
+SUPPORT_CONN_HV_DIRECT_INTERFACE = 5006
 
 """
 Possible keys:
@@ -226,6 +227,11 @@ _support_dict = {
         "version" : 8008,
         "force_version" : True,
         "drv_version" : [ ("qemu", 14000), ],
+    },
+    SUPPORT_CONN_HV_DIRECT_INTERFACE : {
+        "version" : 8008,
+        "force_version" : True,
+        "drv_version" : [ ("qemu", 0), ],
     },
 }
 
