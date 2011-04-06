@@ -229,7 +229,7 @@ _support_dict = {
         "drv_version" : [ ("qemu", 14000), ],
     },
     SUPPORT_CONN_HV_DIRECT_INTERFACE : {
-        "version" : 8008,
+        "version" : 8007,
         "force_version" : True,
         "drv_version" : [ ("qemu", 0), ],
     },
