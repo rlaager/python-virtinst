@@ -904,69 +904,45 @@ class DebianDistro(Distro):
         if re.match(r'i[4-9]86', arch):
             self.arch = 'i386'
 
+        self._installer_name = self.name.lower() + "-" + "installer"
         self._prefix = 'current/images'
         self._set_media_paths()
 
     def _set_media_paths(self):
         # Use self._prefix to set media paths
         self._boot_iso_paths   = [ "%s/netboot/mini.iso" % self._prefix ]
-        hvmroot = "%s/netboot/debian-installer/%s/" % (self._prefix,
-                                                       self._treeArch)
+        hvmroot = "%s/netboot/%s/%s/" % (self._prefix,
+                                         self._installer_name,
+                                         self._treeArch)
         xenroot = "%s/netboot/xen/" % self._prefix
         self._hvm_kernel_paths = [ (hvmroot + "linux", hvmroot + "initrd.gz") ]
         self._xen_kernel_paths = [ (xenroot + "vmlinuz",
                                     xenroot + "initrd.gz") ]
 
     def isValidStore(self, fetcher, progresscb):
-
-        # For regular trees
         if fetcher.hasFile("%s/MANIFEST" % self._prefix):
+            # For regular trees
             pass
-        # For daily trees
         elif fetcher.hasFile("images/daily/MANIFEST"):
+            # For daily trees
             self._prefix = "images/daily"
             self._set_media_paths()
         else:
-            logging.debug("Doesn't look like a Debian distro.")
             return False
 
         filename = "%s/MANIFEST" % self._prefix
-
-        if self._fetchAndMatchRegex(fetcher, progresscb, filename,
-                                    ".*debian-installer.*"):
-            logging.debug("Detected a Debian distro")
+        regex = ".*%s.*" % self._installer_name
+        if self._fetchAndMatchRegex(fetcher, progresscb, filename, regex):
+            logging.debug("Detected a %s distro" % self.name)
             return True
 
+        logging.debug("MANIFEST didn't match regex, not a %s distro" %
+                      self.name)
         return False
 
 
 class UbuntuDistro(DebianDistro):
-
     name = "Ubuntu"
-
-    def _set_media_paths(self):
-        DebianDistro._set_media_paths(self)
-        root = "%s/netboot/ubuntu-installer/%s/" % (self._prefix,
-                                                    self._treeArch)
-        self._hvm_kernel_paths = [ (root + "linux", root + "initrd.gz") ]
-        self._xen_kernel_paths = []
-
-    def isValidStore(self, fetcher, progresscb):
-        # Don't support any paravirt installs
-        if self.type is not None and self.type != "hvm":
-            return False
-
-        # For regular trees
-        if not fetcher.hasFile("%s/MANIFEST" % self._prefix):
-            return False
-
-        if self._fetchAndMatchRegex(fetcher, progresscb,
-                                    "%s/MANIFEST" % self._prefix,
-                                    ".*ubuntu-installer.*"):
-            logging.debug("Detected an Ubuntu distro")
-            return True
-
-        return False
 
 
 class MandrivaDistro(Distro):
