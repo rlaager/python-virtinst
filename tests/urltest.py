@@ -56,9 +56,6 @@ OLDCENTOS_BASEURL = "http://vault.centos.org/%s/os/%s"
 MANDRIVA_BASEURL = "http://ftp.uwsg.indiana.edu/linux/mandrake/official/%s/%s/"
 SCIENTIFIC_BASEURL = "http://ftp.scientificlinux.org/linux/scientific/%s/%s/"
 
-# Regex matching distro names that don't have xen kernels.
-NOXEN_FILTER = ".*ubuntu.*|.*etch.*|.*mandriva.*|.*lenny-64.*|.*centos-4.0.*|.*scientific-4.0.*"
-
 # Doesn't appear to be a simple boot iso in newer suse trees
 NOBOOTISO_FILTER = ".*opensuse11.*|.*opensuse10.3.*|.*opensuse10.0.*"
 
@@ -120,12 +117,18 @@ urls = {
     },
 
     # Debian Distros
-    "debian-lenny-32" : {
-        'i386' : DEBIAN_BASEURL % ("lenny", "i386"),
+    "debian-lenny-64" : {
+        "noxen": True,
+        'x86_64': DEBIAN_BASEURL % ("lenny", "amd64"),
         'distro': ("linux", None)
     },
-    "debian-lenny-64" : {
-        'x86_64': DEBIAN_BASEURL % ("lenny", "amd64"),
+    "debian-squeeze" : {
+        'i386' : DEBIAN_BASEURL % ("squeeze", "i386"),
+        'x86_64': DEBIAN_BASEURL % ("squeeze", "amd64"),
+        'distro': ("linux", None)
+    },
+    "debian-wheezy" : {
+        'x86_64': DEBIAN_BASEURL % ("wheezy", "amd64"),
         'distro': ("linux", None)
     },
     "debian-daily" : {
@@ -149,6 +152,7 @@ urls = {
         'distro': ("linux", None)
     },
     "centos-4.0" : {
+        "noxen": True,
         'x86_64' : OLDCENTOS_BASEURL % ("4.0", "x86_64"),
         'distro': ("linux", None)
     },
@@ -171,14 +175,26 @@ urls = {
         'distro': ("linux", None)
     },
     "scientific-4.0" : {
+        "noxen": True,
         'x86_64': SCIENTIFIC_BASEURL % ("40", "x86_64"),
         'distro': ("linux", None)
     },
 
     # Ubuntu
     "ubuntu-hardy" : {
+        "noxen": True,
         'i386': UBUNTU_BASEURL % ("hardy", "i386"),
         'x86_64': UBUNTU_BASEURL % ("hardy", "amd64"),
+        'distro': ("linux", None)
+    },
+    "ubuntu-lucid" : {
+        'i386': UBUNTU_BASEURL % ("lucid", "i386"),
+        'x86_64': UBUNTU_BASEURL % ("lucid", "amd64"),
+        'distro': ("linux", None)
+    },
+    "ubuntu-maverick" : {
+        'i386': UBUNTU_BASEURL % ("maverick", "i386"),
+        'x86_64': UBUNTU_BASEURL % ("maverick", "amd64"),
         'distro': ("linux", None)
     },
     "ubuntu-natty" : {
@@ -188,20 +204,18 @@ urls = {
     },
 
     # Mandriva
-    "mandriva-2007.1" : {
-        'x86_64': MANDRIVA_BASEURL % ("2007.1", "x86_64"),
+    "mandriva-2009.1" : {
+        "noxen": True,
+        'i386': MANDRIVA_BASEURL % ("2009.1", "i586"),
+        'x86_64': MANDRIVA_BASEURL % ("2009.1", "x86_64"),
         'distro': ("linux", None)
     },
-    "mandriva-2008.1" : {
-        'x86_64': MANDRIVA_BASEURL % ("2008.1", "x86_64"),
+    "mandriva-2010.2" : {
+        "noxen": True,
+        'i386': MANDRIVA_BASEURL % ("2010.2", "i586"),
+        'x86_64': MANDRIVA_BASEURL % ("2010.2", "x86_64"),
         'distro': ("linux", None)
     },
-    "mandriva-2009.0" : {
-        'i386': MANDRIVA_BASEURL % ("2009.0", "i586"),
-        'x86_64': MANDRIVA_BASEURL % ("2009.0", "x86_64"),
-        'distro': ("linux", None)
-    },
-
 }
 
 
@@ -231,12 +245,11 @@ class TestURLFetch(unittest.TestCase):
             fetcher.cleanupLocation()
 
 
-    def _fetchFromURLDict(self, distname, url, arch, distro_info):
+    def _fetchFromURLDict(self, distname, url, arch, distro_info, check_xen):
         logging.debug("\nDistro='%s' arch='%s' url=%s" % \
                       (distname, arch, url))
 
         fetcher = OSDistro._fetcherForURI(url, "/tmp")
-
         try:
             fetcher.prepareLocation()
         except Exception, e:
@@ -247,7 +260,8 @@ class TestURLFetch(unittest.TestCase):
             return
 
         try:
-            self._grabURLMedia(fetcher, distname, url, arch, distro_info)
+            self._grabURLMedia(fetcher, distname, url, arch, distro_info,
+                               check_xen)
         finally:
             fetcher.cleanupLocation()
 
@@ -274,11 +288,8 @@ class TestURLFetch(unittest.TestCase):
             if v:
                 testguest.os_variant = v
 
-    def _grabURLMedia(self, fetcher, distname, url, arch, distro_info=None):
-
-        check_xen = True
-        if re.match(r"%s" % NOXEN_FILTER, distname):
-            check_xen = False
+    def _grabURLMedia(self, fetcher, distname, url, arch, distro_info,
+                      check_xen):
 
         hvmstore = self._getStore(fetcher, url, "hvm", arch)
 
@@ -387,16 +398,18 @@ class TestURLFetch(unittest.TestCase):
                 logging.debug("Excluding '%s' from exclude filter." % label)
                 continue
 
+            check_xen = not bool(urls[label].get("noxen"))
             if "distro" in urls[label]:
                 distro_info = urls[label]["distro"]
 
             for arch, url in urls[label].items():
-                if arch == "distro":
+                if arch == "distro" or arch == "noxen":
                     continue
 
                 try:
                     print "Testing %s-%s : %s" % (label, arch, url)
-                    self._fetchFromURLDict(label, url, arch, distro_info)
+                    self._fetchFromURLDict(label, url, arch, distro_info,
+                                           check_xen)
                 except AssertionError:
                     print "%s-%s FAILED." % (label, arch)
                     assertions += 1
