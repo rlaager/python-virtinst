@@ -180,7 +180,7 @@ the I<size> attribute giving the size of the disk in MB.
 =item *
 
 the I<format> attribute giving the format of the disk file. Currently, this
-can be one of: C<raw> C<iso>, C<qemu>, C<qemu2>, or C<vmdk>.
+can be one of: C<raw> C<iso>, C<qcow>, C<qcow2>, or C<vmdk>.
 
 =back
 
