@@ -1064,7 +1064,9 @@ def start_install(guest, continue_inst, options):
     options.autoconsole = (wait_time != 0) and options.autoconsole or False
 
     conscb = options.autoconsole and show_console or None
-    meter = options.quiet and progress.BaseMeter() or progress.TextMeter()
+    meter = (options.quiet and
+             progress.BaseMeter() or
+             progress.TextMeter(fo=sys.stdout))
     logging.debug("Guest.has_install_phase: %s" %
                   guest.installer.has_install_phase())
 

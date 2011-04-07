@@ -14,6 +14,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import unittest
+import time
+import logging
+import re
+import platform
+import sys
+
+import utils
+import virtinst
 import virtinst.OSDistro as OSDistro
 from virtinst.OSDistro import FedoraDistro
 from virtinst.OSDistro import SuseDistro
@@ -23,15 +32,8 @@ from virtinst.OSDistro import SLDistro
 from virtinst.OSDistro import UbuntuDistro
 from virtinst.OSDistro import MandrivaDistro
 
-import unittest
-import time
-import logging
-import re
-import urlgrabber.progress
-import platform
-import utils
 import libvirt
-import virtinst
+import urlgrabber.progress
 
 # Filters for including/excluding certain distros.
 MATCH_FILTER = ".*"
@@ -228,7 +230,7 @@ class TestURLFetch(unittest.TestCase):
     def setUp(self):
         self.meter = urlgrabber.progress.BaseMeter()
         if utils.get_debug():
-            self.meter = urlgrabber.progress.TextMeter()
+            self.meter = urlgrabber.progress.TextMeter(fo=sys.stdout)
 
     def _fetchLocalMedia(self, mediapath):
         arch = platform.machine()

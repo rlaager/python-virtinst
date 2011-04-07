@@ -219,7 +219,7 @@ def main():
         print_stdout(start_xml or final_xml, do_force=True)
         return
 
-    meter = progress.TextMeter()
+    meter = progress.TextMeter(fo=sys.stdout)
 
     if not options.skipchecksum:
         for disk in image.storage.values():

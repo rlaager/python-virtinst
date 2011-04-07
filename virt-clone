@@ -249,7 +249,7 @@ def main():
         print_stdout(design.clone_xml, do_force=True)
     else:
         # start cloning
-        meter = progress.TextMeter()
+        meter = progress.TextMeter(fo=sys.stdout)
         clmgr.start_duplicate(design, meter)
 
     print_stdout("")
