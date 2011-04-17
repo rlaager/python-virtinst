@@ -49,6 +49,7 @@ import libvirt
 import threading
 import time
 import os
+import re
 
 import logging
 from _util import xml_escape as escape
@@ -238,6 +239,7 @@ class StoragePool(StorageObject):
     TYPE_FS      = "fs"
     TYPE_NETFS   = "netfs"
     TYPE_LOGICAL = "logical"
+    TYPE_ZFS     = "zfs"
     TYPE_DISK    = "disk"
     TYPE_ISCSI   = "iscsi"
     TYPE_SCSI   = "scsi"
@@ -249,6 +251,7 @@ class StoragePool(StorageObject):
     _types[TYPE_FS]      = _("Pre-Formatted Block Device")
     _types[TYPE_NETFS]   = _("Network Exported Directory")
     _types[TYPE_LOGICAL] = _("LVM Volume Group")
+    _types[TYPE_ZFS]     = _("ZFS Pool")
     _types[TYPE_DISK]    = _("Physical Disk Device")
     _types[TYPE_ISCSI]   = _("iSCSI Target")
     _types[TYPE_SCSI]    = _("SCSI host adapter")
@@ -270,6 +273,8 @@ class StoragePool(StorageObject):
             return NetworkFilesystemPool
         if ptype == StoragePool.TYPE_LOGICAL:
             return LogicalPool
+        if ptype == StoragePool.TYPE_ZFS:
+            return ZFSPool
         if ptype == StoragePool.TYPE_DISK:
             return DiskPool
         if ptype == StoragePool.TYPE_ISCSI:
@@ -707,6 +712,123 @@ class LogicalPool(StoragePool):
 
     def _get_default_target_path(self):
         return DEFAULT_LVM_TARGET_BASE + self.name
+
+    def _get_target_xml(self):
+        xml = "    <path>%s</path>\n" % escape(self.target_path) + \
+              "%s" % self._get_perms_xml()
+        return xml
+
+    def _get_source_xml(self):
+        sources = self.source_path
+        if type(sources) != list:
+            sources = sources and [sources] or []
+
+        xml = ""
+        for s in sources:
+            xml += "    <device path='%s'/>\n" % s
+        if self.source_name:
+            xml += "    <name>%s</name>\n" % self.source_name
+        return xml
+
+    def install(self, meter=None, create=False, build=False):
+        if build and not self.source_path:
+            raise ValueError(_("Must explicitly specify source path if "
+                               "building pool"))
+        return StoragePool.install(self, meter=meter, create=create,
+                                   build=build)
+
+class ZFSPool(StoragePool):
+    """
+    Create a ZFS storage pool
+    """
+    def get_volume_class():
+        return ZFSVolume
+    get_volume_class = staticmethod(get_volume_class)
+
+    # Register applicable property methods from parent class
+    perms = property(StorageObject.get_perms, StorageObject.set_perms)
+
+    def __init__(self, conn, name, target_path=None, uuid=None, perms=None,
+                 source_path=None, source_name=None):
+        StoragePool.__init__(self, name=name, type=StoragePool.TYPE_ZFS,
+                             target_path=target_path, uuid=uuid, conn=conn)
+
+        self._source_name = None
+
+        if perms:
+            self.perms = perms
+        if source_path:
+            self.source_path = source_path
+        if source_name:
+            self.source_name = source_name
+
+    formats = []
+
+    def get_name(self):
+        return self._name
+    def set_name(self, val):
+        if val.endswith('/'):
+            val = val[:-1]
+        if val.startswith('/'):
+            val = val[1:]
+
+        # This is copied from _util.validate_name, except that we accept /
+        # in the names.
+        name_type = _("Storage object")
+        if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
+            raise ValueError(_("%s name must be a string between 0 and 50 "
+                               "characters") % name_type)
+        if re.match("^[0-9]+$", val):
+            raise ValueError(_("%s name can not be only numeric characters") %
+                              name_type)
+        if re.match("^[a-zA-Z0-9./_-]+$", val) == None:
+            raise ValueError(_("%s name can only contain alphanumeric, '/', "
+                               "'_', '.', or '-' characters") % name_type)
+
+	if '/..' in val or '../' in val or val == '..':
+            raise ValueError(_("%s name must not contain a path component of "
+                               "'..'." % name_type))
+
+        # Check that name doesn't collide with other storage objects
+        self._check_name_collision(val)
+        self._name = val
+    name = property(get_name, set_name, doc=_("Name for the storage object."))
+
+    def get_target_path(self):
+        return self._target_path
+    def set_target_path(self, val):
+	if val.startswith('/'):
+            self._target_path = val[1:]
+	else:
+            self._target_path = val
+    target_path = property(get_target_path, set_target_path,
+                           doc=_("Name of the existing zpool."))
+
+    # Need to overwrite storage path checks, since this optionally be a list
+    # of devices
+    def get_source_path(self):
+        return self._source_path
+    def set_source_path(self, val):
+        if not val:
+            self._source_path = None
+            return
+        self._source_path = val
+    source_path = property(get_source_path, set_source_path,
+                           doc=_("Optional device(s) to build new zpool on."))
+
+    def get_source_name(self):
+        if self._source_name:
+            return self._source_name
+        if self.target_path:
+            return self.target_path
+	return self.name
+    def set_source_name(self, val):
+        self._source_name = val
+    source_name = property(get_source_name, set_source_name,
+                           doc=_("Name of the zpool"))
+
+    def _get_default_target_path(self):
+        return self.name
 
     def _get_target_xml(self):
         xml = "    <path>%s</path>\n" % escape(self.target_path) + \
@@ -1302,6 +1424,59 @@ class LogicalVolume(StorageVolume):
 
     def _get_source_xml(self):
         return ""
+
+class ZFSVolume(StorageVolume):
+    """
+    Build and install logical volumes for ZFS pools
+    """
+    _file_type = VIR_STORAGE_VOL_BLOCK
+
+    # Register applicable property methods from parent class
+    perms = property(StorageObject.get_perms, StorageObject.set_perms)
+
+    def __init__(self, name, capacity, pool=None, pool_name=None, conn=None,
+                 allocation=None, perms=None):
+        StorageVolume.__init__(self, name=name, pool=pool, pool_name=pool_name,
+                               allocation=allocation, capacity=capacity,
+                               conn=conn)
+        if perms:
+            self.perms = perms
+
+    def _get_target_xml(self):
+        return "%s" % self._get_perms_xml()
+
+    def _get_source_xml(self):
+        return ""
+
+    def get_name(self):
+        return self._name
+    def set_name(self, val):
+        if val.endswith('/'):
+            val = val[:-1]
+        if val.startswith('/'):
+            val = val[1:]
+
+        # This is copied from _util.validate_name, except that we accept /
+        # in the names.
+        name_type = _("Storage object")
+        if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
+            raise ValueError(_("%s name must be a string between 0 and 50 "
+                               "characters") % name_type)
+        if re.match("^[0-9]+$", val):
+            raise ValueError(_("%s name can not be only numeric characters") %
+                              name_type)
+        if re.match("^[a-zA-Z0-9./_-]+$", val) == None:
+            raise ValueError(_("%s name can only contain alphanumeric, '/', "
+                               "'_', '.', or '-' characters") % name_type)
+
+	if '/..' in val or '../' in val or val == '..':
+            raise ValueError(_("%s name must not contain a path component of "
+                               "'..'." % name_type))
+
+        # Check that name doesn't collide with other storage objects
+        self._check_name_collision(val)
+        self._name = val
+    name = property(get_name, set_name, doc=_("Name for the volume."))
 
 class CloneVolume(StorageVolume):
     """
