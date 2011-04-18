@@ -136,6 +136,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         self._model = None
         self._target_dev = None
         self._source_dev = None
+        self._source_mode = "vepa"
         self._virtualport = VirtualPort(conn, parsexml, parsexmlnode, caps)
 
         # Generate _random_mac
@@ -282,6 +283,13 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     source_dev = _xml_property(get_source_dev, set_source_dev,
                                xpath="./source/@dev")
 
+    def get_source_mode(self):
+        return self._source_mode
+    def set_source_mode(self, newmode):
+        self._source_mode = newmode
+    source_mode = _xml_property(get_source_mode, set_source_mode,
+                                xpath="./source/@mode")
+
     def is_conflict_net(self, conn, mac=None):
         """
         is_conflict_net: determines if mac conflicts with others in system
@@ -354,7 +362,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         elif self.type == self.TYPE_ETHERNET and self.source_dev:
             src_xml     = "      <source dev='%s'/>\n" % self.source_dev
         elif self.type == self.TYPE_DIRECT and self.source_dev:
-            src_xml     = "      <source dev='%s' mode='vepa'/>\n" % self.source_dev
+            src_xml     = "      <source dev='%s' mode='%s'/>\n" % (self.source_dev, self.source_mode)
 
         if self.model:
             model_xml   = "      <model type='%s'/>\n" % self.model

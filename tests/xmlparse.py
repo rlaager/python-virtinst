@@ -397,6 +397,7 @@ class XMLParseTest(unittest.TestCase):
         check = self._make_checker(dev5)
         check("type", "direct")
         check("source_dev", "eth0.1")
+        check("source_mode", "vepa", "bridge")
 
         virtualport = dev5.virtualport
         check = self._make_checker(virtualport)
