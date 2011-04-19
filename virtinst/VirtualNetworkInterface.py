@@ -320,7 +320,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
         for dev in hostdevs:
             host_macaddr = dev[4]
-            if self.macaddr.upper() == host_macaddr.upper():
+            if mac.upper() == host_macaddr.upper():
                 return (True, _("The MAC address you entered conflicts with "
                                 "a device on the physical host."))
 
