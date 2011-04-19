@@ -943,6 +943,30 @@ class DebianDistro(Distro):
 
 class UbuntuDistro(DebianDistro):
     name = "Ubuntu"
+    # regular tree:
+    # http://archive.ubuntu.com/ubuntu/dists/natty/main/installer-amd64/
+
+    def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile("%s/MANIFEST" % self._prefix):
+            # For regular trees
+            filename = "%s/MANIFEST" % self._prefix
+            regex = ".*%s.*" % self._installer_name
+        elif fetcher.hasFile("install/netboot/version.info"):
+            # For trees based on ISO's
+            self._prefix = "install"
+            self._set_media_paths()
+            filename = "%s/netboot/version.info" % self._prefix
+            regex = "%s*" % self.name
+        else:
+            logging.debug("Doesn't look like an %s Distro." % self.name)
+            return False
+
+        if self._fetchAndMatchRegex(fetcher, progresscb, filename, regex):
+            logging.debug("Detected an %s distro" % self.name)
+            return True
+
+        logging.debug("Regex didn't match, not an %s distro" % self.name)
+        return False
 
 
 class MandrivaDistro(Distro):
