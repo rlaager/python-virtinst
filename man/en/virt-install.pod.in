@@ -417,7 +417,7 @@ mapped to the B<driver_type> value as well.
 
 With libvirt 0.8.3 and later, this option should be specified if reusing
 and existing disk image, since libvirt does not autodetect storage format
-as it is a potential security issue. For example, if reusing and existing
+as it is a potential security issue. For example, if reusing an existing
 qcow2 image, you will want to specify format=qcow2, otherwise the hypervisor
 may not be able to read your disk image.
 
