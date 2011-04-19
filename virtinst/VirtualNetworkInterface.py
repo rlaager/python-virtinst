@@ -220,7 +220,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                          xpath="./@type")
 
     def get_macaddr(self):
-        if not self._macaddr:
+        # Don't generate a random MAC if parsing XML, since it can be slow
+        if not self._macaddr and not self._is_parse():
             return self._generate_random_mac()
         return self._macaddr
     def set_macaddr(self, val):
