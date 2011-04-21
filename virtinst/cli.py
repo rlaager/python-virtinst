@@ -556,23 +556,20 @@ def graphics_option_group(parser):
 # Specific function for disk prompting. Returns a validated VirtualDisk
 # device.
 #
-def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
-                path_to_clone=None):
+def disk_prompt(prompt_txt, arg_dict,
+                warn_overwrite=False, check_size=True, path_to_clone=None):
 
+    askmsg = _("Do you really want to use this disk (yes or no)")
     retry_path = True
     conn = arg_dict.get("conn")
-    passed_path = arg_dict.get("path")
-    size = arg_dict.get("size")
 
     no_path_needed = (bool(arg_dict.get("volInstall")) or
                       bool(arg_dict.get("volName")))
 
-    while 1:
-        if not retry_path:
-            passed_path = None
-            size = None
-        retry_path = False
-
+    def prompt_path(chkpath):
+        """
+        Prompt for disk path if necc
+        """
         msg = None
         patherr = _("A disk path must be specified.")
         if path_to_clone:
@@ -586,25 +583,95 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
                         "use for storage. It will have size %sGB.") % size
 
         if not no_path_needed:
-            path = prompt_for_input(patherr, prompt_txt or msg, passed_path)
+            path = prompt_for_input(patherr, prompt_txt or msg, chkpath)
         else:
             path = None
+
+        return path
+
+    def prompt_size(size):
+        """
+        Prompt for disk size if necc.
+        """
+        sizeerr = _("A size must be specified for non-existent disks.")
+        size_prompt = _("How large would you like the disk (%s) to "
+                        "be (in gigabytes)?") % path
+
+        if (not path or
+            path_exists or
+            size is not None or
+            not check_size):
+            return False, size
+
+        try:
+            size = prompt_loop(size_prompt, sizeerr, size, None, None,
+                               func=float)
+            return False, size
+        except Exception, e:
+            # Path is probably bogus, raise the error
+            fail(str(e), do_exit=not is_prompt())
+            return True, size
+
+    def prompt_path_exists(dev):
+        """
+        Prompt if disk file already exists and preserve mode is not used
+        """
+        does_collide = (path_exists and
+                        dev.type == dev.TYPE_FILE and
+                        dev.device == dev.DEVICE_DISK)
+        msg = (_("This will overwrite the existing path '%s'" % dev.path))
+
+        if not does_collide:
+            return False
+
+        if warn_overwrite or is_prompt():
+            return not prompt_for_yes_or_no(msg, askmsg)
+        return False
+
+    def prompt_inuse_conflict(dev):
+        """
+        Check if disk is inuse by another guest
+        """
+        msg = (_("Disk %s is already in use by another guest" % dev.path))
+
+        if not dev.is_conflict_disk(conn):
+            return False
+
+        return not prompt_for_yes_or_no(msg, askmsg)
+
+    def prompt_size_conflict(dev):
+        """
+        Check if specified size exceeds available storage
+        """
+        isfatal, errmsg = dev.is_size_conflict()
+        if isfatal:
+            fail(errmsg, do_exit=not is_prompt())
+            return True
+
+        if errmsg:
+            return not prompt_for_yes_or_no(errmsg, askmsg)
+
+        return False
+
+    passed_path = arg_dict.get("path")
+    size = arg_dict.get("size")
+
+    while 1:
+        # If we fail within the loop, reprompt for size and path
+        if not retry_path:
+            passed_path = None
+            size = None
+        retry_path = False
+
+        # Get disk path
+        path = prompt_path(passed_path)
         arg_dict["path"] = path
         path_exists = VirtualDisk.path_exists(conn, path)
 
-        sizeerr = _("A size must be specified for non-existent disks.")
-        if path and not size and prompt_size:
-            size_prompt = _("How large would you like the disk (%s) to "
-                            "be (in gigabytes)?") % path
-
-            try:
-                if not path_exists:
-                    size = prompt_loop(size_prompt, sizeerr, size, None, None,
-                                       func=float)
-            except Exception, e:
-                # Path is probably bogus, raise the error
-                logging.error(str(e))
-                continue
+        # Get storage size
+        didfail, size = prompt_size(size)
+        if didfail:
+            continue
         arg_dict["size"] = size
 
         # Build disk object for validation
@@ -617,33 +684,19 @@ def disk_prompt(prompt_txt, arg_dict, warn_overwrite=False, prompt_size=True,
             else:
                 fail(_("Error with storage parameters: %s" % str(e)))
 
-        askmsg = _("Do you really want to use this disk (yes or no)")
+        # Check if path exists
+        if prompt_path_exists(dev):
+            continue
 
-        # Prompt if disk file already exists and preserve mode is not used
-        does_collide = (path_exists and
-                        dev.type == dev.TYPE_FILE and
-                        dev.device == dev.DEVICE_DISK)
-        if (does_collide and (warn_overwrite or is_prompt())):
-            msg = (_("This will overwrite the existing path '%s'" %
-                   dev.path))
-            if not prompt_for_yes_or_no(msg, askmsg):
-                continue
+        # Check disk in use by other guests
+        if prompt_inuse_conflict(dev):
+            continue
 
-        # Check disk conflicts
-        if dev.is_conflict_disk(conn) is True:
-            msg = (_("Disk %s is already in use by another guest" %
-                   dev.path))
-            if not prompt_for_yes_or_no(msg, askmsg):
-                continue
+        # Check if disk exceeds available storage
+        if prompt_size_conflict(dev):
+            continue
 
-        isfatal, errmsg = dev.is_size_conflict()
-        if isfatal:
-            fail(errmsg)
-        elif errmsg:
-            if not prompt_for_yes_or_no(errmsg, askmsg):
-                continue
-
-        # Passed all validation, return path
+        # Passed all validation, return disk instance
         return dev
 #
 # Ask for attributes
