@@ -514,7 +514,7 @@ class VirtualDisk(VirtualDevice):
             return (True, 0)
 
     def __init__(self, path=None, size=None, transient=False, type=None,
-                 device=DEVICE_DISK, driverName=None, driverType=None,
+                 device=None, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
                  volInstall=None, volName=None, bus=None, shareable=False,
                  driverCache=None, selinuxLabel=None, format=None,
@@ -602,7 +602,7 @@ class VirtualDisk(VirtualDevice):
         self.set_read_only(readOnly, validate=False)
         self.set_sparse(sparse, validate=False)
         self.set_type(type, validate=False)
-        self.set_device(device, validate=False)
+        self.set_device(device or self.DEVICE_DISK, validate=False)
         self._set_path(path, validate=False)
         self._set_size(size, validate=False)
         self._set_vol_object(volObject, validate=False)
