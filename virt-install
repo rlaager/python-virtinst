@@ -403,9 +403,10 @@ def parse_disk_option(guest, optstr):
     def parse_sparse(val):
         sparse = True
         if val is not None:
-            if val == "true":
+            val = str(val).lower()
+            if val in ["true", "yes"]:
                 sparse = True
-            elif val == "false":
+            elif val in ["false", "no"]:
                 sparse = False
             else:
                 fail(_("Unknown '%s' value '%s'") % ("sparse", val))
