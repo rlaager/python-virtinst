@@ -32,20 +32,15 @@ from optparse import OptionGroup
 
 import urlgrabber.progress as progress
 
-import libvirt
 import virtinst
 import virtinst.CapabilitiesParser
 import virtinst.cli as cli
 import virtinst.util as util
 import virtinst._util as _util
-from virtinst.VirtualCharDevice import VirtualCharDevice
 from virtinst.VirtualDevice import VirtualDevice
 from virtinst.cli import fail, print_stdout, print_stderr
 
 cli.setupGettext()
-
-DEFAULT_POOL_PATH = "/var/lib/libvirt/images"
-DEFAULT_POOL_NAME = "default"
 
 install_methods = "--location URL, --cdrom CD/ISO, --pxe, --import, --boot hd|cdrom|..."
 install_missing = (_("An install method must be specified\n(%(methods)s)") %
@@ -71,32 +66,6 @@ def cdrom_specified(guest, diskopts=None):
 def storage_specified(files, disks, nodisks):
     return bool(files or disks or nodisks)
 
-def build_default_pool(guest):
-
-    if not virtinst.util.is_storage_capable(guest.conn):
-        # VirtualDisk will raise an error for us
-        return
-    pool = None
-    try:
-        pool = guest.conn.storagePoolLookupByName(DEFAULT_POOL_NAME)
-    except libvirt.libvirtError:
-        pass
-
-    if pool:
-        return
-
-    try:
-        logging.debug("Attempting to build default pool with target '%s'" %
-                      DEFAULT_POOL_PATH)
-        defpool = virtinst.Storage.DirectoryPool(conn=guest.conn,
-                                                 name=DEFAULT_POOL_NAME,
-                                                 target_path=DEFAULT_POOL_PATH)
-        newpool = defpool.install(build=True, create=True)
-        newpool.setAutostart(True)
-    except Exception, e:
-        raise RuntimeError(_("Couldn't create default storage pool '%s': %s") %
-                             (DEFAULT_POOL_PATH, str(e)))
-
 def supports_pxe(guest):
     """
     Return False if we are pretty sure the config doesn't support PXE
@@ -121,368 +90,36 @@ def supports_pxe(guest):
 
     return False
 
-def parse_boot_option(guest, optstring):
-    """
-    Helper to parse --boot string
-    """
-    ignore, opts = cli.parse_optstr(optstring)
-    optlist = map(lambda x: x[0], cli.parse_optstr_tuples(optstring))
-    menu = None
 
-    def set_param(paramname, dictname, val=None):
-        val = cli.get_opt_param(opts, dictname, val)
-        if val == None:
-            return
-
-        setattr(guest.installer.bootconfig, paramname, val)
-
-    # Convert menu= value
-    if "menu" in opts:
-        menustr = opts["menu"]
-        menu = None
-
-        if menustr.lower() == "on":
-            menu = True
-        elif menustr.lower() == "off":
-            menu = False
-        else:
-            menu = cli.yes_or_no_convert(menustr)
-
-        if menu == None:
-            fail(_("--boot menu must be 'on' or 'off'"))
-
-    set_param("enable_bootmenu", "menu", menu)
-    set_param("kernel", "kernel")
-    set_param("initrd", "initrd")
-    set_param("kernel_args", ["kernel_args", "extra_args"])
-
-    # Build boot order
-    if opts:
-        boot_order = []
-        for boot_dev in optlist:
-            if not boot_dev in guest.installer.bootconfig.boot_devices:
-                continue
-
-            del(opts[boot_dev])
-            if boot_dev not in boot_order:
-                boot_order.append(boot_dev)
-
-        guest.installer.bootconfig.bootorder = boot_order
-
-    if opts:
-        raise ValueError(_("Unknown options %s") % opts.keys())
-
-
-def parse_char_option(guest, dev_type, optstring):
-    """
-    Helper to parse --serial/--parallel options
-    """
-    # Peel the char type off the front
-    char_type, opts = cli.parse_optstr(optstring, remove_first=True)
-    dev = VirtualCharDevice.get_dev_instance(guest.conn, dev_type, char_type)
-
-    def set_param(paramname, dictname, val=None):
-        val = cli.get_opt_param(opts, dictname, val)
-        if val == None:
-            return
-
-        if not dev.supports_property(paramname):
-            raise ValueError(_("%(devtype)s type '%(chartype)s' does not "
-                                "support '%(optname)s' option.") %
-                                {"devtype" : dev_type, "chartype": char_type,
-                                 "optname" : dictname} )
-        setattr(dev, paramname, val)
-
-    def parse_host(key):
-        host, ignore, port = cli.partition(opts.get(key), ":")
-        if key in opts:
-            del(opts[key])
-
-        return host or None, port or None
-
-    host, port = parse_host("host")
-    bind_host, bind_port = parse_host("bind_host")
-    target_addr, target_port = parse_host("target_address")
-
-    set_param("source_path", "path")
-    set_param("source_mode", "mode")
-    set_param("protocol",   "protocol")
-    set_param("source_host", "host", host)
-    set_param("source_port", "host", port)
-    set_param("bind_host", "bind_host", bind_host)
-    set_param("bind_port", "bind_host", bind_port)
-    set_param("target_type", "target_type")
-    set_param("target_name", "name")
-    set_param("target_address", "target_address", target_addr)
-    set_param("target_port", "target_address", target_port)
-
-    if opts:
-        raise ValueError(_("Unknown options %s") % opts.keys())
-
-    # Try to generate dev XML to perform upfront validation
-    dev.get_xml_config()
-
-    return dev
+###########################
+# CLI validation wrappers #
+###########################
 
 def get_chardevs(char_type, opts, guest):
-
     for optstr in cli.listify(opts):
         try:
-            dev = parse_char_option(guest, char_type, optstr)
+            dev = cli.parse_char(guest, char_type, optstr)
             guest.add_device(dev)
         except Exception, e:
             fail(_("Error in %(chartype)s device parameters: %(err)s") %
                  {"chartype": char_type, "err": str(e)})
 
-def parse_watchdog(guest, optstring):
-    # Peel the model type off the front
-    model, opts = cli.parse_optstr(optstring, remove_first=True)
-    dev = virtinst.VirtualWatchdog(guest.conn)
-
-    def set_param(paramname, dictname, val=None):
-        val = cli.get_opt_param(opts, dictname, val)
-        if val == None:
-            return
-
-        setattr(dev, paramname, val)
-
-    set_param("model", "model", model)
-    set_param("action", "action")
-
-    if opts:
-        raise ValueError(_("Unknown options %s") % opts.keys())
-
-    return dev
-
 def get_watchdog(watchdogs, guest):
     for optstr in cli.listify(watchdogs):
         try:
-            dev = parse_watchdog(guest, optstr)
+            dev = cli.parse_watchdog(guest, optstr)
             guest.add_device(dev)
         except Exception, e:
             fail(_("Error in watchdog device parameters: %s") % str(e))
 
-def get_security(security, guest):
-    seclist = cli.listify(security)
-    secopts = seclist and seclist[0] or None
-    if not secopts:
-        return
-
-    # Parse security opts
-    ignore, opts = cli.parse_optstr(secopts)
-    arglist = secopts.split(",")
-    secmodel = guest.seclabel
-
-    # Beware, adding boolean options here could upset label comma handling
-    mode = cli.get_opt_param(opts, "type")
-    label = cli.get_opt_param(opts, "label")
-
-    # Try to fix up label if it contained commas
-    if label:
-        tmparglist = arglist[:]
-        for idx in range(len(tmparglist)):
-            arg = tmparglist[idx]
-            if not arg.split("=")[0] == "label":
-                continue
-
-            for arg in tmparglist[idx + 1:]:
-                if arg.count("="):
-                    break
-
-                if arg:
-                    label += "," + arg
-                    del(opts[arg])
-
-            break
-
-    if label:
-        secmodel.label = label
-        if not mode:
-            mode = secmodel.SECLABEL_TYPE_STATIC
-    if mode:
-        secmodel.type = mode
-
-    if opts:
-        raise ValueError(_("Unknown options %s") % opts.keys())
-
-    # Run for validation purposes
-    secmodel.get_xml_config()
-
-def parse_disk_source(guest, path, pool, vol, size, fmt, sparse):
-    abspath = None
-    volinst = None
-    volobj = None
-
-    # Strip media type
-    if sum(map(int, map(bool, [path, pool, vol]))) > 1:
-        fail(_("Cannot specify more than 1 storage path"))
-
-    if path:
-        abspath = os.path.abspath(path)
-        if os.path.dirname(abspath) == DEFAULT_POOL_PATH:
-            build_default_pool(guest)
-
-    elif pool:
-        if not size:
-            raise ValueError(_("Size must be specified with all 'pool='"))
-        if pool == DEFAULT_POOL_NAME:
-            build_default_pool(guest)
-        vc = virtinst.Storage.StorageVolume.get_volume_for_pool(pool_name=pool,
-                                                                conn=guest.conn)
-        vname = virtinst.Storage.StorageVolume.find_free_name(conn=guest.conn,
-                                                              pool_name=pool,
-                                                              name=guest.name,
-                                                              suffix=".img")
-        volinst = vc(pool_name=pool, name=vname, conn=guest.conn,
-                     allocation=0, capacity=(size and
-                                             size * 1024 * 1024 * 1024))
-        if fmt:
-            if not hasattr(volinst, "format"):
-                raise ValueError(_("Format attribute not supported for this "
-                                   "volume type"))
-            setattr(volinst, "format", fmt)
-
-        if not sparse:
-            volinst.allocation = volinst.capacity
-
-    elif vol:
-        if not vol.count("/"):
-            raise ValueError(_("Storage volume must be specified as "
-                               "vol=poolname/volname"))
-        vollist = vol.split("/")
-        voltuple = (vollist[0], vollist[1])
-        logging.debug("Parsed volume: as pool='%s' vol='%s'" %
-                      (voltuple[0], voltuple[1]))
-        if voltuple[0] == DEFAULT_POOL_NAME:
-            build_default_pool(guest)
-
-        volobj = virtinst.VirtualDisk.lookup_vol_object(guest.conn, voltuple)
-
-    return abspath, volinst, volobj
-
-
-def parse_disk(guest, optstr, dev=None):
-    """
-    helper to properly parse --disk options
-    """
-    def parse_perms(val):
-        ro = False
-        shared = False
-        if val is not None:
-            if val == "ro":
-                ro = True
-            elif val == "sh":
-                shared = True
-            elif val == "rw":
-                # It's default. Nothing to do.
-                pass
-            else:
-                fail(_("Unknown '%s' value '%s'" % ("perms", val)))
-
-        return ro, shared
-
-    def parse_size(val):
-        newsize = None
-        if val is not None:
-            try:
-                newsize = float(val)
-            except Exception, e:
-                fail(_("Improper value for 'size': %s" % str(e)))
-
-        return newsize
-
-    def parse_sparse(val):
-        sparse = True
-        if val is not None:
-            val = str(val).lower()
-            if val in ["true", "yes"]:
-                sparse = True
-            elif val in ["false", "no"]:
-                sparse = False
-            else:
-                fail(_("Unknown '%s' value '%s'") % ("sparse", val))
-
-        return sparse
-
-    def opt_get(key):
-        val = None
-        if key in opts:
-            val = opts.get(key)
-            del(opts[key])
-
-        return val
-
-    # Parse out comma separated options
-    first, opts = cli.parse_optstr(optstr, remove_first=True)
-    if first:
-        opts["path"] = first
-
-    # We annoyingly need these params ahead of time to deal with
-    # VirtualDisk validation
-    path = opt_get("path")
-    pool = opt_get("pool")
-    vol = opt_get("vol")
-    size = parse_size(opt_get("size"))
-    fmt = opt_get("format")
-    sparse = parse_sparse(opt_get("sparse"))
-    ro, shared = parse_perms(opt_get("perms"))
-    device = opt_get("device")
-
-    abspath, volinst, volobj = parse_disk_source(guest, path, pool, vol,
-                                                 size, fmt, sparse)
-
-    if not dev:
-        # Build a stub device that should almost always validate cleanly
-        dev = virtinst.VirtualDisk(conn=guest.conn,
-                                   path=abspath,
-                                   volObject=volobj,
-                                   volInstall=volinst,
-                                   size=size,
-                                   readOnly=ro,
-                                   shareable=shared,
-                                   device=device,
-                                   format=fmt)
-
-    def set_param(paramname, dictname, val=None, convert=None):
-        val = cli.get_opt_param(opts, dictname, val)
-        if val == None:
-            return
-
-        if convert:
-            val = convert(val)
-
-        setattr(dev, paramname, val)
-
-    set_param("path", "path", abspath)
-    set_param("vol", "vol_object", volobj)
-    set_param("pool", "vol_install", volinst)
-    set_param("size", "size", size)
-    set_param("format", "format", fmt)
-    set_param("sparse", "sparse", sparse)
-    set_param("read_only", "perms", ro)
-    set_param("shareable", "perms", shared)
-    set_param("device", "device", device)
-
-    set_param("bus", "bus")
-    set_param("driver_cache", "cache")
-    set_param("driver_name", "driver_name")
-    set_param("driver_type", "driver_type")
-    set_param("driver_io", "io")
-
-    if opts:
-        fail(_("Unknown options %s") % opts.keys())
-
-    return dev, size
-
 def get_disk(diskopts, size, sparse, guest, conn, is_file_path):
-
     try:
         dev = None
 
         if is_file_path:
             path = diskopts
         else:
-            dev, size = parse_disk(guest, diskopts)
+            dev, size = cli.parse_disk(guest, diskopts)
             path = dev.path
             sparse = dev.sparse
 
@@ -724,7 +361,11 @@ def validate_install_media(guest, location, cdpath, cdinstall=False):
     if hasattr(guest.installer, "check_location"):
         guest.installer.check_location()
 
-### Option parsing
+
+#######################
+# CLI option handling #
+#######################
+
 def parse_args():
     usage = "%prog --name NAME --ram RAM STORAGE INSTALL [options]"
     parser = cli.setupParser(usage)
@@ -1013,8 +654,8 @@ def build_guest_instance(conn, options):
     cli.get_vcpus(options.vcpus, options.check_cpu, guest)
     cli.get_cpuset(options.cpuset, guest.memory, guest)
     cli.parse_cpu(guest, options.cpu)
-    get_security(options.security, guest)
-    parse_boot_option(guest, options.bootopts)
+    cli.parse_security(options.security, guest)
+    cli.parse_boot(guest, options.bootopts)
 
     get_watchdog(options.watchdog, guest)
     cli.get_sound(options.sound, options.soundhw, guest)
