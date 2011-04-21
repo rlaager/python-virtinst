@@ -308,20 +308,12 @@ def get_security(security, guest):
     # Run for validation purposes
     secmodel.get_xml_config()
 
-def parse_disk_option(guest, optstr):
-    """helper to properly parse --disk options"""
+def parse_disk_source(guest, path, size, fmt, sparse):
     abspath = None
-    voltuple = None
     volinst = None
-    ro = False
-    shared = False
-    sparse = True
-    size = None
-    option_whitelist = ["perms", "cache", "bus", "device", "size", "sparse",
-                        "format", "driver_name", "driver_type", "io"]
+    voltuple = None
 
     # Strip media type
-    path, ignore, optstr = cli.partition(optstr, ",")
     path_type = None
     if path.startswith("path="):
         path_type = "path="
@@ -336,45 +328,6 @@ def parse_disk_option(guest, optstr):
         # Allow a default fallback mode --disk /some/path,foo,rah
         path_type = "path="
 
-    # Parse out comma separated options
-    ignore, opts = cli.parse_optstr(optstr)
-    for opt_type, opt_val in opts.items():
-        if opt_type not in option_whitelist:
-            fail(_("Unknown --disk option '%s'.") % opt_type)
-
-        if opt_type == "perms":
-            if opt_val == "ro":
-                ro = True
-            elif opt_val == "sh":
-                shared = True
-            elif opt_val == "rw":
-                pass  # It's default. Nothing to do.
-            else:
-                fail(_("Unknown '%s' value '%s'" % (opt_type, opt_val)))
-        elif opt_type == "size":
-            try:
-                size = float(opt_val)
-            except Exception, e:
-                fail(_("Improper value for 'size': %s" % str(e)))
-        elif opt_type == "sparse":
-            if opt_val == "true":
-                sparse = True
-            elif opt_val == "false":
-                sparse = False
-            else:
-                fail(_("Unknown '%s' value '%s'") % (opt_type, opt_val))
-
-    # Set simple options from dictionary
-    devtype = opts.get("device")
-    bus     = opts.get("bus")
-    cache   = opts.get("cache")
-    fmt     = opts.get("format")
-    drvname = opts.get("driver_name")
-    drvtype = opts.get("driver_type")
-    drvio   = opts.get("io")
-
-    # We return (path, (poolname, volname), volinst, device, bus, readonly,
-    #            shared)
     if path_type == "path=":
         abspath = os.path.abspath(path)
         if os.path.dirname(abspath) == DEFAULT_POOL_PATH:
@@ -414,12 +367,83 @@ def parse_disk_option(guest, optstr):
         if voltuple[0] == DEFAULT_POOL_NAME:
             build_default_pool(guest)
 
-    if not devtype:
-        devtype = virtinst.VirtualDisk.DEVICE_DISK
+    return abspath, volinst, voltuple
+
+
+def parse_disk_option(guest, optstr):
+    """
+    helper to properly parse --disk options
+    """
+    def parse_perms(val):
+        ro = False
+        shared = False
+        if val is not None:
+            if val == "ro":
+                ro = True
+            elif val == "sh":
+                shared = True
+            elif val == "rw":
+                # It's default. Nothing to do.
+                pass
+            else:
+                fail(_("Unknown '%s' value '%s'" % ("perms", val)))
+
+        return ro, shared
+
+    def parse_size(val):
+        newsize = None
+        if val is not None:
+            try:
+                newsize = float(val)
+            except Exception, e:
+                fail(_("Improper value for 'size': %s" % str(e)))
+
+        return newsize
+
+    def parse_sparse(val):
+        sparse = True
+        if val is not None:
+            if val == "true":
+                sparse = True
+            elif val == "false":
+                sparse = False
+            else:
+                fail(_("Unknown '%s' value '%s'") % ("sparse", val))
+
+        return sparse
+
+    def opt_get(key):
+        val = None
+        if key in opts:
+            val = opts.get(key)
+            del(opts[key])
+
+        return val
+
+    # Parse out comma separated options
+    path, ignore, optstr = cli.partition(optstr, ",")
+    ignore, opts = cli.parse_optstr(optstr)
+
+    sparse  = parse_sparse(opt_get("sparse"))
+    size    = parse_size(opt_get("size"))
+    ro, shared = parse_perms(opt_get("perms"))
+    devtype = opt_get("device") or virtinst.VirtualDisk.DEVICE_DISK
+    bus     = opt_get("bus")
+    cache   = opt_get("cache")
+    fmt     = opt_get("format")
+    drvname = opt_get("driver_name")
+    drvtype = opt_get("driver_type")
+    drvio   = opt_get("io")
+
+    if opts:
+        fail(_("Unknown options %s" % opts.keys()))
+
+    abspath, volinst, voltuple = parse_disk_source(guest, path,
+                                                   size, fmt, sparse)
 
     # Mapping to VirtualDisk __init__ options
     kwargs = { 'conn' : guest.conn,
-               'path': path,
+               'path': abspath,
                'size': size,
                'sparse': sparse,
                'volInstall': volinst,
