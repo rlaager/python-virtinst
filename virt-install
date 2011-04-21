@@ -308,43 +308,32 @@ def get_security(security, guest):
     # Run for validation purposes
     secmodel.get_xml_config()
 
-def parse_disk_source(guest, path, size, fmt, sparse):
+def parse_disk_source(guest, path, pool, vol, size, fmt, sparse):
     abspath = None
     volinst = None
     voltuple = None
 
     # Strip media type
-    path_type = None
-    if path.startswith("path="):
-        path_type = "path="
-    elif path.startswith("vol="):
-        path_type = "vol="
-    elif path.startswith("pool="):
-        path_type = "pool="
+    if sum(map(int, map(bool, [path, pool, vol]))) > 1:
+        fail(_("Cannot specify more than 1 storage path"))
 
-    if path_type:
-        path = path[len(path_type):]
-    else:
-        # Allow a default fallback mode --disk /some/path,foo,rah
-        path_type = "path="
-
-    if path_type == "path=":
+    if path:
         abspath = os.path.abspath(path)
         if os.path.dirname(abspath) == DEFAULT_POOL_PATH:
             build_default_pool(guest)
 
-    elif path_type == "pool=":
+    elif pool:
         if not size:
             raise ValueError(_("Size must be specified with all 'pool='"))
-        if path == DEFAULT_POOL_NAME:
+        if pool == DEFAULT_POOL_NAME:
             build_default_pool(guest)
-        vc = virtinst.Storage.StorageVolume.get_volume_for_pool(pool_name=path,
+        vc = virtinst.Storage.StorageVolume.get_volume_for_pool(pool_name=pool,
                                                                 conn=guest.conn)
         vname = virtinst.Storage.StorageVolume.find_free_name(conn=guest.conn,
-                                                              pool_name=path,
+                                                              pool_name=pool,
                                                               name=guest.name,
                                                               suffix=".img")
-        volinst = vc(pool_name=path, name=vname, conn=guest.conn,
+        volinst = vc(pool_name=pool, name=vname, conn=guest.conn,
                      allocation=0, capacity=(size and
                                              size * 1024 * 1024 * 1024))
         if fmt:
@@ -356,13 +345,13 @@ def parse_disk_source(guest, path, size, fmt, sparse):
         if not sparse:
             volinst.allocation = volinst.capacity
 
-    elif path_type == "vol=":
-        if not path.count("/"):
+    elif vol:
+        if not vol.count("/"):
             raise ValueError(_("Storage volume must be specified as "
                                "vol=poolname/volname"))
-        vollist = path.split("/")
+        vollist = vol.split("/")
         voltuple = (vollist[0], vollist[1])
-        logging.debug("Parsed volume: as pool='%s' vol='%s'" % \
+        logging.debug("Parsed volume: as pool='%s' vol='%s'" %
                       (voltuple[0], voltuple[1]))
         if voltuple[0] == DEFAULT_POOL_NAME:
             build_default_pool(guest)
@@ -432,25 +421,29 @@ def parse_disk(guest, optstr):
         setattr(dev, paramname, val)
 
     # Parse out comma separated options
-    path, ignore, optstr = cli.partition(optstr, ",")
-    ignore, opts = cli.parse_optstr(optstr)
+    first, opts = cli.parse_optstr(optstr, remove_first=True)
+    if first:
+        opts["path"] = first
 
-    sparse  = parse_sparse(opt_get("sparse"))
-    size    = parse_size(opt_get("size"))
+    path = opt_get("path")
+    pool = opt_get("pool")
+    vol = opt_get("vol")
+    size = parse_size(opt_get("size"))
+    fmt = opt_get("format")
+    sparse = parse_sparse(opt_get("sparse"))
+    abspath, volinst, voltuple = parse_disk_source(guest, path, pool, vol,
+                                                   size, fmt, sparse)
+
     ro, shared = parse_perms(opt_get("perms"))
     devtype = opt_get("device")
     bus     = opt_get("bus")
     cache   = opt_get("cache")
-    fmt     = opt_get("format")
     drvname = opt_get("driver_name")
     drvtype = opt_get("driver_type")
     drvio   = opt_get("io")
 
     if opts:
         fail(_("Unknown options %s") % opts.keys())
-
-    abspath, volinst, voltuple = parse_disk_source(guest, path,
-                                                   size, fmt, sparse)
 
     # Mapping to VirtualDisk __init__ options
     kwargs = { 'conn' : guest.conn,

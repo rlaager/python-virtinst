@@ -206,6 +206,8 @@ args_dict = {
         "--disk %(EXISTIMG1)s,driver_name=foobar,driver_type=foobaz",
         # Using a storage pool source as a disk
         "--disk /dev/hda",
+        # Building 'default' pool
+        "--disk pool=default,size=.00001",
       ],
 
       "invalid": [
