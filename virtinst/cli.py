@@ -948,6 +948,10 @@ def get_hostdevs(hostdevs, guest):
 # Common CLI option/group   #
 #############################
 
+def add_connect_option(parser):
+    parser.add_option("", "--connect", metavar="URI", dest="connect",
+                      help=_("Connect to hypervisor with libvirt URI"))
+
 def vcpu_cli_options(grp):
     grp.add_option("", "--vcpus", dest="vcpus",
         help=_("Number of vcpus to configure for your guest. Ex:\n"

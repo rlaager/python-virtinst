@@ -127,10 +127,7 @@ def get_force_target(target, design):
 
 def parse_args():
     parser = cli.setupParser()
-
-    parser.add_option("", "--connect", dest="connect",
-                      help=_("Connect to hypervisor with URI"),
-                      default=None)
+    cli.add_connect_option(parser)
 
     geng = OptionGroup(parser, _("General Options"))
     geng.add_option("-o", "--original", dest="original_guest",

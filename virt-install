@@ -369,10 +369,7 @@ def validate_install_media(guest, location, cdpath, cdinstall=False):
 def parse_args():
     usage = "%prog --name NAME --ram RAM STORAGE INSTALL [options]"
     parser = cli.setupParser(usage)
-
-    parser.add_option("", "--connect", dest="connect",
-                      help=_("Connect to hypervisor with URI"),
-                      default=None)
+    cli.add_connect_option(parser)
 
     geng = OptionGroup(parser, _("General Options"))
     geng.add_option("-n", "--name", dest="name",
