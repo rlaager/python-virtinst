@@ -361,7 +361,7 @@ def parse_disk_source(guest, path, pool, vol, size, fmt, sparse):
     return abspath, volinst, volobj
 
 
-def parse_disk(guest, optstr):
+def parse_disk(guest, optstr, dev=None):
     """
     helper to properly parse --disk options
     """
@@ -412,6 +412,37 @@ def parse_disk(guest, optstr):
 
         return val
 
+    # Parse out comma separated options
+    first, opts = cli.parse_optstr(optstr, remove_first=True)
+    if first:
+        opts["path"] = first
+
+    # We annoyingly need these params ahead of time to deal with
+    # VirtualDisk validation
+    path = opt_get("path")
+    pool = opt_get("pool")
+    vol = opt_get("vol")
+    size = parse_size(opt_get("size"))
+    fmt = opt_get("format")
+    sparse = parse_sparse(opt_get("sparse"))
+    ro, shared = parse_perms(opt_get("perms"))
+    device = opt_get("device")
+
+    abspath, volinst, volobj = parse_disk_source(guest, path, pool, vol,
+                                                 size, fmt, sparse)
+
+    if not dev:
+        # Build a stub device that should almost always validate cleanly
+        dev = virtinst.VirtualDisk(conn=guest.conn,
+                                   path=abspath,
+                                   volObject=volobj,
+                                   volInstall=volinst,
+                                   size=size,
+                                   readOnly=ro,
+                                   shareable=shared,
+                                   device=device,
+                                   format=fmt)
+
     def set_param(paramname, dictname, val=None, convert=None):
         val = cli.get_opt_param(opts, dictname, val)
         if val == None:
@@ -422,62 +453,41 @@ def parse_disk(guest, optstr):
 
         setattr(dev, paramname, val)
 
-    # Parse out comma separated options
-    first, opts = cli.parse_optstr(optstr, remove_first=True)
-    if first:
-        opts["path"] = first
+    set_param("path", "path", abspath)
+    set_param("vol", "vol_object", volobj)
+    set_param("pool", "vol_install", volinst)
+    set_param("size", "size", size)
+    set_param("format", "format", fmt)
+    set_param("sparse", "sparse", sparse)
+    set_param("read_only", "perms", ro)
+    set_param("shareable", "perms", shared)
+    set_param("device", "device", device)
 
-    path = opt_get("path")
-    pool = opt_get("pool")
-    vol = opt_get("vol")
-    size = parse_size(opt_get("size"))
-    fmt = opt_get("format")
-    sparse = parse_sparse(opt_get("sparse"))
-    abspath, volinst, volobj = parse_disk_source(guest, path, pool, vol,
-                                                 size, fmt, sparse)
-
-    ro, shared = parse_perms(opt_get("perms"))
-    devtype = opt_get("device")
-    bus     = opt_get("bus")
-    cache   = opt_get("cache")
-    drvname = opt_get("driver_name")
-    drvtype = opt_get("driver_type")
-    drvio   = opt_get("io")
+    set_param("bus", "bus")
+    set_param("driver_cache", "cache")
+    set_param("driver_name", "driver_name")
+    set_param("driver_type", "driver_type")
+    set_param("driver_io", "io")
 
     if opts:
         fail(_("Unknown options %s") % opts.keys())
 
-    # Mapping to VirtualDisk __init__ options
-    kwargs = { 'conn' : guest.conn,
-               'path': abspath,
-               'size': size,
-               'sparse': sparse,
-               'volInstall': volinst,
-               'volObject': volobj,
-               'readOnly': ro,
-               'shareable': shared,
-               'device': devtype,
-               'bus': bus,
-               'driverCache': cache,
-               'format': fmt,
-               'driverName': drvname,
-               'driverType': drvtype,
-               'driverIO' : drvio}
+    return dev, size
 
-    logging.debug("parse_disk: returning %s" % str(kwargs))
-    return kwargs
-
-def get_disk(disk, size, sparse, guest, conn, is_file_path):
+def get_disk(diskopts, size, sparse, guest, conn, is_file_path):
 
     try:
-        if is_file_path:
-            kwargs = { 'conn': conn, 'path': disk, 'size': size,
-                       'sparse': sparse,
-                       'device': virtinst.VirtualDisk.DEVICE_DISK }
-        else:
-            kwargs = parse_disk(guest, disk)
+        dev = None
 
-        d = cli.disk_prompt(None, kwargs)
+        if is_file_path:
+            path = diskopts
+        else:
+            dev, size = parse_disk(guest, diskopts)
+            path = dev.path
+            sparse = dev.sparse
+
+        d = cli.disk_prompt(conn, path, size, sparse,
+                            origdev=dev)
 
     except ValueError, e:
         fail(_("Error with storage parameters: %s" % str(e)))

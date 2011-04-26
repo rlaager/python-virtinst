@@ -107,9 +107,12 @@ def _check_disk(conn, clone_path, orig_path, preserve):
 
     prompt_txt = (_("What would you like to use as the cloned disk "
                     "(file path) for '%s'?") % orig_path)
-    arg_dict = {"path": clone_path, "size": .00001, "conn": conn}
-    return cli.disk_prompt(prompt_txt, arg_dict, warn_overwrite=not preserve,
-                           check_size=False, path_to_clone=orig_path)
+
+    return cli.disk_prompt(conn, clone_path, .00001, False,
+                           prompt_txt,
+                           warn_overwrite=not preserve,
+                           check_size=False,
+                           path_to_clone=orig_path)
 
 def get_clone_sparse(sparse, design):
     design.set_clone_sparse(sparse)

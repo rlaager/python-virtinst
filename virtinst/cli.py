@@ -556,17 +556,19 @@ def graphics_option_group(parser):
 # Specific function for disk prompting. Returns a validated VirtualDisk
 # device.
 #
-def disk_prompt(prompt_txt, arg_dict,
-                warn_overwrite=False, check_size=True, path_to_clone=None):
+def disk_prompt(conn, origpath, origsize, origsparse,
+                prompt_txt=None,
+                warn_overwrite=False, check_size=True,
+                path_to_clone=None, origdev=None):
 
     askmsg = _("Do you really want to use this disk (yes or no)")
     retry_path = True
-    conn = arg_dict.get("conn")
 
+    arg_dict = {}
     no_path_needed = (bool(arg_dict.get("volInstall")) or
                       bool(arg_dict.get("volObject")))
 
-    def prompt_path(chkpath):
+    def prompt_path(chkpath, chksize):
         """
         Prompt for disk path if necc
         """
@@ -578,9 +580,9 @@ def disk_prompt(prompt_txt, arg_dict,
 
         if not prompt_txt:
             msg = _("What would you like to use as the disk (file path)?")
-            if not size is None:
+            if not chksize is None:
                 msg = _("Please enter the path to the file you would like to "
-                        "use for storage. It will have size %sGB.") % size
+                        "use for storage. It will have size %sGB.") % chksize
 
         if not no_path_needed:
             path = prompt_for_input(patherr, prompt_txt or msg, chkpath)
@@ -589,28 +591,28 @@ def disk_prompt(prompt_txt, arg_dict,
 
         return path
 
-    def prompt_size(size):
+    def prompt_size(chkpath, chksize, path_exists):
         """
         Prompt for disk size if necc.
         """
         sizeerr = _("A size must be specified for non-existent disks.")
         size_prompt = _("How large would you like the disk (%s) to "
-                        "be (in gigabytes)?") % path
+                        "be (in gigabytes)?") % chkpath
 
-        if (not path or
+        if (not chkpath or
             path_exists or
-            size is not None or
+            chksize is not None or
             not check_size):
-            return False, size
+            return False, chksize
 
         try:
-            size = prompt_loop(size_prompt, sizeerr, size, None, None,
+            chksize = prompt_loop(size_prompt, sizeerr, chksize, None, None,
                                func=float)
-            return False, size
+            return False, chksize
         except Exception, e:
             # Path is probably bogus, raise the error
             fail(str(e), do_exit=not is_prompt())
-            return True, size
+            return True, chksize
 
     def prompt_path_exists(dev):
         """
@@ -653,30 +655,33 @@ def disk_prompt(prompt_txt, arg_dict,
 
         return False
 
-    passed_path = arg_dict.get("path")
-    size = arg_dict.get("size")
-
     while 1:
         # If we fail within the loop, reprompt for size and path
         if not retry_path:
-            passed_path = None
-            size = None
+            origpath = None
+            origsize = None
         retry_path = False
 
         # Get disk path
-        path = prompt_path(passed_path)
-        arg_dict["path"] = path
+        path = prompt_path(origpath, origsize)
         path_exists = VirtualDisk.path_exists(conn, path)
 
         # Get storage size
-        didfail, size = prompt_size(size)
+        didfail, size = prompt_size(path, origsize, path_exists)
         if didfail:
             continue
-        arg_dict["size"] = size
 
         # Build disk object for validation
         try:
-            dev = VirtualDisk(**arg_dict)
+            if origdev:
+                dev = origdev
+                if path is not None:
+                    dev.path = path
+                if size is not None:
+                    dev.size = size
+            else:
+                dev = VirtualDisk(conn=conn, path=path, size=size,
+                                  sparse=origsparse)
         except ValueError, e:
             if is_prompt():
                 logging.error(e)
