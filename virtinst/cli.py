@@ -564,7 +564,7 @@ def disk_prompt(prompt_txt, arg_dict,
     conn = arg_dict.get("conn")
 
     no_path_needed = (bool(arg_dict.get("volInstall")) or
-                      bool(arg_dict.get("volName")))
+                      bool(arg_dict.get("volObject")))
 
     def prompt_path(chkpath):
         """

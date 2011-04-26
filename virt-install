@@ -311,7 +311,7 @@ def get_security(security, guest):
 def parse_disk_source(guest, path, pool, vol, size, fmt, sparse):
     abspath = None
     volinst = None
-    voltuple = None
+    volobj = None
 
     # Strip media type
     if sum(map(int, map(bool, [path, pool, vol]))) > 1:
@@ -356,7 +356,9 @@ def parse_disk_source(guest, path, pool, vol, size, fmt, sparse):
         if voltuple[0] == DEFAULT_POOL_NAME:
             build_default_pool(guest)
 
-    return abspath, volinst, voltuple
+        volobj = virtinst.VirtualDisk.lookup_vol_object(guest.conn, voltuple)
+
+    return abspath, volinst, volobj
 
 
 def parse_disk(guest, optstr):
@@ -431,8 +433,8 @@ def parse_disk(guest, optstr):
     size = parse_size(opt_get("size"))
     fmt = opt_get("format")
     sparse = parse_sparse(opt_get("sparse"))
-    abspath, volinst, voltuple = parse_disk_source(guest, path, pool, vol,
-                                                   size, fmt, sparse)
+    abspath, volinst, volobj = parse_disk_source(guest, path, pool, vol,
+                                                 size, fmt, sparse)
 
     ro, shared = parse_perms(opt_get("perms"))
     devtype = opt_get("device")
@@ -451,7 +453,7 @@ def parse_disk(guest, optstr):
                'size': size,
                'sparse': sparse,
                'volInstall': volinst,
-               'volName': voltuple,
+               'volObject': volobj,
                'readOnly': ro,
                'shareable': shared,
                'device': devtype,

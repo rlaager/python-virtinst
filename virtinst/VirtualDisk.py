@@ -235,26 +235,6 @@ def _build_vol_install(path, pool, size, sparse):
     return volinst
 
 
-def _lookup_vol_name(conn, name_tuple):
-    """
-    lookup volume via tuple passed via __init__'s volName parameter
-    """
-    if type(name_tuple) is not tuple or len(name_tuple) != 2 \
-        or (type(name_tuple[0]) is not type(name_tuple[1]) is not str):
-        raise ValueError(_("volName must be a tuple of the form "
-                           "('poolname', 'volname')"))
-
-    if not conn:
-        raise ValueError(_("'volName' requires a passed connection."))
-    if not _util.is_storage_capable(conn):
-        raise ValueError(_("Connection does not support storage lookup."))
-
-    try:
-        pool = conn.storagePoolLookupByName(name_tuple[0])
-        return pool.storageVolLookupByName(name_tuple[1])
-    except Exception, e:
-        raise ValueError(_("Couldn't lookup volume object: %s" % str(e)))
-
 class VirtualDisk(VirtualDevice):
     """
     Builds a libvirt domain disk xml description
@@ -513,6 +493,29 @@ class VirtualDisk(VirtualDevice):
         except:
             return (True, 0)
 
+    @staticmethod
+    def lookup_vol_object(conn, name_tuple):
+        """
+        Return a volume instance from parameters that are passed
+        to disks volName init parameter
+        """
+        if (type(name_tuple) is not tuple or
+            len(name_tuple) != 2 or
+            (type(name_tuple[0]) is not type(name_tuple[1]) is not str)):
+            raise ValueError(_("volName must be a tuple of the form "
+                               "('poolname', 'volname')"))
+
+        if not conn:
+            raise ValueError(_("'volName' requires a passed connection."))
+        if not _util.is_storage_capable(conn):
+            raise ValueError(_("Connection does not support storage lookup."))
+
+        try:
+            pool = conn.storagePoolLookupByName(name_tuple[0])
+            return pool.storageVolLookupByName(name_tuple[1])
+        except Exception, e:
+            raise ValueError(_("Couldn't lookup volume object: %s" % str(e)))
+
     def __init__(self, path=None, size=None, transient=False, type=None,
                  device=None, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
@@ -593,7 +596,7 @@ class VirtualDisk(VirtualDevice):
         self.transient = transient
 
         if volName and not volObject:
-            volObject = _lookup_vol_name(conn, volName)
+            volObject = self.lookup_vol_object(conn, volName)
 
         if self._is_parse():
             self._validate = False
