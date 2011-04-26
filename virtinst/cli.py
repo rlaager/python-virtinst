@@ -948,29 +948,15 @@ def get_hostdevs(hostdevs, guest):
 # Common CLI option/group   #
 #############################
 
-def check_before_store(option, opt_str, value, parser):
-    if len(value) == 0:
-        raise optparse.OptionValueError(
-                    _("%s option requires an argument") % opt_str)
-    setattr(parser.values, option.dest, value)
-
-def check_before_append(option, opt_str, value, parser):
-    if len(value) == 0:
-        raise optparse.OptionValueError(
-                    _("%s option requires an argument") % opt_str)
-    parser.values.ensure_value(option.dest, []).append(value)
-
 def vcpu_cli_options(grp):
-    grp.add_option("", "--vcpus", type="string", dest="vcpus",
+    grp.add_option("", "--vcpus", dest="vcpus",
         help=_("Number of vcpus to configure for your guest. Ex:\n"
                "--vcpus 5\n"
                "--vcpus 5,maxcpus=10\n"
                "--vcpus sockets=2,cores=4,threads=2"))
-    grp.add_option("", "--cpuset", type="string", dest="cpuset",
-                   action="callback", callback=check_before_store,
+    grp.add_option("", "--cpuset", dest="cpuset",
                    help=_("Set which physical CPUs Domain can use."))
-    grp.add_option("", "--cpu", type="string", dest="cpu",
-        action="callback", callback=check_before_store,
+    grp.add_option("", "--cpu", dest="cpu",
         help=_("CPU model and features. Ex: --cpu coreduo,+x2apic"))
     grp.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
                    help=optparse.SUPPRESS_HELP)
@@ -981,8 +967,7 @@ def graphics_option_group(parser):
     """
 
     vncg = optparse.OptionGroup(parser, _("Graphics Configuration"))
-    vncg.add_option("", "--graphics", type="string", dest="graphics",
-                    action="callback", callback=check_before_store,
+    vncg.add_option("", "--graphics", dest="graphics",
       help=_("Specify display configuration. Ex:\n"
              "--graphics vnc\n"
              "--graphics spice,port=5901,tlsport=5902\n"
@@ -992,10 +977,9 @@ def graphics_option_group(parser):
                     help=optparse.SUPPRESS_HELP)
     vncg.add_option("", "--vncport", type="int", dest="vncport",
                     help=optparse.SUPPRESS_HELP)
-    vncg.add_option("", "--vnclisten", type="string", dest="vnclisten",
+    vncg.add_option("", "--vnclisten", dest="vnclisten",
                     help=optparse.SUPPRESS_HELP)
-    vncg.add_option("-k", "--keymap", type="string", dest="keymap",
-                    action="callback", callback=check_before_store,
+    vncg.add_option("-k", "--keymap", dest="keymap",
                     help=optparse.SUPPRESS_HELP)
     vncg.add_option("", "--sdl", action="store_true", dest="sdl",
                     help=optparse.SUPPRESS_HELP)

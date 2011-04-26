@@ -370,34 +370,28 @@ def parse_args():
     usage = "%prog --name NAME --ram RAM STORAGE INSTALL [options]"
     parser = cli.setupParser(usage)
 
-    parser.add_option("", "--connect", type="string", dest="connect",
-                      action="callback", callback=cli.check_before_store,
+    parser.add_option("", "--connect", dest="connect",
                       help=_("Connect to hypervisor with URI"),
                       default=None)
 
     geng = OptionGroup(parser, _("General Options"))
-    geng.add_option("-n", "--name", type="string", dest="name",
-                    action="callback", callback=cli.check_before_store,
+    geng.add_option("-n", "--name", dest="name",
                     help=_("Name of the guest instance"))
     geng.add_option("-r", "--ram", type="int", dest="memory",
                     help=_("Memory to allocate for guest instance in "
                            "megabytes"))
     cli.vcpu_cli_options(geng)
-    geng.add_option("", "--description", type="string", dest="description",
-                    action="callback", callback=cli.check_before_store,
+    geng.add_option("", "--description", dest="description",
                     help=_("Human readable description of the VM to store in "
                            "the generated XML."))
-    geng.add_option("", "--security", type="string", dest="security",
-                    action="callback", callback=cli.check_before_store,
+    geng.add_option("", "--security", dest="security",
                     help=_("Set domain security driver configuration."))
     parser.add_option_group(geng)
 
     insg = OptionGroup(parser, _("Installation Method Options"))
-    insg.add_option("-c", "--cdrom", type="string", dest="cdrom",
-                    action="callback", callback=cli.check_before_store,
+    insg.add_option("-c", "--cdrom", dest="cdrom",
                     help=_("CD-ROM installation media"))
-    insg.add_option("-l", "--location", type="string", dest="location",
-                    action="callback", callback=cli.check_before_store,
+    insg.add_option("-l", "--location", dest="location",
                     help=_("Installation source (eg, nfs:host:/path, "
                            "http://host/path, ftp://host/path)"))
     insg.add_option("", "--pxe", action="store_true", dest="pxe",
@@ -406,30 +400,26 @@ def parse_args():
                     help=_("Build guest around an existing disk image"))
     insg.add_option("", "--livecd", action="store_true", dest="livecd",
                     help=_("Treat the CD-ROM media as a Live CD"))
-    insg.add_option("-x", "--extra-args", type="string", dest="extra",
+    insg.add_option("-x", "--extra-args", dest="extra",
                     default="",
                     help=_("Additional arguments to pass to the install kernel "
                            "booted from --location"))
-    insg.add_option("", "--initrd-inject", type="string",
-                    dest="initrd_injections", action="callback",
-                    callback=cli.check_before_append,
+    insg.add_option("", "--initrd-inject", dest="initrd_injections",
+                    action="append",
                     help=_("Add given file to root of initrd from --location"))
-    insg.add_option("", "--os-type", type="string", dest="distro_type",
-                    action="callback", callback=cli.check_before_store,
+    insg.add_option("", "--os-type", dest="distro_type",
                     help=_("The OS type being installed, e.g. "
                            "'linux', 'unix', 'windows'"))
-    insg.add_option("", "--os-variant", type="string", dest="distro_variant",
-                    action="callback", callback=cli.check_before_store,
+    insg.add_option("", "--os-variant", dest="distro_variant",
                     help=_("The OS variant being installed guests, "
                            "e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k'"))
-    insg.add_option("", "--boot", type="string", dest="bootopts", default="",
+    insg.add_option("", "--boot", dest="bootopts", default="",
                     help=_("Optionally configure post-install boot order, "
                            "menu, permanent kernel boot, etc."))
     parser.add_option_group(insg)
 
     stog = OptionGroup(parser, _("Storage Configuration"))
-    stog.add_option("", "--disk", type="string", dest="diskopts",
-                    action="callback", callback=cli.check_before_append,
+    stog.add_option("", "--disk", dest="diskopts", action="append",
         help=_("Specify storage with various options. Ex.\n"
                "--disk path=/my/existing/disk\n"
                "--disk path=/my/new/disk,size=5 (in gigabytes)\n"
@@ -438,8 +428,7 @@ def parse_args():
                     help=_("Don't set up any disks for the guest."))
 
     # Deprecated storage options
-    stog.add_option("-f", "--file", type="string", dest="file_path",
-                    action="callback", callback=cli.check_before_append,
+    stog.add_option("-f", "--file", dest="file_path", action="append",
                     help=optparse.SUPPRESS_HELP)
     stog.add_option("-s", "--file-size", type="float",
                     action="append", dest="disksize",
@@ -450,8 +439,7 @@ def parse_args():
     parser.add_option_group(stog)
 
     netg = OptionGroup(parser, _("Networking Configuration"))
-    netg.add_option("-w", "--network", type="string", dest="network",
-                    action="callback", callback=cli.check_before_append,
+    netg.add_option("-w", "--network", dest="network", action="append",
       help=_("Specify a network interface. Ex:\n"
              "--network bridge=mybr0\n"
              "--network network=my_libvirt_virtual_net\n"
@@ -460,11 +448,9 @@ def parse_args():
                     help=_("Don't create network interfaces for the guest."))
 
     # Deprecated net options
-    netg.add_option("-b", "--bridge", type="string", dest="bridge",
-                    action="callback", callback=cli.check_before_append,
+    netg.add_option("-b", "--bridge", dest="bridge", action="append",
                     help=optparse.SUPPRESS_HELP)
-    netg.add_option("-m", "--mac", type="string", dest="mac",
-                    action="callback", callback=cli.check_before_append,
+    netg.add_option("-m", "--mac", dest="mac", action="append",
                     help=optparse.SUPPRESS_HELP)
     parser.add_option_group(netg)
 
@@ -476,35 +462,28 @@ def parse_args():
     parser.add_option_group(vncg)
 
     devg = OptionGroup(parser, _("Device Options"))
-    devg.add_option("", "--serial", type="string", dest="serials",
-                    action="callback", callback=cli.check_before_append,
+    devg.add_option("", "--serial", dest="serials", action="append",
                     help=_("Add a serial device to the domain."))
-    devg.add_option("", "--parallel", type="string", dest="parallels",
-                    action="callback", callback=cli.check_before_append,
+    devg.add_option("", "--parallel", dest="parallels", action="append",
                     help=_("Add a parallel device to the domain."))
-    geng.add_option("", "--channel", type="string", dest="channels",
-                    action="callback", callback=cli.check_before_append,
+    geng.add_option("", "--channel", dest="channels", action="append",
                     help=_("Add a guest communication channel."))
-    geng.add_option("", "--console", type="string", dest="consoles",
-                    action="callback", callback=cli.check_before_append,
+    geng.add_option("", "--console", dest="consoles", action="append",
                     help=_("Add a text console connection between the guest "
                            "and host."))
-    devg.add_option("", "--host-device", type="string", dest="hostdevs",
-                    action="callback", callback=cli.check_before_append,
+    devg.add_option("", "--host-device", dest="hostdevs", action="append",
                     help=_("Physical host device to attach to the domain."))
-    devg.add_option("", "--soundhw", type='string', action="callback",
-                    callback=cli.check_before_append, dest="soundhw",
+    devg.add_option("", "--soundhw", dest="soundhw", action="append",
                     help=_("Use sound device emulation"))
-    devg.add_option("", "--watchdog", type="string", dest="watchdog",
-                    action="callback", callback=cli.check_before_append,
+    devg.add_option("", "--watchdog", dest="watchdog", action="append",
                     help=_("Add a watchdog device to the domain."))
-    devg.add_option("", "--video", dest="video", type="string",
-                    action="callback", callback=cli.check_before_append,
+    devg.add_option("", "--video", dest="video", action="append",
                     help=_("Specify video hardware type."))
 
     # Deprecated
     devg.add_option("", "--sound", action="store_true", dest="sound",
-                    default=False, help=optparse.SUPPRESS_HELP)
+                    default=False,
+                    help=optparse.SUPPRESS_HELP)
     parser.add_option_group(devg)
 
     virg = OptionGroup(parser, _("Virtualization Platform Options"))
@@ -512,17 +491,14 @@ def parse_args():
                       help=_("This guest should be a fully virtualized guest"))
     virg.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
                     help=_("This guest should be a paravirtualized guest"))
-    virg.add_option("", "--virt-type", type="string", dest="hv_type",
+    virg.add_option("", "--virt-type", dest="hv_type",
                     default="",
                     help=_("Hypervisor name to use (kvm, qemu, xen, ...)"))
-    virg.add_option("", "--accelerate", action="store_true",
-                    dest="accelerate", default=False,
-                    help=optparse.SUPPRESS_HELP)
-    virg.add_option("", "--arch", type="string", dest="arch",
-                    action="callback", callback=cli.check_before_store,
+    virg.add_option("", "--accelerate", action="store_true", default=False,
+                    dest="accelerate", help=optparse.SUPPRESS_HELP)
+    virg.add_option("", "--arch", dest="arch",
                     help=_("The CPU architecture to simulate"))
-    virg.add_option("", "--machine", type="string", dest="machine",
-                    action="callback", callback=cli.check_before_store,
+    virg.add_option("", "--machine", dest="machine",
                     help=_("The machine type to emulate"))
     virg.add_option("", "--noapic", action="store_true", dest="noapic",
                     default=False,
@@ -532,14 +508,13 @@ def parse_args():
                     default=False,
                     help=_("Disables ACPI for fully virtualized guest "
                            "(overrides value in os-type/os-variant db)"))
-    virg.add_option("-u", "--uuid", type="string", dest="uuid",
-                    action="callback", callback=cli.check_before_store,
+    virg.add_option("-u", "--uuid", dest="uuid",
                     help=_("UUID for the guest."))
     parser.add_option_group(virg)
 
     misc = OptionGroup(parser, _("Miscellaneous Options"))
-    misc.add_option("", "--autostart", action="store_true", default=False,
-                    dest="autostart",
+    misc.add_option("", "--autostart", action="store_true", dest="autostart",
+                    default=False,
                     help=_("Have domain autostart on host boot up."))
     misc.add_option("", "--print-xml", action="store_true", dest="xmlonly",
                     help=_("Print the generated domain XML rather than define "
@@ -557,13 +532,13 @@ def parse_args():
                            "create devices or define the guest."))
     misc.add_option("", "--force", action="store_true", dest="force",
                     help=_("Forces 'yes' for any applicable prompts, "
-                           "terminates for all others"),
-                      default=False)
+                           "terminates for all others"))
     misc.add_option("-q", "--quiet", action="store_true", dest="quiet",
                     help=_("Suppress non-error output"))
     misc.add_option("", "--prompt", action="store_true", dest="prompt",
+                    default=False,
                     help=_("Request user input for ambiguous situations or "
-                           "required options."), default=False)
+                           "required options."))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=_("Print debugging information"))
     parser.add_option_group(misc)
