@@ -237,7 +237,7 @@ def _open_test_uri(uri):
     uri = uri.replace(_virtinst_uri_magic, "")
     ret = uri.split(",", 1)
     uri = ret[0]
-    ignore, opts = parse_optstr(len(ret) > 1 and ret[1] or "")
+    opts = parse_optstr(len(ret) > 1 and ret[1] or "")
 
     conn = open_connection(uri)
 
@@ -1040,28 +1040,33 @@ def parse_optstr_tuples(optstr):
 
     return optlist
 
-def parse_optstr(optstr, basedict=None, remove_first=False):
+def parse_optstr(optstr, basedict=None, remove_first=None):
     """
     Helper function for parsing opt strings of the form
     opt1=val1,opt2=val2,...
 
     @param basedict: starting dictionary, so the caller can easily set
                      default values, etc.
-    @param remove_first: If true, remove the first options off the string
-                         and return it seperately. For example,
-                         --serial pty,foo=bar returns ("pty", {"foo" : "bar"})
+    @param remove_first: List or parameters to peel off the front of
+                         option string, and store in the returned dict.
+                         remove_first=["char_type"] for --serial pty,foo=bar
+                         returns {"char_type", "pty", "foo" : "bar"}
 
     Returns a dictionary of {'opt1': 'val1', 'opt2': 'val2'}
     """
     optlist = parse_optstr_tuples(optstr)
     optdict = basedict or {}
-    first = None
 
-    if remove_first and optlist:
-        first_tuple = optlist[0]
-        if first_tuple[1] == None:
-            first = first_tuple[0]
-            optlist.remove(first_tuple)
+    paramlist = remove_first
+    if type(paramlist) is not list:
+        paramlist = paramlist and [paramlist] or []
+
+    for idx in range(len(paramlist)):
+        if len(optlist) < len(paramlist):
+            break
+
+        if optlist[idx][1] == None:
+            optlist[idx] = (paramlist[idx], optlist[idx][0])
 
     for opt, val in optlist:
         if type(optdict.get(opt)) is list:
@@ -1069,7 +1074,7 @@ def parse_optstr(optstr, basedict=None, remove_first=False):
         else:
             optdict[opt] = val
 
-    return (first, optdict)
+    return optdict
 
 ##################
 # --vcpu parsing #
@@ -1083,14 +1088,16 @@ def parse_vcpu_option(guest, optstring, default_vcpus):
     @param  optstring: value of the option '--vcpus' (str)
     @param  default_vcpus: ? (it should be None at present.)
     """
-    vcpus, opts = parse_optstr(optstring, remove_first=True)
-    vcpus = vcpus or default_vcpus
+    opts = parse_optstr(optstring, remove_first="vcpus")
+    vcpus = opts.get("vcpus") or default_vcpus
+    if vcpus is not None:
+        opts["vcpus"] = vcpus
 
     set_param = _build_set_param(guest, opts)
     set_cpu_param = _build_set_param(guest.cpu, opts)
     has_vcpus = ("vcpus" in opts or (vcpus is not None))
 
-    set_param("vcpus", "vcpus", vcpus)
+    set_param("vcpus", "vcpus")
     set_param("maxvcpus", "maxvcpus")
 
     set_cpu_param("sockets", "sockets")
@@ -1115,9 +1122,9 @@ def parse_cpu(guest, optstring):
         "disable": [],
         "forbid": [],
     }
-    model, opts = parse_optstr(optstring,
-                               basedict=default_dict,
-                               remove_first=True)
+    opts = parse_optstr(optstring,
+                        basedict=default_dict,
+                        remove_first="model")
 
     # Convert +feature, -feature into expected format
     for key, value in opts.items():
@@ -1140,11 +1147,11 @@ def parse_cpu(guest, optstring):
             guest.cpu.add_feature(name, policy)
         del(opts[policy])
 
-    if model == "host":
+    if opts.get("model") == "host":
         guest.cpu.copy_host_cpu()
-        model = None
+        del(opts["model"])
 
-    set_param("model", "model", model)
+    set_param("model", "model")
     set_param("match", "match")
     set_param("vendor", "vendor")
 
@@ -1265,9 +1272,7 @@ def parse_disk(guest, optstr, dev=None):
         return val
 
     # Parse out comma separated options
-    first, opts = parse_optstr(optstr, remove_first=True)
-    if first:
-        opts["path"] = first
+    opts = parse_optstr(optstr, remove_first="path")
 
     # We annoyingly need these params ahead of time to deal with
     # VirtualDisk validation
@@ -1357,7 +1362,7 @@ def parse_network_opts(conn, mac, network):
         bridge_name = netdata
 
     # Pass the remaining arg=value pairs
-    ignore, opts = parse_optstr(",".join(args))
+    opts = parse_optstr(",".join(args))
     for opt_type, ignore_val in opts.items():
         if opt_type not in option_whitelist:
             fail(_("Unknown network option '%s'") % opt_type)
@@ -1395,8 +1400,8 @@ def parse_graphics(guest, optstring, basedict):
         return use_keymap
 
     # Peel the model type off the front
-    gtype, opts = parse_optstr(optstring, basedict, remove_first=True)
-    if gtype == "none" or basedict.get("type") == "none":
+    opts = parse_optstr(optstring, basedict, remove_first="type")
+    if opts.get("type") == "none" or basedict.get("type") == "none":
         return None
     dev = VirtualGraphics(conn=guest.conn)
 
@@ -1409,7 +1414,7 @@ def parse_graphics(guest, optstring, basedict):
             val = sanitize_keymap(val)
         setattr(dev, paramname, val)
 
-    set_param("type", "type", gtype)
+    set_param("type", "type")
     set_param("port", "port")
     set_param("tlsPort", "tlsport")
     set_param("listen", "listen")
@@ -1428,7 +1433,7 @@ def parse_graphics(guest, optstring, basedict):
 
 def parse_watchdog(guest, optstring, dev=None):
     # Peel the model type off the front
-    model, opts = parse_optstr(optstring, remove_first=True)
+    opts = parse_optstr(optstring, remove_first="model")
 
     if not dev:
         dev = virtinst.VirtualWatchdog(guest.conn)
@@ -1440,7 +1445,7 @@ def parse_watchdog(guest, optstring, dev=None):
 
         setattr(dev, paramname, val)
 
-    set_param("model", "model", model)
+    set_param("model", "model")
     set_param("action", "action")
 
     if opts:
@@ -1456,7 +1461,7 @@ def parse_boot(guest, optstring):
     """
     Helper to parse --boot string
     """
-    ignore, opts = parse_optstr(optstring)
+    opts = parse_optstr(optstring)
     optlist = map(lambda x: x[0], parse_optstr_tuples(optstring))
     menu = None
 
@@ -1512,7 +1517,11 @@ def parse_char(guest, dev_type, optstring):
     Helper to parse --serial/--parallel options
     """
     # Peel the char type off the front
-    char_type, opts = parse_optstr(optstring, remove_first=True)
+    opts = parse_optstr(optstring, remove_first="char_type")
+    char_type = opts.get("char_type")
+    if "char_type" in opts:
+        del(opts["char_type"])
+
     dev = VirtualCharDevice.get_dev_instance(guest.conn, dev_type, char_type)
 
     def set_param(paramname, dictname, val=None):
@@ -1569,7 +1578,7 @@ def parse_security(security, guest):
         return
 
     # Parse security opts
-    ignore, opts = parse_optstr(secopts)
+    opts = parse_optstr(secopts)
     arglist = secopts.split(",")
     secmodel = guest.seclabel
 
