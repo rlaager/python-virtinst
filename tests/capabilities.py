@@ -49,9 +49,10 @@ class TestCapabilities(unittest.TestCase):
                           secmodel=None):
         caps = self._buildCaps(path)
 
-        self.assertEqual(host_arch,     caps.host.arch)
-        for n in host_features:
-            self.assertEqual(host_features[n], caps.host.features[n])
+        if host_arch:
+            self.assertEqual(host_arch,     caps.host.arch)
+            for n in host_features:
+                self.assertEqual(host_features[n], caps.host.features[n])
 
         if secmodel:
             self.assertEqual(secmodel[0], caps.host.secmodel.model)
@@ -130,6 +131,15 @@ class TestCapabilities(unittest.TestCase):
         ]
 
         self._testCapabilities("capabilities-test.xml", host, guests)
+
+    def testCapsLXC(self):
+        guests = [
+            ("x86_64", "exe", [["lxc", "/usr/libexec/libvirt_lxc", []]], {}),
+            ("i686", "exe", [["lxc", "/usr/libexec/libvirt_lxc", []]], {}),
+        ]
+
+        self._testCapabilities("capabilities-lxc.xml",
+                               (None, None), guests)
 
     def testCapsTopology(self):
         filename = "capabilities-test.xml"
