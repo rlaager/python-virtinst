@@ -443,10 +443,6 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
                                                         arch=self.arch,
                                                         machine=self.machine)
 
-        if self.os_type not in ["xen", "hvm"]:
-            raise ValueError(_("No 'Guest' class for virtualization type '%s'"
-                             % self.type))
-
         gobj = virtinst.Guest(installer=self, connection=self.conn)
         gobj.arch = guest.arch
         gobj.emulator = domain.emulator
