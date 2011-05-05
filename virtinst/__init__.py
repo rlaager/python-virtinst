@@ -43,6 +43,7 @@ from VirtualCharDevice import VirtualCharDevice
 from VirtualVideoDevice import VirtualVideoDevice
 from VirtualController import VirtualController
 from VirtualWatchdog import VirtualWatchdog
+from VirtualFilesystem import VirtualFilesystem
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
 from DistroInstaller import DistroInstaller

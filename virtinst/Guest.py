@@ -782,6 +782,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             "video"     : virtinst.VirtualVideoDevice,
             "watchdog"  : virtinst.VirtualWatchdog,
             "controller": virtinst.VirtualController,
+            "filesystem": virtinst.VirtualFilesystem,
         }
 
         # Hand off all child element parsing to relevant classes

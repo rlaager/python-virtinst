@@ -547,7 +547,35 @@ class XMLParseTest(unittest.TestCase):
         check("model", "ib700", "i6300esb")
         check("action", "none", "poweroff")
 
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+    def testAlterFilesystems(self):
+        devtype = "filesystem"
+        infile  = "tests/xmlparse-xml/change-%ss-in.xml" % devtype
+        outfile = "tests/xmlparse-xml/change-%ss-out.xml" % devtype
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        dev1 = guest.get_devices(devtype)[0]
+        dev2 = guest.get_devices(devtype)[1]
+        dev3 = guest.get_devices(devtype)[2]
+
         check = self._make_checker(dev1)
+        check("type", None, "mount")
+        check("mode", None, "passthrough")
+        check("source", "/foo/bar", "/new/path")
+        check("target", "/bar/baz", "/new/target")
+
+        check = self._make_checker(dev2)
+        check("type", "template")
+        check("mode", None, "mapped")
+        check("source", "template_fedora", "template_new")
+        check("target", "/bar/baz")
+
+        check = self._make_checker(dev3)
+        check("type", "mount", None)
+        check("mode", "squash", None)
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterSounds(self):

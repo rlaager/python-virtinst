@@ -40,11 +40,13 @@ class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
     VIRTUAL_DEV_VIDEO           = "video"
     VIRTUAL_DEV_CONTROLLER      = "controller"
     VIRTUAL_DEV_WATCHDOG        = "watchdog"
+    VIRTUAL_DEV_FILESYSTEM      = "filesystem"
 
     # Ordering in this list is important: it will be the order the
     # Guest class outputs XML. So changing this may upset the test suite
     virtual_device_types = [VIRTUAL_DEV_DISK,
                             VIRTUAL_DEV_CONTROLLER,
+                            VIRTUAL_DEV_FILESYSTEM,
                             VIRTUAL_DEV_NET,
                             VIRTUAL_DEV_INPUT,
                             VIRTUAL_DEV_GRAPHICS,
