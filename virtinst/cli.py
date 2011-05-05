@@ -1616,3 +1616,31 @@ def parse_security(security, guest):
 
     # Run for validation purposes
     secmodel.get_xml_config()
+
+
+########################
+# --filesystem parsing #
+########################
+
+def parse_filesystem(guest, optstring, dev=None):
+    opts = parse_optstr(optstring, remove_first=["source", "target"])
+
+    if not dev:
+        dev = virtinst.VirtualFilesystem(guest.conn)
+
+    def set_param(paramname, dictname, val=None):
+        val = get_opt_param(opts, dictname, val)
+        if val == None:
+            return
+
+        setattr(dev, paramname, val)
+
+    set_param("type", "type")
+    set_param("mode", "mode")
+    set_param("source", "source")
+    set_param("target", "target")
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+
+    return dev

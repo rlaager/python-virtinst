@@ -34,7 +34,7 @@ options.
 =head1 OPTIONS
 
 Most options are not required. Minimum requirements are --name, --ram,
-guest storage (--disk or --nodisks), and an install option.
+guest storage (--disk, --filesystem or --nodisks), and an install option.
 
 =over 2
 
@@ -239,7 +239,7 @@ the guest installation process.
 
 Skip the OS installation process, and build a guest around an existing
 disk image. The device used for booting is the first device specified via
-C<--disk> or C<--file>.
+C<--disk> or C<--filesystem>.
 
 =item  --livecd
 
@@ -439,6 +439,42 @@ Disk IO backend. Can be either "threads" or "native".
 
 See the examples section for some uses. This option deprecates C<--file>,
 C<--file-size>, and C<--nonsparse>.
+
+=item --filesystem
+
+Specifies a directory on the host to export to the guest. The most simple
+invocation is:
+
+    --filesystem /source/on/host,/target/point/in/guest
+
+Which will work for recent QEMU and linux guest OS or LXC containers. For
+QEMU, the target point is just a mounting hint in sysfs, so will not be
+automatically mounted.
+
+The following explicit options can be specified:
+
+=over 4
+
+=item B<type>
+
+The type or the source directory. Valid values are 'mount' (the default) or
+'template' for OpenVZ templates.
+
+=item B<mode>
+
+The access mode for the source directory from the guest OS. Only used with
+QEMU and type=mount. Valid modes are 'passthrough' (the default), 'mapped',
+or 'squash'. See libvirt domain XML documentation for more info.
+
+=item B<source>
+
+The directory on the host to share.
+
+=item B<target>
+
+The mount location to use in the guest.
+
+=back
 
 =item --nodisks
 
@@ -1126,7 +1162,7 @@ Please see http://virt-manager.org/page/BugReporting
 
 =head1 COPYRIGHT
 
-Copyright (C) 2006-2009 Red Hat, Inc, and various contributors.
+Copyright (C) 2006-2011 Red Hat, Inc, and various contributors.
 This is free software. You may redistribute copies of it under the terms of
 the GNU General Public License C<http://www.gnu.org/licenses/gpl.html>. There
 is NO WARRANTY, to the extent permitted by law.

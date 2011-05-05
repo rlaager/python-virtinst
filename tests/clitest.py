@@ -476,6 +476,10 @@ args_dict = {
         "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3,type=static",
         # --security static with commas 2
         "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3",
+        # --filesystem simple
+        "--hvm --pxe --filesystem /foo/source,/bar/target",
+        # --filesystem template
+        "--hvm --pxe --filesystem template_name,/,type=template",
       ],
 
       "invalid": [
@@ -508,7 +512,8 @@ args_dict = {
         ("--hvm --pxe "
          "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh "
          "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro "
-         "--serial tcp,host=:2222,mode=bind,protocol=telnet ",
+         "--serial tcp,host=:2222,mode=bind,protocol=telnet "
+         "--filesystem /source,/target,mode=squash ",
          "many-devices"),
       ],
 

@@ -29,6 +29,10 @@
       <target dev='hdb' bus='ide'/>
       <readonly/>
     </disk>
+    <filesystem accessmode='squash'>
+      <source dir='/source'/>
+      <target dir='/target'/>
+    </filesystem>
     <interface type='user'>
       <mac address='00:11:22:33:44:55'/>
     </interface>
@@ -69,6 +73,10 @@
       <target dev='hdb' bus='ide'/>
       <readonly/>
     </disk>
+    <filesystem accessmode='squash'>
+      <source dir='/source'/>
+      <target dir='/target'/>
+    </filesystem>
     <interface type='user'>
       <mac address='00:11:22:33:44:55'/>
     </interface>

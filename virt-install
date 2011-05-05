@@ -63,8 +63,8 @@ def cdrom_specified(guest, diskopts=None):
 
     return False
 
-def storage_specified(files, disks, nodisks):
-    return bool(files or disks or nodisks)
+def storage_specified(files, disks, nodisks, filesystems):
+    return bool(files or disks or nodisks or filesystems)
 
 def supports_pxe(guest):
     """
@@ -112,6 +112,14 @@ def get_watchdog(watchdogs, guest):
         except Exception, e:
             fail(_("Error in watchdog device parameters: %s") % str(e))
 
+def get_filesystems(filesystems, guest):
+    for optstr in cli.listify(filesystems):
+        try:
+            dev = cli.parse_filesystem(guest, optstr)
+            guest.add_device(dev)
+        except Exception, e:
+            fail(_("Error in filesystem device parameters: %s") % str(e))
+
 def get_disk(diskopts, size, sparse, guest, conn, is_file_path):
     try:
         dev = None
@@ -131,7 +139,8 @@ def get_disk(diskopts, size, sparse, guest, conn, is_file_path):
 
     guest.disks.append(d)
 
-def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, conn):
+def get_disks(file_paths, disk_paths, size, sparse, nodisks, filesystems,
+              guest, conn):
     if nodisks:
         if file_paths or disk_paths or size:
             fail(_("Cannot specify storage and use --nodisks"))
@@ -139,27 +148,23 @@ def get_disks(file_paths, disk_paths, size, sparse, nodisks, guest, conn):
     if (file_paths or size or sparse == False) and disk_paths:
         fail(_("Cannot mix --file, --nonsparse, or --file-size with --disk "
                "options. Use --disk PATH[,size=SIZE][,sparse=yes|no]"))
-    if (not storage_specified(file_paths, disk_paths, nodisks) and
+    if (not storage_specified(file_paths, disk_paths, nodisks, filesystems) and
         not cli.is_prompt()):
         fail(disk_missing)
 
     is_file_path = (file_paths or (not disk_paths and cli.is_prompt()))
     disk = (file_paths or disk_paths)
 
-    # ensure we have equal length lists
-    if (type(disk) == type(size) == list):
-        if len(disk) != len(size):
-            fail(_("Need to pass size for each disk"))
-    elif type(disk) == list:
-        size = [ None ] * len(disk)
-    elif type(size) == list:
-        disk = [ None ] * len(size)
+    def padlist(l, padsize):
+        l = cli.listify(l)
+        l.extend((padsize - len(l)) * [None])
+        return l
 
-    if type(disk) == list or type(size) == list:
-        map(lambda d, s: get_disk(d, s, sparse, guest, conn,
-                                  is_file_path), disk, size)
-    else:
-        get_disk(disk, size, sparse, guest, conn, is_file_path)
+    disk = padlist(disk, 0)
+    size = padlist(size, len(disk))
+
+    for idx in range(len(disk)):
+        get_disk(disk[idx], size[idx], sparse, guest, conn, is_file_path)
 
 def get_networks(macs, bridges, networks, nonetworks, guest):
     if nonetworks:
@@ -423,6 +428,10 @@ def parse_args():
                "--disk vol=poolname:volname,device=cdrom,bus=scsi,..."))
     stog.add_option("", "--nodisks", action="store_true",
                     help=_("Don't set up any disks for the guest."))
+    stog.add_option("", "--filesystem", dest="filesystems", action="append",
+        help=_("Pass host directory to the guest. Ex: \n"
+               "--filesystem /my/source/dir,/dir/in/guest\n"
+               "--filesystem template_name,/,type=template"))
 
     # Deprecated storage options
     stog.add_option("-f", "--file", dest="file_path", action="append",
@@ -630,6 +639,7 @@ def build_guest_instance(conn, options):
     cli.parse_boot(guest, options.bootopts)
 
     get_watchdog(options.watchdog, guest)
+    get_filesystems(options.filesystems, guest)
     cli.get_sound(options.sound, options.soundhw, guest)
     get_chardevs(VirtualDevice.VIRTUAL_DEV_SERIAL, options.serials, guest)
     get_chardevs(VirtualDevice.VIRTUAL_DEV_PARALLEL, options.parallels, guest)
@@ -657,7 +667,7 @@ def build_guest_instance(conn, options):
         if not options.memory:
             msg += "\n" + cli.ram_missing
         if not storage_specified(options.file_path, options.diskopts,
-                                 options.nodisks):
+                                 options.nodisks, options.filesystems):
             msg += "\n" + disk_missing
         if ((not install_specified(options.location, options.cdrom,
                                    options.pxe, options.import_install)) and
@@ -669,7 +679,8 @@ def build_guest_instance(conn, options):
     cli.get_name(options.name, guest)
     cli.get_memory(options.memory, guest)
     get_disks(options.file_path, options.diskopts, options.disksize,
-              options.sparse, options.nodisks, guest, conn)
+              options.sparse, options.nodisks, options.filesystems,
+              guest, conn)
     get_install_media(options.location, options.cdrom, options.pxe,
                       options.livecd, options.import_install,
                       guest, ishvm)
