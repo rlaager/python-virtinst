@@ -273,7 +273,7 @@ def _open_test_uri(uri):
         capsxml = file(opts["caps"]).read()
         conn.getCapabilities = lambda: capsxml
 
-    if "qemu" in opts or "xen" in opts:
+    if ("qemu" in opts) or ("xen" in opts) or ("lxc" in opts):
         conn.getVersion = lambda: 10000000000
 
         origcreate = conn.createLinux
@@ -291,6 +291,8 @@ def _open_test_uri(uri):
             conn.getURI = lambda: "qemu+abc:///system"
         if "xen" in opts:
             conn.getURI = lambda: "xen+abc:///"
+        if "lxc" in opts:
+            conn.getURI = lambda: "lxc+abc:///"
 
     return conn
 
