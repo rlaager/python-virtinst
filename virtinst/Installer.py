@@ -281,29 +281,36 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         return bootorder
 
     def _get_osblob_helper(self, guest, isinstall, bootconfig):
-        ishvm = self.os_type == "hvm"
         conn = guest.conn
         arch = self.arch
+        machine = self.machine
+        hvtype = self.type
         loader = self.loader
-        if not loader and ishvm and self.type == "xen":
+        os_type = self.os_type
+
+        hvxen = (hvtype == "xen")
+        ishvm = (os_type == "hvm")
+        iscontainer = (os_type == "exe")
+
+        if not loader and ishvm and hvxen:
             loader = "/usr/lib/xen/boot/hvmloader"
 
-        if not isinstall and not ishvm and not self.bootconfig.kernel:
+        # Use older libvirt 'linux' value for back compat
+        if os_type == "xen" and hvxen:
+            os_type = "linux"
+
+        if (not isinstall and
+            not (ishvm or iscontainer)
+            and not self.bootconfig.kernel):
             return "<bootloader>%s</bootloader>" % _util.pygrub_path(conn)
 
         osblob = "<os>\n"
 
-        os_type = self.os_type
-        # Hack for older libvirt: use old value 'linux' for best back compat,
-        # new libvirt will adjust the value accordingly.
-        if os_type == "xen" and self.type == "xen":
-            os_type = "linux"
-
         osblob += "    <type"
         if arch:
             osblob += " arch='%s'" % arch
-        if self.machine:
-            osblob += " machine='%s'" % self.machine
+        if machine:
+            osblob += " machine='%s'" % machine
         osblob += ">%s</type>\n" % os_type
 
         if loader:
