@@ -99,6 +99,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self._arch = None
         self._machine = None
         self._loader = None
+        self._init = None
         self._install_bootconfig = Boot(self.conn)
         self._bootconfig = Boot(self.conn, parsexml, parsexmlnode)
 
@@ -182,6 +183,13 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self._loader = val
     loader = _xml_property(_get_loader, _set_loader,
                            xpath="./os/loader")
+
+    def _get_init(self):
+        return self._init
+    def _set_init(self, val):
+        self._init = val
+    init = _xml_property(_get_init, _set_init,
+                         xpath="./os/init")
 
     def get_scratchdir(self):
         if not self.scratchdir_required():
@@ -287,6 +295,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         hvtype = self.type
         loader = self.loader
         os_type = self.os_type
+        init = self.init
 
         hvxen = (hvtype == "xen")
         ishvm = (os_type == "hvm")
@@ -313,8 +322,11 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             osblob += " machine='%s'" % machine
         osblob += ">%s</type>\n" % os_type
 
+
+        if init:
+            osblob += "    <init>%s</init>\n" % _util.xml_escape(init)
         if loader:
-            osblob += "    <loader>%s</loader>\n" % loader
+            osblob += "    <loader>%s</loader>\n" % _util.xml_escape(loader)
 
         osblob += bootconfig.get_xml_config()
         osblob = _util.xml_append(osblob, "  </os>")

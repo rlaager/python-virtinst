@@ -6,6 +6,8 @@
   <os>
     <type machine="pc-0.11">xen</type>
     <boot dev="fd"/>
+    <loader>/foo/loader</loader>
+    <init>/sbin/init</init>
     <bootmenu enable="no"/>
   </os>
   <features>

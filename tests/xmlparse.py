@@ -117,6 +117,8 @@ class XMLParseTest(unittest.TestCase):
         check("os_type", "hvm", "xen")
         check("arch", "i686", None)
         check("machine", "foobar", "pc-0.11")
+        check("loader", None, "/foo/loader")
+        check("init", None, "/sbin/init")
 
         check = self._make_checker(guest.installer.bootconfig)
         check("bootorder", ["hd"], ["fd"])
