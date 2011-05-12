@@ -1280,7 +1280,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                                  "able to find more information in the logs"))
 
         if consolecb:
-            logging.debug("Launching console callback")
             child = consolecb(dom)
 
         return dom, child

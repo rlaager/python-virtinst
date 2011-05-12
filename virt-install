@@ -24,7 +24,6 @@
 import os
 import sys
 import time
-import errno
 import re
 import logging
 import optparse
@@ -511,37 +510,34 @@ def build_guest_instance(conn, options):
 # Install process helpers #
 ###########################
 
-def vnc_console(dom, uri):
-    args = ["/usr/bin/virt-viewer"]
-    if uri is not None and uri != "":
-        args = args + [ "--connect", uri]
-    args = args + [ "--wait", "%s" % dom.ID()]
+def _run_console(args):
+    logging.debug("Running: %s", " ".join(args))
     child = os.fork()
-    if not child:
-        try:
-            os.execvp(args[0], args)
-        except OSError, (err, msg):
-            if err == errno.ENOENT:
-                logging.warn(_("Unable to connect to graphical console: "
-                               "virt-viewer not installed. Please install "
-                               "the 'virt-viewer' package."))
-            else:
-                raise OSError(err, msg)
-        os._exit(1)
+    if child:
+        return child
 
-    return child
+    os.execvp(args[0], args)
+    os._exit(1)
+
+def vnc_console(dom, uri):
+    args = ["/usr/bin/virt-viewer",
+            "--connect", uri,
+            "--wait", str(dom.ID())]
+
+    if not os.path.exists(args[0]):
+        logging.warn(_("Unable to connect to graphical console: "
+                       "virt-viewer not installed. Please install "
+                       "the 'virt-viewer' package."))
+        return None
+
+    return _run_console(args)
 
 def txt_console(dom, uri):
-    args = ["/usr/bin/virsh"]
-    if uri is not None and uri != "":
-        args = args + [ "--connect", uri]
-    args = args + [ "console", "%s" % dom.ID()]
-    child = os.fork()
-    if not child:
-        os.execvp(args[0], args)
-        os._exit(1)
+    args = ["/usr/bin/virsh",
+            "--connect", uri,
+            "console", str(dom.ID())]
 
-    return child
+    return _run_console(args)
 
 def start_install(guest, continue_inst, options):
     def show_console(dom):
