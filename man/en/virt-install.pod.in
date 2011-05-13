@@ -738,6 +738,13 @@ This guest should be a paravirtualized guest. If the host supports both
 para & full virtualization, and neither this parameter nor the C<--hvm>
 are specified, this will be assumed.
 
+=item --container
+
+This guest should be a container type guest. This option is only required
+if the hypervisor supports other guest types as well (so for example this
+option is the default behavior for LXC and OpenVZ, but is provided for
+completeness).
+
 =item --virt-type
 
 The hypervisor to install on. Example choices are kvm, qemu, xen, or kqemu.

@@ -223,8 +223,10 @@ def prompt_virt(caps, arch, req_virt_type, req_accel):
 def get_virt_type(conn, options):
 
     # Set up all virt/hypervisor parameters
-    if options.fullvirt and options.paravirt:
-        fail(_("Can't do both --hvm and --paravirt"))
+    if sum(map(bool, [options.fullvirt,
+                      options.paravirt,
+                      options.container])) > 1:
+        fail(_("Can't do more than one of --hvm, --paravirt, or --container"))
 
     capabilities = virtinst.CapabilitiesParser.parse(conn.getCapabilities())
 
@@ -235,6 +237,8 @@ def get_virt_type(conn, options):
         req_virt_type = "hvm"
     elif options.paravirt:
         req_virt_type = "xen"
+    elif options.container:
+        req_virt_type = "exe"
     else:
         # This should force capabilities to give us the most sensible default
         req_virt_type = None
@@ -896,6 +900,9 @@ def parse_args():
                       help=_("This guest should be a fully virtualized guest"))
     virg.add_option("-p", "--paravirt", action="store_true", dest="paravirt",
                     help=_("This guest should be a paravirtualized guest"))
+    virg.add_option("", "--container", action="store_true", default=False,
+                    dest="container",
+                    help=_("This guest should be a container guest"))
     virg.add_option("", "--virt-type", dest="hv_type",
                     default="",
                     help=_("Hypervisor name to use (kvm, qemu, xen, ...)"))
