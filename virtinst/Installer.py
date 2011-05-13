@@ -295,6 +295,15 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
 
         return bootorder
 
+    def _get_default_init(self, guest):
+        if not self.is_container():
+            return
+
+        for fs in guest.get_devices("filesystem"):
+            if fs.target == "/":
+                return "/sbin/init"
+        return "/bin/sh"
+
     def _get_osblob_helper(self, guest, isinstall, bootconfig):
         conn = guest.conn
         arch = self.arch
@@ -302,7 +311,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         hvtype = self.type
         loader = self.loader
         os_type = self.os_type
-        init = self.init
+        init = self.init or self._get_default_init(guest)
 
         hvxen = (hvtype == "xen")
 
