@@ -269,6 +269,13 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         """
         return False
 
+    def is_hvm(self):
+        return self.os_type == "hvm"
+    def is_xenpv(self):
+        return self.os_type in ["xen", "linux"]
+    def is_container(self):
+        return self.os_type == "exe"
+
     # Private methods
     def _get_bootdev(self, isinstall, guest):
         raise NotImplementedError
@@ -298,10 +305,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         init = self.init
 
         hvxen = (hvtype == "xen")
-        ishvm = (os_type == "hvm")
-        iscontainer = (os_type == "exe")
 
-        if not loader and ishvm and hvxen:
+        if not loader and self.is_hvm() and hvxen:
             loader = "/usr/lib/xen/boot/hvmloader"
 
         # Use older libvirt 'linux' value for back compat
@@ -309,8 +314,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             os_type = "linux"
 
         if (not isinstall and
-            not (ishvm or iscontainer)
-            and not self.bootconfig.kernel):
+            self.is_xenpv() and
+            not self.bootconfig.kernel):
             return "<bootloader>%s</bootloader>" % _util.pygrub_path(conn)
 
         osblob = "<os>\n"
