@@ -29,7 +29,7 @@
 Summary: Python modules and utilities for installing virtual machines
 Name: python-%{appname}
 Version: %{_version}
-Release: {_release}%{_extra_release}
+Release: %{_release}%{_extra_release}
 Source0: http://virt-manager.org/download/sources/%{appname}/%{appname}-%{version}.tar.gz
 License: GPLv2+
 Group: Development/Libraries
