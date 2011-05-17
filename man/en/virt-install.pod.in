@@ -10,9 +10,9 @@ B<virt-install> [OPTION]...
 
 =head1 DESCRIPTION
 
-B<virt-install> is a command line tool for creating new KVM or Xen virtual
-machines using the C<libvirt> hypervisor management library. See the EXAMPLES
-section at the end of this document to quickly get started.
+B<virt-install> is a command line tool for creating new KVM, Xen, or Linux
+container guests using the C<libvirt> hypervisor management library.
+See the EXAMPLES section at the end of this document to quickly get started.
 
 B<virt-install> tool supports both text based & graphical installations,
 using VNC or SDL graphics, or a text serial console. The guest can be
@@ -96,7 +96,7 @@ If omitted, the host CPU architecture will be used in the guest.
 =item --machine=MACHINE
 
 The machine type to emulate. This will typically not need to be specified
-for Xen or KVM, but is useful for choosing machine times of more exotic
+for Xen or KVM, but is useful for choosing machine types of more exotic
 architectures.
 
 =item -u UUID, --uuid=UUID
@@ -1130,6 +1130,16 @@ Run a Live CD image under Xen fullyvirt, in diskless environment
        --livecd \
        --graphics vnc \
        --cdrom /root/fedora7live.iso
+
+Run /usr/bin/httpd in a linux container guest (LXC). Resource usage is capped
+at 512 MB of ram and 2 host cpus:
+
+  # virt-install \
+        --connect lxc:/// \
+        --name httpd_guest \
+        --ram 512 \
+        --vcpus 2 \
+        --init /usr/bin/httpd
 
 Install a paravirtualized Xen guest, 500 MB of RAM, a 5 GB of disk, and
 Fedora Core 6 from a web server, in text-only mode, with old style --file

@@ -247,6 +247,7 @@ def _open_test_uri(uri):
         xml = re.sub("arch='.*'", "arch='i686'", xml)
         xml = re.sub("domain type='.*'", "domain type='test'", xml)
         xml = re.sub("machine type='.*'", "", xml)
+        xml = re.sub(">exe<", ">hvm<", xml)
 
         logging.debug("virtinst test sanitizing diff\n:%s" %
                       "\n".join(difflib.unified_diff(orig.split("\n"),

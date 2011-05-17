@@ -354,8 +354,9 @@ def validate_required_options(options, guest):
         msg += "\n" + cli.name_missing
     if not options.memory:
         msg += "\n" + cli.ram_missing
-    if not storage_specified(options.file_paths, options.diskopts,
-                             options.nodisks, options.filesystems):
+    if (not guest.installer.is_container() and
+        not storage_specified(options.file_paths, options.diskopts,
+                             options.nodisks, options.filesystems)):
         msg += "\n" + disk_missing
     if (not guest.installer.is_container() and
         (not install_specified(options.location, options.cdrom,

@@ -32,6 +32,7 @@ remoteuri   = fakeuri + ",remote"
 kvmuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/libvirt-0.7.6-qemu-caps.xml,qemu"
 xenuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/rhel5.4-xen-caps-virt-enabled.xml,xen"
 xenia64uri  = fakeuri + ",caps=`pwd`/tests/capabilities-xml/xen-ia64-hvm.xml,xen"
+lxcuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/capabilities-lxc.xml,lxc"
 
 # Location
 image_prefix = "/tmp/__virtinst_cli_"
@@ -81,6 +82,7 @@ test_files = {
     'KVMURI'            : kvmuri,
     'XENURI'            : xenuri,
     'XENIA64URI'        : xenia64uri,
+    'LXCURI'            : lxcuri,
     'CLONE_DISK_XML'    : "%s/clone-disk.xml" % xmldir,
     'CLONE_STORAGE_XML' : "%s/clone-disk-managed.xml" % xmldir,
     'CLONE_NOEXIST_XML' : "%s/clone-disk-noexist.xml" % xmldir,
@@ -680,8 +682,23 @@ args_dict = {
   ],
 
 },
+
+"lxc" : {
+  "args": "--connect %(LXCURI)s --noautoconsole --name foolxc --ram 64",
+
+  "valid" : [],
+  "invalid" : [],
+
+  "compare" : [
+    ("", "default"),
+    ("--filesystem /source,/", "fs-default"),
+    ("--init /usr/bin/httpd", "manual-init"),
+  ],
+
+}, # lxc
+
     "prompt" : [ " --connect %(TESTURI)s --debug --prompt" ]
-  },
+  }, # virt-install
 
 
 
