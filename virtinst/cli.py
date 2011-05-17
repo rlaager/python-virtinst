@@ -877,8 +877,14 @@ def set_os_variant(guest, distro_type, distro_variant):
     if (distro_variant and str(distro_variant).lower() != "none"):
         guest.set_os_variant(distro_variant)
 
-def get_graphics(guest, vnc, vncport, vnclisten, nographics, sdl, keymap,
-                 graphics):
+def digest_graphics(options):
+    vnc = options.vnc
+    vncport = options.vncport
+    vnclisten = options.vnclisten
+    nographics = options.nographics
+    sdl = options.sdl
+    keymap = options.keymap
+    graphics = options.graphics
 
     if graphics and (vnc or sdl or keymap or vncport or vnclisten):
         fail(_("Cannot mix --graphics and old style graphical options"))
@@ -888,8 +894,11 @@ def get_graphics(guest, vnc, vncport, vnclisten, nographics, sdl, keymap,
         raise ValueError(_("Can't specify more than one of VNC, SDL, "
                            "--graphics or --nographics"))
 
-    # If not graphics specified, choose a default
+    if graphics:
+        return graphics
+
     if optnum == 0:
+        # If no graphics specified, choose a default
         if "DISPLAY" in os.environ.keys():
             logging.debug("DISPLAY is set: graphics defaulting to VNC.")
             vnc = True
@@ -897,24 +906,28 @@ def get_graphics(guest, vnc, vncport, vnclisten, nographics, sdl, keymap,
             logging.debug("DISPLAY is not set: defaulting to nographics.")
             nographics = True
 
-    # Build an initial graphics argument dict
-    basedict = {
-        "type"      : ((vnc and "vnc") or
-                       (sdl and "sdl") or
-                       (nographics and "none")),
-        "listen"    : vnclisten,
-        "port"      : vncport,
-        "keymap"    : keymap,
-    }
+    # Build a --graphics command line from old style opts
+    optstr = ((vnc and "vnc") or
+              (sdl and "sdl") or
+              (nographics and ("none")))
+    if vnclisten:
+        optstr += ",listen=%s" % vnclisten
+    if vncport:
+        optstr += ",port=%s" % vncport
+    if keymap:
+        optstr += ",keymap=%s" % keymap
 
+    logging.debug("Old graphics compat generated: %s" % optstr)
+    return optstr
+
+def get_graphics(guest, graphics):
     try:
-        dev = parse_graphics(guest, graphics, basedict)
+        dev = parse_graphics(guest, graphics)
     except Exception, e:
         fail(_("Error in graphics device parameters: %s") % str(e))
 
-    if not dev:
-        return
-    guest.graphics_dev = dev
+    if dev:
+        guest.add_device(dev)
 
 def get_video(guest, video_models=None):
     video_models = video_models or []
@@ -1388,8 +1401,8 @@ def parse_network_opts(conn, mac, network):
 # --graphics parsing #
 ######################
 
-def parse_graphics(guest, optstring, basedict):
-    if optstring is None and not basedict:
+def parse_graphics(guest, optstring):
+    if optstring is None:
         return None
 
     def sanitize_keymap(keymap):
@@ -1407,8 +1420,8 @@ def parse_graphics(guest, optstring, basedict):
         return use_keymap
 
     # Peel the model type off the front
-    opts = parse_optstr(optstring, basedict, remove_first="type")
-    if opts.get("type") == "none" or basedict.get("type") == "none":
+    opts = parse_optstr(optstring, remove_first="type")
+    if opts.get("type") == "none":
         return None
     dev = VirtualGraphics(conn=guest.conn)
 

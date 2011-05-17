@@ -52,14 +52,12 @@ def get_networks(domain, macs, bridges, networks, guest):
 
     map(lambda kwargs: cli.get_network(kwargs, guest), net_kwargs)
 
-def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
-                 graphics, guest):
+def get_graphics(domain, guest, options):
     if not domain.graphics:
-        guest.graphics_dev = None
         return
 
-    cli.get_graphics(guest, vnc, vncport, vnclisten, nographics, sdl, keymap,
-                     graphics)
+    graphics = cli.digest_graphics(options)
+    cli.get_graphics(guest, graphics)
 
 ### Option parsing
 def parse_args():
@@ -190,9 +188,7 @@ def main():
     get_networks(image.domain, options.mac, options.bridge,
                  options.network, guest)
 
-    get_graphics(image.domain, options.vnc, options.vncport, options.vnclisten,
-                 options.nographics, options.sdl, options.keymap,
-                 options.graphics, guest)
+    get_graphics(image.domain, guest, options)
     cli.get_video(guest)
 
     cli.set_os_variant(guest, options.distro_type, options.distro_variant)

@@ -136,7 +136,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         return self._type
     def set_type(self, val):
         if val not in self.types:
-            raise ValueError(_("Unknown graphics type"))
+            raise ValueError(_("Unknown graphics type '%s'") % val)
 
         self._type = val
     type = _xml_property(get_type, set_type,

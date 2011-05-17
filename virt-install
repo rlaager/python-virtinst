@@ -98,6 +98,10 @@ def supports_pxe(guest):
 # Device validation wrappers #
 ##############################
 
+def get_graphics(guest, options):
+    graphics = cli.digest_graphics(options)
+    cli.get_graphics(guest, graphics)
+
 def get_chardevs(char_type, opts, guest):
     for optstr in cli.listify(opts):
         try:
@@ -474,9 +478,7 @@ def build_guest_instance(conn, options):
     # Non-default devices
     if not options.nonetworks:
         get_networks(guest, options.mac, options.bridge, options.network)
-    cli.get_graphics(guest, options.vnc, options.vncport, options.vnclisten,
-                     options.nographics, options.sdl, options.keymap,
-                     options.graphics)
+    get_graphics(guest, options)
     cli.get_video(guest, options.video)
     get_watchdog(options.watchdog, guest)
     get_filesystems(options.filesystems, guest)
