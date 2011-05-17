@@ -868,32 +868,34 @@ def set_os_variant(guest, distro_type, distro_variant):
     if not distro_type and not distro_variant:
         # Default to distro autodetection
         guest.set_os_autodetect(True)
-    else:
-        if (distro_type and str(distro_type).lower() != "none"):
-            guest.set_os_type(distro_type)
+        return
 
-        if (distro_variant and str(distro_variant).lower() != "none"):
-            guest.set_os_variant(distro_variant)
+    if (distro_type and str(distro_type).lower() != "none"):
+        guest.set_os_type(distro_type)
 
-def get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap,
-                 video_models, graphics, guest):
+    if (distro_variant and str(distro_variant).lower() != "none"):
+        guest.set_os_variant(distro_variant)
+
+def get_graphics(guest, vnc, vncport, vnclisten, nographics, sdl, keymap,
+                 video_models, graphics):
     video_models = video_models or []
 
     if graphics and (vnc or sdl or keymap or vncport or vnclisten):
         fail(_("Cannot mix --graphics and old style graphical options"))
 
+    optnum = sum(map(bool, [vnc, nographics, sdl, graphics]))
+    if optnum > 1:
+        raise ValueError(_("Can't specify more than one of VNC, SDL, "
+                           "--graphics or --nographics"))
+
     # If not graphics specified, choose a default
-    if not (vnc or nographics or sdl or graphics):
+    if optnum == 0:
         if "DISPLAY" in os.environ.keys():
             logging.debug("DISPLAY is set: graphics defaulting to VNC.")
             vnc = True
         else:
             logging.debug("DISPLAY is not set: defaulting to nographics.")
             nographics = True
-
-    if (sum(map(int, map(bool, [vnc, nographics, sdl, graphics])))) > 1:
-        raise ValueError(_("Can't specify more than one of VNC, SDL, "
-                           "--graphics or --nographics"))
 
     # Build an initial graphics argument dict
     basedict = {

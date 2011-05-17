@@ -474,9 +474,9 @@ def build_guest_instance(conn, options):
     # Non-default devices
     if not options.nonetworks:
         get_networks(guest, options.mac, options.bridge, options.network)
-    cli.get_graphics(options.vnc, options.vncport, options.vnclisten,
+    cli.get_graphics(guest, options.vnc, options.vncport, options.vnclisten,
                      options.nographics, options.sdl, options.keymap,
-                     options.video, options.graphics, guest)
+                     options.video, options.graphics)
     get_watchdog(options.watchdog, guest)
     get_filesystems(options.filesystems, guest)
     cli.get_sound(options.sound, options.soundhw, guest)

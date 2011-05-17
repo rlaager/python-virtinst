@@ -58,8 +58,8 @@ def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
         guest.graphics_dev = None
         return
 
-    cli.get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, [],
-                     graphics, guest)
+    cli.get_graphics(guest, vnc, vncport, vnclisten, nographics, sdl, keymap,
+                     [], graphics)
 
 ### Option parsing
 def parse_args():
