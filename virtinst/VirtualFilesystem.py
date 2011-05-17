@@ -17,6 +17,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import os
+
 import VirtualDevice
 from virtinst import _virtinst as _
 from XMLBuilderDomain import _xml_property
@@ -92,7 +94,7 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
     def _get_source(self):
         return self._source
     def _set_source(self, val):
-        self._source = val
+        self._source = os.path.abspath(val)
     def _xml_get_source_xpath(self):
         xpath = None
         ret = "./source/@dir"
@@ -112,6 +114,9 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
     def _get_target(self):
         return self._target
     def _set_target(self, val):
+        if not os.path.isabs(val):
+            raise ValueError(_("Filesystem target '%s' must be an absolute "
+                               "path") % val)
         self._target = val
     target = _xml_property(_get_target, _set_target, xpath="./target/@dir")
 
