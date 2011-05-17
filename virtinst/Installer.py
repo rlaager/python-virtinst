@@ -327,22 +327,28 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             not self.bootconfig.kernel):
             return "<bootloader>%s</bootloader>" % _util.pygrub_path(conn)
 
-        osblob = "<os>\n"
+        osblob = "<os>"
 
-        osblob += "    <type"
+        typexml = "    <type"
         if arch:
-            osblob += " arch='%s'" % arch
+            typexml += " arch='%s'" % arch
         if machine:
-            osblob += " machine='%s'" % machine
-        osblob += ">%s</type>\n" % os_type
+            typexml += " machine='%s'" % machine
+        typexml += ">%s</type>" % os_type
 
+        osblob = _util.xml_append(osblob, typexml)
 
         if init:
-            osblob += "    <init>%s</init>\n" % _util.xml_escape(init)
+            osblob = _util.xml_append(osblob,
+                                      "    <init>%s</init>" %
+                                      _util.xml_escape(init))
         if loader:
-            osblob += "    <loader>%s</loader>\n" % _util.xml_escape(loader)
+            osblob = _util.xml_append(osblob,
+                                      "    <loader>%s</loader>" %
+                                      _util.xml_escape(loader))
 
-        osblob += bootconfig.get_xml_config()
+        if not self.is_container():
+            osblob = _util.xml_append(osblob, bootconfig.get_xml_config())
         osblob = _util.xml_append(osblob, "  </os>")
 
         return osblob

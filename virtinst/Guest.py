@@ -255,7 +255,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         # Add default devices (if applicable)
         inp = self._get_default_input_device()
-        self.add_device(inp)
+        if inp:
+            self.add_device(inp)
         self._default_input_device = inp
 
         con = self._get_default_console_device()
@@ -820,6 +821,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         Return a VirtualInputDevice.
         """
+        if self.installer and self.installer.is_container():
+            return None
         dev = VirtualInputDevice(self.conn)
         return dev
 
@@ -895,6 +898,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         Return features (pae, acpi, apic) xml
         """
+        if self.installer and self.installer.is_container():
+            return ""
         return features.get_xml_config()
 
     def _get_cpu_xml(self):
