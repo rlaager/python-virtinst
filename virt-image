@@ -37,10 +37,9 @@ cli.setupGettext()
 
 ### General input gathering functions
 
-def get_networks(domain, macs, bridges, networks, guest):
+def get_networks(domain, guest, options):
     nnics = domain.interface
-    net_kwargs = cli.digest_networks(guest.conn, macs, bridges, networks,
-                                     nnics)
+    net_kwargs = cli.digest_networks(guest, options, numnics=nnics)
 
     if len(net_kwargs) > nnics:
         logging.warn(_("Warning: more networks were provided [%i] then nics "
@@ -91,18 +90,7 @@ def parse_args():
                     help=_("Disables ACPI for fully virtualized guest"))
     parser.add_option_group(fulg)
 
-    netg = OptionGroup(parser, _("Networking Configuration"))
-    netg.add_option("-w", "--network", dest="network", action="append",
-      help=_("Specify a network interface. Ex:\n"
-             "--network bridge=mybr0\n"
-             "--network network=libvirt_network_name\n"
-             "--network network=mynet,model=e1000,mac=00:11..."))
-
-    # Deprecated net options
-    netg.add_option("-b", "--bridge", dest="bridge", action="append",
-                    help=optparse.SUPPRESS_HELP)
-    netg.add_option("-m", "--mac", dest="mac", action="append",
-                    help=optparse.SUPPRESS_HELP)
+    netg = cli.network_option_group(parser)
     parser.add_option_group(netg)
 
     vncg = cli.graphics_option_group(parser)
@@ -184,9 +172,7 @@ def main():
                   guest, image.domain.vcpu)
     cli.get_cpuset(options.cpuset, guest.memory, guest)
     cli.parse_cpu(guest, options.cpu)
-    # For now, we only allow one NIC
-    get_networks(image.domain, options.mac, options.bridge,
-                 options.network, guest)
+    get_networks(image.domain, guest, options)
 
     get_graphics(image.domain, guest, options)
     cli.get_video(guest)

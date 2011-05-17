@@ -161,9 +161,8 @@ def get_disks(guest, file_paths, disk_paths, size, sparse):
     for idx in range(len(disk)):
         get_disk(disk[idx], size[idx], sparse, guest, is_file_path)
 
-def get_networks(guest, macs, bridges, networks):
-    net_kwargs = cli.digest_networks(guest.conn, macs, bridges, networks,
-                                     nics=1)
+def get_networks(guest, options):
+    net_kwargs = cli.digest_networks(guest, options)
     map(lambda kwargs: cli.get_network(kwargs, guest), net_kwargs)
 
 
@@ -477,7 +476,7 @@ def build_guest_instance(conn, options):
 
     # Non-default devices
     if not options.nonetworks:
-        get_networks(guest, options.mac, options.bridge, options.network)
+        get_networks(guest, options)
     get_graphics(guest, options)
     cli.get_video(guest, options.video)
     get_watchdog(options.watchdog, guest)
@@ -863,20 +862,10 @@ def parse_args():
                     help=optparse.SUPPRESS_HELP)
     parser.add_option_group(stog)
 
-    netg = optparse.OptionGroup(parser, _("Networking Configuration"))
-    netg.add_option("-w", "--network", dest="network", action="append",
-      help=_("Specify a network interface. Ex:\n"
-             "--network bridge=mybr0\n"
-             "--network network=my_libvirt_virtual_net\n"
-             "--network network=mynet,model=virtio,mac=00:11..."))
+    netg = cli.network_option_group(parser)
+
     netg.add_option("", "--nonetworks", action="store_true",
                     help=_("Don't create network interfaces for the guest."))
-
-    # Deprecated net options
-    netg.add_option("-b", "--bridge", dest="bridge", action="append",
-                    help=optparse.SUPPRESS_HELP)
-    netg.add_option("-m", "--mac", dest="mac", action="append",
-                    help=optparse.SUPPRESS_HELP)
     parser.add_option_group(netg)
 
     vncg = cli.graphics_option_group(parser)

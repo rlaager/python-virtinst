@@ -549,8 +549,6 @@ args_dict = {
         "--network=FOO",
         # Invalid mac
         "--network=network:default --mac 1234",
-        # More mac addrs than nics
-        "--network user --mac 00:11:22:33:44:EF --mac 00:11:22:33:44:AB",
         # Mixing bridge and network
         "--network user --bridge foo0",
         # Colliding macaddr

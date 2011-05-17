@@ -821,47 +821,46 @@ def get_network(net_kwargs, guest):
     n = VirtualNetworkInterface(**net_kwargs)
     guest.nics.append(n)
 
-def digest_networks(conn, macs, bridges, networks, nics=0):
-    macs     = listify(macs)
-    bridges  = listify(bridges)
-    networks = listify(networks)
+def _default_network_opts(conn):
+    opts = ""
+    if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
+        net = _util.default_network(conn)
+        opts = net[0] + ":" + net[1]
+    else:
+        opts = "user"
+
+    return opts
+
+def digest_networks(guest, options, numnics=1):
+    macs     = listify(options.mac)
+    networks = listify(options.network)
+    bridges  = listify(options.bridge)
 
     if bridges and networks:
         fail(_("Cannot mix both --bridge and --network arguments"))
 
     if bridges:
+        # Convert old --bridges to --networks
         networks = map(lambda b: "bridge:" + b, bridges)
 
-    # With just one mac, create a default network if one is not specified.
-    if len(macs) == 1 and len(networks) == 0:
-        if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
-            net = _util.default_network(conn)
-            networks.append(net[0] + ":" + net[1])
-        else:
-            networks.append(VirtualNetworkInterface.TYPE_USER)
+    def padlist(l, padsize):
+        l = listify(l)
+        l.extend((padsize - len(l)) * [None])
+        return l
 
-    # ensure we have less macs then networks, otherwise autofill the mac list
-    if len(macs) > len(networks):
-        fail(_("Cannot pass more mac addresses than networks."))
-    else:
-        for dummy in range(len(macs), len(networks)):
-            macs.append(None)
+    # If a plain mac is specified, have it imply a default network
+    networks = padlist(networks, max(len(macs), numnics))
+    macs = padlist(macs, len(networks))
 
-    # Create extra networks up to the number of nics requested
-    if len(macs) < nics:
-        for dummy in range(len(macs), nics):
-            if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
-                net = _util.default_network(conn)
-                networks.append(net[0] + ":" + net[1])
-            else:
-                networks.append(VirtualNetworkInterface.TYPE_USER)
-            macs.append(None)
+    for idx in range(len(networks)):
+        if networks[idx] is None:
+            networks[idx] = _default_network_opts(guest.conn)
 
     net_init_dicts = []
-    for i in range(0, len(networks)):
-        mac = macs[i]
-        netstr = networks[i]
-        net_init_dicts.append(parse_network_opts(conn, mac, netstr))
+    for idx in range(len(networks)):
+        mac = macs[idx]
+        netstr = networks[idx]
+        net_init_dicts.append(parse_network_opts(guest.conn, mac, netstr))
 
     return net_init_dicts
 
@@ -1015,6 +1014,25 @@ def graphics_option_group(parser):
                     help=optparse.SUPPRESS_HELP)
     return vncg
 
+def network_option_group(parser):
+    """
+    Register common network options for virt-install and virt-image
+    """
+    netg = optparse.OptionGroup(parser, _("Networking Configuration"))
+
+    netg.add_option("-w", "--network", dest="network", action="append",
+      help=_("Specify a network interface. Ex:\n"
+             "--network bridge=mybr0\n"
+             "--network network=my_libvirt_virtual_net\n"
+             "--network network=mynet,model=virtio,mac=00:11..."))
+
+    # Deprecated net options
+    netg.add_option("-b", "--bridge", dest="bridge", action="append",
+                    help=optparse.SUPPRESS_HELP)
+    netg.add_option("-m", "--mac", dest="mac", action="append",
+                    help=optparse.SUPPRESS_HELP)
+
+    return netg
 
 #############################################
 # CLI complex parsing helpers               #
