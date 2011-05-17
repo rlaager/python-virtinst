@@ -99,7 +99,7 @@ def supports_pxe(guest):
 ##############################
 
 def get_graphics(guest, options):
-    graphics = cli.digest_graphics(options)
+    graphics = cli.digest_graphics(guest, options)
     cli.get_graphics(guest, graphics)
 
 def get_chardevs(char_type, opts, guest):
