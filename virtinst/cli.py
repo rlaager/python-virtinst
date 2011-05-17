@@ -918,16 +918,17 @@ def digest_graphics(options):
         optstr += ",keymap=%s" % keymap
 
     logging.debug("Old graphics compat generated: %s" % optstr)
-    return optstr
+    return [optstr]
 
 def get_graphics(guest, graphics):
-    try:
-        dev = parse_graphics(guest, graphics)
-    except Exception, e:
-        fail(_("Error in graphics device parameters: %s") % str(e))
+    for optstr in graphics:
+        try:
+            dev = parse_graphics(guest, optstr)
+        except Exception, e:
+            fail(_("Error in graphics device parameters: %s") % str(e))
 
-    if dev:
-        guest.add_device(dev)
+        if dev:
+            guest.add_device(dev)
 
 def get_video(guest, video_models=None):
     video_models = video_models or []
@@ -991,7 +992,7 @@ def graphics_option_group(parser):
     """
 
     vncg = optparse.OptionGroup(parser, _("Graphics Configuration"))
-    vncg.add_option("", "--graphics", dest="graphics",
+    vncg.add_option("", "--graphics", dest="graphics", action="append",
       help=_("Specify display configuration. Ex:\n"
              "--graphics vnc\n"
              "--graphics spice,port=5901,tlsport=5902\n"
