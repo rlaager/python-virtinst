@@ -21,7 +21,6 @@
 # MA 02110-1301 USA.
 
 import sys
-import logging
 import urlgrabber.progress as progress
 
 import virtinst
@@ -39,17 +38,12 @@ cli.setupGettext()
 
 def get_networks(domain, guest, options):
     nnics = domain.interface
-    net_kwargs = cli.digest_networks(guest, options, numnics=nnics)
+    networks, macs = cli.digest_networks(guest, options, numnics=nnics)
 
-    if len(net_kwargs) > nnics:
-        logging.warn(_("Warning: more networks were provided [%i] then nics "
-                       "required [%i]. All extras are ignored.") %
-                       (len(net_kwargs), nnics))
-        net_kwargs = net_kwargs[0:nnics]
-    elif nnics > len(net_kwargs):
+    if nnics > len(networks):
         fail(_("The image requires %i network interface.") % nnics)
 
-    map(lambda kwargs: cli.get_network(kwargs, guest), net_kwargs)
+    cli.get_networks(guest, networks, macs)
 
 def get_graphics(domain, guest, options):
     if not domain.graphics:

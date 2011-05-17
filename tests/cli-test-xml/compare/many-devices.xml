@@ -34,7 +34,12 @@
       <target dir='/target'/>
     </filesystem>
     <interface type='user'>
+      <mac address='12:34:56:78:11:22'/>
+    </interface>
+    <interface type='bridge'>
+      <source bridge='foobar'/>
       <mac address='00:11:22:33:44:55'/>
+      <model type='virtio'/>
     </interface>
     <input type='mouse' bus='ps2'/>
     <serial type='tcp'>
@@ -78,7 +83,12 @@
       <target dir='/target'/>
     </filesystem>
     <interface type='user'>
+      <mac address='12:34:56:78:11:22'/>
+    </interface>
+    <interface type='bridge'>
+      <source bridge='foobar'/>
       <mac address='00:11:22:33:44:55'/>
+      <model type='virtio'/>
     </interface>
     <input type='mouse' bus='ps2'/>
     <serial type='tcp'>

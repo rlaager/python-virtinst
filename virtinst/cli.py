@@ -817,15 +817,11 @@ def get_cpuset(cpuset, mem, guest):
 
     return
 
-def get_network(net_kwargs, guest):
-    n = VirtualNetworkInterface(**net_kwargs)
-    guest.nics.append(n)
-
 def _default_network_opts(conn):
     opts = ""
     if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
         net = _util.default_network(conn)
-        opts = net[0] + ":" + net[1]
+        opts = "%s=%s" % (net[0], net[1])
     else:
         opts = "user"
 
@@ -856,13 +852,18 @@ def digest_networks(guest, options, numnics=1):
         if networks[idx] is None:
             networks[idx] = _default_network_opts(guest.conn)
 
-    net_init_dicts = []
+    return networks, macs
+
+def get_networks(guest, networks, macs):
     for idx in range(len(networks)):
         mac = macs[idx]
         netstr = networks[idx]
-        net_init_dicts.append(parse_network_opts(guest.conn, mac, netstr))
 
-    return net_init_dicts
+        try:
+            dev = parse_network(guest, netstr, mac=mac)
+            guest.add_device(dev)
+        except Exception, e:
+            fail(_("Error in network device parameters: %s") % str(e))
 
 def set_os_variant(guest, distro_type, distro_variant):
     if not distro_type and not distro_variant:
@@ -1377,47 +1378,56 @@ def parse_disk(guest, optstr, dev=None):
 # --network parsing #
 #####################
 
-def parse_network_opts(conn, mac, network):
-    net_type = None
-    network_name = None
-    bridge_name = None
-    model = None
-    option_whitelist = ["model", "mac"]
+def parse_network(guest, optstring, mac=None):
+    def get_and_del(paramname):
+        val = opts.get(paramname)
+        if paramname in opts:
+            del(opts[paramname])
+        return val
 
-    args = network.split(",")
+    # Handle old format of bridge:foo instead of bridge=foo
+    for prefix in ["network", "bridge"]:
+        if optstring.startswith(prefix + ":"):
+            optstring = optstring.replace(prefix + ":", prefix + "=")
 
-    # Determine net type and bridge vs. network
-    netdata = None
-    typestr = args[0]
-    del(args[0])
+    opts = parse_optstr(optstring, remove_first="type")
 
-    if typestr.count(":"):
-        net_type, netdata = typestr.split(":", 1)
-    elif typestr.count("="):
-        net_type, netdata = typestr.split("=", 1)
-    else:
-        net_type = typestr
+    # Determine device type
+    if "network" in opts:
+        net_type = VirtualNetworkInterface.TYPE_VIRTUAL
+    elif "bridge" in opts:
+        net_type = VirtualNetworkInterface.TYPE_BRIDGE
+    elif "type" in opts:
+        net_type = get_and_del("type")
 
-    if net_type == VirtualNetworkInterface.TYPE_VIRTUAL:
-        network_name = netdata
-    elif net_type == VirtualNetworkInterface.TYPE_BRIDGE:
-        bridge_name = netdata
+    # Build initial device
+    dev = VirtualNetworkInterface(conn=guest.conn,
+                                  type=net_type,
+                                  network=get_and_del("network"),
+                                  bridge=get_and_del("bridge"))
 
-    # Pass the remaining arg=value pairs
-    opts = parse_optstr(",".join(args))
-    for opt_type, ignore_val in opts.items():
-        if opt_type not in option_whitelist:
-            fail(_("Unknown network option '%s'") % opt_type)
+    def mac_convert(chkmac):
+        if chkmac == "RANDOM":
+            return None
+        return chkmac
 
-    model   = opts.get("model")
-    mac     = opts.get("mac") or mac
+    def set_param(paramname, dictname, val=None, cb=None):
+        val = get_opt_param(opts, dictname, val)
+        if val == None:
+            return
 
-    # The keys here correspond to parameter names for VirtualNetworkInterface
-    # __init__
-    if mac == "RANDOM":
-        mac = None
-    return {"conn" : conn, "type" : net_type, "bridge": bridge_name,
-            "network" : network_name, "model" : model , "macaddr" : mac}
+        if cb:
+            val = cb(val)
+
+        setattr(dev, paramname, val)
+
+    set_param("model", "model")
+    set_param("macaddr", "mac", val=mac, cb=mac_convert)
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+
+    return dev
 
 ######################
 # --graphics parsing #

@@ -162,8 +162,8 @@ def get_disks(guest, file_paths, disk_paths, size, sparse):
         get_disk(disk[idx], size[idx], sparse, guest, is_file_path)
 
 def get_networks(guest, options):
-    net_kwargs = cli.digest_networks(guest, options)
-    map(lambda kwargs: cli.get_network(kwargs, guest), net_kwargs)
+    networks, macs = cli.digest_networks(guest, options)
+    cli.get_networks(guest, networks, macs)
 
 
 ########################

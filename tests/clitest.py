@@ -513,7 +513,9 @@ args_dict = {
          "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh "
          "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro "
          "--serial tcp,host=:2222,mode=bind,protocol=telnet "
-         "--filesystem /source,/target,mode=squash ",
+         "--filesystem /source,/target,mode=squash "
+         "--network user,mac=12:34:56:78:11:22 "
+         "--network bridge=foobar,model=virtio ",
          "many-devices"),
       ],
 
