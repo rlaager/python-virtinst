@@ -44,6 +44,7 @@ from virtinst import VirtualGraphics
 from virtinst import VirtualAudio
 from virtinst import VirtualDisk
 from virtinst import VirtualCharDevice
+from virtinst import VirtualDevice
 from virtinst import User
 
 DEFAULT_POOL_PATH = "/var/lib/libvirt/images"
@@ -877,8 +878,7 @@ def set_os_variant(guest, distro_type, distro_variant):
         guest.set_os_variant(distro_variant)
 
 def get_graphics(guest, vnc, vncport, vnclisten, nographics, sdl, keymap,
-                 video_models, graphics):
-    video_models = video_models or []
+                 graphics):
 
     if graphics and (vnc or sdl or keymap or vncport or vnclisten):
         fail(_("Cannot mix --graphics and old style graphical options"))
@@ -916,10 +916,13 @@ def get_graphics(guest, vnc, vncport, vnclisten, nographics, sdl, keymap,
         return
     guest.graphics_dev = dev
 
-    # At this point we are definitely using graphics, so setup a default
-    # video card if necc.
-    if not video_models:
-        video_models.append(None)
+def get_video(guest, video_models=None):
+    video_models = video_models or []
+
+    if guest.get_devices(VirtualDevice.VIRTUAL_DEV_GRAPHICS):
+        if not video_models:
+            video_models.append(None)
+
     for model in video_models:
         vdev = virtinst.VirtualVideoDevice(guest.conn)
         if model:

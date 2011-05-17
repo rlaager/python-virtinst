@@ -476,7 +476,8 @@ def build_guest_instance(conn, options):
         get_networks(guest, options.mac, options.bridge, options.network)
     cli.get_graphics(guest, options.vnc, options.vncport, options.vnclisten,
                      options.nographics, options.sdl, options.keymap,
-                     options.video, options.graphics)
+                     options.graphics)
+    cli.get_video(guest, options.video)
     get_watchdog(options.watchdog, guest)
     get_filesystems(options.filesystems, guest)
     cli.get_sound(options.sound, options.soundhw, guest)
