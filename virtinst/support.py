@@ -61,6 +61,7 @@ SUPPORT_CONN_HV_SOUND_ICH6 = 5003
 SUPPORT_CONN_HV_GRAPHICS_SPICE = 5004
 SUPPORT_CONN_HV_CHAR_SPICEVMC = 5005
 SUPPORT_CONN_HV_DIRECT_INTERFACE = 5006
+SUPPORT_CONN_HV_FILESYSTEM = 5007
 
 """
 Possible keys:
@@ -87,6 +88,9 @@ Possible keys:
                   (driver name (e.g qemu, xen, lxc), minimum supported version)
                  If a hypervisor is not listed, it is assumed to be NOT
                  SUPPORTED.
+  "drv_libvirt_version" : List of tuples, similar to drv_version, but
+                          the version number is minimum supported _libvirt_
+                          version
   "hv_version" : A list of tuples of the same form as drv_version, however
                  listing the actual <domain type='%s'/> from the XML.
                  example: 'kvm'
@@ -233,6 +237,14 @@ _support_dict = {
         "force_version" : True,
         "drv_version" : [ ("qemu", 0), ],
     },
+    SUPPORT_CONN_HV_FILESYSTEM : {
+        "drv_version" : [ ("qemu", 13000),
+                          ("lxc", 0),
+                          ("openvz", 0) ],
+        "drv_libvirt_version" : [ ("qemu", 8005),
+                                  ("lxc", 0),
+                                  ("openvz", 0) ],
+    }
 }
 
 # XXX: RHEL6 has lots of feature backports, and since libvirt doesn't
@@ -391,6 +403,8 @@ def _check_support(conn, feature, data=None):
     if is_rhel6:
         drv_version = rhel6_drv_version
 
+    drv_libvirt_version = get_value("drv_libvirt_version") or []
+
     hv_version = get_value("hv_version") or []
     object_name, function_name = _split_function_name(get_value("function"))
     args = get_value("args")
@@ -459,6 +473,24 @@ def _check_support(conn, feature, data=None):
                     break
             else:
                 if actual_drv_ver >= min_drv_ver:
+                    found = True
+                    break
+
+        if not found:
+            return False
+
+    if drv_libvirt_version:
+        found = False
+        for drv, min_lib_ver in drv_libvirt_version:
+            if drv != drv_type:
+                continue
+
+            if min_lib_ver < 0:
+                if actual_lib_ver <= -min_lib_ver:
+                    found = True
+                    break
+            else:
+                if actual_lib_ver >= min_lib_ver:
                     found = True
                     break
 
