@@ -94,7 +94,9 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
     def _get_source(self):
         return self._source
     def _set_source(self, val):
-        self._source = os.path.abspath(val)
+        if self.type != self.TYPE_TEMPLATE:
+            val = os.path.abspath(val)
+        self._source = val
     def _xml_get_source_xpath(self):
         xpath = None
         ret = "./source/@dir"
