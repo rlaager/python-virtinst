@@ -51,6 +51,7 @@ from PXEInstaller import PXEInstaller
 from LiveCDInstaller import LiveCDInstaller
 from ImportInstaller import ImportInstaller
 from ImageInstaller import ImageInstaller
+from Installer import ContainerInstaller
 from CloneManager import CloneDesign
 from User import User
 from Clock import Clock

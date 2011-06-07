@@ -436,7 +436,7 @@ def build_installer(options, conn, virt_type, hv_name, arch, machine):
         options.import_install = True
         instclass = virtinst.ImportInstaller
     elif virt_type == "exe":
-        instclass = virtinst.ImportInstaller
+        instclass = virtinst.ContainerInstaller
     else:
         instclass = virtinst.DistroInstaller
 

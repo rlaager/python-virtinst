@@ -1167,6 +1167,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         Begin the guest install (stage1).
         @param return_xml: Don't create the guest, just return generated XML
         """
+        print "START_INSTALL"
         is_initial = True
         if removeOld == None:
             removeOld = self.replace
@@ -1174,6 +1175,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self.validate_parms()
         self._consolechild = None
 
+        print "PREPARE_INSTALL BEFORE"
         self._prepare_install(meter, dry)
         try:
             # Create devices if required (disk images, etc.)

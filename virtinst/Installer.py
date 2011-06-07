@@ -278,7 +278,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
 
     # Private methods
     def _get_bootdev(self, isinstall, guest):
-        raise NotImplementedError
+        raise NotImplementedError("Must be implemented in subclass")
 
     def _build_boot_order(self, isinstall, guest):
         bootorder = [self._get_bootdev(isinstall, guest)]
@@ -488,6 +488,16 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self.loader = domain.loader
 
         return gobj
+
+class ContainerInstaller(Installer):
+    def prepare(self, guest, meter):
+        ignore = guest
+        ignore = meter
+
+    def _get_bootdev(self, isinstall, guest):
+        ignore = isinstall
+        ignore = guest
+        return self.bootconfig.BOOT_DEVICE_HARDDISK
 
 # Back compat
 Installer.get_install_xml = Installer.get_xml_config
