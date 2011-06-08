@@ -1162,7 +1162,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     ##########################
 
     def start_install(self, consolecb=None, meter=None, removeOld=None,
-                      wait=True, dry=False, return_xml=False):
+                      wait=True, dry=False, return_xml=False, noboot=False):
         """
         Begin the guest install (stage1).
         @param return_xml: Don't create the guest, just return generated XML
@@ -1190,7 +1190,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             self._replace_original_vm(removeOld)
 
             self.domain = self._create_guest(consolecb, meter, wait,
-                                             start_xml, final_xml, is_initial)
+                                             start_xml, final_xml, is_initial,
+                                             noboot)
 
             # Set domain autostart flag if requested
             self._flag_autostart()
@@ -1214,7 +1215,19 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             return
 
         return self._create_guest(consolecb, meter, wait,
-                                  start_xml, final_xml, is_initial)
+                                  start_xml, final_xml, is_initial, False)
+
+    def _build_meter(self, meter, is_initial):
+        if is_initial:
+            meter_label = _("Creating domain...")
+        else:
+            meter_label = _("Starting domain...")
+
+        if meter == None:
+            meter = progress.BaseMeter()
+        meter.start(size=None, text=meter_label)
+
+        return meter
 
     def _build_xml(self, is_initial):
         log_label = is_initial and "install" or "continue"
@@ -1231,35 +1244,34 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return start_xml, final_xml
 
     def _create_guest(self, consolecb, meter, wait,
-                      start_xml, final_xml, is_initial):
+                      start_xml, final_xml, is_initial, noboot):
         """
         Actually do the XML logging, guest defining/creating, console
         launching and waiting
 
         @param is_initial: If running initial guest creation, else we
                            are continuing the install
+        @param noboot: Don't boot guest if no install phase
         """
-        if is_initial:
-            meter_label = _("Creating domain...")
-        else:
-            meter_label = _("Starting domain...")
+        meter = self._build_meter(meter, is_initial)
+        doboot = not noboot or self.installer.has_install_phase()
+        if not doboot:
+            consolecb = None
 
-        if meter == None:
-            meter = progress.BaseMeter()
-        meter.start(size=None, text=meter_label)
-
-        if is_initial:
+        if is_initial and doboot:
             dom = self.conn.createLinux(start_xml or final_xml, 0)
         else:
             dom = self.conn.defineXML(start_xml or final_xml)
-            dom.create()
+            if doboot:
+                dom.create()
 
         self.domain = dom
         meter.end(0)
 
-        logging.debug("Started guest, connecting to console if requested")
-        (self.domain,
-         self._consolechild) = self._wait_and_connect_console(consolecb)
+        if doboot:
+            logging.debug("Started guest, connecting to console if requested")
+            (self.domain,
+             self._consolechild) = self._wait_and_connect_console(consolecb)
 
         self.domain = self.conn.defineXML(final_xml)
 

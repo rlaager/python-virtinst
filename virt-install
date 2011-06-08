@@ -610,8 +610,8 @@ def start_install(guest, continue_inst, options):
         start_time = time.time()
 
         # Do first install phase
-
-        dom = guest.start_install(conscb, meter, wait=wait_on_console)
+        dom = guest.start_install(conscb, meter, wait=wait_on_console,
+                                  noboot=options.noreboot)
         dom = check_domain(guest, dom, conscb,
                            wait_on_install, wait_time, start_time)
 
@@ -625,8 +625,6 @@ def start_install(guest, continue_inst, options):
                                wait_on_install, wait_time, start_time)
 
         if options.noreboot or not guest.installer.has_install_phase():
-            # XXX: --noreboot doesn't work with say import/livecd. what
-            # should it do? never startup the guest?
             print_stdout(
             _("Domain creation completed. You can restart your domain by "
               "running:\n  %s") % cli.virsh_start_cmd(guest))
@@ -941,8 +939,7 @@ def parse_args():
                     help=_("Print XML of a specific install step "
                            "(1, 2, 3, all) rather than define the guest."))
     misc.add_option("", "--noreboot", action="store_true", dest="noreboot",
-                    help=_("Disables the automatic rebooting when the "
-                           "installation is complete."))
+                    help=_("Don't boot guest after completing install."))
     misc.add_option("", "--wait", type="int", dest="wait",
                     help=_("Time to wait (in minutes)"))
     misc.add_option("", "--dry-run", action="store_true", dest="dry",
