@@ -188,6 +188,11 @@ hypervisor is selected.
 Shutdown and remove any existing guest with the passed C<--name> before
 installing from the image.
 
+=item --noreboot
+
+Prevent the domain from automatically rebooting after the install has
+completed.
+
 =item --skip-checksum
 
 Do not check disk images against checksums (if they are listed in the

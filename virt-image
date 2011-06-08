@@ -100,6 +100,8 @@ def parse_args():
                     default=False,
                     help=_("Overwrite, or destroy, an existing image with "
                            "the same name"))
+    misc.add_option("", "--noreboot", action="store_true", dest="noreboot",
+                    help=_("Don't boot guest after completing install."))
     misc.add_option("", "--skip-checksum", action="store_true",
                     dest="skipchecksum",
                     help=_("Skip disk checksum verification process"))
@@ -196,7 +198,7 @@ def main():
         print_stdout("\n")
         print_stdout(_("Creating guest %s...") % guest.name)
 
-        guest.start_install(None, meter)
+        guest.start_install(None, meter, noboot=options.noreboot)
     except RuntimeError:
         raise
     except Exception, e:
