@@ -499,5 +499,8 @@ class ContainerInstaller(Installer):
         ignore = guest
         return self.bootconfig.BOOT_DEVICE_HARDDISK
 
+    def has_install_phase(self):
+        return False
+
 # Back compat
 Installer.get_install_xml = Installer.get_xml_config
