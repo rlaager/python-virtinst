@@ -766,8 +766,8 @@ class TestXMLConfig(unittest.TestCase):
 
         dev2 = VirtualHostDevicePCI(g.conn)
         dev2.bus = "0x11"
-        dev2.slot = "0x22"
-        dev2.function = "0x33"
+        dev2.slot = "0x2"
+        dev2.function = "0x3"
 
         g.hostdevs.append(dev1)
         g.hostdevs.append(dev2)

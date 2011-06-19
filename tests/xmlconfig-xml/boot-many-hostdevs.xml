@@ -29,7 +29,7 @@
     </hostdev>
     <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
-        <address domain='0x0' bus='0x11' slot='0x22' function='0x33'/>
+        <address domain='0x0' bus='0x11' slot='0x2' function='0x3'/>
       </source>
     </hostdev>
   </devices>
