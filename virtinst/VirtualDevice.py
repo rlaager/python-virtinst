@@ -71,7 +71,7 @@ class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
         """
         XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
                                                    parsexmlnode,
-                                                   caps=None)
+                                                   caps=caps)
 
         if not self._virtual_device_type:
             raise ValueError(_("Virtual device type must be set in subclass."))
