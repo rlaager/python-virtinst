@@ -601,6 +601,45 @@ class XMLParseTest(unittest.TestCase):
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
+    def testAlterAddr(self):
+        infile  = "tests/xmlparse-xml/change-addr-in.xml"
+        outfile = "tests/xmlparse-xml/change-addr-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        dev1 = guest.get_devices("disk")[0]
+        dev2 = guest.get_devices("controller")[0]
+        dev3 = guest.get_devices("channel")[0]
+
+        check = self._make_checker(dev1.address)
+        check("type", "drive", "pci")
+        check("type", "pci", "drive")
+        check("controller", "3", "1")
+        check("bus", "5", "4")
+        check("unit", "33", "32")
+        check = self._make_checker(dev1.alias)
+        check("name", "foo2", None)
+
+        check = self._make_checker(dev2.address)
+        check("type", "pci")
+        check("domain", "0x0000", "0x0001")
+        check("bus", "0x00", "4")
+        check("slot", "0x04", "10")
+        check("function", "0x7", "0x6")
+        check = self._make_checker(dev2.alias)
+        check("name", None, "frob")
+
+        check = self._make_checker(dev3.address)
+        check("type", "virtio-serial")
+        check("controller", "0")
+        check("bus", "0")
+        check("port", "2", "4")
+        check = self._make_checker(dev3.alias)
+        check("name", "channel0", "channel1")
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
+
     def testConsoleCompat(self):
         infile  = "tests/xmlparse-xml/console-compat-in.xml"
         outfile = "tests/xmlparse-xml/console-compat-out.xml"

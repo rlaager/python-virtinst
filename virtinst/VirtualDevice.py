@@ -19,10 +19,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import XMLBuilderDomain
+from XMLBuilderDomain import XMLBuilderDomain, _xml_property
 from virtinst import _virtinst as _
 
-class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
+class VirtualDevice(XMLBuilderDomain):
     """
     Base class for all domain xml device objects.
     """
@@ -69,9 +69,17 @@ class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
         @param conn: libvirt connection to validate device against
         @type conn: virConnect
         """
-        XMLBuilderDomain.XMLBuilderDomain.__init__(self, conn, parsexml,
-                                                   parsexmlnode,
-                                                   caps=caps)
+        XMLBuilderDomain.__init__(self, conn, parsexml, parsexmlnode,
+                                  caps=caps)
+
+        self.alias = VirtualDeviceAlias(conn,
+                                        parsexml=parsexml,
+                                        parsexmlnode=parsexmlnode,
+                                        caps=caps)
+        self.address = VirtualDeviceAddress(conn,
+                                            parsexml=parsexml,
+                                            parsexmlnode=parsexmlnode,
+                                            caps=caps)
 
         if not self._virtual_device_type:
             raise ValueError(_("Virtual device type must be set in subclass."))
@@ -102,3 +110,103 @@ class VirtualDevice(XMLBuilderDomain.XMLBuilderDomain):
         ignore = conn
         ignore = meter
         return
+
+class VirtualDeviceAlias(XMLBuilderDomain):
+    def __init__(self, conn, parsexml=None, parsexmlnode=None, caps=None):
+        XMLBuilderDomain.__init__(self, conn, parsexml, parsexmlnode,
+                                  caps=caps)
+
+        self._name = None
+
+
+    def _get_name(self):
+        return self._name
+    def _set_name(self, val):
+        self._name = val
+    name = _xml_property(_get_name, _set_name, xpath="./alias/@name")
+
+    def _get_xml_config(self):
+        return ""
+
+class VirtualDeviceAddress(XMLBuilderDomain):
+
+    TYPES = ["pci", "drive", "virtio-serial", "ccid"]
+
+    def __init__(self, conn, parsexml=None, parsexmlnode=None, caps=None):
+        XMLBuilderDomain.__init__(self, conn, parsexml, parsexmlnode,
+                                  caps=caps)
+
+        self._type = None
+
+        # PCI address:
+        # <address type='pci' domain='0x0000' bus='0x00' slot='0x04' \
+        #                     function='0x0'/>
+        self._bus = None
+        self._domain = None
+        self._slot = None
+        self._function = None
+
+        # Drive address:
+        # <address type='drive' controller='0' bus='0' unit='0'/>
+        self._controller = None
+        self._unit = None
+
+        # VirtioSerial address:
+        # <address type='virtio-serial' controller='1' bus='0' port='4'/>
+        self._port = None
+
+        # CCID address:
+        # <address type='ccid' controller='0' slot='0'/>
+
+    def _get_type(self):
+        return self._type
+    def _set_type(self, val):
+        self._type = val
+    type = _xml_property(_get_type, _set_type, xpath="./address/@type")
+
+    def _get_domain(self):
+        return self._domain
+    def _set_domain(self, val):
+        self._domain = val
+    domain = _xml_property(_get_domain, _set_domain, xpath="./address/@domain")
+
+    def _get_bus(self):
+        return self._bus
+    def _set_bus(self, val):
+        self._bus = val
+    bus = _xml_property(_get_bus, _set_bus, xpath="./address/@bus")
+
+    def _get_slot(self):
+        return self._slot
+    def _set_slot(self, val):
+        self._slot = val
+    slot = _xml_property(_get_slot, _set_slot, xpath="./address/@slot")
+
+    def _get_function(self):
+        return self._function
+    def _set_function(self, val):
+        self._function = val
+    function = _xml_property(_get_function, _set_function,
+                             xpath="./address/@function")
+
+    def _get_controller(self):
+        return self._controller
+    def _set_controller(self, val):
+        self._controller = val
+    controller = _xml_property(_get_controller, _set_controller,
+                               xpath="./address/@controller")
+
+    def _get_unit(self):
+        return self._unit
+    def _set_unit(self, val):
+        self._unit = val
+    unit = _xml_property(_get_unit, _set_unit, xpath="./address/@unit")
+
+    def _get_port(self):
+        return self._port
+    def _set_port(self, val):
+        self._port = val
+    port = _xml_property(_get_port, _set_port, xpath="./address/@port")
+
+    def _get_xml_config(self):
+        return ""
