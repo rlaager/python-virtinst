@@ -349,6 +349,34 @@ args_dict = {
 
      }, # category "graphics"
 
+     "smartcard": {
+      "args": "--noautoconsole --nodisks --pxe",
+
+      "valid": [
+        # --smartcard host
+        "--smartcard host",
+        # --smartcard none,
+        "--smartcard none",
+        # --smartcard mode with type
+        "--smartcard passthrough,type=spicevmc",
+        # --smartcard mode with type
+        # XXX Requires implementing more opts
+        #"--smartcard passthrough,type=tcp",
+      ],
+
+      "invalid": [
+        # Missing argument
+        "--smartcard",
+        # Invalid argument
+        "--smartcard foo",
+        # Invalid type
+        "--smartcard passthrough,type=foo",
+        # --smartcard bogus
+        "--smartcard host,foobar=baz",
+      ],
+
+     }, # category "smartcard"
+
     "char" : {
      "args": "--hvm --nographics --noautoconsole --nodisks --pxe",
 
@@ -517,7 +545,9 @@ args_dict = {
          "--serial tcp,host=:2222,mode=bind,protocol=telnet "
          "--filesystem /source,/target,mode=squash "
          "--network user,mac=12:34:56:78:11:22 "
-         "--network bridge=foobar,model=virtio ",
+         "--network bridge=foobar,model=virtio "
+         "--channel spicevmc "
+         "--smartcard passthrough,type=spicevmc ",
          "many-devices"),
       ],
 

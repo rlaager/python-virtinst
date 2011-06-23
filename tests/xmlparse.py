@@ -639,6 +639,23 @@ class XMLParseTest(unittest.TestCase):
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
+    def testAlterSmartCard(self):
+        infile  = "tests/xmlparse-xml/change-smartcard-in.xml"
+        outfile = "tests/xmlparse-xml/change-smartcard-out.xml"
+        guest = virtinst.Guest(connection=conn,
+                               parsexml=file(infile).read())
+
+        dev1 = guest.get_devices("smartcard")[0]
+        dev2 = guest.get_devices("smartcard")[1]
+
+        check = self._make_checker(dev1)
+        check("type", None, "tcp")
+
+        check = self._make_checker(dev2)
+        check("mode", "passthrough", "host")
+        check("type", "spicevmc", None)
+
+        self._alter_compare(guest.get_config_xml(), outfile)
 
     def testConsoleCompat(self):
         infile  = "tests/xmlparse-xml/console-compat-in.xml"

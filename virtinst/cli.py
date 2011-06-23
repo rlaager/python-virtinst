@@ -969,6 +969,16 @@ def get_hostdevs(hostdevs, guest):
                                                           name=devname)
         guest.hostdevs.append(dev)
 
+def get_smartcard(guest, sc_opts):
+    for sc in listify(sc_opts):
+        try:
+            dev = parse_smartcard(guest, sc)
+        except Exception, e:
+            fail(_("Error in smartcard device parameters: %s") % str(e))
+
+        if dev:
+            guest.add_device(dev)
+
 #############################
 # Common CLI option/group   #
 #############################
@@ -1035,6 +1045,7 @@ def network_option_group(parser):
                     help=optparse.SUPPRESS_HELP)
 
     return netg
+
 
 #############################################
 # CLI complex parsing helpers               #
@@ -1474,6 +1485,34 @@ def parse_graphics(guest, optstring):
     set_param("keymap", "keymap")
     set_param("passwd", "password")
     set_param("passwdValidTo", "passwordvalidto")
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+
+    return dev
+
+#######################
+# --smartcard parsing #
+#######################
+def parse_smartcard(guest, optstring):
+    if optstring is None:
+        return None
+
+    # Peel the mode off the front
+    opts = parse_optstr(optstring, remove_first="mode")
+    if opts.get("mode") == "none":
+        return None
+    dev = virtinst.VirtualSmartCardDevice(guest.conn, opts.get("mode"))
+
+    def set_param(paramname, dictname, val=None):
+        val = get_opt_param(opts, dictname, val)
+        if val == None:
+            return
+
+        setattr(dev, paramname, val)
+
+    set_param("mode", "mode")
+    set_param("type", "type")
 
     if opts:
         raise ValueError(_("Unknown options %s") % opts.keys())

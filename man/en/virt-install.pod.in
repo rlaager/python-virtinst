@@ -994,13 +994,42 @@ console requires libvirt 0.8.3 or later.
 
 Specify what video device model will be attached to the guest. Valid values
 for VIDEO are hypervisor specific, but some options for recent kvm are
-cirrus, vga, or vmvga (vmware).
+cirrus, vga, qxl, or vmvga (vmware).
+
+=item --smartcard=MODE[,OPTS]
+
+Configure a virtual smartcard device.
+
+Mode is one of B<host>, B<host-certificates>, or B<passthrough>. Additional
+options are:
+
+=over 4
+
+=item B<type>
+
+Character device type to connect to on the host. This is only applicable
+for B<passthrough> mode.
 
 =back
 
+An example invocation:
+
+=over 4
+
+=item B<--smartcard passthrough,type=spicevmc>
+
+Use the smartcard channel of a SPICE graphics device to pass smartcard info
+to the guest
+
+=back
+
+See C<http://libvirt.org/formatdomain.html#elementsSmartcard> for complete
+details.
 
 
 
+
+=back
 
 =head2 Miscellaneous Options
 

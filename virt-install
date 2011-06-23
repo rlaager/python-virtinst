@@ -488,6 +488,7 @@ def build_guest_instance(conn, options):
     get_chardevs(VirtualDevice.VIRTUAL_DEV_CHANNEL, options.channels, guest)
     get_chardevs(VirtualDevice.VIRTUAL_DEV_CONSOLE, options.consoles, guest)
     cli.get_hostdevs(options.hostdevs, guest)
+    cli.get_smartcard(guest, options.smartcard)
 
 
     # Install options
@@ -892,6 +893,9 @@ def parse_args():
                     help=_("Add a watchdog device to the domain."))
     devg.add_option("", "--video", dest="video", action="append",
                     help=_("Specify video hardware type."))
+    devg.add_option("", "--smartcard", dest="smartcard", action="append",
+                    help=_("Add a smartcard device to the domain. Ex:\n"
+                           "--smartcard mode=passthrough"))
 
     # Deprecated
     devg.add_option("", "--sound", action="store_true", dest="sound",

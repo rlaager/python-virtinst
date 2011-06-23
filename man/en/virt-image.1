@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-IMAGE 1"
-.TH VIRT-IMAGE 1 "2010-12-15" "" "Virtual Machine Install Tools"
+.TH VIRT-IMAGE 1 "2011-06-09" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -262,6 +262,10 @@ hypervisor is selected.
 .IX Item "--replace"
 Shutdown and remove any existing guest with the passed \f(CW\*(C`\-\-name\*(C'\fR before
 installing from the image.
+.IP "\-\-noreboot" 2
+.IX Item "--noreboot"
+Prevent the domain from automatically rebooting after the install has
+completed.
 .IP "\-\-skip\-checksum" 2
 .IX Item "--skip-checksum"
 Do not check disk images against checksums (if they are listed in the

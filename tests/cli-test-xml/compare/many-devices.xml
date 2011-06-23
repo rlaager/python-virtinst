@@ -46,6 +46,11 @@
       <source mode='bind' host='127.0.0.1' service='2222'/>
       <protocol type='telnet'/>
     </serial>
+    <channel type='spicevmc'>
+      <target type='virtio' name='com.redhat.spice.0'/>
+    </channel>
+    <smartcard mode='passthrough' type='spicevmc'>
+    </smartcard>
   </devices>
 </domain>
 <domain type='test'>
@@ -95,5 +100,10 @@
       <source mode='bind' host='127.0.0.1' service='2222'/>
       <protocol type='telnet'/>
     </serial>
+    <channel type='spicevmc'>
+      <target type='virtio' name='com.redhat.spice.0'/>
+    </channel>
+    <smartcard mode='passthrough' type='spicevmc'>
+    </smartcard>
   </devices>
 </domain>

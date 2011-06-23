@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2011-03-24" "" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2011-07-05" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -136,9 +136,9 @@ virt\-install \- provision new virtual machines
 \&\fBvirt-install\fR [\s-1OPTION\s0]...
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBvirt-install\fR is a command line tool for creating new \s-1KVM\s0 or Xen virtual
-machines using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library. See the \s-1EXAMPLES\s0
-section at the end of this document to quickly get started.
+\&\fBvirt-install\fR is a command line tool for creating new \s-1KVM\s0, Xen, or Linux
+container guests using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library.
+See the \s-1EXAMPLES\s0 section at the end of this document to quickly get started.
 .PP
 \&\fBvirt-install\fR tool supports both text based & graphical installations,
 using \s-1VNC\s0 or \s-1SDL\s0 graphics, or a text serial console. The guest can be
@@ -159,7 +159,7 @@ options.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 Most options are not required. Minimum requirements are \-\-name, \-\-ram,
-guest storage (\-\-disk or \-\-nodisks), and an install option.
+guest storage (\-\-disk, \-\-filesystem or \-\-nodisks), and an install option.
 .IP "\-h, \-\-help" 2
 .IX Item "-h, --help"
 Show the help message and exit
@@ -205,7 +205,7 @@ If omitted, the host \s-1CPU\s0 architecture will be used in the guest.
 .IP "\-\-machine=MACHINE" 2
 .IX Item "--machine=MACHINE"
 The machine type to emulate. This will typically not need to be specified
-for Xen or \s-1KVM\s0, but is useful for choosing machine times of more exotic
+for Xen or \s-1KVM\s0, but is useful for choosing machine types of more exotic
 architectures.
 .IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 2
 .IX Item "-u UUID, --uuid=UUID"
@@ -320,7 +320,12 @@ the guest installation process.
 .IX Item "--import"
 Skip the \s-1OS\s0 installation process, and build a guest around an existing
 disk image. The device used for booting is the first device specified via
-\&\f(CW\*(C`\-\-disk\*(C'\fR or \f(CW\*(C`\-\-file\*(C'\fR.
+\&\f(CW\*(C`\-\-disk\*(C'\fR or \f(CW\*(C`\-\-filesystem\*(C'\fR.
+.IP "\-\-init=INITPATH" 2
+.IX Item "--init=INITPATH"
+Path to a binary that the container guest will init. If a root \f(CW\*(C`\-\-filesystem\*(C'\fR
+is has been specified, virt-install will default to /sbin/init, otherwise
+will default to /bin/sh.
 .IP "\-\-livecd" 2
 .IX Item "--livecd"
 Specify that the installation media is a live \s-1CD\s0 and thus the guest
@@ -686,7 +691,7 @@ mapped to the \fBdriver_type\fR value as well.
 .Sp
 With libvirt 0.8.3 and later, this option should be specified if reusing
 and existing disk image, since libvirt does not autodetect storage format
-as it is a potential security issue. For example, if reusing and existing
+as it is a potential security issue. For example, if reusing an existing
 qcow2 image, you will want to specify format=qcow2, otherwise the hypervisor
 may not be able to read your disk image.
 .IP "\fBdriver_name\fR" 4
@@ -705,6 +710,39 @@ Disk \s-1IO\s0 backend. Can be either \*(L"threads\*(R" or \*(L"native\*(R".
 .Sp
 See the examples section for some uses. This option deprecates \f(CW\*(C`\-\-file\*(C'\fR,
 \&\f(CW\*(C`\-\-file\-size\*(C'\fR, and \f(CW\*(C`\-\-nonsparse\*(C'\fR.
+.RE
+.IP "\-\-filesystem" 2
+.IX Item "--filesystem"
+Specifies a directory on the host to export to the guest. The most simple
+invocation is:
+.Sp
+.Vb 1
+\&    \-\-filesystem /source/on/host,/target/point/in/guest
+.Ve
+.Sp
+Which will work for recent \s-1QEMU\s0 and linux guest \s-1OS\s0 or \s-1LXC\s0 containers. For
+\&\s-1QEMU\s0, the target point is just a mounting hint in sysfs, so will not be
+automatically mounted.
+.Sp
+The following explicit options can be specified:
+.RS 2
+.IP "\fBtype\fR" 4
+.IX Item "type"
+The type or the source directory. Valid values are 'mount' (the default) or
+\&'template' for OpenVZ templates.
+.IP "\fBmode\fR" 4
+.IX Item "mode"
+The access mode for the source directory from the guest \s-1OS\s0. Only used with
+\&\s-1QEMU\s0 and type=mount. Valid modes are 'passthrough' (the default), 'mapped',
+or 'squash'. See libvirt domain \s-1XML\s0 documentation for more info.
+.IP "\fBsource\fR" 4
+.IX Item "source"
+The directory on the host to share.
+.IP "\fBtarget\fR" 4
+.IX Item "target"
+The mount location to use in the guest.
+.RE
+.RS 2
 .RE
 .IP "\-\-nodisks" 2
 .IX Item "--nodisks"
@@ -917,6 +955,12 @@ parameter is implied if connecting to a \s-1QEMU\s0 based hypervisor.
 This guest should be a paravirtualized guest. If the host supports both
 para & full virtualization, and neither this parameter nor the \f(CW\*(C`\-\-hvm\*(C'\fR
 are specified, this will be assumed.
+.IP "\-\-container" 2
+.IX Item "--container"
+This guest should be a container type guest. This option is only required
+if the hypervisor supports other guest types as well (so for example this
+option is the default behavior for \s-1LXC\s0 and OpenVZ, but is provided for
+completeness).
 .IP "\-\-virt\-type" 2
 .IX Item "--virt-type"
 The hypervisor to install on. Example choices are kvm, qemu, xen, or kqemu.
@@ -1126,7 +1170,32 @@ console requires libvirt 0.8.3 or later.
 .IX Item "--video=VIDEO"
 Specify what video device model will be attached to the guest. Valid values
 for \s-1VIDEO\s0 are hypervisor specific, but some options for recent kvm are
-cirrus, vga, or vmvga (vmware).
+cirrus, vga, qxl, or vmvga (vmware).
+.IP "\-\-smartcard=MODE[,OPTS]" 2
+.IX Item "--smartcard=MODE[,OPTS]"
+Configure a virtual smartcard device.
+.Sp
+Mode is one of \fBhost\fR, \fBhost-certificates\fR, or \fBpassthrough\fR. Additional
+options are:
+.RS 2
+.IP "\fBtype\fR" 4
+.IX Item "type"
+Character device type to connect to on the host. This is only applicable
+for \fBpassthrough\fR mode.
+.RE
+.RS 2
+.Sp
+An example invocation:
+.IP "\fB\-\-smartcard passthrough,type=spicevmc\fR" 4
+.IX Item "--smartcard passthrough,type=spicevmc"
+Use the smartcard channel of a \s-1SPICE\s0 graphics device to pass smartcard info
+to the guest
+.RE
+.RS 2
+.Sp
+See \f(CW\*(C`http://libvirt.org/formatdomain.html#elementsSmartcard\*(C'\fR for complete
+details.
+.RE
 .SS "Miscellaneous Options"
 .IX Subsection "Miscellaneous Options"
 .IP "\-\-autostart" 2
@@ -1249,6 +1318,18 @@ Run a Live \s-1CD\s0 image under Xen fullyvirt, in diskless environment
 \&       \-\-cdrom /root/fedora7live.iso
 .Ve
 .PP
+Run /usr/bin/httpd in a linux container guest (\s-1LXC\s0). Resource usage is capped
+at 512 \s-1MB\s0 of ram and 2 host cpus:
+.PP
+.Vb 6
+\&  # virt\-install \e
+\&        \-\-connect lxc:/// \e
+\&        \-\-name httpd_guest \e
+\&        \-\-ram 512 \e
+\&        \-\-vcpus 2 \e
+\&        \-\-init /usr/bin/httpd
+.Ve
+.PP
 Install a paravirtualized Xen guest, 500 \s-1MB\s0 of \s-1RAM\s0, a 5 \s-1GB\s0 of disk, and
 Fedora Core 6 from a web server, in text-only mode, with old style \-\-file
 options:
@@ -1296,7 +1377,7 @@ distribution for the complete list of credits.
 Please see http://virt\-manager.org/page/BugReporting
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
-Copyright (C) 2006\-2009 Red Hat, Inc, and various contributors.
+Copyright (C) 2006\-2011 Red Hat, Inc, and various contributors.
 This is free software. You may redistribute copies of it under the terms of
 the \s-1GNU\s0 General Public License \f(CW\*(C`http://www.gnu.org/licenses/gpl.html\*(C'\fR. There
 is \s-1NO\s0 \s-1WARRANTY\s0, to the extent permitted by law.

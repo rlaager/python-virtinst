@@ -44,6 +44,7 @@ from VirtualVideoDevice import VirtualVideoDevice
 from VirtualController import VirtualController
 from VirtualWatchdog import VirtualWatchdog
 from VirtualFilesystem import VirtualFilesystem
+from VirtualSmartCardDevice import VirtualSmartCardDevice
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
 from DistroInstaller import DistroInstaller
@@ -73,4 +74,5 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "CPU",
            "VirtualHostDevice", "VirtualHostDeviceUSB", "VirtualVideoDevice",
            "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice",
-           "VirtualController", "VirtualWatchdog"]
+           "VirtualController", "VirtualWatchdog",
+           "VirtualFilesystem", "VirtualSmartCardDevice"]
