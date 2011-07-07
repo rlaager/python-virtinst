@@ -43,6 +43,7 @@ SUPPORT_DOMAIN_MANAGED_SAVE = 1003
 SUPPORT_DOMAIN_MIGRATE_DOWNTIME = 1004
 SUPPORT_DOMAIN_JOB_INFO = 1005
 SUPPORT_DOMAIN_MAXVCPUS_XML = 1006
+SUPPORT_DOMAIN_CONSOLE_STREAM = 1007
 
 # Flags for check_pool_support
 SUPPORT_STORAGE_CREATEVOLFROM = 2000
@@ -140,7 +141,6 @@ _support_dict = {
         "version" : 8005,
     },
 
-
     # Domain checks
     SUPPORT_DOMAIN_GETVCPUS : {
         "function" : "virDomain.vcpus",
@@ -175,6 +175,11 @@ _support_dict = {
         "function" : "virDomain.jobInfo",
         "args" : (),
     },
+
+    SUPPORT_DOMAIN_CONSOLE_STREAM : {
+        "version" : 9003,
+    },
+
 
     # Pool checks
     # This can't ever require a pool object for back compat reasons
