@@ -160,6 +160,18 @@ class VirtualDeviceAddress(XMLBuilderDomain):
         # CCID address:
         # <address type='ccid' controller='0' slot='0'/>
 
+    def clear(self):
+        self._type = None
+        self._bus = None
+        self._domain = None
+        self._slot = None
+        self._function = None
+        self._controller = None
+        self._unit = None
+        self._port = None
+
+        self._remove_child_xpath("./address")
+
     def _get_type(self):
         return self._type
     def _set_type(self, val):
