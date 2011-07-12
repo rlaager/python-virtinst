@@ -252,6 +252,7 @@ class XMLParseTest(unittest.TestCase):
         check("read_only", True, False)
         check("target", None, "fde")
         check("bus", None, "fdc")
+        check("error_policy", "stop", None)
 
         check = self._make_checker(disk3)
         check("path", None, "/default-pool/default-vol")

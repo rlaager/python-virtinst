@@ -441,6 +441,11 @@ storage. Typically does not need to be set by the user.
 
 Disk IO backend. Can be either "threads" or "native".
 
+=item B<error_policy>
+
+How guest should react if a write error is encountered. Can be one of
+"stop", "none", or "enospace"
+
 =back
 
 See the examples section for some uses. This option deprecates C<--file>,

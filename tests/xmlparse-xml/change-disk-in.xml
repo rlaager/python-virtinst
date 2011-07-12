@@ -30,7 +30,7 @@
       <driver type="raw"/>
       <source dev="/dev/loop0"/>
       <target dev="hdc" bus="ide"/>
-      <driver name='phy'/>
+      <driver name='phy' error_policy='stop'/>
       <readonly/>
     </disk>
     <disk type="block" device="disk">

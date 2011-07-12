@@ -1344,7 +1344,7 @@ def parse_disk(guest, optstr, dev=None):
                                                  size, fmt, sparse)
 
     if not dev:
-        # Build a stub device that should almost always validate cleanly
+        # Build a stub device that should always validate cleanly
         dev = virtinst.VirtualDisk(conn=guest.conn,
                                    path=abspath,
                                    volObject=volobj,
@@ -1380,6 +1380,7 @@ def parse_disk(guest, optstr, dev=None):
     set_param("driver_name", "driver_name")
     set_param("driver_type", "driver_type")
     set_param("driver_io", "io")
+    set_param("error_policy", "error_policy")
 
     if opts:
         fail(_("Unknown options %s") % opts.keys())

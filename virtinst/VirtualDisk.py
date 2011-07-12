@@ -329,6 +329,8 @@ class VirtualDisk(VirtualDevice):
             return "dir"
         return "file"
 
+    error_policies = ["none", "stop", "enospace"]
+
     @staticmethod
     def path_exists(conn, path):
         """
@@ -589,6 +591,7 @@ class VirtualDisk(VirtualDevice):
         self._driverName = driverName
         self._driverType = driverType
         self._driver_io = None
+        self._error_policy = None
         self._target = None
         self._validate = validate
 
@@ -839,6 +842,18 @@ class VirtualDisk(VirtualDevice):
                                 self.driver_io)
     driver_io = _xml_property(_get_driver_io, _set_driver_io,
                               xpath="./driver/@io")
+
+    def _get_error_policy(self):
+        return self._error_policy
+    def _set_error_policy(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "error_policy")
+            if val not in self.error_policies:
+                raise ValueError(_("Unknown error policy '%s'" % val))
+        self.__validate_wrapper("_error_policy", val, validate,
+                                self.error_policy)
+    error_policy = _xml_property(_get_error_policy, _set_error_policy,
+                                 xpath="./driver/@error_policy")
 
     # If there is no selinux support on the libvirt connection or the
     # system, we won't throw errors if this is set, just silently ignore.
@@ -1408,6 +1423,8 @@ class VirtualDisk(VirtualDevice):
                 drvxml += " type='%s'" % self.driver_type
             if not self.driver_cache is None:
                 drvxml += " cache='%s'" % self.driver_cache
+            if not self.error_policy is None:
+                drvxml += " error_policy='%s'" % self.error_policy
             if not self.driver_io is None:
                 drvxml += " io='%s'" % self.driver_io
 
