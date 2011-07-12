@@ -19,7 +19,7 @@
   <devices>
     <emulator>/usr/bin/test-hv</emulator>
     <disk type='file' device='disk'>
-      <driver name='qemu' cache='writeback' io='threads'/>
+      <driver cache='writeback' io='threads'/>
       <source file='/tmp/__virtinst_cli_exist1.img'/>
       <target dev='hda' bus='ide'/>
       <shareable/>
@@ -74,7 +74,7 @@
   <devices>
     <emulator>/usr/bin/test-hv</emulator>
     <disk type='file' device='disk'>
-      <driver name='qemu' cache='writeback' io='threads'/>
+      <driver cache='writeback' io='threads'/>
       <source file='/tmp/__virtinst_cli_exist1.img'/>
       <target dev='hda' bus='ide'/>
       <shareable/>

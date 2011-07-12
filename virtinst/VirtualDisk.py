@@ -1411,14 +1411,8 @@ class VirtualDisk(VirtualDevice):
 
         ret = "    <disk type='%s' device='%s'>\n" % (self.type, self.device)
 
-        dname = self.driver_name
-        if not dname and self.driver_cache:
-            self.driver_name = "qemu"
-
         if path:
             drvxml = ""
-            if not self.driver_name is None:
-                drvxml += " name='%s'" % self.driver_name
             if not self.driver_type is None:
                 drvxml += " type='%s'" % self.driver_type
             if not self.driver_cache is None:
@@ -1427,6 +1421,13 @@ class VirtualDisk(VirtualDevice):
                 drvxml += " error_policy='%s'" % self.error_policy
             if not self.driver_io is None:
                 drvxml += " io='%s'" % self.driver_io
+
+            if drvxml and self.driver_name is None:
+                if _util.is_qemu(self.conn):
+                    self.driver_name = "qemu"
+
+            if not self.driver_name is None:
+                drvxml = (" name='%s'" % self.driver_name) + drvxml
 
             if drvxml:
                 ret += "      <driver%s/>\n" % drvxml
