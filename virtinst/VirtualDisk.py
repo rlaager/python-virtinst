@@ -592,6 +592,7 @@ class VirtualDisk(VirtualDevice):
         self._driverType = driverType
         self._driver_io = None
         self._error_policy = None
+        self._serial = None
         self._target = None
         self._validate = validate
 
@@ -854,6 +855,16 @@ class VirtualDisk(VirtualDevice):
                                 self.error_policy)
     error_policy = _xml_property(_get_error_policy, _set_error_policy,
                                  xpath="./driver/@error_policy")
+
+    def _get_serial(self):
+        return self._serial
+    def _set_serial(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "serial")
+        self.__validate_wrapper("_serial", val, validate,
+                                self.serial)
+    serial = _xml_property(_get_serial, _set_serial,
+                           xpath="./serial")
 
     # If there is no selinux support on the libvirt connection or the
     # system, we won't throw errors if this is set, just silently ignore.
@@ -1448,6 +1459,11 @@ class VirtualDisk(VirtualDevice):
             ret += "      <shareable/>\n"
         if ro:
             ret += "      <readonly/>\n"
+
+        if self.serial:
+            ret += ("      <serial>%s</serial>\n" %
+                    _util.xml_escape(self.serial))
+
         ret += "    </disk>"
         return ret
 

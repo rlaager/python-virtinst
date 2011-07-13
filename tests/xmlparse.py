@@ -245,6 +245,7 @@ class XMLParseTest(unittest.TestCase):
         check("path", "/tmp/test.img", "/dev/loop0")
         check("driver_name", None, "test")
         check("driver_type", None, "foobar")
+        check("serial", "WD-WMAP9A966149", "frob")
 
         check = self._make_checker(disk2)
         check("path", "/dev/loop0", None)

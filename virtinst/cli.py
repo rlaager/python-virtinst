@@ -1381,6 +1381,7 @@ def parse_disk(guest, optstr, dev=None):
     set_param("driver_type", "driver_type")
     set_param("driver_io", "io")
     set_param("error_policy", "error_policy")
+    set_param("serial", "serial")
 
     if opts:
         fail(_("Unknown options %s") % opts.keys())

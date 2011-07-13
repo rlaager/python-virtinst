@@ -540,7 +540,7 @@ args_dict = {
         ("--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --vcpus cores=4", "w2k3-cdrom"),
         # Lot's of devices
         ("--hvm --pxe "
-         "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh "
+         "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh,serial=WD-WMAP9A966149 "
          "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro,error_policy=enospace "
          "--serial tcp,host=:2222,mode=bind,protocol=telnet "
          "--filesystem /source,/target,mode=squash "

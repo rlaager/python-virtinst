@@ -446,6 +446,12 @@ Disk IO backend. Can be either "threads" or "native".
 How guest should react if a write error is encountered. Can be one of
 "stop", "none", or "enospace"
 
+=item B<serial>
+
+Serial number of the emulated disk device. This is used in linux guests
+to set /dev/disk/by-id symlinks. An example serial number might be:
+WD-WMAP9A966149
+
 =back
 
 See the examples section for some uses. This option deprecates C<--file>,

@@ -23,6 +23,7 @@
       <source file='/tmp/__virtinst_cli_exist1.img'/>
       <target dev='hda' bus='ide'/>
       <shareable/>
+      <serial>WD-WMAP9A966149</serial>
     </disk>
     <disk type='file' device='disk'>
       <driver error_policy='enospace'/>
@@ -78,6 +79,7 @@
       <source file='/tmp/__virtinst_cli_exist1.img'/>
       <target dev='hda' bus='ide'/>
       <shareable/>
+      <serial>WD-WMAP9A966149</serial>
     </disk>
     <disk type='file' device='disk'>
       <driver error_policy='enospace'/>
