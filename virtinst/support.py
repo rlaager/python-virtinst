@@ -245,10 +245,12 @@ _support_dict = {
     SUPPORT_CONN_HV_FILESYSTEM : {
         "drv_version" : [ ("qemu", 13000),
                           ("lxc", 0),
-                          ("openvz", 0) ],
+                          ("openvz", 0),
+                          ("test", 0)],
         "drv_libvirt_version" : [ ("qemu", 8005),
                                   ("lxc", 0),
-                                  ("openvz", 0) ],
+                                  ("openvz", 0),
+                                  ("test", 0)],
     }
 }
 
