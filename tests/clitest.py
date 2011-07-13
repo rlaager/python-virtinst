@@ -760,6 +760,8 @@ args_dict = {
         #"--original-xml %(CLONE_STORAGE_XML)s --file /cross-pool/clonevol",
         # XML w/ non-existent storage, with --preserve
         "--original-xml %(CLONE_NOEXIST_XML)s --file %(EXISTIMG1)s --preserve",
+        # Overwriting existing VM
+        "-o test -n test-many-devices --replace",
       ],
 
       "invalid": [

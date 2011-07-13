@@ -1162,6 +1162,39 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     # Actual install methods #
     ##########################
 
+    def remove_original_vm(self, force=None):
+        """
+        Remove the existing VM with the same name if requested, or error
+        if there is a collision.
+        """
+        if force == None:
+            force = self.replace
+
+        vm = None
+        try:
+            vm = self.conn.lookupByName(self.name)
+        except libvirt.libvirtError:
+            pass
+
+        if vm is None:
+            return
+
+        if not force:
+            raise RuntimeError(_("Domain named %s already exists!") %
+                               self.name)
+
+        try:
+            logging.debug("Explicitly replacing guest '%s'" % self.name)
+            if vm.ID() != -1:
+                logging.info("Destroying guest '%s'" % self.name)
+                vm.destroy()
+
+            logging.info("Undefining guest '%s'" % self.name)
+            vm.undefine()
+        except libvirt.libvirtError, e:
+            raise RuntimeError(_("Could not remove old vm '%s': %s") %
+                               (self.name, str(e)))
+
     def start_install(self, consolecb=None, meter=None, removeOld=None,
                       wait=True, dry=False, return_xml=False, noboot=False):
         """
@@ -1169,8 +1202,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         @param return_xml: Don't create the guest, just return generated XML
         """
         is_initial = True
-        if removeOld == None:
-            removeOld = self.replace
 
         self.validate_parms()
         self._consolechild = None
@@ -1188,7 +1219,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 return
 
             # Remove existing VM if requested
-            self._replace_original_vm(removeOld)
+            self.remove_original_vm(removeOld)
 
             self.domain = self._create_guest(consolecb, meter, wait,
                                              start_xml, final_xml, is_initial,
@@ -1317,36 +1348,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         # ensure there's time for the domain to finish destroying if the
         # install has finished or the guest crashed
         time.sleep(1)
-
-    def _replace_original_vm(self, removeOld):
-        """
-        Remove the existing VM with the same name if requested, or error
-        if there is a collision.
-        """
-        vm = None
-        try:
-            vm = self.conn.lookupByName(self.name)
-        except libvirt.libvirtError:
-            pass
-
-        if vm is None:
-            return
-
-        if not removeOld:
-            raise RuntimeError(_("Domain named %s already exists!") %
-                               self.name)
-
-        try:
-            if vm.ID() != -1:
-                logging.info("Destroying image %s" % self.name)
-                vm.destroy()
-
-            logging.info("Removing old definition for image %s" % self.name)
-            vm.undefine()
-        except libvirt.libvirtError, e:
-            raise RuntimeError(_("Could not remove old vm '%s': %s") %
-                               (self.name, str(e)))
-
 
     def _flag_autostart(self):
         """

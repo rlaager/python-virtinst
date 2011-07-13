@@ -189,14 +189,6 @@ class CloneDesign(object):
         except ValueError, e:
             raise ValueError(_("Invalid name for new guest: %s") % e)
 
-        # Make sure new VM name isn't taken.
-        try:
-            if self._hyper_conn.lookupByName(name) is not None:
-                raise ValueError(_("Domain name '%s' already in use.") %
-                                 name)
-        except libvirt.libvirtError:
-            pass
-
         self._clone_name = name
     clone_name = property(get_clone_name, set_clone_name,
                           doc="Name to use for the new guest clone.")
@@ -390,6 +382,13 @@ class CloneDesign(object):
                                  "domain state is not checked before "
                                  "cloning.")
 
+    def _get_replace(self):
+        return self._valid_guest.replace
+    def _set_replace(self, val):
+        self._valid_guest.replace = bool(val)
+    replace = property(_get_replace, _set_replace,
+                       doc="f enabled, don't check for clone name collision, "
+                           "simply undefine any conflicting guest.")
     # Functional methods
 
     def setup_original(self):
@@ -526,6 +525,8 @@ class CloneDesign(object):
         self.setup_clone()
         logging.debug("Clone guest xml is\n%s" % (self._clone_xml))
 
+    def remove_original_vm(self, force=None):
+        return self._valid_guest.remove_original_vm(force=force)
 
     # Private helper functions
 
@@ -672,8 +673,10 @@ def start_duplicate(design, meter=None):
 
     dom = None
     try:
-        # Define domain first so we can catch any xml errors before duplicating
-        # storage
+        # Replace orig VM if required
+        design.remove_original_vm()
+
+        # Define domain early to catch any xml errors before duping storage
         dom = design.original_conn.defineXML(design.clone_xml)
 
         if design.preserve == True:

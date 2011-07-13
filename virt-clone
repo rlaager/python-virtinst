@@ -172,6 +172,9 @@ def parse_args():
     misc.add_option("", "--print-xml", action="store_true", dest="xmlonly",
                     help=_("Print the generated domain XML rather than define "
                            "and clone the guest."))
+    misc.add_option("", "--replace", action="store_true", dest="replace",
+                    help=_("Don't check for name collision. Allows replacing "
+                           "an existing guest with the new clone"))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                       help=_("Print debugging information"))
     misc.add_option("", "--prompt", action="store_true", dest="prompt",
@@ -213,6 +216,7 @@ def main():
     design = clmgr.CloneDesign(connection=conn)
 
     design.clone_running = options.clone_running
+    design.replace = bool(options.replace)
     get_original_guest(options.original_guest, options.original_xml,
                        design)
     get_clone_name(options.new_name, options.auto_clone, design)
