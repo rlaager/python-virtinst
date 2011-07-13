@@ -135,16 +135,19 @@ class TestXMLConfig(unittest.TestCase):
         if os.path.exists(scratch):
             os.rmdir(scratch)
 
-    def _compare(self, guest, filebase, do_install, do_disk_boot=False):
-        filename = build_xmlfile(filebase)
+    def _compare(self, guest, filebase, do_install, do_disk_boot=False,
+                 do_create=True):
+        filename = filebase and build_xmlfile(filebase) or None
 
         guest._prepare_install(progress.BaseMeter())
         try:
             actualXML = guest.get_config_xml(install=do_install,
                                              disk_boot=do_disk_boot)
 
-            utils.diff_compare(actualXML, filename)
-            utils.test_create(guest.conn, actualXML)
+            if filename:
+                utils.diff_compare(actualXML, filename)
+            if do_create:
+                utils.test_create(guest.conn, actualXML)
         finally:
             guest._cleanup_install()
 
@@ -1041,6 +1044,43 @@ class TestXMLConfig(unittest.TestCase):
             actualsize = long(os.path.getsize(path))
             os.unlink(path)
             self.assertEquals(sizebytes, actualsize)
+
+    def testDefaultBridge(self):
+        origfunc = None
+        util = None
+        try:
+            i = make_pxe_installer()
+            g = get_basic_fullyvirt_guest(installer=i)
+            util = getattr(virtinst, "_util")
+            origfunc = util.default_bridge2
+
+            def newbridge(ignore_conn):
+                return ["bridge", "br0"]
+            util.default_bridge2 = newbridge
+
+            dev1 = virtinst.VirtualNetworkInterface(conn=g.conn)
+            dev1.macaddr = "11:22:33:44:55:66"
+            g.add_device(dev1)
+
+            dev2 = virtinst.VirtualNetworkInterface(conn=g.conn,
+                                                parsexml=dev1.get_xml_config())
+            dev2.source = None
+            dev2.source = "foobr0"
+            dev2.macaddr = "11:22:33:44:55:67"
+            g.add_device(dev2)
+
+            dev3 = virtinst.VirtualNetworkInterface(conn=g.conn,
+                                                parsexml=dev1.get_xml_config())
+            dev3.source = None
+            dev3.macaddr = "11:22:33:44:55:68"
+            g.add_device(dev3)
+
+            self._compare(g, "boot-default-bridge", False, do_create=False)
+            dev3.type = dev3.TYPE_USER
+            self._compare(g, None, False)
+        finally:
+            if util and origfunc:
+                util.default_bridge2 = origfunc
 
 if __name__ == "__main__":
     unittest.main()

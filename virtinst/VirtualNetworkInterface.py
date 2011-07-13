@@ -158,9 +158,15 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                 raise ValueError(_("A network name was not provided"))
 
     def _generate_default_bridge(self):
-        if not self._default_bridge:
-            self._default_bridge = _util.default_bridge2(self.conn)
-        return self._default_bridge
+        ret = self._default_bridge
+        if ret is None:
+            ret = False
+            default = _util.default_bridge2(self.conn)
+            if default:
+                ret = default[1]
+
+        self._default_bridge = ret
+        return ret or None
 
     def _generate_random_mac(self):
         if self.conn and not self._random_mac:
@@ -255,7 +261,9 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                             xpath="./source/@network")
 
     def get_bridge(self):
-        if not self._bridge and self.type == self.TYPE_BRIDGE:
+        if (not self._is_parse() and
+            not self._bridge and
+            self.type == self.TYPE_BRIDGE):
             return self._generate_default_bridge()
         return self._bridge
     def set_bridge(self, val):
