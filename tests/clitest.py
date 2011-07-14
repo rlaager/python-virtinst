@@ -87,6 +87,7 @@ test_files = {
     'CLONE_STORAGE_XML' : "%s/clone-disk-managed.xml" % xmldir,
     'CLONE_NOEXIST_XML' : "%s/clone-disk-noexist.xml" % xmldir,
     'IMAGE_XML'         : "%s/image.xml" % xmldir,
+    'IMAGE_NOGFX_XML'   : "%s/image-nogfx.xml" % xmldir,
     'NEWIMG1'           : new_images[0],
     'NEWIMG2'           : new_images[1],
     'NEWIMG3'           : new_images[2],
@@ -844,10 +845,10 @@ args_dict = {
 
 
   'virt-image': {
-    "globalargs" : " --connect %(TESTURI)s -d %(IMAGE_XML)s",
+    "globalargs" : " --connect %(TESTURI)s --debug",
 
     "general" : {
-      "args" : "--name test-image",
+      "args" : "--name test-image %(IMAGE_XML)s",
 
       "valid": [
         # All default values
@@ -871,7 +872,7 @@ args_dict = {
      }, # category 'general'
 
     "graphics" : {
-      "args" : "--name test-image --boot 0",
+      "args" : "--name test-image --boot 0 %(IMAGE_XML)s",
 
       "valid": [
         # SDL
@@ -888,25 +889,30 @@ args_dict = {
 
       "valid" : [
         # Colliding VM name w/ --replace
-        "--name test --replace",
+        "--name test --replace %(IMAGE_XML)s",
       ],
       "invalid" : [
         # No name specified, and no prompt flag
-        "",
+        "%(IMAGE_XML)s",
         # Colliding VM name without --replace
-        "--name test",
+        "--name test %(IMAGE_XML)s",
       ],
 
       "compare" : [
-        ("--name foobar --ram 64 --os-variant winxp --boot 0", "image-boot0"),
-        ("--name foobar --ram 64 --network user,model=e1000 --boot 1",
+        ("--name foobar --ram 64 --os-variant winxp --boot 0 %(IMAGE_XML)s",
+         "image-boot0"),
+        ("--name foobar --ram 64 --network user,model=e1000 --boot 1 "
+         "%(IMAGE_XML)s",
          "image-boot1"),
+        ("--name foobar --ram 64 --boot 0 "
+         "%(IMAGE_NOGFX_XML)s",
+         "image-nogfx"),
       ]
 
      }, # category 'misc'
 
      "network": {
-      "args": "--name test-image --boot 0 --nographics",
+      "args": "--name test-image --boot 0 --nographics %(IMAGE_XML)s",
 
       "valid": [
         # user networking

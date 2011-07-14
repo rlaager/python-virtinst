@@ -45,11 +45,9 @@ def get_networks(domain, guest, options):
 
     cli.get_networks(guest, networks, macs)
 
-def get_graphics(domain, guest, options):
-    if not domain.graphics:
-        return
-
-    graphics = cli.digest_graphics(guest, options)
+def get_graphics(image, guest, options):
+    graphics = cli.digest_graphics(guest, options,
+                                   default_override=bool(image.graphics))
     cli.get_graphics(guest, graphics)
 
 ### Option parsing

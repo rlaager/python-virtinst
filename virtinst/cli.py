@@ -879,7 +879,7 @@ def set_os_variant(guest, distro_type, distro_variant):
     if (distro_variant and str(distro_variant).lower() != "none"):
         guest.set_os_variant(distro_variant)
 
-def digest_graphics(guest, options):
+def digest_graphics(guest, options, default_override=None):
     vnc = options.vnc
     vncport = options.vncport
     vnclisten = options.vnclisten
@@ -901,15 +901,21 @@ def digest_graphics(guest, options):
 
     if optnum == 0:
         # If no graphics specified, choose a default
-        if guest.installer.is_container():
-            logging.debug("Container guest, defaulting to nographics")
-            nographics = True
-        elif "DISPLAY" in os.environ.keys():
-            logging.debug("DISPLAY is set: graphics defaulting to VNC.")
+        if default_override is True:
             vnc = True
-        else:
-            logging.debug("DISPLAY is not set: defaulting to nographics.")
+        elif default_override is False:
             nographics = True
+        else:
+            if guest.installer.is_container():
+                logging.debug("Container guest, defaulting to nographics")
+                nographics = True
+            elif "DISPLAY" in os.environ.keys():
+                logging.debug("DISPLAY is set: graphics defaulting to VNC.")
+                vnc = True
+            else:
+                logging.debug("DISPLAY is not set: defaulting to nographics.")
+                nographics = True
+
 
     # Build a --graphics command line from old style opts
     optstr = ((vnc and "vnc") or
