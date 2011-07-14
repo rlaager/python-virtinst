@@ -807,8 +807,7 @@ class iSCSIPool(StoragePool):
                                  " volumes."))
 
     def get_volume_class():
-        raise NotImplementedError(_("iSCSI volume creation is not "
-                                    "implemented."))
+        raise NotImplementedError(_("iSCSI volume creation is not supported."))
     get_volume_class = staticmethod(get_volume_class)
 
     def __init__(self, conn, name, source_path=None, host=None,
@@ -857,8 +856,7 @@ class SCSIPool(StoragePool):
                                  " volumes."))
 
     def get_volume_class():
-        raise NotImplementedError(_("SCSI volume creation is not "
-                                    "implemented."))
+        raise NotImplementedError(_("SCSI volume creation is not supported."))
     get_volume_class = staticmethod(get_volume_class)
 
     def __init__(self, conn, name, source_path=None,
