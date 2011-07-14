@@ -211,12 +211,7 @@ image xml).
 
 =item -d, --debug
 
-Print debugging information
-
-=item --force
-
-Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
-say yes. For any other prompts, the application will exit.
+Print debugging information.
 
 =back
 
