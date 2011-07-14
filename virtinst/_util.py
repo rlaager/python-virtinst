@@ -150,10 +150,14 @@ def validate_uuid(val):
                    "-" + val[16:20] + "-" + val[20:32])
     return val
 
-def validate_name(name_type, val):
-    if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
-        raise ValueError(_("%s name must be a string between 0 and 50 "
-                           "characters") % name_type)
+def validate_name(name_type, val, lencheck=False):
+    if type(val) is not str or len(val) == 0:
+        raise ValueError(_("%s name must be a string"))
+
+    if lencheck:
+        if len(val) > 50:
+            raise ValueError(_("%s name must be less than 50 characters") %
+                             name_type)
     if re.match("^[0-9]+$", val):
         raise ValueError(_("%s name can not be only numeric characters") %
                           name_type)

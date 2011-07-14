@@ -305,7 +305,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def get_name(self):
         return self._name
     def set_name(self, val):
-        _util.validate_name(_("Guest"), val)
+        _util.validate_name(_("Guest"), val, lencheck=True)
 
         do_fail = False
         if self.replace != True:
