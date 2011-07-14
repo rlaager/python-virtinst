@@ -918,6 +918,9 @@ class VirtualDisk(VirtualDevice):
                 setattr(self, varname, orig)
                 raise
 
+    def can_be_empty(self):
+        return (self.device == self.DEVICE_FLOPPY or
+                self.device == self.DEVICE_CDROM)
 
     def __change_storage(self, path=None, vol_object=None, vol_install=None):
         """
@@ -1154,8 +1157,7 @@ class VirtualDisk(VirtualDevice):
 
         # No storage specified for a removable device type (CDROM, floppy)
         if self.__no_storage():
-            if (self.device != self.DEVICE_FLOPPY and
-                self.device != self.DEVICE_CDROM):
+            if not self.can_be_empty():
                 raise ValueError(_("Device type '%s' requires a path") %
                                  self.device)
 
@@ -1194,8 +1196,8 @@ class VirtualDisk(VirtualDevice):
             return True
 
 
-        if self.device == self.DEVICE_FLOPPY or \
-           self.device == self.DEVICE_CDROM:
+        if (self.device == self.DEVICE_FLOPPY or
+            self.device == self.DEVICE_CDROM):
             raise ValueError(_("Cannot create storage for %s device.") %
                                self.device)
 

@@ -542,6 +542,7 @@ args_dict = {
         ("--hvm --pxe "
          "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh,serial=WD-WMAP9A966149 "
          "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro,error_policy=enospace "
+         "--disk device=cdrom "
          "--serial tcp,host=:2222,mode=bind,protocol=telnet "
          "--filesystem /source,/target,mode=squash "
          "--network user,mac=12:34:56:78:11:22 "

@@ -592,9 +592,10 @@ def disk_prompt(conn, origpath, origsize, origsparse,
     askmsg = _("Do you really want to use this disk (yes or no)")
     retry_path = True
 
-    arg_dict = {}
-    no_path_needed = (bool(arg_dict.get("volInstall")) or
-                      bool(arg_dict.get("volObject")))
+    no_path_needed = (origdev and
+                      (origdev.vol_install or
+                       origdev.vol_object or
+                       origdev.can_be_empty()))
 
     def prompt_path(chkpath, chksize):
         """
