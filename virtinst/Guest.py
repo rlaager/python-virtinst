@@ -268,7 +268,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._features = DomainFeatures(self.conn)
         self._clock = Clock(self.conn)
         self._seclabel = Seclabel(self.conn)
-        self._seclabel.model = None
         self._cpu = CPU(self.conn)
 
     def is_xen(self):

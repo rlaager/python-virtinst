@@ -27,6 +27,7 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
 
     SECLABEL_TYPE_DYNAMIC = "dynamic"
     SECLABEL_TYPE_STATIC = "static"
+    SECLABEL_TYPE_DEFAULT = "default"
     SECLABEL_TYPES = [SECLABEL_TYPE_DYNAMIC, SECLABEL_TYPE_STATIC]
 
     MODEL_DEFAULT = "default"
@@ -45,7 +46,7 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
             return
 
         self.model = self.MODEL_DEFAULT
-        self.type = self.SECLABEL_TYPE_DYNAMIC
+        self.type = self.SECLABEL_TYPE_DEFAULT
 
     def _get_default_model(self):
         return self._get_caps().host.secmodel.model
@@ -53,7 +54,8 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
     def get_type(self):
         return self._type
     def set_type(self, val):
-        if val not in self.SECLABEL_TYPES:
+        if (val not in self.SECLABEL_TYPES and
+            val != self.SECLABEL_TYPE_DEFAULT):
             raise ValueError("Unknown security type '%s'" % val)
         self._type = val
     type = _xml_property(get_type, set_type,
@@ -82,22 +84,28 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
                                xpath="./seclabel/imagelabel")
 
     def _get_xml_config(self):
-        if not self.model:
+        if (self.model == self.MODEL_DEFAULT and
+            self.type == self.SECLABEL_TYPE_DEFAULT):
             return ""
 
-        if not self.type:
+        model = self.model
+        typ = self.type
+
+        if model == self.MODEL_DEFAULT:
+            model = self._get_default_model()
+        if typ == self.SECLABEL_TYPE_DEFAULT:
+            typ = self.SECLABEL_TYPE_DYNAMIC
+
+        if not typ:
             raise RuntimeError("Security type and model must be specified")
 
-        if (self.type == self.SECLABEL_TYPE_STATIC and not self.label):
+        if (typ == self.SECLABEL_TYPE_STATIC and not self.label):
             raise RuntimeError("A label must be specified for static "
                                "security type.")
 
-        model = self.model
-        if model == self.MODEL_DEFAULT:
-            model = self._get_default_model()
 
         label_xml = ""
-        xml = "  <seclabel type='%s' model='%s'" % (self.type, model)
+        xml = "  <seclabel type='%s' model='%s'" % (typ, model)
 
         if self.label:
             label_xml += "    <label>%s</label>\n" % self.label

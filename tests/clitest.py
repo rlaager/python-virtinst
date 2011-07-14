@@ -548,7 +548,8 @@ args_dict = {
          "--network user,mac=12:34:56:78:11:22 "
          "--network bridge=foobar,model=virtio "
          "--channel spicevmc "
-         "--smartcard passthrough,type=spicevmc ",
+         "--smartcard passthrough,type=spicevmc "
+         "--security type=static,label='system_u:object_r:svirt_image_t:s0:c100,c200' ",
          "many-devices"),
       ],
 

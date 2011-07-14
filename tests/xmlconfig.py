@@ -415,7 +415,6 @@ class TestXMLConfig(unittest.TestCase):
         g.installer.bootconfig.bootorder = [
             g.installer.bootconfig.BOOT_DEVICE_NETWORK]
         g.installer.bootconfig.enable_bootmenu = True
-        g.seclabel.model = "default"
 
         self._compare(g, "boot-fullyvirt-pxe-always", False)
 
