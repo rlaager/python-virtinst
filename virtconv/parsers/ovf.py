@@ -278,7 +278,7 @@ class ovf_parser(formats.parser):
 
         res = False
         try:
-            if xml.count("<Envelope/>"):
+            if xml.count("</Envelope>"):
                 res = bool(get_xml_path(xml, "/ovf:Envelope"))
         except Exception, e:
             logging.debug("Error parsing OVF XML: %s" % str(e))
