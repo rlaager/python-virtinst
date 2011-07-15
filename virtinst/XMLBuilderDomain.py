@@ -335,6 +335,8 @@ class XMLBuilderDomain(object):
         self._conn_uri = None
         self.__remote = False
         self.__caps = None
+
+        self._own_node = False
         self._xml_node = None
         self._xml_ctx = None
 
@@ -348,6 +350,18 @@ class XMLBuilderDomain(object):
 
         if parsexml or parsexmlnode:
             self._parsexml(parsexml, parsexmlnode)
+
+    def __del__(self):
+        try:
+            if self._xml_node and self._own_node:
+                self._xml_node.doc.freeDoc()
+        except:
+            pass
+        try:
+            if self._xml_ctx:
+                self._xml_ctx.xpathFreeContext()
+        except:
+            pass
 
     def get_conn(self):
         return self._conn
@@ -413,6 +427,7 @@ class XMLBuilderDomain(object):
     def _parsexml(self, xml, node):
         if xml:
             self._xml_node = libxml2.parseDoc(xml).children
+            self._own_node = True
         else:
             self._xml_node = node
 
