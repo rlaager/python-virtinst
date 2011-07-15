@@ -194,7 +194,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         if conn == None:
             logging.debug("No conn passed to Guest, opening URI '%s'" %
                           hypervisorURI)
-            conn = libvirt.open(hypervisorURI)
+            conn = self._open_uri(hypervisorURI)
 
         if conn == None:
             raise RuntimeError(_("Unable to connect to hypervisor, aborting "
@@ -269,6 +269,11 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._clock = Clock(self.conn)
         self._seclabel = Seclabel(self.conn)
         self._cpu = CPU(self.conn)
+
+    def _open_uri(self, uri):
+        # This is here so test suite can overwrite it, to make sure
+        # Guest is never opening anything
+        return libvirt.open(uri)
 
     def is_xen(self):
         return (self.installer and

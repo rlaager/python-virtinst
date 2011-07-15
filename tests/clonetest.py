@@ -121,13 +121,8 @@ class TestClone(unittest.TestCase):
            connection to ensure we don't get any errors"""
         outfile = os.path.join(clonexml_dir, filebase + "-out.xml")
         outxml = utils.read_file(outfile)
+        utils.test_create(conn, outxml)
 
-        vm = None
-        try:
-            vm = conn.defineXML(outxml)
-        finally:
-            if vm:
-                vm.undefine()
 
     # Skip this test, since libvirt can add new XML elements to the defined
     # XML (<video>) that make roundtrip a pain

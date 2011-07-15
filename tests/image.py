@@ -82,11 +82,12 @@ class TestImageParser(unittest.TestCase):
             inst = virtinst.ImageInstaller(image, caps, boot_index=idx,
                                            conn=conn)
 
+            xmlconfig.set_conn(conn)
+
             if inst.is_hvm():
-                g = xmlconfig.get_basic_fullyvirt_guest(typ=gtype,
-                                                        testconn=conn)
+                g = xmlconfig.get_basic_fullyvirt_guest(typ=gtype)
             else:
-                g = xmlconfig.get_basic_paravirt_guest(testconn=conn)
+                g = xmlconfig.get_basic_paravirt_guest()
 
             g.installer = inst
             g._prepare_install(None)
@@ -97,6 +98,7 @@ class TestImageParser(unittest.TestCase):
             utils.diff_compare(g.get_config_xml(install=False),
                                image2guestdir + fname, expect_out=expect_out)
 
+            xmlconfig.reset_conn()
 
     # Build libvirt XML from the image xml
     # XXX: This doesn't set up devices, so the guest xml will be pretty

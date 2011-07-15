@@ -31,10 +31,19 @@ from virtinst import VirtualWatchdog
 from virtinst import VirtualInputDevice
 import utils
 
-conn = utils.open_testdriver()
+testconn = utils.open_testdriver()
+kvmconn = utils.open_testkvmdriver()
 scratch = os.path.join(os.getcwd(), "tests", "testscratchdir")
 
-def get_basic_paravirt_guest(testconn=conn, installer=None):
+conn = None
+def set_conn(newconn):
+    global conn
+    conn = newconn
+def reset_conn():
+    set_conn(testconn)
+reset_conn()
+
+def get_basic_paravirt_guest(installer=None):
     g = virtinst.ParaVirtGuest(connection=testconn, type="xen")
     g.name = "TestGuest"
     g.memory = int(200)
@@ -50,8 +59,8 @@ def get_basic_paravirt_guest(testconn=conn, installer=None):
     g.installer._scratchdir = scratch
     return g
 
-def get_basic_fullyvirt_guest(typ="xen", testconn=conn, installer=None):
-    g = virtinst.FullVirtGuest(connection=testconn, type=typ,
+def get_basic_fullyvirt_guest(typ="xen", installer=None):
+    g = virtinst.FullVirtGuest(connection=conn, type=typ,
                                emulator="/usr/lib/xen/bin/qemu-dm",
                                arch="i686")
     g.name = "TestGuest"
@@ -166,7 +175,7 @@ class TestXMLConfig(unittest.TestCase):
         def new_getxml(install=True, disk_boot=False):
             xml = old_getxml(install, disk_boot)
             return utils.sanitize_xml_for_define(xml)
-        guest.get_config_xml = new_getxml
+        guest.get_xml_config = new_getxml
 
         try:
             dom = guest.start_install(consolecb, meter, removeOld, wait)
@@ -955,8 +964,9 @@ class TestXMLConfig(unittest.TestCase):
         self._compare(g, "boot-many-devices", False)
 
     def testCpuset(self):
-        testconn = libvirt.open("test:///default")
-        g = get_basic_fullyvirt_guest(testconn=testconn)
+        normaltest = libvirt.open("test:///default")
+        set_conn(normaltest)
+        g = get_basic_fullyvirt_guest()
 
         # Cpuset
         cpustr = g.generate_cpuset(g.conn, g.memory)
@@ -1000,6 +1010,7 @@ class TestXMLConfig(unittest.TestCase):
         cpu = virtinst.CPU(g.conn)
         self.assertEquals(cpu.vcpus_from_topology(), 1)
 
+        reset_conn()
 
     #
     # Full Install tests: try to mimic virt-install as much as possible
