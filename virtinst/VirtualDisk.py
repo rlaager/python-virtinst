@@ -1064,7 +1064,7 @@ class VirtualDisk(VirtualDevice):
         drvtype = self._driverType
 
         if self.conn:
-            is_qemu = _util.is_qemu(self.conn)
+            is_qemu = self.is_qemu()
             if is_qemu and not drvname:
                 drvname = self.DRIVER_QEMU
 
@@ -1166,7 +1166,7 @@ class VirtualDisk(VirtualDevice):
         storage_capable = bool(self.conn and
                                _util.is_storage_capable(self.conn))
 
-        if self._is_remote():
+        if self.is_remote():
             if not storage_capable:
                 raise ValueError(_("Connection doesn't support remote "
                                    "storage."))
@@ -1436,7 +1436,7 @@ class VirtualDisk(VirtualDevice):
                 drvxml += " io='%s'" % self.driver_io
 
             if drvxml and self.driver_name is None:
-                if _util.is_qemu(self.conn):
+                if self.is_qemu():
                     self.driver_name = "qemu"
 
             if not self.driver_name is None:
@@ -1557,7 +1557,7 @@ class VirtualDisk(VirtualDevice):
             #      our label guesses are built with svirt in mind
             return False
 
-        elif self._is_remote():
+        elif self.is_remote():
             return False
 
         elif not _util.have_selinux():

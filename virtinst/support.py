@@ -318,7 +318,7 @@ def _local_lib_ver():
     return libvirt.getVersion()
 
 # Version of libvirt library/daemon on the connection (could be remote)
-def _daemon_lib_ver(conn, force_version, minimum_libvirt_version):
+def _daemon_lib_ver(conn, uri, force_version, minimum_libvirt_version):
     # Always force the required version if it's after the version which
     # has getLibVersion
     if force_version or minimum_libvirt_version >= 7004:
@@ -326,7 +326,6 @@ def _daemon_lib_ver(conn, force_version, minimum_libvirt_version):
     else:
         default_ret = 100000000000
 
-    uri = conn.getURI()
     if not _util.is_uri_remote(uri):
         return _local_lib_ver()
 
@@ -339,8 +338,8 @@ def _daemon_lib_ver(conn, force_version, minimum_libvirt_version):
     return conn.getLibVersion()
 
 # Return the hypervisor version
-def _hv_ver(conn):
-    drv_type = _util.get_uri_driver(conn.getURI())
+def _hv_ver(conn, uri):
+    drv_type = _util.get_uri_driver(uri)
     args = ()
 
     cmd = _get_command("getVersion", obj=conn)
@@ -396,7 +395,8 @@ def _check_support(conn, feature, data=None):
             key_list.remove(key)
         return support_info.get(key)
 
-    drv_type = _util.get_uri_driver(conn.getURI())
+    uri = conn.getURI()
+    drv_type = _util.get_uri_driver(uri)
     is_rhel6 = _get_rhel6()
     force_version = get_value("force_version") or False
 
@@ -418,9 +418,9 @@ def _check_support(conn, feature, data=None):
     flag = get_value("flag")
 
     actual_lib_ver = _local_lib_ver()
-    actual_daemon_ver = _daemon_lib_ver(conn, force_version,
+    actual_daemon_ver = _daemon_lib_ver(conn, uri, force_version,
                                         minimum_libvirt_version)
-    actual_drv_ver = _hv_ver(conn)
+    actual_drv_ver = _hv_ver(conn, uri)
 
     # Make sure there are no keys left in the key_list. This will
     # ensure we didn't mistype anything above, or in the support_dict

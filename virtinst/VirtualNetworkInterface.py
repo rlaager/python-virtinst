@@ -315,7 +315,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             return (False, None)
 
         # Not supported for remote connections yet
-        if self._is_remote():
+        if self.is_remote():
             return (False, None)
 
         vms, inactive_vm = _util.fetch_all_guests(conn)

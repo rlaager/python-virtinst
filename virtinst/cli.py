@@ -457,7 +457,7 @@ def nice_exit():
     sys.exit(0)
 
 def virsh_start_cmd(guest):
-    return ("virsh --connect %s start %s" % (guest.conn.getURI(), guest.name))
+    return ("virsh --connect %s start %s" % (guest.get_uri(), guest.name))
 
 def install_fail(guest):
     virshcmd = virsh_start_cmd(guest)
@@ -835,10 +835,10 @@ def get_cpuset(cpuset, mem, guest):
 
     return
 
-def _default_network_opts(conn):
+def _default_network_opts(guest):
     opts = ""
-    if User.current().has_priv(User.PRIV_CREATE_NETWORK, conn.getURI()):
-        net = _util.default_network(conn)
+    if User.current().has_priv(User.PRIV_CREATE_NETWORK, guest.get_uri()):
+        net = _util.default_network(guest.conn)
         opts = "%s=%s" % (net[0], net[1])
     else:
         opts = "user"
@@ -868,7 +868,7 @@ def digest_networks(guest, options, numnics=1):
 
     for idx in range(len(networks)):
         if networks[idx] is None:
-            networks[idx] = _default_network_opts(guest.conn)
+            networks[idx] = _default_network_opts(guest)
 
     return networks, macs
 

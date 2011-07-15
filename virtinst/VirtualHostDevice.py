@@ -23,7 +23,6 @@ import logging
 import libvirt
 
 from virtinst import support
-from virtinst import _util
 from virtinst import _virtinst as _
 from XMLBuilderDomain import _xml_property
 
@@ -99,7 +98,7 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
             return
 
         self.managed = True
-        if _util.get_uri_driver(self.conn.getURI()).lower() == "xen":
+        if self.is_xen():
             self.managed = False
 
 

@@ -399,8 +399,19 @@ def default_bridge2(conn=None):
 
     return None
 
-def is_qemu_system(conn):
-    if not conn:
+def _get_uri_to_split(conn, uri):
+    if not conn and not uri:
+        return None
+
+    if type(conn) is str:
+        uri = conn
+    elif uri is None:
+        uri = conn.getURI()
+    return uri
+
+def is_qemu_system(conn, uri=None):
+    uri = _get_uri_to_split(conn, uri)
+    if not uri:
         return False
 
     (scheme, ignore, ignore,
@@ -409,17 +420,21 @@ def is_qemu_system(conn):
         return True
     return False
 
-def is_qemu(conn):
-    if not conn:
+def is_qemu(conn, uri=None):
+    uri = _get_uri_to_split(conn, uri)
+    if not uri:
         return False
-
-    if type(conn) is str:
-        uri = conn
-    else:
-        uri = conn.getURI()
 
     scheme = uri_split(uri)[0]
     return scheme.startswith("qemu")
+
+def is_xen(conn, uri=None):
+    uri = _get_uri_to_split(conn, uri)
+    if not uri:
+        return False
+
+    scheme = uri_split(uri)[0]
+    return scheme.startswith("xen")
 
 def parse_node_helper(xml, root_name, callback, exec_class=ValueError):
     """

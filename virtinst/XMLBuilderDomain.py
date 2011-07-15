@@ -331,18 +331,15 @@ class XMLBuilderDomain(object):
         @param parsexmlnode: Option xpathNode to use
         @param caps: Capabilities() instance
         """
-        if conn:
-            if not isinstance(conn, libvirt.virConnect):
-                raise ValueError(_("'conn' must be a virConnect instance"))
-        self._conn = conn
-
+        self._conn = None
+        self._conn_uri = None
+        self.__remote = False
         self.__caps = None
-        self.__remote = None
         self._xml_node = None
         self._xml_ctx = None
 
-        if self.conn:
-            self.__remote = _util.is_uri_remote(self.conn.getURI())
+        if conn:
+            self.set_conn(conn)
 
         if caps:
             if not isinstance(caps, CapabilitiesParser.Capabilities):
@@ -358,20 +355,26 @@ class XMLBuilderDomain(object):
         if not isinstance(val, libvirt.virConnect):
             raise ValueError(_("'conn' must be a virConnect instance."))
         self._conn = val
+        self._conn_uri = self._conn.getURI()
+        self.__remote = _util.is_uri_remote(self._conn_uri)
     conn = property(get_conn, set_conn)
+
+    def get_uri(self):
+        return self._conn_uri
 
     def _get_caps(self):
         if not self.__caps and self.conn:
             self.__caps = CapabilitiesParser.parse(self.conn.getCapabilities())
         return self.__caps
 
-    def _is_remote(self):
+    def is_remote(self):
         return bool(self.__remote)
-
-    def _get_uri(self):
-        if self.conn:
-            return self.conn.getURI()
-        return None
+    def is_qemu(self):
+        return _util.is_qemu(self.conn, self.get_uri())
+    def is_qemu_system(self):
+        return _util.is_qemu_system(self.conn, self.get_uri())
+    def is_xen(self):
+        return _util.is_xen(self.conn, self.get_uri())
 
     def _check_bool(self, val, name):
         if val not in [True, False]:

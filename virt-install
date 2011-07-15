@@ -408,7 +408,7 @@ def check_option_collisions(options, guest):
         if options.cdrom or options.livecd:
             fail(_("Paravirtualized guests cannot install off cdrom media."))
 
-    if options.location and virtinst.util.is_uri_remote(guest.conn.getURI()):
+    if options.location and guest.is_remote():
         fail(_("--location can not be specified for remote connections."))
 
     if not options.location and options.extra:
@@ -564,14 +564,14 @@ def start_install(guest, continue_inst, options):
                          virtinst.VirtualGraphics.TYPE_SPICE]:
                 logging.debug("Launching virt-viewer for graphics type '%s'" %
                               gtype)
-                return vnc_console(dom, guest.conn.getURI())
+                return vnc_console(dom, guest.get_uri())
             else:
                 logging.debug("No viewer to launch for graphics type '%s'" %
                               gtype)
                 return None # SDL needs no viewer app
         else:
             logging.debug("Connecting to text console")
-            return txt_console(dom, guest.conn.getURI())
+            return txt_console(dom, guest.get_uri())
 
     # There are two main cases we care about:
     #

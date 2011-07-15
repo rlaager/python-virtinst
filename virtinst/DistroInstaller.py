@@ -99,8 +99,7 @@ class DistroInstaller(Installer.Installer):
         is_tuple = False
         validated = True
         self._location_is_path = True
-        is_local = (not self.conn or
-                    not _util.is_uri_remote(self.conn.getURI()))
+        is_local = (not self.conn or not self.is_remote())
 
         # Basic validation
         if type(val) is not str and (type(val) is not tuple and len(val) != 2):
@@ -157,7 +156,7 @@ class DistroInstaller(Installer.Installer):
 
         if (not self._location_is_path and val.startswith("nfs:") and not
             User.current().has_priv(User.PRIV_NFS_MOUNT,
-                                    (self.conn and self.conn.getURI()))):
+                                    (self.conn and self.get_uri()))):
             raise ValueError(_('Privilege is required for NFS installations'))
 
         self._location = val
