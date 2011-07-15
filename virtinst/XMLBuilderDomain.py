@@ -28,6 +28,37 @@ import CapabilitiesParser
 import _util
 from virtinst import _virtinst as _
 
+_xml_refs = {}
+def _unref_doc(doc):
+    if not doc:
+        return
+
+    idx = None
+    for n in _xml_refs:
+        if n == doc:
+            idx = n
+            break
+
+    if not idx:
+        return
+
+    _xml_refs[idx] = _xml_refs[idx] - 1
+    if _xml_refs[idx] == 0:
+        idx.freeDoc()
+
+def _ref_doc(doc):
+    if not doc:
+        return
+
+    idx = doc
+    for n in _xml_refs:
+        if n == doc:
+            idx = n
+            break
+
+    refcount = _xml_refs.get(idx) or 0
+    _xml_refs[idx] = refcount + 1
+
 def _sanitize_libxml_xml(xml):
     # Strip starting <?...> line
     if xml.startswith("<?"):
@@ -338,7 +369,6 @@ class XMLBuilderDomain(object):
         self.__remote = False
         self.__caps = None
 
-        self._own_node = False
         self._xml_node = None
         self._xml_ctx = None
 
@@ -355,8 +385,8 @@ class XMLBuilderDomain(object):
 
     def __del__(self):
         try:
-            if self._xml_node and self._own_node:
-                self._xml_node.doc.freeDoc()
+            if self._xml_node:
+                _unref_doc(self._xml_node.doc)
         except:
             pass
         try:
@@ -430,15 +460,17 @@ class XMLBuilderDomain(object):
         doc = self._xml_node.doc
         ctx = doc.xpathNewContext()
         ctx.setContextNode(self._xml_node)
+        if self._xml_ctx:
+            self._xml_ctx.xpathFreeContext()
         self._xml_ctx = ctx
 
     def _parsexml(self, xml, node):
         if xml:
             self._xml_node = libxml2.parseDoc(xml).children
-            self._own_node = True
         else:
             self._xml_node = node
 
+        _ref_doc(self._xml_node.doc)
         self._set_xml_context()
 
     def _get_xml_config(self):
