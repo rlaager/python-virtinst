@@ -1,4 +1,4 @@
-<domain type='xen'>
+<domain type='test'>
   <name>test-clone-noexist</name>
   <currentMemory>204800</currentMemory>
   <memory>409600</memory>

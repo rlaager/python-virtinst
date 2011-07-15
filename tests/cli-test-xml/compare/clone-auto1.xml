@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<domain type="xen" id="3">
+<domain type="test" id="3">
   <name>test-for-clone1</name>
   <uuid>00000000-1111-2222-3333-444444444444</uuid>
   <memory>409600</memory>
@@ -60,6 +60,5 @@
       <source path="/tmp/foo.log"/>
       <target port="0"/>
     </parallel>
-    <memballoon model="xen"/>
   </devices>
 </domain>

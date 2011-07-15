@@ -41,7 +41,7 @@
     <input type='tablet' bus='usb'/>
     <graphics type='sdl' display=':3.4' xauth='/tmp/.Xauthority'/>
     <console type='pty'/>
-    <sound model='es1370'/>
+    <sound model='ich6'/>
     <video>
       <model type='vga'/>
     </video>

@@ -282,10 +282,10 @@ def _open_test_uri(uri):
         origdefine = conn.defineXML
         def newcreate(xml, flags):
             xml = sanitize_xml(xml)
-            origcreate(xml, flags)
+            return origcreate(xml, flags)
         def newdefine(xml):
             xml = sanitize_xml(xml)
-            origdefine(xml)
+            return origdefine(xml)
         conn.createLinux = newcreate
         conn.defineXML = newdefine
 
@@ -295,6 +295,22 @@ def _open_test_uri(uri):
             conn.getURI = lambda: "xen+abc:///"
         if "lxc" in opts:
             conn.getURI = lambda: "lxc+abc:///"
+
+    # These need to come after the HV setter, since that sets a default
+    # conn version
+    if "connver" in opts:
+        ver = int(opts["connver"])
+        def newconnversion():
+            return ver
+        conn.getVersion = newconnversion
+
+    if "libver" in opts:
+        ver = int(opts["libver"])
+        def newlibversion(drv=None):
+            if drv:
+                return (ver, ver)
+            return ver
+        libvirt.getVersion = newlibversion
 
     return conn
 
