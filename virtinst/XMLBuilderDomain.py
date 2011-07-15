@@ -19,6 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import copy
+
 import libvirt
 import libxml2
 
@@ -362,6 +364,12 @@ class XMLBuilderDomain(object):
                 self._xml_ctx.xpathFreeContext()
         except:
             pass
+
+    def copy(self):
+        # Otherwise we can double free XML info
+        if self._is_parse():
+            return self
+        return copy.copy(self)
 
     def get_conn(self):
         return self._conn

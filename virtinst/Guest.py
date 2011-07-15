@@ -24,7 +24,6 @@ import time
 import re
 import logging
 import signal
-import copy
 
 import urlgrabber.progress as progress
 import libvirt
@@ -1015,9 +1014,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         origdevs = self.get_all_devices()
         devs = []
         for dev in origdevs:
-            newdev = copy.copy(dev)
-            devs.append(newdev)
-        tmpfeat = copy.copy(self.features)
+            devs.append(dev.copy())
+        tmpfeat = self.features.copy()
 
         def get_transient_devices(devtype):
             return self._dev_build_list(devtype, devs)
