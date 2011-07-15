@@ -16,6 +16,8 @@
 
 import unittest
 import os
+import logging
+
 import libvirt
 import urlgrabber.progress as progress
 
@@ -51,6 +53,7 @@ class TestXMLConfig(unittest.TestCase):
 
     def setUp(self):
         utils.reset_conn()
+        logging.debug("Running %s" % self.id())
 
     def tearDown(self):
         if os.path.exists(utils.scratch):
