@@ -154,6 +154,7 @@ def _check_if_path_managed(conn, path):
     the passed path. If we can't, throw an error
     """
     vol = None
+    pool = None
     verr = None
     path_is_pool = False
 
@@ -165,13 +166,22 @@ def _check_if_path_managed(conn, path):
         except Exception, e:
             return None, e
 
-    pool = _util.lookup_pool_by_path(conn,
-                                     os.path.dirname(path))
-    vol = lookup_vol_by_path()[0]
+    def lookup_vol_name(name):
+        try:
+            name = os.path.basename(path)
+            if pool and name in pool.listVolumes():
+                return pool.lookupByName(name)
+        except:
+            pass
+        return None
 
-    # Is pool running?
-    if pool and pool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
-        pool = None
+    vol = lookup_vol_by_path()[0]
+    if not vol:
+        pool = _util.lookup_pool_by_path(conn, os.path.dirname(path))
+
+        # Is pool running?
+        if pool and pool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
+            pool = None
 
     # Attempt to lookup path as a storage volume
     if pool and not vol:
@@ -180,6 +190,8 @@ def _check_if_path_managed(conn, path):
             # invalidate it
             pool.refresh(0)
             vol, verr = lookup_vol_by_path()
+            if verr:
+                vol = lookup_vol_name(os.path.basename(path))
         except Exception, e:
             vol = None
             pool = None
