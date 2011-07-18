@@ -188,6 +188,7 @@ class vmx_parser(formats.parser):
         infile = open(input_file, "r")
         contents = infile.readlines()
         infile.close()
+        logging.debug("Importing VMX file:\n%s" % "".join(contents))
 
         lines = []
 

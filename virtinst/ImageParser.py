@@ -42,7 +42,7 @@ class Image:
         if base is None:
             if filename is not None:
                 self.base = os.path.dirname(filename)
-                if self.base == '' :
+                if self.base == '':
                     self.base = "."
             else:
                 self.base = "."

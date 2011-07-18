@@ -219,4 +219,3 @@ def get_virtual_network():
     dev.type = virtinst.VirtualNetworkInterface.TYPE_VIRTUAL
     dev.network = "default"
     return dev
-

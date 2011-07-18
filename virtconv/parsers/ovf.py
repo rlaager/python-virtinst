@@ -295,6 +295,7 @@ class ovf_parser(formats.parser):
         infile = open(input_file, "r")
         xml = infile.read()
         infile.close()
+        logging.debug("Importing OVF XML:\n%s" % xml)
 
         return _xml_wrapper(xml, ovf_parser._import_file)
 
