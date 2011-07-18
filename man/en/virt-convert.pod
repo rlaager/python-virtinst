@@ -125,6 +125,11 @@ Avoid verbose output.
 
 Print debugging information
 
+=item --dry-run
+
+Proceed through the conversion process, but don't convert disks or actually
+write any converted files.
+
 =back
 
 =head1 EXAMPLES

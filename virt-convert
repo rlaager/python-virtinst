@@ -83,6 +83,9 @@ def parse_args():
                     help=_("Suppress non-error output"))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=_("Print debugging information"))
+    misc.add_option("", "--dry-run", action="store_false", dest="nodry",
+                    default=True,
+                    help=_("Dry run, don't make any changes"))
     opts.add_option_group(misc)
 
 
@@ -150,6 +153,8 @@ def cleanup(msg, options, vmdef, paths):
     After failure, clean up anything we created.
     """
     logging.error(msg)
+    if not options.nodry:
+        return
 
     try:
         for disk in vmdef.disks.values():
@@ -203,7 +208,8 @@ def main():
         options.output_dir = unixname
     try:
         logging.debug("Creating directory %s" % options.output_dir)
-        os.mkdir(options.output_dir)
+        if options.nodry:
+            os.mkdir(options.output_dir)
         clean += [ options.output_dir ]
     except OSError, e:
         if (e.errno != errno.EEXIST):
@@ -243,7 +249,8 @@ def main():
                                "%(format)s...") % {"path": d.path,
                                                    "format": dformat})
 
-            d.convert(options.input_dir, options.output_dir, dformat)
+            if options.nodry:
+                d.convert(options.input_dir, options.output_dir, dformat)
 
     except OSError, e:
         cleanup(_("Couldn't convert disks: %s") % e.strerror,
@@ -252,8 +259,9 @@ def main():
         cleanup(_("Couldn't convert disks: %s") % e, options, vmdef, clean)
 
     try:
+        if options.nodry:
+            outp.export_file(vmdef, options.output_file)
         clean += [ options.output_file ]
-        outp.export_file(vmdef, options.output_file)
     except ValueError, e:
         cleanup(_("Couldn't export to file \"%s\": %s") %
             (options.output_file, e), options, vmdef, clean)
