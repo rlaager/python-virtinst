@@ -928,5 +928,23 @@ class TestXMLConfig(unittest.TestCase):
             if util and origfunc:
                 util.default_bridge2 = origfunc
 
+    def testCpustrToTuple(self):
+        conn = utils.get_conn()
+        base = [False] * 16
+
+        expect = base[:]
+        expect[1] = expect[2] = expect[3] = True
+        self.assertEquals(tuple(expect),
+                          virtinst.Guest.cpuset_str_to_tuple(conn, "1-3"))
+
+        expect = base[:]
+        expect[1] = expect[3] = expect[5] = expect[10] = expect[11] = True
+        self.assertEquals(tuple(expect),
+                    virtinst.Guest.cpuset_str_to_tuple(conn, "1,3,5,10-11"))
+
+        self.assertRaises(ValueError,
+                          virtinst.Guest.cpuset_str_to_tuple,
+                          conn, "16")
+
 if __name__ == "__main__":
     unittest.main()

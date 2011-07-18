@@ -125,7 +125,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             start = int(series[0])
             end = int(series[1])
 
-            for i in range(start, end):
+            for i in range(start, end + 1):
                 pinlist[i] = True
 
         return tuple(pinlist)
