@@ -208,7 +208,7 @@ class virtimage_parser(formats.parser):
         """
         vm = vmcfg.vm()
         try:
-            config  = ImageParser.parse_file(input_file)
+            config = ImageParser.parse_file(input_file)
         except Exception, e:
             raise ValueError(_("Couldn't import file '%s': %s") %
                              (input_file, e))
@@ -309,21 +309,5 @@ class virtimage_parser(formats.parser):
         }
 
         return out
-
-    @staticmethod
-    def export_file(vm, output_file):
-        """
-        Export a configuration file.
-        @vm vm configuration instance
-        @output_file Output file
-
-        Raises ValueError if configuration is not suitable, or another
-        exception on failure to write the output file.
-        """
-        output = virtimage_parser.export(vm)
-
-        outfile = open(output_file, "w")
-        outfile.writelines(output)
-        outfile.close()
 
 formats.register_parser(virtimage_parser)

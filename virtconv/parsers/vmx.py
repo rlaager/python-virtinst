@@ -288,20 +288,4 @@ class vmx_parser(formats.parser):
 
         return "".join(vmx_out_template + disk_out_template + eth_out_template)
 
-    @staticmethod
-    def export_file(vm, output_file):
-        """
-        Export a configuration file.
-        @vm vm configuration instance
-        @output_file Output file
-
-        Raises ValueError if configuration is not suitable, or another
-        exception on failure to write the output file.
-        """
-        output = vmx_parser.export(vm)
-
-        outfile = open(output_file, "w")
-        outfile.writelines(output)
-        outfile.close()
-
 formats.register_parser(vmx_parser)

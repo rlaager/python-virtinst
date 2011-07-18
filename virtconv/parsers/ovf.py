@@ -445,16 +445,4 @@ class ovf_parser(formats.parser):
         """
         raise NotImplementedError
 
-    @staticmethod
-    def export_file(vm, output_file):
-        """
-        Export a configuration file.
-        @vm vm configuration instance
-        @output_file Output file
-
-        Raises ValueError if configuration is not suitable, or another
-        exception on failure to write the output file.
-        """
-        raise NotImplementedError
-
 formats.register_parser(ovf_parser)

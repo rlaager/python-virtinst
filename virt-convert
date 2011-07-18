@@ -259,8 +259,14 @@ def main():
         cleanup(_("Couldn't convert disks: %s") % e, options, vmdef, clean)
 
     try:
+        output = outp.export(vmdef)
+        logging.debug("Output VM config:\n%s" % output)
+
         if options.nodry:
-            outp.export_file(vmdef, options.output_file)
+            outfile = open(options.output_file, "w")
+            outfile.writelines(output)
+            outfile.close()
+
         clean += [ options.output_file ]
     except ValueError, e:
         cleanup(_("Couldn't export to file \"%s\": %s") %
