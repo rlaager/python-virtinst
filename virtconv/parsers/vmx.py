@@ -23,10 +23,12 @@ import virtconv.formats as formats
 import virtconv.vmcfg as vmcfg
 import virtconv.diskcfg as diskcfg
 import virtconv.netdevcfg as netdevcfg
+
 import sys
 import re
 import os
 import logging
+import shlex
 
 _VMX_MAIN_TEMPLATE = """
 #!/usr/bin/vmplayer
@@ -79,6 +81,107 @@ ide%(dev)s.mode = "persistent"
 ide%(dev)s.startConnected = "TRUE"
 ide%(dev)s.writeThrough = "TRUE"
 """
+
+class _VMXLine(object):
+    """
+    Class tracking an individual line in a VMX/VMDK file
+    """
+    def __init__(self, content):
+        self.content = content
+
+        self.pair = None
+        self.is_blank = False
+        self.is_comment = False
+        self.is_disk = False
+        self._parse()
+
+    def _parse(self):
+        line = self.content.strip()
+        if not line:
+            self.is_blank = True
+        elif line.startswith("#"):
+            self.is_comment = True
+        elif line.startswith("RW ") or line.startswith("RDONLY "):
+            self.is_disk = True
+        else:
+            # Expected that this will raise an error for unknown format
+            before_eq, after_eq = line.split("=", 1)
+            key = before_eq.strip().lower()
+            value = after_eq.strip().strip('"')
+            self.pair = (key, value)
+
+    def parse_disk_path(self):
+        # format:
+        # RW 16777216 VMFS "test-flat.vmdk"
+        # RDONLY 156296322 V2I "virtual-pc-diskformat.v2i"
+        content = self.content.split(" ", 3)[3]
+        if not content.startswith("\""):
+            raise ValueError("Path was not fourth entry in VMDK storage line")
+        return shlex.split(content, " ", 1)[0]
+
+class _VMXFile(object):
+    """
+    Class tracking a parsed VMX/VMDK format file
+    """
+    def __init__(self, content):
+        self.content = content
+        self.lines = []
+
+        self._parse()
+
+    def _parse(self):
+        for line in self.content:
+            try:
+                lineobj = _VMXLine(line)
+                self.lines.append(lineobj)
+            except Exception, e:
+                raise Exception(_("Syntax error at line %d: %s\n%s") %
+                    (len(self.lines) + 1, line.strip(), e))
+
+    def pairs(self):
+        ret = {}
+        for line in self.lines:
+            if line.pair:
+                ret[line.pair[0]] = line.pair[1]
+        return ret
+
+def parse_vmdk(disk, filename):
+    """
+    Parse a VMDK descriptor file
+    Reference: http://sanbarrow.com/vmdk-basics.html
+    """
+    # Detect if passed file is a descriptor file
+    # Assume descriptor isn't larger than 10K
+    if not os.path.exists(filename):
+        logging.debug("VMDK file '%s' doesn't exist" % filename)
+        return
+    if os.path.getsize(filename) > (10 * 1024):
+        logging.debug("VMDK file '%s' too big to be a descriptor" % filename)
+        return
+
+    f = open(filename, "r")
+    content = f.readlines()
+    f.close()
+
+    try:
+        vmdkfile = _VMXFile(content)
+    except:
+        logging.exception("%s looked like a vmdk file, but parsing failed" %
+                          filename)
+        return
+
+    disklines = filter(lambda l: l.is_disk, vmdkfile.lines)
+    if len(disklines) == 0:
+        raise RuntimeError(_("Didn't detect a storage line in the VMDK "
+                             "descriptor file"))
+    if len(disklines) > 1:
+        raise RuntimeError(_("Don't know how to handle multistorage VMDK "
+                             "descriptors"))
+
+    diskline = disklines[0]
+    newpath = diskline.parse_disk_path()
+    logging.debug("VMDK file parsed path %s->%s" % (disk.path, newpath))
+    disk.path = newpath
 
 def parse_netdev_entry(vm, fullkey, value):
     """
@@ -134,18 +237,23 @@ def parse_disk_entry(vm, fullkey, value):
     if not vm.disks.get(devid):
         vm.disks[devid] = diskcfg.disk(bus=bus,
             type=diskcfg.DISK_TYPE_DISK)
+    disk = vm.disks[devid]
 
     if key == "devicetype":
         if lvalue == "atapi-cdrom" or lvalue == "cdrom-raw":
-            vm.disks[devid].type = diskcfg.DISK_TYPE_CDROM
+            disk.type = diskcfg.DISK_TYPE_CDROM
         elif lvalue == "cdrom-image":
-            vm.disks[devid].type = diskcfg.DISK_TYPE_ISO
+            disk.type = diskcfg.DISK_TYPE_ISO
 
     if key == "filename":
-        vm.disks[devid].path = value
-        vm.disks[devid].format = diskcfg.DISK_FORMAT_RAW
+        disk.path = value
+        disk.format = diskcfg.DISK_FORMAT_RAW
         if lvalue.endswith(".vmdk"):
-            vm.disks[devid].format = diskcfg.DISK_FORMAT_VMDK
+            disk.format = diskcfg.DISK_FORMAT_VMDK
+            # See if the filename is actually a VMDK descriptor file
+            parse_vmdk(disk, disk.path)
+
+
 
 class vmx_parser(formats.parser):
     """
@@ -171,8 +279,8 @@ class vmx_parser(formats.parser):
 
         for line in content:
             # some .vmx files don't bother with the header
-            if re.match(r'^config.version\s+=', line) or \
-               re.match(r'^#!\s*/usr/bin/vm(ware|player)', line):
+            if (re.match(r'^config.version\s+=', line) or
+                re.match(r'^#!\s*/usr/bin/vm(ware|player)', line)):
                 return True
         return False
 
@@ -190,32 +298,23 @@ class vmx_parser(formats.parser):
         infile.close()
         logging.debug("Importing VMX file:\n%s" % "".join(contents))
 
-        lines = []
+        vmxfile = _VMXFile(contents)
+        config = vmxfile.pairs()
 
-        # strip out comment and blank lines for easy splitting of values
-        for line in contents:
-            if not line.strip() or line.startswith("#"):
-                continue
-            else:
-                lines.append(line)
+        if not config.get("displayname"):
+            raise ValueError(_("No displayName defined in '%s'") %
+                             input_file)
 
-        config = {}
+        vm.name = config.get("displayname")
+        vm.memory = config.get("memsize")
+        vm.description = config.get("annotation")
+        vm.nr_vcpus = config.get("numvcpus")
 
-        # split out all remaining entries of key = value form
-        for (line_nr, line) in enumerate(lines):
-            try:
-                before_eq, after_eq = line.split("=", 1)
-                key = before_eq.strip().lower()
-                value = after_eq.strip().strip('"')
-                config[key] = value
-
-                if key.startswith("scsi") or key.startswith("ide"):
-                    parse_disk_entry(vm, key, value)
-                if key.startswith("ethernet"):
-                    parse_netdev_entry(vm, key, value)
-            except:
-                raise Exception(_("Syntax error at line %d: %s") %
-                    (line_nr + 1, line.strip()))
+        for key, value in config.items():
+            if key.startswith("scsi") or key.startswith("ide"):
+                parse_disk_entry(vm, key, value)
+            if key.startswith("ethernet"):
+                parse_netdev_entry(vm, key, value)
 
         for devid, disk in vm.disks.iteritems():
             if disk.type == diskcfg.DISK_TYPE_DISK:
@@ -226,15 +325,6 @@ class vmx_parser(formats.parser):
                 or disk.path.lower() == "auto detect" or
                 not os.path.exists(disk.path)):
                 vm.disks[devid].path = None
-
-        if not config.get("displayname"):
-            raise ValueError(_("No displayName defined in \"%s\"") %
-                             input_file)
-        vm.name = config.get("displayname")
-
-        vm.memory = config.get("memsize")
-        vm.description = config.get("annotation")
-        vm.nr_vcpus = config.get("numvcpus")
 
         vm.validate()
         return vm

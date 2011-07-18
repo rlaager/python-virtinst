@@ -93,6 +93,9 @@ class TestCommand(TestBaseCommand):
 
                 testfiles.append('.'.join(['tests',
                                            splitext(basename(t))[0]]))
+        if not testfiles:
+            raise RuntimeError("--testfile didn't catch anything")
+
         self._testfiles = testfiles
         TestBaseCommand.run(self)
 
