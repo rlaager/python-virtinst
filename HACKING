@@ -18,10 +18,12 @@ The following commands will be useful for anyone writing patches:
     python setup.py test_urls : Test our install media fetching infrastructure
     python setup.py test_cli  : Test various CLI invocations
 
-Any patches shouldn't change the output of 'test' or 'check'. Our pylint
-script uses a blacklist rather than a whitelist approach, so it could
-throw some false positives or useless messages. If you think your patch
-exposes one of these, bring it up on the mailing list
+Any patches shouldn't change the output of 'test' or 'check'. Check
+requires pyling and python-pep8 to be installed.
+
+Our pylint script uses a blacklist rather than a whitelist approach,
+so it could throw some false positives or useless messages. If you think
+your patch exposes one of these, bring it up on the mailing list
 (virt-tools-list@redhat.com).
 
 If 'python-coverage' is installed, you can run 'coverage -r' after 'test'
