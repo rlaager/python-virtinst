@@ -222,9 +222,11 @@ class DistroInstaller(Installer.Installer):
         if (self.location is not None and
             self._location_is_path and
             not os.path.isdir(self.location)):
-            device = VirtualDisk.DEVICE_DISK
-            if guest._lookup_osdict_key('pv_cdrom_install'):
-                device = VirtualDisk.DEVICE_CDROM
+
+            device = VirtualDisk.DEVICE_CDROM
+            if (self.is_xenpv() and
+                not guest._lookup_osdict_key('pv_cdrom_install')):
+                device = VirtualDisk.DEVICE_DISK
 
             disk = VirtualDisk(conn=guest.conn,
                                device=device,
