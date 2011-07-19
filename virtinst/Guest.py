@@ -274,13 +274,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         # Guest is never opening anything
         return libvirt.open(uri)
 
-    def is_xen(self):
-        return (self.installer and
-                (self.installer.os_type == "xen" or
-                 self.installer.os_type == "linux"))
-    def is_hvm(self):
-        return self.installer and self.installer.os_type == "hvm"
-
     ######################
     # Property accessors #
     ######################
@@ -883,10 +876,12 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
     def _get_emulator_xml(self):
         emulator = self.emulator
-        if self.is_xen():
+        if self.installer.is_xenpv():
             return ""
 
-        if not self.emulator and self.is_hvm() and self.type == "xen":
+        if (not self.emulator and
+            self.installer.is_hvm() and
+            self.type == "xen"):
             if self._get_caps().host.arch in ("x86_64"):
                 emulator = "/usr/lib64/xen/bin/qemu-dm"
             else:
@@ -1428,9 +1423,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 remove_func(d)
 
     def _set_defaults(self, devlist_func, remove_func, features):
-        if self.is_hvm():
+        if self.installer.is_hvm():
             self._set_hvm_defaults(devlist_func, features)
-        if self.is_xen():
+        if self.installer.is_xenpv():
             self._set_pv_defaults(devlist_func, remove_func)
 
         soundtype = VirtualDevice.VIRTUAL_DEV_AUDIO
@@ -1455,9 +1450,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 if disk.device == disk.DEVICE_FLOPPY:
                     disk.bus = "fdc"
                 else:
-                    if self.is_hvm():
+                    if self.installer.is_hvm():
                         disk.bus = "ide"
-                    elif self.is_xen():
+                    elif self.installer.is_xenpv():
                         disk.bus = "xen"
             used_targets.append(disk.generate_target(used_targets))
 
