@@ -266,7 +266,7 @@ Add PATH to the root of the initrd fetched with C<--location>. This can be
 used to run an automated install without requiring a network hosted kickstart
 file:
 
---initrd-injections=/path/to/my.ks --extra-args "ks=file:/my.ks"
+--initrd-inject=/path/to/my.ks --extra-args "ks=file:/my.ks"
 
 =item  --os-type=OS_TYPE
 
