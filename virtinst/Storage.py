@@ -61,6 +61,7 @@ DEFAULT_DEV_TARGET = "/dev"
 DEFAULT_LVM_TARGET_BASE = "/dev/"
 DEFAULT_DIR_TARGET_BASE = "/var/lib/libvirt/images/"
 DEFAULT_SCSI_TARGET = "/dev/disk/by-path"
+DEFAULT_MPATH_TARGET = "/dev/mapper"
 
 # Pulled from libvirt, used for building on older versions
 VIR_STORAGE_VOL_FILE = 0
@@ -240,7 +241,8 @@ class StoragePool(StorageObject):
     TYPE_LOGICAL = "logical"
     TYPE_DISK    = "disk"
     TYPE_ISCSI   = "iscsi"
-    TYPE_SCSI   = "scsi"
+    TYPE_SCSI    = "scsi"
+    TYPE_MPATH   = "mpath"
     """@group Types: TYPE_*"""
 
     # Pool type descriptions for use in higher level programs
@@ -251,7 +253,8 @@ class StoragePool(StorageObject):
     _types[TYPE_LOGICAL] = _("LVM Volume Group")
     _types[TYPE_DISK]    = _("Physical Disk Device")
     _types[TYPE_ISCSI]   = _("iSCSI Target")
-    _types[TYPE_SCSI]    = _("SCSI host adapter")
+    _types[TYPE_SCSI]    = _("SCSI Host Adapter")
+    _types[TYPE_MPATH]   = _("Multipath Device Enumerator")
 
     def get_pool_class(ptype):
         """
@@ -276,6 +279,8 @@ class StoragePool(StorageObject):
             return iSCSIPool
         if ptype == StoragePool.TYPE_SCSI:
             return SCSIPool
+        if ptype == StoragePool.TYPE_MPATH:
+            return MultipathPool
     get_pool_class = staticmethod(get_pool_class)
 
     def get_volume_for_pool(pool_type):
@@ -889,7 +894,35 @@ class SCSIPool(StoragePool):
         xml = """    <adapter name="%s"/>\n""" % escape(self.source_path)
         return xml
 
+class MultipathPool(StoragePool):
+    """
+    Create a Multipath based storage pool
+    """
 
+    target_path = property(StoragePool.get_target_path,
+                           StoragePool.set_target_path,
+                           doc=_("Root location for identifying new storage"
+                                 " volumes."))
+
+    def get_volume_class():
+        raise NotImplementedError(_("Multipath volume creation is not "
+                                    "supported."))
+    get_volume_class = staticmethod(get_volume_class)
+
+    def __init__(self, conn, name, source_path=None,
+                 target_path=None, uuid=None):
+        StoragePool.__init__(self, name=name, type=StoragePool.TYPE_MPATH,
+                             uuid=uuid, target_path=target_path, conn=conn)
+
+    def _get_default_target_path(self):
+        return DEFAULT_MPATH_TARGET
+
+    def _get_target_xml(self):
+        xml = "    <path>%s</path>\n" % escape(self.target_path)
+        return xml
+
+    def _get_source_xml(self):
+        return ""
 
 """
 Storage Volume classes

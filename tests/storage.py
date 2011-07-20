@@ -79,7 +79,11 @@ def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
 
 def poolCompare(pool_inst):
     filename = os.path.join(basepath, pool_inst.name + ".xml")
-    utils.diff_compare(pool_inst.get_xml_config(), filename)
+    out_expect = pool_inst.get_xml_config()
+
+    if not os.path.exists(filename):
+        open(filename, "w").write(out_expect)
+    utils.diff_compare(out_expect, filename)
 
     return pool_inst.install(build=True, meter=None, create=True)
 
@@ -175,6 +179,12 @@ class TestStorage(unittest.TestCase):
 
     def testSCSIPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_SCSI, "pool-scsi")
+        # Not supported
+        #volobj = createVol(poolobj)
+        self.assertRaises(RuntimeError, createVol, poolobj)
+
+    def testMpathPool(self):
+        poolobj = createPool(self.conn, StoragePool.TYPE_MPATH, "pool-mpath")
         # Not supported
         #volobj = createVol(poolobj)
         self.assertRaises(RuntimeError, createVol, poolobj)
