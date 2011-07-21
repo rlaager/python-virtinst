@@ -1,3 +1,23 @@
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free  Software Foundation; either version 2 of the License, or
+# (at your option)  any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
+
+import os
+import sys
+import glob
+
 from distutils.core import setup, Command
 from distutils.command.sdist import sdist as _sdist
 from distutils.command.build import build as _build
@@ -5,10 +25,6 @@ from distutils.command.install_data import install_data as _install_data
 from distutils.command.install_lib import install_lib as _install_lib
 from distutils.command.install import install as _install
 from unittest import TextTestRunner, TestLoader
-from glob import glob
-from os.path import splitext, basename, join as pjoin
-import os
-import sys
 
 pkgs = ['virtinst', 'virtconv', 'virtconv.parsers']
 
@@ -80,19 +96,20 @@ class TestCommand(TestBaseCommand):
         Finds all the tests modules in tests/, and runs them.
         '''
         testfiles = []
-        for t in glob(pjoin(self._dir, 'tests', '*.py')):
-            if (not t.endswith('__init__.py') and
-                not t.endswith("urltest.py") and
-                not t.endswith("clitest.py")):
+        for t in glob.glob(os.path.join(self._dir, 'tests', '*.py')):
+            if (t.endswith('__init__.py') or
+                t.endswith("urltest.py") or
+                t.endswith("clitest.py")):
+                continue
 
-                if self.testfile:
-                    base = os.path.basename(t)
-                    check = os.path.basename(self.testfile)
-                    if base != check and base != (check + ".py"):
-                        continue
+            base = os.path.basename(t)
+            if self.testfile:
+                check = os.path.basename(self.testfile)
+                if base != check and base != (check + ".py"):
+                    continue
 
-                testfiles.append('.'.join(['tests',
-                                           splitext(basename(t))[0]]))
+            testfiles.append('.'.join(['tests', os.path.splitext(base)[0]]))
+
         if not testfiles:
             raise RuntimeError("--testfile didn't catch anything")
 
@@ -216,7 +233,7 @@ class refresh_translations(Command):
         os.system(pot_cmd)
 
         # Merge new template with existing translations.
-        for po in glob(pjoin(os.getcwd(), 'po', '*.po')):
+        for po in glob.glob(os.path.join(os.getcwd(), 'po', '*.po')):
             os.system("msgmerge -U po/%s po/virtinst.pot" %
                       os.path.basename(po))
 
@@ -280,7 +297,7 @@ class build(_build):
         if not os.path.exists("build/po"):
             os.makedirs("build/po")
 
-        for filename in glob(pjoin(os.getcwd(), 'po', '*.po')):
+        for filename in glob.glob(os.path.join(os.getcwd(), 'po', '*.po')):
             filename = os.path.basename(filename)
             lang = os.path.basename(filename)[0:len(filename) - 3]
             if not os.path.exists("build/po/%s" % lang):
@@ -334,24 +351,32 @@ class install_data(_install_data):
                 datafiles.append(toadd)
         _install_data.run(self)
 
-setup(name='virtinst',
-      version=VERSION,
-      description='Virtual machine installation',
-      author='Jeremy Katz, Daniel Berrange, Cole Robinson',
-      author_email='crobinso@redhat.com',
-      license='GPL',
-      url='http://virt-manager.org',
-      package_dir={'virtinst': 'virtinst'},
-      scripts=["virt-install", "virt-clone", "virt-image", "virt-convert"],
-      packages=pkgs,
-      data_files=datafiles,
-      cmdclass={ 'test': TestCommand, 'test_urls' : TestURLFetch,
-                 'test_cli' : TestCLI,
-                 'check': CheckPylint,
-                 'rpm' : custom_rpm,
-                 'sdist': sdist, 'build': build,
-                 'install_data' : install_data,
-                 'install_lib' : install_lib,
-                 'install' : install,
-                 'refresh_translations' : refresh_translations}
-      )
+setup(
+    name='virtinst',
+    version=VERSION,
+    description='Virtual machine installation',
+    author='Jeremy Katz, Daniel Berrange, Cole Robinson',
+    author_email='crobinso@redhat.com',
+    license='GPL',
+    url='http://virt-manager.org',
+    package_dir={'virtinst': 'virtinst'},
+    scripts=["virt-install", "virt-clone", "virt-image", "virt-convert"],
+    packages=pkgs,
+    data_files=datafiles,
+    cmdclass={
+        'test': TestCommand,
+        'test_urls' : TestURLFetch,
+        'test_cli' : TestCLI,
+        'check': CheckPylint,
+
+        'rpm' : custom_rpm,
+        'sdist': sdist,
+        'refresh_translations' : refresh_translations,
+
+        'build': build,
+
+        'install_data' : install_data,
+        'install_lib' : install_lib,
+        'install' : install,
+    }
+)
