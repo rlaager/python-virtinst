@@ -36,7 +36,7 @@ import virtinst
 from virtinst import _util
 from _util import log_exception
 from _util import listify
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 from virtinst import Guest
 from virtinst import VirtualNetworkInterface
@@ -145,8 +145,8 @@ def setupParser(usage=None):
 
 def setupGettext():
     locale.setlocale(locale.LC_ALL, '')
-    gettext.bindtextdomain(virtinst.gettext_app, virtinst.gettext_dir)
-    gettext.install(virtinst.gettext_app, virtinst.gettext_dir)
+    gettext.bindtextdomain("virtinst")
+    gettext.install("virtinst")
 
 def earlyLogging():
     logging.basicConfig(level=logging.DEBUG, format='%(message)s')

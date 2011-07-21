@@ -22,7 +22,7 @@
 import os.path
 import libxml2
 import CapabilitiesParser
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 import _util
 import logging
 

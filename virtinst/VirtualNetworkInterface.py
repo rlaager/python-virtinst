@@ -24,7 +24,7 @@ import _util
 import VirtualDevice
 import XMLBuilderDomain
 from XMLBuilderDomain import _xml_property
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 def _countMACaddr(vms, searchmac):
     if not searchmac:

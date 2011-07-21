@@ -44,7 +44,7 @@ import Guest
 from VirtualNetworkInterface import VirtualNetworkInterface
 from VirtualDisk import VirtualDisk
 from virtinst import Storage
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 import _util
 
 def _listify(val):

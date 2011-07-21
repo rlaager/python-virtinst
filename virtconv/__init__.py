@@ -23,13 +23,8 @@ import imp
 import os
 import gettext
 
-gettext_dir = "::LOCALEDIR::"
-gettext_app = "virtinst"
-
-gettext.bindtextdomain(gettext_app, gettext_dir)
-
-def _gettext(msg):
-    return gettext.dgettext(gettext_app, msg)
+gettext.bindtextdomain("virtinst")
+_gettext = lambda m: gettext.dgettext("virtinst", m)
 
 parsers_path = [os.path.join(__path__[0], "parsers/")]
 

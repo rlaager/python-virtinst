@@ -19,11 +19,8 @@ import sys
 import glob
 
 from distutils.core import setup, Command
-from distutils.command.sdist import sdist as _sdist
-from distutils.command.build import build as _build
-from distutils.command.install_data import install_data as _install_data
-from distutils.command.install_lib import install_lib as _install_lib
-from distutils.command.install import install as _install
+from distutils.command.sdist import sdist
+from distutils.command.build import build
 from unittest import TextTestRunner, TestLoader
 
 pkgs = ['virtinst', 'virtconv', 'virtconv.parsers']
@@ -33,8 +30,6 @@ datafiles = [('share/man/man1', ['man/en/virt-install.1',
                                  'man/en/virt-image.1',
                                  'man/en/virt-convert.1']),
              ('share/man/man5', ['man/en/virt-image.5'])]
-locale = None
-builddir = None
 
 VERSION = file("virtinst/version.py").read().split(" ")[2].strip(" \n\"")
 
@@ -191,7 +186,7 @@ class CheckPylint(Command):
     def run(self):
         os.system("tests/pylint-virtinst.sh")
 
-class custom_rpm(Command):
+class myrpm(Command):
 
     user_options = []
 
@@ -237,7 +232,7 @@ class refresh_translations(Command):
             os.system("msgmerge -U po/%s po/virtinst.pot" %
                       os.path.basename(po))
 
-class sdist(_sdist):
+class mysdist(sdist):
     """ custom sdist command, to prep virtinst.spec file for inclusion """
 
     def run(self):
@@ -248,7 +243,7 @@ class sdist(_sdist):
         # Update and generate man pages
         self._update_manpages()
 
-        _sdist.run(self)
+        sdist.run(self)
 
     def _update_manpages(self):
         # Update virt-install.1 with latest os type/variant values
@@ -288,68 +283,32 @@ class sdist(_sdist):
         if os.system("make -C man/en"):
             raise RuntimeError("Couldn't generate man pages.")
 
-class build(_build):
+class mybuild(build):
     """ custom build command to compile i18n files"""
 
     def run(self):
-        global builddir
-
-        if not os.path.exists("build/po"):
-            os.makedirs("build/po")
+        for f in config_files:
+            print "Generating %s" % f
+            fd = open(f, "w")
+            fd.write(config_data)
+            fd.close()
 
         for filename in glob.glob(os.path.join(os.getcwd(), 'po', '*.po')):
             filename = os.path.basename(filename)
             lang = os.path.basename(filename)[0:len(filename) - 3]
-            if not os.path.exists("build/po/%s" % lang):
-                os.makedirs("build/po/%s" % lang)
-            newname = "build/po/%s/virtinst.mo" % lang
+            langdir = os.path.join("build", "mo", lang, "LC_MESSAGES")
+            if not os.path.exists(langdir):
+                os.makedirs(langdir)
 
-            print "Building %s from %s" % (newname, filename)
+            newname = os.path.join(langdir, "virtinst.mo")
+            print "Formatting %s to %s" % (filename, newname)
             os.system("msgfmt po/%s -o %s" % (filename, newname))
 
-        _build.run(self)
-        builddir = self.build_lib
+            targetpath = os.path.join("share", "locale", lang, "LC_MESSAGES")
+            self.distribution.data_files.append((targetpath, (newname,)))
 
+        build.run(self)
 
-class install(_install):
-    """custom install command to extract install base for locale install"""
-
-    def finalize_options(self):
-        global locale
-        _install.finalize_options(self)
-        locale = self.install_base + "/share/locale"
-
-
-class install_lib(_install_lib):
-    """ custom install_lib command to place locale location into library"""
-
-    def run(self):
-        for initfile in [ "virtinst/__init__.py", "virtconv/__init__.py" ]:
-            cmd  = "cat %s | " % initfile
-            cmd += """sed -e "s,::LOCALEDIR::,%s," > """ % locale
-            cmd += "%s/%s" % (builddir, initfile)
-            os.system(cmd)
-
-        _install_lib.run(self)
-
-
-class install_data(_install_data):
-    """ custom install_data command to prepare i18n files for install"""
-
-    def run(self):
-        dirlist = os.listdir("build/po")
-        for lang in dirlist:
-            if lang != "." and lang != "..":
-                install_path = "share/locale/%s/LC_MESSAGES/" % lang
-
-                src_path = "build/po/%s/virtinst.mo" % lang
-
-                print "Installing %s to %s" % (src_path, install_path)
-                toadd = (install_path, [src_path])
-
-                # Add these to the datafiles list
-                datafiles.append(toadd)
-        _install_data.run(self)
 
 setup(
     name='virtinst',
@@ -369,14 +328,10 @@ setup(
         'test_cli' : TestCLI,
         'check': CheckPylint,
 
-        'rpm' : custom_rpm,
-        'sdist': sdist,
-        'refresh_translations' : refresh_translations,
+        'rpm' : myrpm,
+        'sdist': mysdist,
+        'refresh_translations': refresh_translations,
 
-        'build': build,
-
-        'install_data' : install_data,
-        'install_lib' : install_lib,
-        'install' : install,
+        'build': mybuild,
     }
 )

@@ -23,7 +23,7 @@ import logging
 import libvirt
 
 from virtinst import support
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 from XMLBuilderDomain import _xml_property
 
 class VirtualHostDevice(VirtualDevice.VirtualDevice):

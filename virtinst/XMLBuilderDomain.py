@@ -26,7 +26,7 @@ import libxml2
 
 import CapabilitiesParser
 import _util
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 _xml_refs = {}
 def _unref_doc(doc):

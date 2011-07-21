@@ -47,7 +47,7 @@ from CPU import CPU
 from DomainFeatures import DomainFeatures
 
 import osdict
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 
 def _validate_cpuset(conn, val):
