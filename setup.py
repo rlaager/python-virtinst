@@ -333,7 +333,7 @@ setup(
         'test': TestCommand,
         'test_urls' : TestURLFetch,
         'test_cli' : TestCLI,
-        'check': CheckPylint,
+        'pylint': CheckPylint,
 
         'rpm' : myrpm,
         'sdist': mysdist,
