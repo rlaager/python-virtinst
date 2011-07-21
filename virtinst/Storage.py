@@ -862,7 +862,7 @@ class iSCSIPool(StoragePool):
             iqn_xml += """      <iqn name="%s"/>\n""" % escape(self.iqn_name)
             iqn_xml += """    </initiator>\n"""
 
-        xml =  """    <host name="%s"/>\n""" % self.host
+        xml  = """    <host name="%s"/>\n""" % self.host
         xml += """    <device path="%s"/>\n""" % escape(self.source_path)
         xml += iqn_xml
 
@@ -927,8 +927,7 @@ class MultipathPool(StoragePool):
                                     "supported."))
     get_volume_class = staticmethod(get_volume_class)
 
-    def __init__(self, conn, name, source_path=None,
-                 target_path=None, uuid=None):
+    def __init__(self, conn, name, target_path=None, uuid=None):
         StoragePool.__init__(self, name=name, type=StoragePool.TYPE_MPATH,
                              uuid=uuid, target_path=target_path, conn=conn)
 
