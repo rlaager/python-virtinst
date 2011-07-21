@@ -37,9 +37,8 @@ VERSION = "0.500.6"
 config_template = """
 __version__ = "%(VERSION)s"
 __version_info__ = tuple([ int(num) for num in __version__.split('.')])
+rhel6defaults = bool(%(RHEL6DEFAULTS)s)
 """
-
-config_data = config_template % { "VERSION" : VERSION }
 
 class TestBaseCommand(Command):
 
@@ -294,7 +293,25 @@ class mysdist(sdist):
 class mybuild(build):
     """ custom build command to compile i18n files"""
 
+    user_options = (
+        build.user_options + [
+        ("rhel6defaults", None, "use rhel6 defaults in lib and tools"),
+    ])
+
+    def __init__(self, dist):
+        build.__init__(self, dist)
+
+        self.rhel6defaults = 0
+
     def run(self):
+        config_opts = {
+            "VERSION" : VERSION,
+            "RHEL6DEFAULTS" : self.rhel6defaults,
+        }
+        config_data = config_template % config_opts
+        print "Version              : %s" % VERSION
+        print "RHEL6 defaults       : %s" % bool(self.rhel6defaults)
+
         for f in config_files:
             print "Generating %s" % f
             fd = open(f, "w")

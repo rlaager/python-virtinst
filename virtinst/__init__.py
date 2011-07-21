@@ -27,6 +27,7 @@ except ImportError:
     sys.exit(1)
 __version__ = _config.__version__
 __version_info__ = _config.__version_info__
+enable_rhel6_defaults = _config.rhel6defaults
 
 # Public imports
 

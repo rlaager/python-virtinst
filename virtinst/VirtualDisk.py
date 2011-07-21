@@ -30,6 +30,7 @@ import re
 import urlgrabber.progress as progress
 import libvirt
 
+import virtinst
 import _util
 import Storage
 from VirtualDevice import VirtualDevice
@@ -313,7 +314,10 @@ class VirtualDisk(VirtualDevice):
     types = [TYPE_FILE, TYPE_BLOCK, TYPE_DIR]
 
     _target_props = ["file", "dev", "dir"]
-    io_modes = ["native", "threads"]
+
+    IO_MODE_NATIVE = "native"
+    IO_MODE_THREADS = "threads"
+    io_modes = [IO_MODE_NATIVE, IO_MODE_THREADS]
 
     @staticmethod
     def disk_type_to_xen_driver_name(disk_type):
@@ -1436,16 +1440,33 @@ class VirtualDisk(VirtualDevice):
 
         ret = "    <disk type='%s' device='%s'>\n" % (self.type, self.device)
 
+        cache = self.driver_cache
+        iomode = self.driver_io
+
+        if virtinst.enable_rhel6_defaults:
+            # Enable cache=none for non-CDROM devs
+            if (self.is_qemu() and
+                not cache and
+                self.device != self.DEVICE_CDROM):
+                cache = self.CACHE_MODE_NONE
+
+            # Enable AIO native for block devices
+            if (self.is_qemu() and
+                not iomode and
+                self.device == self.DEVICE_DISK and
+                self.type == self.TYPE_BLOCK):
+                iomode = self.IO_MODE_NATIVE
+
         if path:
             drvxml = ""
             if not self.driver_type is None:
                 drvxml += " type='%s'" % self.driver_type
-            if not self.driver_cache is None:
-                drvxml += " cache='%s'" % self.driver_cache
+            if not cache is None:
+                drvxml += " cache='%s'" % cache
             if not self.error_policy is None:
                 drvxml += " error_policy='%s'" % self.error_policy
-            if not self.driver_io is None:
-                drvxml += " io='%s'" % self.driver_io
+            if not iomode is None:
+                drvxml += " io='%s'" % iomode
 
             if drvxml and self.driver_name is None:
                 if self.is_qemu():
