@@ -23,15 +23,23 @@ from distutils.command.sdist import sdist
 from distutils.command.build import build
 from unittest import TextTestRunner, TestLoader
 
-pkgs = ['virtinst', 'virtconv', 'virtconv.parsers']
-
+scripts = ["virt-install", "virt-clone", "virt-image", "virt-convert"]
+packages = ['virtinst', 'virtconv', 'virtconv.parsers']
+config_files = ["virtinst/_config.py", "virtconv/_config.py"]
 datafiles = [('share/man/man1', ['man/en/virt-install.1',
                                  'man/en/virt-clone.1',
                                  'man/en/virt-image.1',
                                  'man/en/virt-convert.1']),
              ('share/man/man5', ['man/en/virt-image.5'])]
 
-VERSION = file("virtinst/version.py").read().split(" ")[2].strip(" \n\"")
+VERSION = "0.500.6"
+
+config_template = """
+__version__ = "%(VERSION)s"
+__version_info__ = tuple([ int(num) for num in __version__.split('.')])
+"""
+
+config_data = config_template % { "VERSION" : VERSION }
 
 class TestBaseCommand(Command):
 
@@ -309,7 +317,6 @@ class mybuild(build):
 
         build.run(self)
 
-
 setup(
     name='virtinst',
     version=VERSION,
@@ -320,7 +327,7 @@ setup(
     url='http://virt-manager.org',
     package_dir={'virtinst': 'virtinst'},
     scripts=["virt-install", "virt-clone", "virt-image", "virt-convert"],
-    packages=pkgs,
+    packages=packages,
     data_files=datafiles,
     cmdclass={
         'test': TestCommand,

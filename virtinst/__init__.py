@@ -15,13 +15,18 @@
 # MA 02110-1301 USA.
 
 import gettext
+import sys
 
 gettext.bindtextdomain("virtinst")
 _gettext = lambda m: gettext.dgettext("virtinst", m)
 
-from version import __version__
-__version_info__ = tuple([ int(num) for num in __version__.split('.')])
-
+try:
+    import _config
+except ImportError:
+    print "Could not import _config. Please run python setup.py build first"
+    sys.exit(1)
+__version__ = _config.__version__
+__version_info__ = _config.__version_info__
 
 # Public imports
 

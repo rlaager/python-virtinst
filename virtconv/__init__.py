@@ -21,10 +21,19 @@
 import pkgutil
 import imp
 import os
+import sys
 import gettext
 
 gettext.bindtextdomain("virtinst")
 _gettext = lambda m: gettext.dgettext("virtinst", m)
+
+try:
+    import _config
+except ImportError:
+    print "Could not import _config. Please run python setup.py build first"
+    sys.exit(1)
+__version__ = _config.__version__
+__version_info__ = _config.__version_info__
 
 parsers_path = [os.path.join(__path__[0], "parsers/")]
 

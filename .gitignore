@@ -5,3 +5,5 @@
 MANIFEST
 python-virtinst.spec
 /man/en/virt-install.pod
+/virtconv/_config.py
+/virtinst/_config.py
