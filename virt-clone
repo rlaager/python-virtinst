@@ -213,7 +213,7 @@ def main():
     if not User.current().has_priv(User.PRIV_CLONE, conn.getURI()):
         fail(_("Must be privileged to clone Xen guests"))
 
-    design = clmgr.CloneDesign(connection=conn)
+    design = clmgr.CloneDesign(conn=conn)
 
     design.clone_running = options.clone_running
     design.replace = bool(options.replace)

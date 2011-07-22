@@ -186,10 +186,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return cpustr
 
     def __init__(self, type=None, connection=None, hypervisorURI=None,
-                 installer=None, parsexml=None, caps=None):
+                 installer=None, parsexml=None, caps=None, conn=None):
 
         # Set up the connection, since it is fundamental for other init
-        conn = connection
+        conn = conn or connection
         if conn == None:
             logging.debug("No conn passed to Guest, opening URI '%s'" %
                           hypervisorURI)

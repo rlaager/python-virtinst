@@ -442,7 +442,7 @@ class TestValidation(unittest.TestCase):
 
     # Actual Tests
     def testGuestValidation(self):
-        PVGuest = virtinst.ParaVirtGuest(connection=testconn,
+        PVGuest = virtinst.ParaVirtGuest(conn=testconn,
                                          type="xen")
         self._testArgs(PVGuest, virtinst.Guest, 'guest')
 
@@ -451,7 +451,7 @@ class TestValidation(unittest.TestCase):
         self._testArgs(disk, VirtualDisk, 'disk')
 
     def testFVGuestValidation(self):
-        FVGuest = virtinst.FullVirtGuest(connection=testconn,
+        FVGuest = virtinst.FullVirtGuest(conn=testconn,
                                          type="xen")
         self._testArgs(FVGuest, virtinst.FullVirtGuest, 'fvguest')
 

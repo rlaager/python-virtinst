@@ -72,7 +72,7 @@ class TestClone(unittest.TestCase):
         infile = os.path.join(clonexml_dir, filebase + "-in.xml")
         in_content = utils.read_file(infile)
 
-        cloneobj = CloneDesign(connection=conn)
+        cloneobj = CloneDesign(conn=conn)
         cloneobj.original_xml = in_content
         for force in force_list or []:
             cloneobj.force_target = force
@@ -135,7 +135,7 @@ class TestClone(unittest.TestCase):
             try:
                 vm = conn.defineXML(utils.read_file(infile))
 
-                cloneobj = CloneDesign(connection=conn)
+                cloneobj = CloneDesign(conn=conn)
                 cloneobj.original_guest = ORIG_NAME
 
                 cloneobj = self._default_clone_values(cloneobj)

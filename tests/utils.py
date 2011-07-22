@@ -137,7 +137,7 @@ def diff_compare(actual_out, filename=None, expect_out=None):
 
 
 def get_basic_paravirt_guest(installer=None):
-    g = virtinst.ParaVirtGuest(connection=_conn, type="xen")
+    g = virtinst.ParaVirtGuest(conn=_conn, type="xen")
     g.name = "TestGuest"
     g.memory = int(200)
     g.maxmemory = int(400)
@@ -153,7 +153,7 @@ def get_basic_paravirt_guest(installer=None):
     return g
 
 def get_basic_fullyvirt_guest(typ="xen", installer=None):
-    g = virtinst.FullVirtGuest(connection=_conn, type=typ,
+    g = virtinst.FullVirtGuest(conn=_conn, type=typ,
                                emulator="/usr/lib/xen/bin/qemu-dm",
                                arch="i686")
     g.name = "TestGuest"

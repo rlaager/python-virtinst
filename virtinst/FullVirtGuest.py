@@ -27,9 +27,9 @@ class FullVirtGuest(Guest):
 
     def __init__(self, type=None, arch=None, connection=None,
                  hypervisorURI=None, emulator=None, installer=None,
-                 caps=None):
+                 caps=None, conn=None):
         Guest.__init__(self, type, connection, hypervisorURI, installer,
-                       caps=caps)
+                       caps=caps, conn=conn)
 
         self.emulator = emulator
         if arch:

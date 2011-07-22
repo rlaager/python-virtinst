@@ -115,11 +115,12 @@ class CloneDesign(object):
     CLONE_POLICY_NO_SHAREABLE  = 2
     CLONE_POLICY_NO_EMPTYMEDIA = 3
 
-    def __init__(self, connection):
-        # hypervisor connection
-        if not isinstance(connection, libvirt.virConnect):
+    def __init__(self, connection=None, conn=None):
+        conn = conn or connection
+
+        if not isinstance(conn, libvirt.virConnect):
             raise ValueError(_("Connection must be a 'virConnect' instance."))
-        self._hyper_conn = connection
+        self._hyper_conn = conn
 
         # original guest name or uuid
         self._original_guest        = None
@@ -149,7 +150,7 @@ class CloneDesign(object):
                                     self.CLONE_POLICY_NO_EMPTYMEDIA]
 
         # Throwaway guest to use for easy validation
-        self._valid_guest        = Guest.Guest(connection=connection)
+        self._valid_guest        = Guest.Guest(conn=conn)
 
         # Generate a random UUID at the start
         while 1:
