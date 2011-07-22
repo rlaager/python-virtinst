@@ -262,7 +262,7 @@ def set_xml_path(xml, path, newval):
 
 
 def generate_name(base, collision_cb, suffix="", lib_collision=True,
-                  start_num=0, sep="-", force_num=False):
+                  start_num=0, sep="-", force_num=False, collidelist=None):
     """
     Generate a new name from the passed base string, verifying it doesn't
     collide with the collision callback.
@@ -285,19 +285,27 @@ def generate_name(base, collision_cb, suffix="", lib_collision=True,
     @sep: The seperator to use between the basename and the generated number
           (default is "-")
     @force_num: Force the generated name to always end with a number
+    @collidelist: An extra list of names to check for collision
     """
+    collidelist = collidelist or []
+
+    def collide(n):
+        if n in collidelist:
+            return True
+        if lib_collision:
+            return libvirt_collision(collision_cb, tryname)
+        else:
+            return collision_cb(tryname)
 
     for i in range(start_num, start_num + 100000):
         tryname = base
         if i != 0 or force_num:
             tryname += ("%s%d" % (sep, i))
         tryname += suffix
-        if lib_collision:
-            if not libvirt_collision(collision_cb, tryname):
-                return tryname
-        else:
-            if not collision_cb(tryname):
-                return tryname
+
+        if not collide(tryname):
+            return tryname
+
     raise ValueError(_("Name generation range exceeded."))
 
 # Selinux helpers

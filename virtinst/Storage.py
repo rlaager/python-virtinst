@@ -1002,7 +1002,7 @@ class StorageVolume(StorageObject):
     get_volume_for_pool = staticmethod(get_volume_for_pool)
 
     def find_free_name(name, pool_object=None, pool_name=None, conn=None,
-                       suffix=""):
+                       suffix="", collidelist=None):
         """
         Finds a name similar (or equal) to passed 'name' that is not in use
         by another pool
@@ -1016,16 +1016,19 @@ class StorageVolume(StorageObject):
 
         Ex name="test", suffix=".img" -> name-3.img
 
+        @collidelist: An extra list of names to check for collision
         @returns: A free name
         @rtype: C{str}
         """
-
-        pool_object = StorageVolume.lookup_pool_by_name(pool_object=pool_object,
-                                                        pool_name=pool_name,
-                                                        conn=conn)
+        collidelist = collidelist or []
+        pool_object = StorageVolume.lookup_pool_by_name(
+                                                    pool_object=pool_object,
+                                                    pool_name=pool_name,
+                                                    conn=conn)
         pool_object.refresh(0)
+
         return _util.generate_name(name, pool_object.storageVolLookupByName,
-                                   suffix)
+                                   suffix, collidelist=collidelist)
     find_free_name = staticmethod(find_free_name)
 
     def lookup_pool_by_name(pool_object=None, pool_name=None, conn=None):
