@@ -30,7 +30,8 @@ _gettext = lambda m: gettext.dgettext("virtinst", m)
 try:
     import _config
 except ImportError:
-    print "Could not import _config. Please run python setup.py build first"
+    print "virtconv: Please run 'python setup.py build' in the source"
+    print "          directory before using the code."
     sys.exit(1)
 __version__ = _config.__version__
 __version_info__ = _config.__version_info__
