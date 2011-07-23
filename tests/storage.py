@@ -53,7 +53,7 @@ def _findFreePoolName(conn, namebase):
             return poolname
 
 def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
-               source_path=None, source_name=None, uuid=None, iqn_name=None):
+               source_path=None, source_name=None, uuid=None, iqn=None):
     poolclass = StoragePool.get_pool_class(ptype)
 
     if poolname is None:
@@ -74,8 +74,8 @@ def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
         pool_inst.format = fmt
     if source_name and hasattr(pool_inst, "source_name"):
         pool_inst.source_name = source_name
-    if iqn_name and hasattr(pool_inst, "iqn_name"):
-        pool_inst.iqn_name = iqn_name
+    if iqn and hasattr(pool_inst, "iqn"):
+        pool_inst.iqn = iqn
 
     return poolCompare(pool_inst)
 
@@ -180,7 +180,7 @@ class TestStorage(unittest.TestCase):
         self.assertRaises(RuntimeError, createVol, poolobj)
 
         createPool(self.conn, StoragePool.TYPE_ISCSI, "pool-iscsi-iqn",
-                   iqn_name="foo.bar.baz.iqn")
+                   iqn="foo.bar.baz.iqn")
 
     def testSCSIPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_SCSI, "pool-scsi")

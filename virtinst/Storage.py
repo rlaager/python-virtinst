@@ -825,7 +825,7 @@ class iSCSIPool(StoragePool):
         if host:
             self.host = host
 
-        self._iqn_name = None
+        self._iqn = None
 
     # Need to overwrite pool *_source_path since iscsi device isn't
     # a fully qualified path
@@ -836,11 +836,11 @@ class iSCSIPool(StoragePool):
     source_path = property(get_source_path, set_source_path,
                            doc=_("Path on the host that is being shared."))
 
-    def _get_iqn_name(self):
-        return self._iqn_name
-    def _set_iqn_name(self, val):
-        self._iqn_name = val
-    iqn_name = property(_get_iqn_name, _set_iqn_name,
+    def _get_iqn(self):
+        return self._iqn
+    def _set_iqn(self, val):
+        self._iqn = val
+    iqn = property(_get_iqn, _set_iqn,
                         doc=_("iSCSI initiator qualified name"))
 
     def _get_default_target_path(self):
@@ -857,9 +857,9 @@ class iSCSIPool(StoragePool):
             raise RuntimeError(_("Host path is required"))
 
         iqn_xml = ""
-        if self.iqn_name:
+        if self.iqn:
             iqn_xml += """    <initiator>\n"""
-            iqn_xml += """      <iqn name="%s"/>\n""" % escape(self.iqn_name)
+            iqn_xml += """      <iqn name="%s"/>\n""" % escape(self.iqn)
             iqn_xml += """    </initiator>\n"""
 
         xml  = """    <host name="%s"/>\n""" % self.host
