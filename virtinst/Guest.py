@@ -1297,6 +1297,13 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self.domain = dom
         meter.end(0)
 
+        if is_initial:
+            try:
+                logging.debug("XML fetched from libvirt object:\n%s",
+                              dom.XMLDesc(0))
+            except Exception, e:
+                logging.debug("Error fetching XML from libvirt object: %s" % e)
+
         if doboot:
             logging.debug("Started guest, connecting to console if requested")
             (self.domain,
