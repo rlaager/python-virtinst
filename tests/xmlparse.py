@@ -95,7 +95,7 @@ class XMLParseTest(unittest.TestCase):
         check("description", None, "Hey desc changed")
         check("maxvcpus", 5, 30)
         check("vcpus", 30, 22)
-        check("cpuset", "1-3", "1-5,15")
+        check("cpuset", "1-3", "1-8,^6", "1-5,15")
         check("maxmemory", 400, 500)
         check("memory", 200, 1000)
         check("maxmemory", 1000, 2000)

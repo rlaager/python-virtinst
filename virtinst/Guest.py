@@ -56,24 +56,31 @@ def _validate_cpuset(conn, val):
 
     if type(val) is not type("string") or len(val) == 0:
         raise ValueError(_("cpuset must be string"))
-    if re.match("^[0-9,-]*$", val) is None:
+    if re.match("^[0-9,-^]*$", val) is None:
         raise ValueError(_("cpuset can only contain numeric, ',', or "
                            "'-' characters"))
 
     pcpus = _util.get_phy_cpus(conn)
     for c in val.split(','):
-        if c.find('-') != -1:
-            (x, y) = c.split('-')
-            if int(x) > int(y):
+        # Redundant commas
+        if not c:
+            continue
+
+        if "-" in c:
+            (x, y) = c.split('-', 1)
+            x = int(x)
+            y = int(y)
+            if x > y:
                 raise ValueError(_("cpuset contains invalid format."))
-            if int(x) >= pcpus or int(y) >= pcpus:
+            if x >= pcpus or y >= pcpus:
                 raise ValueError(_("cpuset's pCPU numbers must be less "
                                    "than pCPUs."))
         else:
-            if len(c) == 0:
-                continue
+            if c.startswith("^"):
+                c = c[1:]
+            c = int(c)
 
-            if int(c) >= pcpus:
+            if c >= pcpus:
                 raise ValueError(_("cpuset's pCPU numbers must be less "
                                    "than pCPUs."))
     return
