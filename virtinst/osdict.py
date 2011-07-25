@@ -229,180 +229,263 @@ OS_TYPES = {
 "linux": {
     "label": "Linux",
     "variants": {
-        "rhel2.1": { "label": "Red Hat Enterprise Linux 2.1",
-                     "distro": "rhel" },
-        "rhel3": { "label": "Red Hat Enterprise Linux 3",
-                   "distro": "rhel" },
-        "rhel4": { "label": "Red Hat Enterprise Linux 4",
-                   "distro": "rhel" },
-        "rhel5": { "label": "Red Hat Enterprise Linux 5",
-                   "distro": "rhel" },
-        "rhel5.4": { "label": "Red Hat Enterprise Linux 5.4 or later",
-                     "distro": "rhel",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                      }, },
-        "rhel6": { "label": "Red Hat Enterprise Linux 6", "distro": "rhel",
-                   "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                        INPUT: USB_TABLET,
-                   }},
-        "fedora5": { "sortby": "fedora05",
-                     "label": "Fedora Core 5", "distro": "fedora" },
-        "fedora6": { "sortby": "fedora06",
-                     "label": "Fedora Core 6", "distro": "fedora" },
-        "fedora7": { "sortby": "fedora07",
-                     "label": "Fedora 7", "distro": "fedora" },
-        "fedora8": { "sortby": "fedora08",
-                     "label": "Fedora 8", "distro": "fedora" },
-        "fedora9": { "sortby":  "fedora09",
-                     "label": "Fedora 9", "distro": "fedora",
-                      "devices" : {
-                        # Apparently F9 has selinux errors when installing
-                        # with virtio:
-                        # https://bugzilla.redhat.com/show_bug.cgi?id=470386
-                        #DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                      }},
-        "fedora10": { "label": "Fedora 10", "distro": "fedora",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                      }},
-        "fedora11": { "label": "Fedora 11", "distro": "fedora",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                        INPUT: USB_TABLET,
-                     }},
-        "fedora12": { "label": "Fedora 12", "distro": "fedora",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                        INPUT: USB_TABLET,
-                     }},
-        "fedora13": { "label": "Fedora 13", "distro": "fedora",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                        INPUT: USB_TABLET,
-                     }},
-        "fedora14": { "label": "Fedora 14", "distro": "fedora",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                        INPUT: USB_TABLET,
-                     }},
-        "fedora15": { "label": "Fedora 15", "distro": "fedora",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                        INPUT: USB_TABLET,
-                     }},
 
-        "sles10": { "label": "Suse Linux Enterprise Server",
-                    "distro": "suse" },
-        "sles11": { "label": "Suse Linux Enterprise Server 11",
-                    "distro": "suse",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                      },
-                  },
+    "rhel2.1": {
+        "label": "Red Hat Enterprise Linux 2.1",
+        "distro": "rhel"
+    },
+    "rhel3": {
+        "label": "Red Hat Enterprise Linux 3",
+        "distro": "rhel"
+    },
+    "rhel4": {
+        "label": "Red Hat Enterprise Linux 4",
+        "distro": "rhel"
+    },
+    "rhel5": {
+        "label": "Red Hat Enterprise Linux 5",
+        "distro": "rhel"
+    },
+    "rhel5.4": {
+        "label": "Red Hat Enterprise Linux 5.4 or later",
+        "distro": "rhel",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+    "rhel6": {
+        "label": "Red Hat Enterprise Linux 6",
+        "distro": "rhel",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+            INPUT: USB_TABLET,
+        }
+    },
 
-        "mandriva2009": { "label": "Mandriva Linux 2009 and earlier",
-                          "distro": "mandriva" },
-        "mandriva2010": { "label": "Mandriva Linux 2010 and later",
-                          "distro": "mandriva",
-                          "devices" : {
-                            DISK : VIRTIO_DISK,
-                            NET  : VIRTIO_NET,
-                        },
-                  },
+    "fedora5": {
+        "sortby": "fedora05",
+        "label": "Fedora Core 5",
+        "distro": "fedora"
+    },
+    "fedora6": {
+        "sortby": "fedora06",
+        "label": "Fedora Core 6",
+        "distro": "fedora"
+    },
+    "fedora7": {
+        "sortby": "fedora07",
+        "label": "Fedora 7",
+        "distro": "fedora"
+    },
+    "fedora8": {
+        "sortby": "fedora08",
+        "label": "Fedora 8",
+        "distro": "fedora"
+    },
+    "fedora9": {
+        "sortby":  "fedora09",
+        "label": "Fedora 9",
+        "distro": "fedora",
+        "devices" : {
+            # Apparently F9 has selinux errors when installing with virtio:
+            # https://bugzilla.redhat.com/show_bug.cgi?id=470386
+            #DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        }
+    },
+    "fedora10": {
+        "label": "Fedora 10",
+        "distro": "fedora",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        }
+    },
+    "fedora11": {
+        "label": "Fedora 11",
+        "distro": "fedora",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+            INPUT: USB_TABLET,
+        }
+    },
+    "fedora12": {
+        "label": "Fedora 12",
+        "distro": "fedora",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+            INPUT: USB_TABLET,
+        }
+    },
+    "fedora13": {
+        "label": "Fedora 13", "distro": "fedora",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+            INPUT: USB_TABLET,
+        }
+    },
+    "fedora14": {
+        "label": "Fedora 14",
+        "distro": "fedora",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+            INPUT: USB_TABLET,
+        }
+    },
+    "fedora15": {
+        "label": "Fedora 15",
+        "distro": "fedora",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+            INPUT: USB_TABLET,
+        }
+    },
 
-        "mes5": { "label": "Mandriva Enterprise Server 5.0",
-                    "distro": "mandriva" },
-        "mes5.1": { "label": "Mandriva Enterprise Server 5.1 and later",
-                    "distro": "mandriva",
-                    "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                    },
-                  },
-        "debianetch": { "label": "Debian Etch", "distro": "debian",
-                        "sortby": "debian4" },
-        "debianlenny": { "label": "Debian Lenny", "distro": "debian",
-                         "sortby": "debian5",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                      }},
-        "debiansqueeze": { "label": "Debian Squeeze", "distro": "debian",
-                         "sortby": "debian6",
-                      "devices" : {
-                        DISK : VIRTIO_DISK,
-                        NET  : VIRTIO_NET,
-                        INPUT: USB_TABLET,
-                     }},
-        "ubuntuhardy": { "label": "Ubuntu 8.04 LTS (Hardy Heron)",
-                         "distro": "ubuntu",
-                         "devices" : {
-                            NET  : VIRTIO_NET,
-                         }},
-        "ubuntuintrepid": { "label": "Ubuntu 8.10 (Intrepid Ibex)",
-                            "distro": "ubuntu",
-                            "devices" : {
-                              NET  : VIRTIO_NET,
-                           }},
-        "ubuntujaunty": { "label": "Ubuntu 9.04 (Jaunty Jackalope)",
-                          "distro": "ubuntu",
-                          "devices" : {
-                            DISK : VIRTIO_DISK,
-                            NET  : VIRTIO_NET,
-                        }},
-        "ubuntukarmic": { "label": "Ubuntu 9.10 (Karmic Koala)",
-                          "distro": "ubuntu",
-                          "devices" : {
-                            DISK : VIRTIO_DISK,
-                            NET  : VIRTIO_NET,
-                        }},
-        "ubuntulucid": { "label": "Ubuntu 10.04 (Lucid Lynx)",
-                         "distro": "ubuntu",
-                         "devices" : {
-                            DISK : VIRTIO_DISK,
-                            NET  : VIRTIO_NET,
-                        }},
-        "ubuntumaverick": {
-            "label": "Ubuntu 10.10 (Maverick Meerkat)",
-            "distro": "ubuntu",
-            "devices" : {
-                DISK : VIRTIO_DISK,
-                NET  : VIRTIO_NET,
-            }},
-        "ubuntunatty": {
-            "label": "Ubuntu 11.04 (Natty Narwhal)",
-            "distro": "ubuntu",
-            "devices" : {
-                DISK : VIRTIO_DISK,
-                NET  : VIRTIO_NET,
-            }},
-        "ubuntuoneiric": {
-            "label": "Ubuntu 11.10 (Oneiric Ocelot)",
-            "distro": "ubuntu",
-            "devices" : {
-                DISK : VIRTIO_DISK,
-                NET  : VIRTIO_NET,
-            }},
-        "generic24": { "label": "Generic 2.4.x kernel" },
-        "generic26": { "label": "Generic 2.6.x kernel" },
-        "virtio26": { "sortby": "genericvirtio26",
-                      "label": "Generic 2.6.25 or later kernel with virtio",
-                      "devices" : {
-                            DISK : VIRTIO_DISK,
-                            NET  : VIRTIO_NET,
-                    }},
+    "sles10": {
+        "label": "Suse Linux Enterprise Server",
+        "distro": "suse"
+    },
+    "sles11": {
+        "label": "Suse Linux Enterprise Server 11",
+        "distro": "suse",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+
+    "mandriva2009": {
+        "label": "Mandriva Linux 2009 and earlier",
+        "distro": "mandriva"
+    },
+    "mandriva2010": {
+        "label": "Mandriva Linux 2010 and later",
+        "distro": "mandriva",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+
+    "mes5": {
+        "label": "Mandriva Enterprise Server 5.0",
+        "distro": "mandriva"
+    },
+    "mes5.1": {
+        "label": "Mandriva Enterprise Server 5.1 and later",
+        "distro": "mandriva",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+
+    "debianetch": {
+        "label": "Debian Etch", "distro": "debian",
+        "sortby": "debian4"
+    },
+    "debianlenny": {
+        "label": "Debian Lenny", "distro": "debian",
+        "sortby": "debian5",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+    "debiansqueeze": {
+        "label": "Debian Squeeze",
+        "distro": "debian",
+        "sortby": "debian6",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+            INPUT: USB_TABLET,
+        }
+    },
+
+    "ubuntuhardy": {
+        "label": "Ubuntu 8.04 LTS (Hardy Heron)",
+        "distro": "ubuntu",
+        "devices" : {
+            NET  : VIRTIO_NET,
+        },
+    },
+    "ubuntuintrepid": {
+        "label": "Ubuntu 8.10 (Intrepid Ibex)",
+        "distro": "ubuntu",
+        "devices" : {
+            NET  : VIRTIO_NET,
+        },
+    },
+    "ubuntujaunty": {
+        "label": "Ubuntu 9.04 (Jaunty Jackalope)",
+        "distro": "ubuntu",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+    "ubuntukarmic": {
+        "label": "Ubuntu 9.10 (Karmic Koala)",
+        "distro": "ubuntu",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+    "ubuntulucid": {
+        "label": "Ubuntu 10.04 (Lucid Lynx)",
+        "distro": "ubuntu",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+    },},
+    "ubuntumaverick": {
+        "label": "Ubuntu 10.10 (Maverick Meerkat)",
+        "distro": "ubuntu",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+    "ubuntunatty": {
+        "label": "Ubuntu 11.04 (Natty Narwhal)",
+        "distro": "ubuntu",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+    "ubuntuoneiric": {
+        "label": "Ubuntu 11.10 (Oneiric Ocelot)",
+        "distro": "ubuntu",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
+
+    "generic24": {
+        "label": "Generic 2.4.x kernel"
+    },
+    "generic26": {
+        "label": "Generic 2.6.x kernel"
+    },
+    "virtio26": {
+        "sortby": "genericvirtio26",
+        "label": "Generic 2.6.25 or later kernel with virtio",
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+        },
+    },
 
     },
 },
@@ -415,35 +498,49 @@ OS_TYPES = {
         INPUT : USB_TABLET,
         VIDEO : VGA_VIDEO,
     },
+
     "variants": {
-        "winxp": { "label": "Microsoft Windows XP",
-                   "sortby": "mswin5", "distro" : "win",
-                  "acpi": [
-                    (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
-                  ],
-                  "apic": [
-                    (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
-                  ],
-        },
-        "winxp64": { "label": "Microsoft Windows XP (x86_64)",
-                     "sortby": "mswin564", "distro": "win"},
-        "win2k": { "label": "Microsoft Windows 2000",
-                     "sortby" : "mswin4", "distro": "win",
-                  "acpi": [
-                    (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
-                  ],
-                  "apic": [
-                    (support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),
-                  ],
-        },
-        "win2k3": { "label": "Microsoft Windows Server 2003",
-                     "sortby" : "mswinserv2003", "distro": "winserv"},
-        "win2k8": { "label": "Microsoft Windows Server 2008",
-                    "sortby": "mswinserv2008", "distro": "winserv" },
-        "vista": { "label": "Microsoft Windows Vista",
-                    "sortby": "mswin6", "distro": "win" },
-        "win7": { "label": "Microsoft Windows 7",
-                  "sortby": "mswin7", "distro": "win"}
+
+    "winxp": {
+        "label": "Microsoft Windows XP",
+        "sortby": "mswin5",
+        "distro" : "win",
+        "acpi": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
+        "apic": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
+    },
+    "winxp64": {
+        "label": "Microsoft Windows XP (x86_64)",
+        "sortby": "mswin564",
+        "distro": "win",
+    },
+    "win2k": {
+        "label": "Microsoft Windows 2000",
+        "sortby" : "mswin4",
+        "distro": "win",
+        "acpi": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
+        "apic": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
+    },
+    "win2k3": {
+        "label": "Microsoft Windows Server 2003",
+        "sortby" : "mswinserv2003",
+        "distro": "winserv",
+    },
+    "win2k8": {
+        "label": "Microsoft Windows Server 2008",
+        "sortby": "mswinserv2008",
+        "distro": "winserv",
+    },
+    "vista": {
+        "label": "Microsoft Windows Vista",
+        "sortby": "mswin6",
+        "distro": "win",
+    },
+    "win7": {
+        "label": "Microsoft Windows 7",
+        "sortby": "mswin7",
+        "distro": "win",
+    },
+
     },
 },
 
@@ -452,55 +549,90 @@ OS_TYPES = {
     "clock": "localtime",
     "pv_cdrom_install": True,
     "variants": {
-        "solaris9": { "label": "Sun Solaris 9", },
-        "solaris10": { "label": "Sun Solaris 10",
-                       "devices" : {
-                            INPUT : USB_TABLET,
-                         },
-                       },
-        "opensolaris": { "label": "Sun OpenSolaris",
-                       "devices" : {
-                            INPUT : USB_TABLET,
-                         },
-                       },
+
+    "solaris9": {
+        "label": "Sun Solaris 9",
+    },
+    "solaris10": {
+        "label": "Sun Solaris 10",
+        "devices" : {
+            INPUT : USB_TABLET,
+        },
+    },
+    "opensolaris": {
+        "label": "Sun OpenSolaris",
+        "devices" : {
+            INPUT : USB_TABLET,
+        },
+    },
+
     },
 },
 
 "unix": {
     "label": "UNIX",
     "variants": {
-        "freebsd6": { "label": "FreeBSD 6.x" ,
-                      # http://www.nabble.com/Re%3A-Qemu%3A-bridging-on-FreeBSD-7.0-STABLE-p15919603.html
-                      "devices" : {
-                        NET : { "model" : [ (HV_ALL, "ne2k_pci") ] }
-                      }},
-        "freebsd7": { "label": "FreeBSD 7.x" ,
-                      "devices" : {
-                        NET : { "model" : [ (HV_ALL, "ne2k_pci") ] }
-                      }},
-        "freebsd8": { "label": "FreeBSD 8.x" ,
-                      "devices" : {
-                        NET : { "model" : [ (HV_ALL, "e1000") ] }
-                      }},
-        "openbsd4": { "label": "OpenBSD 4.x" ,
-                      # http://calamari.reverse-dns.net:980/cgi-bin/moin.cgi/OpenbsdOnQemu
-                      # https://www.redhat.com/archives/et-mgmt-tools/2008-June/msg00018.html
-                      "devices" : {
-                        NET  : { "model" : [ (HV_ALL, "pcnet") ] }
-                    }},
+
+    "freebsd6": {
+        "label": "FreeBSD 6.x" ,
+        # http://www.nabble.com/Re%3A-Qemu%3A-bridging-on-FreeBSD-7.0-STABLE-p15919603.html
+        "devices" : {
+            NET : { "model" : [ (HV_ALL, "ne2k_pci") ] }
+        },
+    },
+    "freebsd7": {
+        "label": "FreeBSD 7.x" ,
+        "devices" : {
+            NET : { "model" : [ (HV_ALL, "ne2k_pci") ] }
+        },
+    },
+    "freebsd8": {
+        "label": "FreeBSD 8.x" ,
+        "devices" : {
+            NET : { "model" : [ (HV_ALL, "e1000") ] }
+        },
+    },
+
+    "openbsd4": {
+        "label": "OpenBSD 4.x" ,
+        # http://calamari.reverse-dns.net:980/cgi-bin/moin.cgi/OpenbsdOnQemu
+        # https://www.redhat.com/archives/et-mgmt-tools/2008-June/msg00018.html
+        "devices" : {
+            NET  : { "model" : [ (HV_ALL, "pcnet") ] }
+        },
+    },
+
     },
 },
 
 "other": {
     "label": "Other",
     "variants": {
-        "msdos": { "label": "MS-DOS", "acpi": False, "apic": False },
-        "netware4": { "label": "Novell Netware 4" },
-        "netware5": { "label": "Novell Netware 5" },
-        "netware6": { "label": "Novell Netware 6", "pv_cdrom_install": True, },
-        "generic": { "label": "Generic" },
+
+    "msdos": {
+        "label": "MS-DOS",
+        "acpi": False,
+        "apic": False,
     },
-}}
+
+    "netware4": {
+        "label": "Novell Netware 4",
+    },
+    "netware5": {
+        "label": "Novell Netware 5",
+    },
+    "netware6": {
+        "label": "Novell Netware 6",
+        "pv_cdrom_install": True,
+    },
+
+    "generic": {
+        "label": "Generic"
+    },
+
+    },
+}
+}
 
 # Back compatibility entries
 solaris_compat = OS_TYPES["unix"]["variants"]
