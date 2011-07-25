@@ -489,8 +489,7 @@ def build_default_pool(guest):
         defpool = virtinst.Storage.DirectoryPool(conn=guest.conn,
                                                  name=DEFAULT_POOL_NAME,
                                                  target_path=DEFAULT_POOL_PATH)
-        newpool = defpool.install(build=True, create=True)
-        newpool.setAutostart(True)
+        defpool.install(build=True, create=True, autostart=True)
     except Exception, e:
         raise RuntimeError(_("Couldn't create default storage pool '%s': %s") %
                              (DEFAULT_POOL_PATH, str(e)))

@@ -441,7 +441,7 @@ class StoragePool(StorageObject):
                "%s" % src_xml + \
                "%s" % tar_xml
 
-    def install(self, meter=None, create=False, build=False):
+    def install(self, meter=None, create=False, build=False, autostart=False):
         """
         Install storage pool xml.
         """
@@ -472,6 +472,12 @@ class StoragePool(StorageObject):
                 pool.create(0)
             except Exception, e:
                 errmsg = _("Could not start storage pool: %s" % str(e))
+
+        if autostart and not errmsg:
+            try:
+                pool.setAutostart(True)
+            except Exception, e:
+                errmsg = _("Could not set pool autostart flag: %s" % str(e))
 
         if errmsg:
             # Try and clean up the leftover pool
@@ -730,12 +736,12 @@ class LogicalPool(StoragePool):
             xml += "    <name>%s</name>\n" % self.source_name
         return xml
 
-    def install(self, meter=None, create=False, build=False):
+    def install(self, meter=None, create=False, build=False, autostart=False):
         if build and not self.source_path:
             raise ValueError(_("Must explicitly specify source path if "
                                "building pool"))
         return StoragePool.install(self, meter=meter, create=create,
-                                   build=build)
+                                   build=build, autostart=False)
 
 class DiskPool(StoragePool):
     """
@@ -792,12 +798,12 @@ class DiskPool(StoragePool):
         xml += """    <device path="%s"/>\n""" % escape(self.source_path)
         return xml
 
-    def install(self, meter=None, create=False, build=False):
+    def install(self, meter=None, create=False, build=False, autostart=False):
         if self.format == "auto" and build:
             raise ValueError(_("Must explicitly specify disk format if "
                                "formatting disk device."))
         return StoragePool.install(self, meter=meter, create=create,
-                                   build=build)
+                                   build=build, autostart=autostart)
 
 class iSCSIPool(StoragePool):
     """
