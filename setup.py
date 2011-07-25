@@ -257,28 +257,20 @@ class mysdist(sdist):
         import virtinst.osdict as osdict
 
         # Build list first
-        typelist = []
+        ret = []
         for t in osdict.sort_helper(osdict.OS_TYPES):
-            varlist = []
             for v in osdict.sort_helper(osdict.OS_TYPES[t]["variants"]):
                 label = osdict.OS_TYPES[t]["variants"][v]["label"]
                 if osdict.lookup_osdict_key(None, None, t, v, "supported"):
-                    varlist.append((v, label))
-            if varlist:
-                typelist.append((t, varlist))
+                    ret.append((v, label))
 
         output = ""
-        output += "=over 4\n\n"
+        output += "=over 2\n\n"
 
-        for t, vlist in typelist:
-            output += "=item %s\n\n" % t
-            output += "=over 4\n\n"
+        for v, label in ret:
+            output += "=item %-20s : %s\n\n" % (v, label)
 
-            for v, label in vlist:
-                output += "=item %s\n\n" % v
-                output += label + "\n\n"
-
-            output += "=back\n\n"
+        output += "=back\n\n"
 
         infile = "man/en/virt-install.pod.in"
         outfile = "man/en/virt-install.pod"

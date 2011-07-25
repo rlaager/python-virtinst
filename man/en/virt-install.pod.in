@@ -310,6 +310,8 @@ Values for some recent OS options are:
 
 ::VARIANT VALUES::
 
+Use '--os-variant list' to see the full OS list
+
 =item --boot=BOOTOPTS
 
 Optionally specify the post-install VM boot configuration. This option allows
