@@ -155,6 +155,10 @@ class XMLParseTest(unittest.TestCase):
         guest.cpu.remove_feature(guest.cpu.features[1])
         guest.cpu.add_feature("addfeature")
 
+        check = self._make_checker(guest.numatune)
+        check("memory_mode", "interleave", "strict", None)
+        check("memory_nodeset", "1-5,^3,7", "2,4,6")
+
         self._alter_compare(guest.get_config_xml(), outfile)
 
     def testAlterMinimalGuest(self):

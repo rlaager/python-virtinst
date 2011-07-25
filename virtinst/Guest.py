@@ -21,7 +21,6 @@
 
 import os
 import time
-import re
 import logging
 import signal
 
@@ -44,46 +43,12 @@ from VirtualCharDevice import VirtualCharDevice
 from Clock import Clock
 from Seclabel import Seclabel
 from CPU import CPU
+from DomainNumatune import DomainNumatune
 from DomainFeatures import DomainFeatures
 
 import osdict
 from virtinst import _gettext as _
 
-
-def _validate_cpuset(conn, val):
-    if val is None or val == "":
-        return
-
-    if type(val) is not type("string") or len(val) == 0:
-        raise ValueError(_("cpuset must be string"))
-    if re.match("^[0-9,-^]*$", val) is None:
-        raise ValueError(_("cpuset can only contain numeric, ',', or "
-                           "'-' characters"))
-
-    pcpus = _util.get_phy_cpus(conn)
-    for c in val.split(','):
-        # Redundant commas
-        if not c:
-            continue
-
-        if "-" in c:
-            (x, y) = c.split('-', 1)
-            x = int(x)
-            y = int(y)
-            if x > y:
-                raise ValueError(_("cpuset contains invalid format."))
-            if x >= pcpus or y >= pcpus:
-                raise ValueError(_("cpuset's pCPU numbers must be less "
-                                   "than pCPUs."))
-        else:
-            if c.startswith("^"):
-                c = c[1:]
-            c = int(c)
-
-            if c >= pcpus:
-                raise ValueError(_("cpuset's pCPU numbers must be less "
-                                   "than pCPUs."))
-    return
 
 class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
@@ -151,24 +116,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
     @staticmethod
     def cpuset_str_to_tuple(conn, cpuset):
-        _validate_cpuset(conn, cpuset)
-        pinlist = [False] * _util.get_phy_cpus(conn)
-
-        entries = cpuset.split(",")
-        for e in entries:
-            series = e.split("-", 1)
-
-            if len(series) == 1:
-                pinlist[int(series[0])] = True
-                continue
-
-            start = int(series[0])
-            end = int(series[1])
-
-            for i in range(start, end + 1):
-                pinlist[i] = True
-
-        return tuple(pinlist)
+        return DomainNumatune.cpuset_str_to_tuple(conn, cpuset)
 
     @staticmethod
     def generate_cpuset(conn, mem):
@@ -307,6 +255,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._clock = Clock(self.conn)
         self._seclabel = Seclabel(self.conn)
         self._cpu = CPU(self.conn)
+        self._numatune = DomainNumatune(self.conn)
 
     def _open_uri(self, uri):
         # This is here so test suite can overwrite it, to make sure
@@ -332,6 +281,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def get_cpu(self):
         return self._cpu
     cpu = property(get_cpu)
+    def get_numatune(self):
+        return self._numatune
+    numatune = property(get_numatune)
 
     def _get_features(self):
         return self._features
@@ -447,7 +399,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             self._cpuset = None
             return
 
-        _validate_cpuset(self.conn, val)
+        DomainNumatune.validate_cpuset(self.conn, val)
         self._cpuset = val
     cpuset = _xml_property(get_cpuset, set_cpuset,
                            xpath="./vcpu/@cpuset")
@@ -852,6 +804,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._seclabel = Seclabel(self.conn, parsexmlnode=self._xml_node,
                                   caps=caps)
         self._cpu = CPU(self.conn, parsexmlnode=self._xml_node, caps=caps)
+        self._numatune = DomainNumatune(self.conn,
+                                        parsexmlnode=self._xml_node, caps=caps)
 
     def _get_default_input_device(self):
         """
@@ -1097,6 +1051,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         xml = add("  <on_reboot>%s</on_reboot>" % action)
         xml = add("  <on_crash>%s</on_crash>" % action)
         xml = add(self._get_vcpu_xml())
+        xml = add(self.numatune.get_xml_config())
         xml = add("  <devices>")
         xml = add(self._get_device_xml(devs, install))
         xml = add("  </devices>")

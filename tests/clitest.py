@@ -448,6 +448,8 @@ args_dict = {
         "--cpu somemodel",
         # Crazy --cpu
         "--cpu foobar,+x2apic,+x2apicagain,-distest,forbid=foo,forbid=bar,disable=distest2,optional=opttest,require=reqtest,match=strict,vendor=meee",
+        # Simple --numatune
+        "--numatune 1,2,3,5-7,^6",
       ],
 
       "invalid" : [
@@ -465,6 +467,8 @@ args_dict = {
         "--vcpus foo=bar",
         # --cpu host, but no host CPU in caps
         "--cpu host",
+        # Non-escaped numatune
+        "--numatune 1-3,4,mode=strict",
       ],
 
     }, # category 'cpuram'
@@ -550,7 +554,8 @@ args_dict = {
          "--network bridge=foobar,model=virtio "
          "--channel spicevmc "
          "--smartcard passthrough,type=spicevmc "
-         "--security type=static,label='system_u:object_r:svirt_image_t:s0:c100,c200' ",
+         "--security type=static,label='system_u:object_r:svirt_image_t:s0:c100,c200' "
+         """ --numatune \\"1-3,5\\",mode=preferred """,
          "many-devices"),
       ],
 

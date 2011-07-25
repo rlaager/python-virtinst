@@ -13,6 +13,9 @@
   <features>
     <apic/>
   </features>
+  <numatune>
+    <memory nodeset="2,4,6"/>
+  </numatune>
   <cpu match="strict">
     <model>qemu64</model>
     <vendor>qemuvendor</vendor>

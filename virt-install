@@ -468,6 +468,7 @@ def build_guest_instance(conn, options):
     cli.get_uuid(options.uuid, guest)
     cli.get_vcpus(options.vcpus, options.check_cpu, guest)
     cli.get_cpuset(options.cpuset, guest.memory, guest)
+    cli.parse_numatune(guest, options.numatune)
     cli.parse_cpu(guest, options.cpu)
     cli.parse_security(options.security, guest)
     cli.parse_boot(guest, options.bootopts)
@@ -802,6 +803,8 @@ def parse_args():
                            "the generated XML."))
     geng.add_option("", "--security", dest="security",
                     help=_("Set domain security driver configuration."))
+    geng.add_option("", "--numatune", dest="numatune",
+                    help=_("Tune NUMA policy for the domain process."))
     parser.add_option_group(geng)
 
     insg = optparse.OptionGroup(parser, _("Installation Method Options"))

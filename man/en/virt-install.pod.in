@@ -126,6 +126,20 @@ Set which physical cpus the guest can use. C<CPUSET> is a comma separated list o
 If the value 'auto' is passed, virt-install attempts to automatically determine
 an optimal cpu pinning using NUMA data, if available.
 
+=item --numatune=NODESET,[mode=MODE]
+
+Tune NUMA policy for the domain process. Example invocations
+
+    --numatune 1,2,3,4-7
+    --numatune \"1-3,5\",mode=preferred
+
+Specifies the numa nodes to allocate memory from. This has the same syntax
+as C<--cpuset> option. mode can be one of 'interleave', 'preferred', or
+'strict' (the default). See 'man 8 numactl' for information about each
+mode.
+
+The nodeset string must use escaped-quotes if specifying any other option.
+
 =item --cpu MODEL[,+feature][,-feature][,match=MATCH][,vendor=VENDOR]
 
 Configure the CPU model and CPU features exposed to the guest. The only

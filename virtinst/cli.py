@@ -29,6 +29,7 @@ import re
 import difflib
 import tempfile
 import optparse
+import shlex
 
 import libvirt
 
@@ -1016,7 +1017,7 @@ def vcpu_cli_options(grp):
                "--vcpus 5,maxcpus=10\n"
                "--vcpus sockets=2,cores=4,threads=2"))
     grp.add_option("", "--cpuset", dest="cpuset",
-                   help=_("Set which physical CPUs Domain can use."))
+                   help=_("Set which physical CPUs domain can use."))
     grp.add_option("", "--cpu", dest="cpu",
         help=_("CPU model and features. Ex: --cpu coreduo,+x2apic"))
     grp.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
@@ -1095,15 +1096,21 @@ def _build_set_param(inst, opts):
 
     return _set_param
 
-def parse_optstr_tuples(optstr):
+def parse_optstr_tuples(optstr, compress_first=False):
     """
     Parse optstr into a list of ordered tuples
     """
     optstr = str(optstr or "")
     optlist = []
 
-    args = optstr.split(",")
-    for opt in args:
+    if compress_first and optstr and not optstr.count("="):
+        return [(optstr, None)]
+
+    argsplitter = shlex.shlex(optstr, posix=True)
+    argsplitter.whitespace = ","
+    argsplitter.whitespace_split = True
+
+    for opt in list(argsplitter):
         if not opt:
             continue
 
@@ -1117,7 +1124,8 @@ def parse_optstr_tuples(optstr):
 
     return optlist
 
-def parse_optstr(optstr, basedict=None, remove_first=None):
+def parse_optstr(optstr, basedict=None, remove_first=None,
+                 compress_first=False):
     """
     Helper function for parsing opt strings of the form
     opt1=val1,opt2=val2,...
@@ -1128,10 +1136,12 @@ def parse_optstr(optstr, basedict=None, remove_first=None):
                          option string, and store in the returned dict.
                          remove_first=["char_type"] for --serial pty,foo=bar
                          returns {"char_type", "pty", "foo" : "bar"}
+    @param compress_first: If there are no options of the form opt1=opt2,
+                           compress the string to a single option
 
     Returns a dictionary of {'opt1': 'val1', 'opt2': 'val2'}
     """
-    optlist = parse_optstr_tuples(optstr)
+    optlist = parse_optstr_tuples(optstr, compress_first=compress_first)
     optdict = basedict or {}
 
     paramlist = remove_first
@@ -1152,6 +1162,27 @@ def parse_optstr(optstr, basedict=None, remove_first=None):
             optdict[opt] = val
 
     return optdict
+
+######################
+# --numatune parsing #
+######################
+
+def parse_numatune(guest, optstring):
+    """
+    Helper to parse --numatune string
+
+    @param  guest: virtinst.Guest instanct (object)
+    @param  optstring: value of the option '--numatune' (str)
+    """
+    opts = parse_optstr(optstring, remove_first="nodeset", compress_first=True)
+
+    set_param = _build_set_param(guest.numatune, opts)
+
+    set_param("memory_nodeset", "nodeset")
+    set_param("memory_mode", "mode")
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
 
 ##################
 # --vcpu parsing #
