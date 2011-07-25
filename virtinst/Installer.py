@@ -271,7 +271,9 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             return LIBVIRT_SCRATCH
 
     def _get_scratchdir(self):
-        scratch = self._get_system_scratchdir()
+        scratch = None
+        if not self.is_session_uri():
+            scratch = self._get_system_scratchdir()
 
         if (not scratch or
             not os.path.exists(scratch) or

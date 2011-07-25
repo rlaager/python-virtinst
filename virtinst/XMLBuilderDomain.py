@@ -425,6 +425,8 @@ class XMLBuilderDomain(object):
         return _util.is_qemu(self.conn, self.get_uri())
     def is_qemu_system(self):
         return _util.is_qemu_system(self.conn, self.get_uri())
+    def is_session_uri(self):
+        return _util.is_session_uri(self.conn, self.get_uri())
     def is_xen(self):
         return _util.is_xen(self.conn, self.get_uri())
 

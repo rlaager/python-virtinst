@@ -423,10 +423,19 @@ def is_qemu_system(conn, uri=None):
         return False
 
     (scheme, ignore, ignore,
-     path, ignore, ignore) = uri_split(conn)
+     path, ignore, ignore) = uri_split(uri)
     if path == "/system" and scheme.startswith("qemu"):
         return True
     return False
+
+def is_session_uri(conn, uri=None):
+    uri = _get_uri_to_split(conn, uri)
+    if not uri:
+        return False
+
+    (ignore, ignore, ignore,
+     path, ignore, ignore) = uri_split(uri)
+    return bool(path and path == "/session")
 
 def is_qemu(conn, uri=None):
     uri = _get_uri_to_split(conn, uri)
