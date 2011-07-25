@@ -185,7 +185,15 @@ install option is specified, the C<--disk> cdrom is used as the install media.
 
 =item  -l LOCATION, --location=LOCATION
 
-Installation source for guest virtual machine kernel+initrd pair.
+Distribution tree installtion source. virt-install can recognize
+certain distribution trees and fetches a bootable kernel/initrd pair to
+launch the install.
+
+With libvirt 0.9.4 or later, network URL installs work for remote connections.
+virt-install will download kernel/initrd to the local machine, and then
+upload the media to the remote host. This option requires the URL to
+be accessible by both the local and remote host.
+
 The C<LOCATION> can take one of the following forms:
 
 =over 4

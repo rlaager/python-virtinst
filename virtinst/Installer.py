@@ -111,6 +111,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self.extraargs = extraargs
 
         self._tmpfiles = []
+        self._tmpvols = []
 
     def get_conn(self):
         return self._conn
@@ -405,6 +406,12 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         for f in self._tmpfiles:
             logging.debug("Removing " + f)
             os.unlink(f)
+
+        for vol in self._tmpvols:
+            logging.debug("Removing volume '%s'" % vol.name())
+            vol.delete(0)
+
+        self._tmpvols = []
         self._tmpfiles = []
         self.install_devices = []
 

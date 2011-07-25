@@ -408,8 +408,10 @@ def check_option_collisions(options, guest):
         if options.cdrom or options.livecd:
             fail(_("Paravirtualized guests cannot install off cdrom media."))
 
-    if options.location and guest.is_remote():
-        fail(_("--location can not be specified for remote connections."))
+    if (options.location and
+        guest.is_remote() and not
+        guest.installer.support_remote_url_install()):
+        fail(_("Libvirt version does not support remote --location installs"))
 
     if not options.location and options.extra:
         fail(_("--extra-args only work if specified with --location."))
@@ -501,7 +503,6 @@ def build_guest_instance(conn, options):
     # about those first.
     validate_required_options(options, guest)
 
-
     # Actually set required options
     cli.get_name(options.name, guest)
     cli.get_memory(options.memory, guest)
@@ -510,10 +511,9 @@ def build_guest_instance(conn, options):
                   options.disksize, options.sparse)
     get_install_media(guest, options.location, options.cdrom)
 
-
-    # Various little validations about option collisions
+    # Various little validations about option collisions. Need to do
+    # this after setting guest.installer at least
     check_option_collisions(options, guest)
-
 
     # Warnings
     if options.pxe and not supports_pxe(guest):

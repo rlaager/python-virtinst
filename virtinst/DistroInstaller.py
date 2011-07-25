@@ -24,6 +24,8 @@ import shutil
 import subprocess
 import tempfile
 
+import Storage
+import support
 import _util
 import Installer
 from VirtualDisk import VirtualDisk
@@ -63,6 +65,88 @@ def _sanitize_url(url):
             url = url[:index] + ":" + url[index:]
 
     return url
+
+def _build_pool(conn, meter, path):
+    pool = _util.lookup_pool_by_path(conn, path)
+    if pool:
+        logging.debug("Existing pool '%s' found for %s" % (pool.name(), path))
+        pool.refresh(0)
+        return pool
+
+    name = _util.generate_name("boot-scratch",
+                               conn.storagePoolLookupByName)
+    logging.debug("Building storage pool: path=%s name=%s" % (path, name))
+    poolbuild = Storage.DirectoryPool(conn=conn, name=name,
+                                      target_path=path)
+
+    # Explicitly don't build? since if we are creating this directory
+    # we probably don't have correct perms
+    return poolbuild.install(meter=meter, create=True, build=False,
+                             autostart=True)
+
+
+def _upload_file(conn, meter, destpool, src):
+    # Build stream object
+    stream = conn.newStream(0)
+    def safe_send(data):
+        while True:
+            ret = stream.send(data)
+            if ret == 0 or ret == len(data):
+                break
+            data = data[ret:]
+
+    # Build placeholder volume
+    size = os.path.getsize(src)
+    basename = os.path.basename(src)
+    poolpath = _util.get_xml_path(destpool.XMLDesc(0), "/pool/target/path")
+    name = Storage.StorageVolume.find_free_name(basename,
+                                                pool_object=destpool)
+    if name != basename:
+        logging.debug("Generated non-colliding volume name %s" % name)
+
+    disk = VirtualDisk(conn=conn,
+                       path=os.path.join(poolpath, name),
+                       sizebytes=size,
+                       sparse=True)
+
+    disk.setup_dev(meter=meter)
+    vol = disk.vol_object
+
+    try:
+        # Register upload
+        offset = 0
+        length = size
+        flags = 0
+        stream.upload(vol, offset, length, flags)
+
+        # Open source file
+        fileobj = file(src, "r")
+
+        # Start transfer
+        total = 0
+        meter.start(size=size,
+                    text=_("Transferring %s") % os.path.basename(src))
+        while True:
+            #blocksize = (1024 ** 2)
+            blocksize = 1024
+            data = fileobj.read(blocksize)
+            if not data:
+                break
+
+            safe_send(data)
+            total += len(data)
+            meter.update(total)
+
+        # Cleanup
+        stream.finish()
+        meter.end(size)
+    except:
+        if vol:
+            vol.delete(0)
+        raise
+
+    return vol
+
 
 class DistroInstaller(Installer.Installer):
     def __init__(self, type="xen", location=None, boot=None,
@@ -215,6 +299,41 @@ class DistroInstaller(Installer.Installer):
         f.close()
         shutil.rmtree(tempdir)
 
+    def support_remote_url_install(self):
+        if not self.conn:
+            return False
+        return support.check_stream_support(self.conn,
+                                            support.SUPPORT_STREAM_UPLOAD)
+
+    def _upload_media(self, guest, meter, kernel, initrd):
+        conn = guest.conn
+        system_scratchdir = self._get_system_scratchdir()
+
+        if (not guest.is_remote() and
+            self.scratchdir == system_scratchdir):
+            # We have access to system scratchdir, don't jump through hoops
+            logging.debug("Have access to local system scratchdir so"
+                          " nothing to upload")
+            return kernel, initrd
+
+        if not self.support_remote_url_install():
+            logging.debug("Media upload not supported")
+            return kernel, initrd
+
+        # Build pool
+        logging.debug("Uploading kernel/initrd media")
+        pool = _build_pool(conn, meter, system_scratchdir)
+
+        kvol = _upload_file(conn, meter, pool, kernel)
+        newkernel = kvol.path()
+        self._tmpvols.append(kvol)
+
+        ivol = _upload_file(conn, meter, pool, initrd)
+        newinitrd = ivol.path()
+        self._tmpvols.append(ivol)
+
+        return newkernel, newinitrd
+
     def _prepare_kernel_and_initrd(self, guest, meter):
         disk = None
 
@@ -255,16 +374,20 @@ class DistroInstaller(Installer.Installer):
                 logging.debug("Auto detected OS variant as: %s" % os_variant)
                 guest.os_variant = os_variant
 
-        self._install_bootconfig.kernel = kernelfn
-        self._install_bootconfig.initrd = initrdfn
-        self._install_bootconfig.kernel_args = args
-
         self._tmpfiles.append(kernelfn)
         if initrdfn:
             self._tmpfiles.append(initrdfn)
 
         if self._initrd_injections:
             self._perform_initrd_injections()
+
+        # If required, upload media to an accessible guest location
+        kernelfn, initrdfn = self._upload_media(guest, meter,
+                                                kernelfn, initrdfn)
+
+        self._install_bootconfig.kernel = kernelfn
+        self._install_bootconfig.initrd = initrdfn
+        self._install_bootconfig.kernel_args = args
 
         return disk
 
