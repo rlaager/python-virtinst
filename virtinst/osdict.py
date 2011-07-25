@@ -71,6 +71,7 @@ DEFAULTS = {
     "distro":           None,
     "label":            None,
     "pv_cdrom_install": False,
+    "supported":        False,
 
     "devices" : {
         #  "devname" : { "attribute" : [( ["applicable", "hv-type", list"],
@@ -240,15 +241,17 @@ OS_TYPES = {
     },
     "rhel4": {
         "label": "Red Hat Enterprise Linux 4",
-        "distro": "rhel"
+        "distro": "rhel",
+        "supported": True,
     },
     "rhel5": {
         "label": "Red Hat Enterprise Linux 5",
-        "distro": "rhel"
+        "distro": "rhel",
     },
     "rhel5.4": {
         "label": "Red Hat Enterprise Linux 5.4 or later",
         "distro": "rhel",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -257,6 +260,7 @@ OS_TYPES = {
     "rhel6": {
         "label": "Red Hat Enterprise Linux 6",
         "distro": "rhel",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -332,6 +336,7 @@ OS_TYPES = {
     "fedora14": {
         "label": "Fedora 14",
         "distro": "fedora",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -341,6 +346,7 @@ OS_TYPES = {
     "fedora15": {
         "label": "Fedora 15",
         "distro": "fedora",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -350,11 +356,13 @@ OS_TYPES = {
 
     "sles10": {
         "label": "Suse Linux Enterprise Server",
-        "distro": "suse"
+        "distro": "suse",
+        "supported": True,
     },
     "sles11": {
         "label": "Suse Linux Enterprise Server 11",
         "distro": "suse",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -368,6 +376,7 @@ OS_TYPES = {
     "mandriva2010": {
         "label": "Mandriva Linux 2010 and later",
         "distro": "mandriva",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -376,11 +385,12 @@ OS_TYPES = {
 
     "mes5": {
         "label": "Mandriva Enterprise Server 5.0",
-        "distro": "mandriva"
+        "distro": "mandriva",
     },
     "mes5.1": {
         "label": "Mandriva Enterprise Server 5.1 and later",
         "distro": "mandriva",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -388,12 +398,15 @@ OS_TYPES = {
     },
 
     "debianetch": {
-        "label": "Debian Etch", "distro": "debian",
-        "sortby": "debian4"
+        "label": "Debian Etch",
+        "distro": "debian",
+        "sortby": "debian4",
     },
     "debianlenny": {
-        "label": "Debian Lenny", "distro": "debian",
+        "label": "Debian Lenny",
+        "distro": "debian",
         "sortby": "debian5",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -403,6 +416,7 @@ OS_TYPES = {
         "label": "Debian Squeeze",
         "distro": "debian",
         "sortby": "debian6",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -413,6 +427,7 @@ OS_TYPES = {
     "ubuntuhardy": {
         "label": "Ubuntu 8.04 LTS (Hardy Heron)",
         "distro": "ubuntu",
+        "supported": True,
         "devices" : {
             NET  : VIRTIO_NET,
         },
@@ -443,6 +458,7 @@ OS_TYPES = {
     "ubuntulucid": {
         "label": "Ubuntu 10.04 (Lucid Lynx)",
         "distro": "ubuntu",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -450,6 +466,7 @@ OS_TYPES = {
     "ubuntumaverick": {
         "label": "Ubuntu 10.10 (Maverick Meerkat)",
         "distro": "ubuntu",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -458,6 +475,7 @@ OS_TYPES = {
     "ubuntunatty": {
         "label": "Ubuntu 11.04 (Natty Narwhal)",
         "distro": "ubuntu",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -466,6 +484,7 @@ OS_TYPES = {
     "ubuntuoneiric": {
         "label": "Ubuntu 11.10 (Oneiric Ocelot)",
         "distro": "ubuntu",
+        "supported": True,
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
@@ -505,11 +524,13 @@ OS_TYPES = {
         "label": "Microsoft Windows XP",
         "sortby": "mswin5",
         "distro" : "win",
+        "supported": True,
         "acpi": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
         "apic": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
     },
     "winxp64": {
         "label": "Microsoft Windows XP (x86_64)",
+        "supported": True,
         "sortby": "mswin564",
         "distro": "win",
     },
@@ -527,16 +548,19 @@ OS_TYPES = {
     },
     "win2k8": {
         "label": "Microsoft Windows Server 2008",
+        "supported": True,
         "sortby": "mswinserv2008",
         "distro": "winserv",
     },
     "vista": {
         "label": "Microsoft Windows Vista",
+        "supported": True,
         "sortby": "mswin6",
         "distro": "win",
     },
     "win7": {
         "label": "Microsoft Windows 7",
+        "supported": True,
         "sortby": "mswin7",
         "distro": "win",
     },
@@ -588,6 +612,7 @@ OS_TYPES = {
     },
     "freebsd8": {
         "label": "FreeBSD 8.x" ,
+        "supported": True,
         "devices" : {
             NET : { "model" : [ (HV_ALL, "e1000") ] }
         },
@@ -627,6 +652,7 @@ OS_TYPES = {
     },
 
     "generic": {
+        "supported": True,
         "label": "Generic"
     },
 
