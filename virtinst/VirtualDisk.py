@@ -540,7 +540,7 @@ class VirtualDisk(VirtualDevice):
                  volInstall=None, volName=None, bus=None, shareable=False,
                  driverCache=None, selinuxLabel=None, format=None,
                  validate=True, parsexml=None, parsexmlnode=None, caps=None,
-                 driverIO=None):
+                 driverIO=None, sizebytes=None):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -583,6 +583,9 @@ class VirtualDisk(VirtualDevice):
                          local system. Omitting this may cause issues, be
                          warned!
         @type validate: C{bool}
+        @param sizebytes: Optionally specify storage size in bytes. Takes
+                          precedence over size if specified.
+        @type sizebytes: C{int}
         """
 
         VirtualDevice.__init__(self, conn=conn,
@@ -617,6 +620,9 @@ class VirtualDisk(VirtualDevice):
 
         if volName and not volObject:
             volObject = self.lookup_vol_object(conn, volName)
+
+        if sizebytes is not None:
+            size = (float(sizebytes) / float(1024 ** 3))
 
         if self._is_parse():
             self._validate = False
