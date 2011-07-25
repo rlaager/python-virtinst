@@ -553,6 +553,7 @@ OS_TYPES = {
     },
     "win2k3": {
         "label": "Microsoft Windows Server 2003",
+        "supported": True,
         "sortby" : "mswinserv2003",
         "distro": "winserv",
     },
