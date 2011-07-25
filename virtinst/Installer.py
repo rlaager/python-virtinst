@@ -263,7 +263,9 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         if platform.system() == "SunOS":
             return "/var/tmp"
 
-        if self.type == "xen":
+        if self.type == "test":
+            return "/tmp"
+        elif self.type == "xen":
             return XEN_SCRATCH
         else:
             return LIBVIRT_SCRATCH
