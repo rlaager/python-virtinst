@@ -353,6 +353,16 @@ OS_TYPES = {
             INPUT: USB_TABLET,
         }
     },
+    "fedora16": {
+        "label": "Fedora 16",
+        "distro": "fedora",
+        "supported": True,
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+            INPUT: USB_TABLET,
+        }
+    },
 
     "sles10": {
         "label": "Suse Linux Enterprise Server",
