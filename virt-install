@@ -980,6 +980,11 @@ def main():
     if cliargs:
         fail(_("Unknown argument '%s'") % cliargs[0])
 
+    if options.distro_variant == "list":
+        logging.debug("OS list requested")
+        print virtinst.Guest.pretty_os_list()
+        return 0
+
     cli.set_force(options.force)
     cli.set_prompt(options.prompt)
     conn = cli.getConnection(options.connect)

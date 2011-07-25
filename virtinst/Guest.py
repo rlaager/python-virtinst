@@ -93,10 +93,22 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
     _default_os_type = None
 
+    @staticmethod
+    def pretty_os_list():
+        """
+        Return a strip representation of OS list for printing
+        """
+        ret = ""
+        for t in Guest.list_os_types():
+            for v in Guest.list_os_variants(t):
+                ret += "%-20s : %s\n" % (v, Guest.get_os_variant_label(t, v))
+        return ret
+
+    @staticmethod
     def list_os_types():
         return osdict.sort_helper(Guest._OS_TYPES)
-    list_os_types = staticmethod(list_os_types)
 
+    @staticmethod
     def list_os_variants(type, sortpref=None):
         """
         Return a list of sorted os variants for the passed distro type
@@ -107,16 +119,16 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         return osdict.sort_helper(Guest._OS_TYPES[type]["variants"],
                                   sortpref)
-    list_os_variants = staticmethod(list_os_variants)
 
+    @staticmethod
     def get_os_type_label(type):
         return Guest._OS_TYPES[type]["label"]
-    get_os_type_label = staticmethod(get_os_type_label)
 
+    @staticmethod
     def get_os_variant_label(type, variant):
         return Guest._OS_TYPES[type]["variants"][variant]["label"]
-    get_os_variant_label = staticmethod(get_os_variant_label)
 
+    @staticmethod
     def cpuset_str_to_tuple(conn, cpuset):
         _validate_cpuset(conn, cpuset)
         pinlist = [False] * _util.get_phy_cpus(conn)
@@ -136,7 +148,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 pinlist[i] = True
 
         return tuple(pinlist)
-    cpuset_str_to_tuple = staticmethod(cpuset_str_to_tuple)
 
     @staticmethod
     def generate_cpuset(conn, mem):

@@ -299,6 +299,10 @@ By default, virt-install will attempt to auto detect this value from
 the install media (currently only supported for URL installs). Autodetection
 can be disabled with the special value 'none'.
 
+If the special value 'list' is passed, virt-install will print the full
+list of variant values and exit. The printed format is not a stable
+interface, DO NOT PARSE IT.
+
 Valid values are:
 
 ::VARIANT VALUES::
