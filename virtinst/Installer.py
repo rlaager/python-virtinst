@@ -38,25 +38,6 @@ from Boot import Boot
 XEN_SCRATCH = "/var/lib/xen"
 LIBVIRT_SCRATCH = "/var/lib/libvirt/boot"
 
-def _get_scratchdir(typ):
-    scratch = None
-    if platform.system() == 'SunOS':
-        scratch = '/var/tmp'
-
-    if os.geteuid() == 0:
-        if typ == "xen" and os.path.exists(XEN_SCRATCH):
-            scratch = XEN_SCRATCH
-        elif os.path.exists(LIBVIRT_SCRATCH):
-            scratch = LIBVIRT_SCRATCH
-
-    if not scratch:
-        scratch = os.path.expanduser("~/.virtinst/boot")
-        if not os.path.exists(scratch):
-            os.makedirs(scratch, 0751)
-        _util.selinux_restorecon(scratch)
-
-    return scratch
-
 class Installer(XMLBuilderDomain.XMLBuilderDomain):
     """
     Installer classes attempt to encapsulate all the parameters needed
@@ -196,7 +177,8 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             return None
 
         if not self._scratchdir:
-            self._scratchdir = _get_scratchdir(self.type)
+            self._scratchdir = self._get_scratchdir()
+            logging.debug("scratchdir=%s" % self._scratchdir)
         return self._scratchdir
     scratchdir = property(get_scratchdir)
 
@@ -277,6 +259,28 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         return self.os_type == "exe"
 
     # Private methods
+    def _get_system_scratchdir(self):
+        if platform.system() == "SunOS":
+            return "/var/tmp"
+
+        if self.type == "xen":
+            return XEN_SCRATCH
+        else:
+            return LIBVIRT_SCRATCH
+
+    def _get_scratchdir(self):
+        scratch = self._get_system_scratchdir()
+
+        if (not scratch or
+            not os.path.exists(scratch) or
+            not os.access(scratch, os.W_OK)):
+            scratch = os.path.expanduser("~/.virtinst/boot")
+            if not os.path.exists(scratch):
+                os.makedirs(scratch, 0751)
+            _util.selinux_restorecon(scratch)
+
+        return scratch
+
     def _get_bootdev(self, isinstall, guest):
         raise NotImplementedError("Must be implemented in subclass")
 
