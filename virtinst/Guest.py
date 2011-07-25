@@ -105,30 +105,41 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return ret
 
     @staticmethod
-    def list_os_types(supported=False):
+    def list_os_types(supported=False, filtervars=None):
+        """
+        @param filtervars: List of only variants we want to show by default
+        """
         vals = osdict.sort_helper(Guest._OS_TYPES)
         for t in vals[:]:
-            if not Guest.list_os_variants(t, supported=supported):
+            if not Guest.list_os_variants(t, supported=supported,
+                                          filtervars=filtervars):
                 vals.remove(t)
         return vals
 
     @staticmethod
-    def list_os_variants(type, sortpref=None, supported=False):
+    def list_os_variants(type, sortpref=None, supported=False, filtervars=None):
         """
         Return a list of sorted os variants for the passed distro type
 
         @param sortpref: An option list of osdict 'distro' tags to
         prioritize in the returned list, e.g. passing ["fedora"] will make
         the sorted list have all fedora distros first
+        @param filtervars: List of only variants we want to show by default
         """
         vals = osdict.sort_helper(Guest._OS_TYPES[type]["variants"],
                                   sortpref)
-        for v in vals[:]:
-            if (supported and
-                not osdict.lookup_osdict_key(None, None,
-                                             type, v, "supported")):
-                vals.remove(v)
-        return vals
+        ret = []
+        for v in vals:
+            if filtervars:
+                if v not in filtervars:
+                    continue
+            elif supported:
+                if not osdict.lookup_osdict_key(None, None,
+                                                type, v, "supported"):
+                    continue
+
+            ret.append(v)
+        return ret
 
     @staticmethod
     def get_os_type_label(type):

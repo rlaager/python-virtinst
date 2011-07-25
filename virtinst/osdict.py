@@ -472,7 +472,8 @@ OS_TYPES = {
         "devices" : {
             DISK : VIRTIO_DISK,
             NET  : VIRTIO_NET,
-    },},
+        },
+    },
     "ubuntumaverick": {
         "label": "Ubuntu 10.10 (Maverick Meerkat)",
         "distro": "ubuntu",
