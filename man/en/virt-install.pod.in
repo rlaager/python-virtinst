@@ -303,7 +303,10 @@ If the special value 'list' is passed, virt-install will print the full
 list of variant values and exit. The printed format is not a stable
 interface, DO NOT PARSE IT.
 
-Valid values are:
+If the special value 'none' is passed, no os variant is recorded and
+OS autodetection is disabled.
+
+Values for some recent OS options are:
 
 ::VARIANT VALUES::
 

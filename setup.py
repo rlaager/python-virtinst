@@ -256,22 +256,29 @@ class mysdist(sdist):
         # Update virt-install.1 with latest os type/variant values
         import virtinst.osdict as osdict
 
+        # Build list first
+        typelist = []
+        for t in osdict.sort_helper(osdict.OS_TYPES):
+            varlist = []
+            for v in osdict.sort_helper(osdict.OS_TYPES[t]["variants"]):
+                label = osdict.OS_TYPES[t]["variants"][v]["label"]
+                if osdict.lookup_osdict_key(None, None, t, v, "supported"):
+                    varlist.append((v, label))
+            if varlist:
+                typelist.append((t, varlist))
+
         output = ""
         output += "=over 4\n\n"
-        for t in osdict.sort_helper(osdict.OS_TYPES):
-            output += "=item %s\n\n" % t
 
+        for t, vlist in typelist:
+            output += "=item %s\n\n" % t
             output += "=over 4\n\n"
-            for v in osdict.sort_helper(osdict.OS_TYPES[t]["variants"]):
+
+            for v, label in vlist:
                 output += "=item %s\n\n" % v
-                output += osdict.OS_TYPES[t]["variants"][v]["label"] + "\n\n"
+                output += label + "\n\n"
 
             output += "=back\n\n"
-
-        # Add special 'none' value
-        output += "=item none\n\n"
-        output += "No OS version specified (disables autodetect)\n\n"
-        output += "=back\n\n"
 
         infile = "man/en/virt-install.pod.in"
         outfile = "man/en/virt-install.pod"
