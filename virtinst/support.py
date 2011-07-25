@@ -34,6 +34,7 @@ SUPPORT_CONN_DOMAIN_VIDEO = 5
 SUPPORT_CONN_NETWORK = 7
 SUPPORT_CONN_INTERFACE = 8
 SUPPORT_CONN_MAXVCPUS_XML = 9
+SUPPORT_CONN_STREAM = 10
 
 # Flags for check_domain_support
 SUPPORT_DOMAIN_GETVCPUS = 1000
@@ -47,6 +48,7 @@ SUPPORT_DOMAIN_CONSOLE_STREAM = 1007
 
 # Flags for check_pool_support
 SUPPORT_STORAGE_CREATEVOLFROM = 2000
+SUPPORT_STORAGE_UPLOAD = 2001
 
 # Flags for check_nodedev_support
 SUPPORT_NODEDEV_PCI_DETACH = 3000
@@ -63,6 +65,9 @@ SUPPORT_CONN_HV_GRAPHICS_SPICE = 5004
 SUPPORT_CONN_HV_CHAR_SPICEVMC = 5005
 SUPPORT_CONN_HV_DIRECT_INTERFACE = 5006
 SUPPORT_CONN_HV_FILESYSTEM = 5007
+
+# Flags for check_stream_support
+SUPPORT_STREAM_UPLOAD = 6000
 
 """
 Possible keys:
@@ -140,6 +145,14 @@ _support_dict = {
     SUPPORT_CONN_MAXVCPUS_XML : {
         "version" : 8005,
     },
+
+    SUPPORT_CONN_STREAM : {
+        # Earliest version with working bindings
+        "version" : 9003,
+        "function" : "virConnect.newStream",
+        "args" : (0,),
+    },
+
 
     # Domain checks
     SUPPORT_DOMAIN_GETVCPUS : {
@@ -251,7 +264,14 @@ _support_dict = {
                                   ("lxc", 0),
                                   ("openvz", 0),
                                   ("test", 0)],
-    }
+    },
+
+
+    SUPPORT_STREAM_UPLOAD : {
+        # Latest I tested with, and since we will use it by default
+        # for URL installs, want to be sure it works
+        "version" : 9004,
+    },
 }
 
 # XXX: RHEL6 has lots of feature backports, and since libvirt doesn't
@@ -567,3 +587,7 @@ def check_nodedev_support(nodedev, feature):
 
 def check_interface_support(nodedev, feature):
     return _check_support(_get_conn_from_object(nodedev), feature, nodedev)
+
+def check_stream_support(conn, feature):
+    return (check_conn_support(conn, SUPPORT_CONN_STREAM) and
+            _check_support(conn, feature, conn))
