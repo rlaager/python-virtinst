@@ -19,8 +19,6 @@
 
 import re
 
-import libxml2
-
 import _util
 import XMLBuilderDomain
 from XMLBuilderDomain import _xml_property

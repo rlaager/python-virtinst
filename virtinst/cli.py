@@ -788,7 +788,7 @@ def get_uuid(uuid, guest):
         except ValueError, e:
             fail(e)
 
-def get_vcpus(vcpus, check_cpu, guest, image_vcpus=None):
+def get_vcpus(guest, vcpus, check_cpu, image_vcpus=None):
     """
     @param vcpus: value of the option '--vcpus' (str or None)
     @param check_cpu: Whether to check that the number virtual cpus requested
@@ -802,7 +802,7 @@ def get_vcpus(vcpus, check_cpu, guest, image_vcpus=None):
         else:
             vcpus = ""
 
-    parse_vcpu_option(guest, vcpus, image_vcpus)
+    parse_vcpu(guest, vcpus, image_vcpus)
 
     if check_cpu:
         hostinfo = guest.conn.getInfo()
@@ -817,7 +817,7 @@ def get_vcpus(vcpus, check_cpu, guest, image_vcpus=None):
             if not prompt_for_yes_or_no(msg, askmsg):
                 nice_exit()
 
-def get_cpuset(cpuset, mem, guest):
+def get_cpuset(guest, cpuset):
     conn = guest.conn
     if cpuset and cpuset != "auto":
         guest.cpuset = cpuset
@@ -825,7 +825,7 @@ def get_cpuset(cpuset, mem, guest):
     elif cpuset == "auto":
         tmpset = None
         try:
-            tmpset = Guest.generate_cpuset(conn, mem)
+            tmpset = Guest.generate_cpuset(conn, guest.memory)
         except Exception, e:
             logging.debug("Not setting cpuset", str(e))
 
@@ -965,10 +965,7 @@ def get_video(guest, video_models=None):
             video_models.append(None)
 
     for model in video_models:
-        vdev = virtinst.VirtualVideoDevice(guest.conn)
-        if model:
-            vdev.model_type = model
-        guest.add_device(vdev)
+        guest.add_device(parse_video(guest, model))
 
 def get_sound(old_sound_bool, sound_opts, guest):
     if not sound_opts:
@@ -977,20 +974,15 @@ def get_sound(old_sound_bool, sound_opts, guest):
             guest.sound_devs.append(VirtualAudio(conn=guest.conn))
         return
 
-    for model in listify(sound_opts):
-        dev = VirtualAudio(conn=guest.conn)
-        dev.model = model
-        guest.add_device(dev)
-
+    for opts in listify(sound_opts):
+        guest.add_device(parse_sound(guest, opts))
 
 def get_hostdevs(hostdevs, guest):
     if not hostdevs:
         return
 
     for devname in hostdevs:
-        dev = virtinst.VirtualHostDevice.device_from_node(conn=guest.conn,
-                                                          name=devname)
-        guest.hostdevs.append(dev)
+        guest.add_device(parse_hostdev(guest, devname))
 
 def get_smartcard(guest, sc_opts):
     for sc in listify(sc_opts):
@@ -1010,7 +1002,7 @@ def add_connect_option(parser):
     parser.add_option("", "--connect", metavar="URI", dest="connect",
                       help=_("Connect to hypervisor with libvirt URI"))
 
-def vcpu_cli_options(grp):
+def vcpu_cli_options(grp, backcompat=True):
     grp.add_option("", "--vcpus", dest="vcpus",
         help=_("Number of vcpus to configure for your guest. Ex:\n"
                "--vcpus 5\n"
@@ -1020,8 +1012,10 @@ def vcpu_cli_options(grp):
                    help=_("Set which physical CPUs domain can use."))
     grp.add_option("", "--cpu", dest="cpu",
         help=_("CPU model and features. Ex: --cpu coreduo,+x2apic"))
-    grp.add_option("", "--check-cpu", action="store_true", dest="check_cpu",
-                   help=optparse.SUPPRESS_HELP)
+
+    if backcompat:
+        grp.add_option("", "--check-cpu", action="store_true",
+                       dest="check_cpu", help=optparse.SUPPRESS_HELP)
 
 def graphics_option_group(parser):
     """
@@ -1029,12 +1023,7 @@ def graphics_option_group(parser):
     """
 
     vncg = optparse.OptionGroup(parser, _("Graphics Configuration"))
-    vncg.add_option("", "--graphics", dest="graphics", action="append",
-      help=_("Specify display configuration. Ex:\n"
-             "--graphics vnc\n"
-             "--graphics spice,port=5901,tlsport=5902\n"
-             "--graphics none\n"
-             "--graphics vnc,password=foobar,port=5910,keymap=ja"))
+    add_gfx_option(vncg)
     vncg.add_option("", "--vnc", action="store_true", dest="vnc",
                     help=optparse.SUPPRESS_HELP)
     vncg.add_option("", "--vncport", type="int", dest="vncport",
@@ -1055,11 +1044,7 @@ def network_option_group(parser):
     """
     netg = optparse.OptionGroup(parser, _("Networking Configuration"))
 
-    netg.add_option("-w", "--network", dest="network", action="append",
-      help=_("Specify a network interface. Ex:\n"
-             "--network bridge=mybr0\n"
-             "--network network=my_libvirt_virtual_net\n"
-             "--network network=mynet,model=virtio,mac=00:11..."))
+    add_net_option(netg)
 
     # Deprecated net options
     netg.add_option("-b", "--bridge", dest="bridge", action="append",
@@ -1069,6 +1054,49 @@ def network_option_group(parser):
 
     return netg
 
+def add_net_option(devg):
+    devg.add_option("-w", "--network", dest="network", action="append",
+      help=_("Configure a guest network interface. Ex:\n"
+             "--network bridge=mybr0\n"
+             "--network network=my_libvirt_virtual_net\n"
+             "--network network=mynet,model=virtio,mac=00:11..."))
+
+def add_device_options(devg):
+    devg.add_option("", "--serial", dest="serials", action="append",
+                    help=_("Configure a guest serial device"))
+    devg.add_option("", "--parallel", dest="parallels", action="append",
+                    help=_("Configure a guest parallel device"))
+    devg.add_option("", "--channel", dest="channels", action="append",
+                    help=_("Configure a guest communication channel"))
+    devg.add_option("", "--console", dest="consoles", action="append",
+                    help=_("Configure a text console connection between "
+                           "the guest and host"))
+    devg.add_option("", "--host-device", dest="hostdevs", action="append",
+                    help=_("Configure physical host devices attached to the "
+                           "guest"))
+    devg.add_option("", "--soundhw", dest="soundhw", action="append",
+                    help=_("Configure guest sound device emulation"))
+    devg.add_option("", "--watchdog", dest="watchdog", action="append",
+                    help=_("Configure a guest watchdog device"))
+    devg.add_option("", "--video", dest="video", action="append",
+                    help=_("Configure guest video hardware."))
+    devg.add_option("", "--smartcard", dest="smartcard", action="append",
+                    help=_("Configure a guest smartcard device. Ex:\n"
+                           "--smartcard mode=passthrough"))
+
+def add_gfx_option(devg):
+    devg.add_option("", "--graphics", dest="graphics", action="append",
+      help=_("Configure guest display settings. Ex:\n"
+             "--graphics vnc\n"
+             "--graphics spice,port=5901,tlsport=5902\n"
+             "--graphics none\n"
+             "--graphics vnc,password=foobar,port=5910,keymap=ja"))
+
+def add_fs_option(devg):
+    devg.add_option("", "--filesystem", dest="filesystems", action="append",
+        help=_("Pass host directory to the guest. Ex: \n"
+               "--filesystem /my/source/dir,/dir/in/guest\n"
+               "--filesystem template_name,/,type=template"))
 
 #############################################
 # CLI complex parsing helpers               #
@@ -1163,6 +1191,12 @@ def parse_optstr(optstr, basedict=None, remove_first=None,
 
     return optdict
 
+
+
+#######################
+# Guest param parsing #
+#######################
+
 ######################
 # --numatune parsing #
 ######################
@@ -1188,7 +1222,7 @@ def parse_numatune(guest, optstring):
 # --vcpu parsing #
 ##################
 
-def parse_vcpu_option(guest, optstring, default_vcpus):
+def parse_vcpu(guest, optstring, default_vcpus=None):
     """
     Helper to parse --vcpu string
 
@@ -1196,6 +1230,9 @@ def parse_vcpu_option(guest, optstring, default_vcpus):
     @param  optstring: value of the option '--vcpus' (str)
     @param  default_vcpus: ? (it should be None at present.)
     """
+    if not optstring:
+        return
+
     opts = parse_optstr(optstring, remove_first="vcpus")
     vcpus = opts.get("vcpus") or default_vcpus
     if vcpus is not None:
@@ -1273,10 +1310,122 @@ def parse_cpu(guest, optstring):
         raise ValueError(_("Unknown options %s") % opts.keys())
 
 ##################
+# --boot parsing #
+##################
+
+def parse_boot(guest, optstring):
+    """
+    Helper to parse --boot string
+    """
+    opts = parse_optstr(optstring)
+    optlist = map(lambda x: x[0], parse_optstr_tuples(optstring))
+    menu = None
+
+    def set_param(paramname, dictname, val=None):
+        val = get_opt_param(opts, dictname, val)
+        if val == None:
+            return
+
+        setattr(guest.installer.bootconfig, paramname, val)
+
+    # Convert menu= value
+    if "menu" in opts:
+        menustr = opts["menu"]
+        menu = None
+
+        if menustr.lower() == "on":
+            menu = True
+        elif menustr.lower() == "off":
+            menu = False
+        else:
+            menu = yes_or_no_convert(menustr)
+
+        if menu == None:
+            fail(_("--boot menu must be 'on' or 'off'"))
+
+    set_param("enable_bootmenu", "menu", menu)
+    set_param("kernel", "kernel")
+    set_param("initrd", "initrd")
+    set_param("kernel_args", ["kernel_args", "extra_args"])
+
+    # Build boot order
+    if opts:
+        boot_order = []
+        for boot_dev in optlist:
+            if not boot_dev in guest.installer.bootconfig.boot_devices:
+                continue
+
+            del(opts[boot_dev])
+            if boot_dev not in boot_order:
+                boot_order.append(boot_dev)
+
+        guest.installer.bootconfig.bootorder = boot_order
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+
+######################
+# --security parsing #
+######################
+
+def parse_security(guest, security):
+    seclist = listify(security)
+    secopts = seclist and seclist[0] or None
+    if not secopts:
+        return
+
+    # Parse security opts
+    opts = parse_optstr(secopts)
+    arglist = secopts.split(",")
+    secmodel = guest.seclabel
+
+    # Beware, adding boolean options here could upset label comma handling
+    mode = get_opt_param(opts, "type")
+    label = get_opt_param(opts, "label")
+
+    # Try to fix up label if it contained commas
+    if label:
+        tmparglist = arglist[:]
+        for idx in range(len(tmparglist)):
+            arg = tmparglist[idx]
+            if not arg.split("=")[0] == "label":
+                continue
+
+            for arg in tmparglist[idx + 1:]:
+                if arg.count("="):
+                    break
+
+                if arg:
+                    label += "," + arg
+                    del(opts[arg])
+
+            break
+
+    if label:
+        secmodel.label = label
+        if not mode:
+            mode = secmodel.SECLABEL_TYPE_STATIC
+    if mode:
+        secmodel.type = mode
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+
+    # Run for validation purposes
+    secmodel.get_xml_config()
+
+
+
+##########################
+# Guest <device> parsing #
+##########################
+
+
+##################
 # --disk parsing #
 ##################
 
-def parse_disk_source(guest, path, pool, vol, size, fmt, sparse):
+def _parse_disk_source(guest, path, pool, vol, size, fmt, sparse):
     abspath = None
     volinst = None
     volobj = None
@@ -1393,8 +1542,8 @@ def parse_disk(guest, optstr, dev=None):
     ro, shared = parse_perms(opt_get("perms"))
     device = opt_get("device")
 
-    abspath, volinst, volobj = parse_disk_source(guest, path, pool, vol,
-                                                 size, fmt, sparse)
+    abspath, volinst, volobj = _parse_disk_source(guest, path, pool, vol,
+                                                  size, fmt, sparse)
 
     if not dev:
         # Build a stub device that should always validate cleanly
@@ -1408,15 +1557,7 @@ def parse_disk(guest, optstr, dev=None):
                                    device=device,
                                    format=fmt)
 
-    def set_param(paramname, dictname, val=None, convert=None):
-        val = get_opt_param(opts, dictname, val)
-        if val == None:
-            return
-
-        if convert:
-            val = convert(val)
-
-        setattr(dev, paramname, val)
+    set_param = _build_set_param(dev, opts)
 
     set_param("path", "path", abspath)
     set_param("vol", "vol_object", volobj)
@@ -1445,13 +1586,7 @@ def parse_disk(guest, optstr, dev=None):
 # --network parsing #
 #####################
 
-def parse_network(guest, optstring, mac=None):
-    def get_and_del(paramname):
-        val = opts.get(paramname)
-        if paramname in opts:
-            del(opts[paramname])
-        return val
-
+def parse_network(guest, optstring, dev=None, mac=None):
     # Handle old format of bridge:foo instead of bridge=foo
     for prefix in ["network", "bridge"]:
         if optstring.startswith(prefix + ":"):
@@ -1460,36 +1595,32 @@ def parse_network(guest, optstring, mac=None):
     opts = parse_optstr(optstring, remove_first="type")
 
     # Determine device type
+    net_type = opts.get("type")
     if "network" in opts:
         net_type = VirtualNetworkInterface.TYPE_VIRTUAL
     elif "bridge" in opts:
         net_type = VirtualNetworkInterface.TYPE_BRIDGE
-    elif "type" in opts:
-        net_type = get_and_del("type")
 
     # Build initial device
-    dev = VirtualNetworkInterface(conn=guest.conn,
-                                  type=net_type,
-                                  network=get_and_del("network"),
-                                  bridge=get_and_del("bridge"))
+    if not dev:
+        dev = VirtualNetworkInterface(conn=guest.conn,
+                                      type=net_type,
+                                      network=opts.get("network"),
+                                      bridge=opts.get("bridge"))
 
-    def mac_convert(chkmac):
-        if chkmac == "RANDOM":
-            return None
-        return chkmac
+    if mac and not "mac" in opts:
+        opts["mac"] = mac
+    if "mac" in opts:
+        if opts["mac"] == "RANDOM":
+            opts["mac"] = None
 
-    def set_param(paramname, dictname, val=None, cb=None):
-        val = get_opt_param(opts, dictname, val)
-        if val == None:
-            return
+    set_param = _build_set_param(dev, opts)
 
-        if cb:
-            val = cb(val)
-
-        setattr(dev, paramname, val)
-
+    set_param("type", "type", net_type)
+    set_param("network", "network")
+    set_param("bridge", "bridge")
     set_param("model", "model")
-    set_param("macaddr", "mac", val=mac, cb=mac_convert)
+    set_param("macaddr", "mac")
 
     if opts:
         raise ValueError(_("Unknown options %s") % opts.keys())
@@ -1500,7 +1631,7 @@ def parse_network(guest, optstring, mac=None):
 # --graphics parsing #
 ######################
 
-def parse_graphics(guest, optstring):
+def parse_graphics(guest, optstring, dev=None):
     if optstring is None:
         return None
 
@@ -1522,7 +1653,9 @@ def parse_graphics(guest, optstring):
     opts = parse_optstr(optstring, remove_first="type")
     if opts.get("type") == "none":
         return None
-    dev = VirtualGraphics(conn=guest.conn)
+
+    if not dev:
+        dev = VirtualGraphics(conn=guest.conn)
 
     def set_param(paramname, dictname, val=None):
         val = get_opt_param(opts, dictname, val)
@@ -1549,7 +1682,8 @@ def parse_graphics(guest, optstring):
 #######################
 # --smartcard parsing #
 #######################
-def parse_smartcard(guest, optstring):
+
+def parse_smartcard(guest, optstring, dev=None):
     if optstring is None:
         return None
 
@@ -1557,14 +1691,11 @@ def parse_smartcard(guest, optstring):
     opts = parse_optstr(optstring, remove_first="mode")
     if opts.get("mode") == "none":
         return None
-    dev = virtinst.VirtualSmartCardDevice(guest.conn, opts.get("mode"))
 
-    def set_param(paramname, dictname, val=None):
-        val = get_opt_param(opts, dictname, val)
-        if val == None:
-            return
+    if not dev:
+        dev = virtinst.VirtualSmartCardDevice(guest.conn, opts.get("mode"))
 
-        setattr(dev, paramname, val)
+    set_param = _build_set_param(dev, opts)
 
     set_param("mode", "mode")
     set_param("type", "type")
@@ -1600,76 +1731,31 @@ def parse_watchdog(guest, optstring, dev=None):
 
     return dev
 
-##################
-# --boot parsing #
-##################
-
-def parse_boot(guest, optstring):
-    """
-    Helper to parse --boot string
-    """
-    opts = parse_optstr(optstring)
-    optlist = map(lambda x: x[0], parse_optstr_tuples(optstring))
-    menu = None
-
-    def set_param(paramname, dictname, val=None):
-        val = get_opt_param(opts, dictname, val)
-        if val == None:
-            return
-
-        setattr(guest.installer.bootconfig, paramname, val)
-
-    # Convert menu= value
-    if "menu" in opts:
-        menustr = opts["menu"]
-        menu = None
-
-        if menustr.lower() == "on":
-            menu = True
-        elif menustr.lower() == "off":
-            menu = False
-        else:
-            menu = yes_or_no_convert(menustr)
-
-        if menu == None:
-            fail(_("--boot menu must be 'on' or 'off'"))
-
-    set_param("enable_bootmenu", "menu", menu)
-    set_param("kernel", "kernel")
-    set_param("initrd", "initrd")
-    set_param("kernel_args", ["kernel_args", "extra_args"])
-
-    # Build boot order
-    if opts:
-        boot_order = []
-        for boot_dev in optlist:
-            if not boot_dev in guest.installer.bootconfig.boot_devices:
-                continue
-
-            del(opts[boot_dev])
-            if boot_dev not in boot_order:
-                boot_order.append(boot_dev)
-
-        guest.installer.bootconfig.bootorder = boot_order
-
-    if opts:
-        raise ValueError(_("Unknown options %s") % opts.keys())
 
 ######################################################
 # --serial, --parallel, --channel, --console parsing #
 ######################################################
 
-def parse_char(guest, dev_type, optstring):
+def parse_serial(guest, optstring, dev=None):
+    return _parse_char(guest, optstring, "serial", dev)
+def parse_parallel(guest, optstring, dev=None):
+    return _parse_char(guest, optstring, "parallel", dev)
+def parse_console(guest, optstring, dev=None):
+    return _parse_char(guest, optstring, "console", dev)
+def parse_channel(guest, optstring, dev=None):
+    return _parse_char(guest, optstring, "channel", dev)
+
+def _parse_char(guest, optstring, dev_type, dev=None):
     """
     Helper to parse --serial/--parallel options
     """
     # Peel the char type off the front
     opts = parse_optstr(optstring, remove_first="char_type")
     char_type = opts.get("char_type")
-    if "char_type" in opts:
-        del(opts["char_type"])
 
-    dev = VirtualCharDevice.get_dev_instance(guest.conn, dev_type, char_type)
+    if not dev:
+        dev = VirtualCharDevice.get_dev_instance(guest.conn,
+                                                 dev_type, char_type)
 
     def set_param(paramname, dictname, val=None):
         val = get_opt_param(opts, dictname, val)
@@ -1694,6 +1780,7 @@ def parse_char(guest, dev_type, optstring):
     bind_host, bind_port = parse_host("bind_host")
     target_addr, target_port = parse_host("target_address")
 
+    set_param("char_type", "char_type")
     set_param("source_path", "path")
     set_param("source_mode", "mode")
     set_param("protocol",   "protocol")
@@ -1713,56 +1800,6 @@ def parse_char(guest, dev_type, optstring):
     dev.get_xml_config()
 
     return dev
-
-######################
-# --security parsing #
-######################
-
-def parse_security(security, guest):
-    seclist = listify(security)
-    secopts = seclist and seclist[0] or None
-    if not secopts:
-        return
-
-    # Parse security opts
-    opts = parse_optstr(secopts)
-    arglist = secopts.split(",")
-    secmodel = guest.seclabel
-
-    # Beware, adding boolean options here could upset label comma handling
-    mode = get_opt_param(opts, "type")
-    label = get_opt_param(opts, "label")
-
-    # Try to fix up label if it contained commas
-    if label:
-        tmparglist = arglist[:]
-        for idx in range(len(tmparglist)):
-            arg = tmparglist[idx]
-            if not arg.split("=")[0] == "label":
-                continue
-
-            for arg in tmparglist[idx + 1:]:
-                if arg.count("="):
-                    break
-
-                if arg:
-                    label += "," + arg
-                    del(opts[arg])
-
-            break
-
-    if label:
-        secmodel.label = label
-        if not mode:
-            mode = secmodel.SECLABEL_TYPE_STATIC
-    if mode:
-        secmodel.type = mode
-
-    if opts:
-        raise ValueError(_("Unknown options %s") % opts.keys())
-
-    # Run for validation purposes
-    secmodel.get_xml_config()
 
 
 ########################
@@ -1791,3 +1828,49 @@ def parse_filesystem(guest, optstring, dev=None):
         raise ValueError(_("Unknown options %s") % opts.keys())
 
     return dev
+
+###################
+# --video parsing #
+###################
+
+def parse_video(guest, optstr, dev=None):
+    opts = {"model" : optstr}
+
+    if not dev:
+        dev = virtinst.VirtualVideoDevice(conn=guest.conn)
+
+    set_param = _build_set_param(dev, opts)
+
+    set_param("model_type", "model")
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+    return dev
+
+#####################
+# --soundhw parsing #
+#####################
+
+def parse_sound(guest, optstr, dev=None):
+    opts = {"model" : optstr}
+
+    if not dev:
+        dev = virtinst.VirtualAudio(conn=guest.conn)
+
+    set_param = _build_set_param(dev, opts)
+
+    set_param("model", "model")
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+    return dev
+
+#####################
+# --hostdev parsing #
+#####################
+
+def parse_hostdev(guest, optstr, dev=None):
+    # XXX: Need to implement this for virt-xml
+    ignore = dev
+    return virtinst.VirtualHostDevice.device_from_node(conn=guest.conn,
+                                                       name=optstr)

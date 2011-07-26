@@ -102,10 +102,10 @@ def get_graphics(guest, options):
     graphics = cli.digest_graphics(guest, options)
     cli.get_graphics(guest, graphics)
 
-def get_chardevs(char_type, opts, guest):
+def get_chardevs(char_type, opts, guest, cb):
     for optstr in cli.listify(opts):
         try:
-            dev = cli.parse_char(guest, char_type, optstr)
+            dev = cb(guest, optstr)
             guest.add_device(dev)
         except Exception, e:
             fail(_("Error in %(chartype)s device parameters: %(err)s") %
@@ -466,11 +466,11 @@ def build_guest_instance(conn, options):
 
     # Guest configuration
     cli.get_uuid(options.uuid, guest)
-    cli.get_vcpus(options.vcpus, options.check_cpu, guest)
-    cli.get_cpuset(options.cpuset, guest.memory, guest)
+    cli.get_vcpus(guest, options.vcpus, options.check_cpu)
+    cli.get_cpuset(guest, options.cpuset)
     cli.parse_numatune(guest, options.numatune)
     cli.parse_cpu(guest, options.cpu)
-    cli.parse_security(options.security, guest)
+    cli.parse_security(guest, options.security)
     cli.parse_boot(guest, options.bootopts)
     guest.autostart = options.autostart
     guest.description = options.description
@@ -486,10 +486,14 @@ def build_guest_instance(conn, options):
     get_watchdog(options.watchdog, guest)
     get_filesystems(options.filesystems, guest)
     cli.get_sound(options.sound, options.soundhw, guest)
-    get_chardevs(VirtualDevice.VIRTUAL_DEV_SERIAL, options.serials, guest)
-    get_chardevs(VirtualDevice.VIRTUAL_DEV_PARALLEL, options.parallels, guest)
-    get_chardevs(VirtualDevice.VIRTUAL_DEV_CHANNEL, options.channels, guest)
-    get_chardevs(VirtualDevice.VIRTUAL_DEV_CONSOLE, options.consoles, guest)
+    get_chardevs(VirtualDevice.VIRTUAL_DEV_SERIAL, options.serials,
+                 guest, cli.parse_serial)
+    get_chardevs(VirtualDevice.VIRTUAL_DEV_PARALLEL, options.parallels,
+                 guest, cli.parse_parallel)
+    get_chardevs(VirtualDevice.VIRTUAL_DEV_CHANNEL, options.channels,
+                 guest, cli.parse_channel)
+    get_chardevs(VirtualDevice.VIRTUAL_DEV_CONSOLE, options.consoles,
+                 guest, cli.parse_console)
     cli.get_hostdevs(options.hostdevs, guest)
     cli.get_smartcard(guest, options.smartcard)
 
@@ -849,10 +853,7 @@ def parse_args():
                "--disk vol=poolname:volname,device=cdrom,bus=scsi,..."))
     stog.add_option("", "--nodisks", action="store_true",
                     help=_("Don't set up any disks for the guest."))
-    stog.add_option("", "--filesystem", dest="filesystems", action="append",
-        help=_("Pass host directory to the guest. Ex: \n"
-               "--filesystem /my/source/dir,/dir/in/guest\n"
-               "--filesystem template_name,/,type=template"))
+    cli.add_fs_option(stog)
 
     # Deprecated storage options
     stog.add_option("-f", "--file", dest="file_paths", action="append",
@@ -879,26 +880,7 @@ def parse_args():
     parser.add_option_group(vncg)
 
     devg = optparse.OptionGroup(parser, _("Device Options"))
-    devg.add_option("", "--serial", dest="serials", action="append",
-                    help=_("Add a serial device to the domain."))
-    devg.add_option("", "--parallel", dest="parallels", action="append",
-                    help=_("Add a parallel device to the domain."))
-    geng.add_option("", "--channel", dest="channels", action="append",
-                    help=_("Add a guest communication channel."))
-    geng.add_option("", "--console", dest="consoles", action="append",
-                    help=_("Add a text console connection between the guest "
-                           "and host."))
-    devg.add_option("", "--host-device", dest="hostdevs", action="append",
-                    help=_("Physical host device to attach to the domain."))
-    devg.add_option("", "--soundhw", dest="soundhw", action="append",
-                    help=_("Use sound device emulation"))
-    devg.add_option("", "--watchdog", dest="watchdog", action="append",
-                    help=_("Add a watchdog device to the domain."))
-    devg.add_option("", "--video", dest="video", action="append",
-                    help=_("Specify video hardware type."))
-    devg.add_option("", "--smartcard", dest="smartcard", action="append",
-                    help=_("Add a smartcard device to the domain. Ex:\n"
-                           "--smartcard mode=passthrough"))
+    cli.add_device_options(devg)
 
     # Deprecated
     devg.add_option("", "--sound", action="store_true", dest="sound",
