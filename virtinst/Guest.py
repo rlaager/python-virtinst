@@ -1039,10 +1039,18 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         xml = add("<domain type='%s'>" % self.type)
         xml = add("  <name>%s</name>" % self.name)
-        xml = add("  <currentMemory>%s</currentMemory>" % (self.memory * 1024))
-        xml = add("  <memory>%s</memory>" % (self.maxmemory * 1024))
         xml = add("  <uuid>%s</uuid>" % self.uuid)
         xml = add(desc_xml)
+        xml = add("  <memory>%s</memory>" % (self.maxmemory * 1024))
+        xml = add("  <currentMemory>%s</currentMemory>" % (self.memory * 1024))
+        # <blkiotune>
+        # <memtune>
+        # <memoryBacking>
+        xml = add(self._get_vcpu_xml())
+        # <cputune>
+        xml = add(self.numatune.get_xml_config())
+        # <sysinfo>
+        # XXX: <bootloader> goes here, not in installer XML
         xml = add("  %s" % osblob)
         xml = add(self._get_features_xml(tmpfeat))
         xml = add(self._get_cpu_xml())
@@ -1050,8 +1058,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         xml = add("  <on_poweroff>destroy</on_poweroff>")
         xml = add("  <on_reboot>%s</on_reboot>" % action)
         xml = add("  <on_crash>%s</on_crash>" % action)
-        xml = add(self._get_vcpu_xml())
-        xml = add(self.numatune.get_xml_config())
         xml = add("  <devices>")
         xml = add(self._get_device_xml(devs, install))
         xml = add("  </devices>")

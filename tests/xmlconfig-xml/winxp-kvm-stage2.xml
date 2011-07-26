@@ -1,8 +1,9 @@
 <domain type='kvm'>
   <name>TestGuest</name>
-  <currentMemory>204800</currentMemory>
-  <memory>409600</memory>
   <uuid>12345678-1234-1234-1234-123456789012</uuid>
+  <memory>409600</memory>
+  <currentMemory>204800</currentMemory>
+  <vcpu>5</vcpu>
   <os>
     <type arch='i686'>hvm</type>
     <boot dev='hd'/>
@@ -14,7 +15,6 @@
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>destroy</on_reboot>
   <on_crash>destroy</on_crash>
-  <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <disk type='file' device='disk'>

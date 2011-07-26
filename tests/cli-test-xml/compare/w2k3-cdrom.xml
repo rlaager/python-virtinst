@@ -1,8 +1,9 @@
 <domain type='test'>
   <name>foobar</name>
-  <currentMemory>65536</currentMemory>
-  <memory>65536</memory>
   <uuid>00000000-1111-2222-3333-444444444444</uuid>
+  <memory>65536</memory>
+  <currentMemory>65536</currentMemory>
+  <vcpu>4</vcpu>
   <os>
     <type arch='i686'>hvm</type>
     <boot dev='cdrom'/>
@@ -18,7 +19,6 @@
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>destroy</on_reboot>
   <on_crash>destroy</on_crash>
-  <vcpu>4</vcpu>
   <devices>
     <emulator>/usr/bin/test-hv</emulator>
     <disk type='file' device='disk'>
@@ -39,9 +39,10 @@
 </domain>
 <domain type='test'>
   <name>foobar</name>
-  <currentMemory>65536</currentMemory>
-  <memory>65536</memory>
   <uuid>00000000-1111-2222-3333-444444444444</uuid>
+  <memory>65536</memory>
+  <currentMemory>65536</currentMemory>
+  <vcpu>4</vcpu>
   <os>
     <type arch='i686'>hvm</type>
     <boot dev='hd'/>
@@ -56,7 +57,6 @@
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>destroy</on_reboot>
   <on_crash>destroy</on_crash>
-  <vcpu>4</vcpu>
   <devices>
     <emulator>/usr/bin/test-hv</emulator>
     <disk type='file' device='disk'>
@@ -77,9 +77,10 @@
 </domain>
 <domain type='test'>
   <name>foobar</name>
-  <currentMemory>65536</currentMemory>
-  <memory>65536</memory>
   <uuid>00000000-1111-2222-3333-444444444444</uuid>
+  <memory>65536</memory>
+  <currentMemory>65536</currentMemory>
+  <vcpu>4</vcpu>
   <os>
     <type arch='i686'>hvm</type>
     <boot dev='hd'/>
@@ -94,7 +95,6 @@
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
-  <vcpu>4</vcpu>
   <devices>
     <emulator>/usr/bin/test-hv</emulator>
     <disk type='file' device='disk'>

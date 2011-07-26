@@ -1,8 +1,9 @@
 <domain type='kvm'>
   <name>TestGuest</name>
-  <currentMemory>204800</currentMemory>
-  <memory>409600</memory>
   <uuid>12345678-1234-1234-1234-123456789012</uuid>
+  <memory>409600</memory>
+  <currentMemory>204800</currentMemory>
+  <vcpu>5</vcpu>
   <os>
     <type arch='i686'>hvm</type>
     <boot dev='hd'/>
@@ -14,22 +15,21 @@
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
-  <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2'/>
-      <source file='REPLACEME/tests/image-xml/image-kernel.xml'/>
+      <source file='/home/nishome/crobinso/sandbox/upstream/python-virtinst/virtinst.git/tests/image-xml/image-kernel.xml'/>
       <target dev='hda' bus='ide'/>
     </disk>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow'/>
-      <source file='REPLACEME/tests/image-xml/image.xml'/>
+      <source file='/home/nishome/crobinso/sandbox/upstream/python-virtinst/virtinst.git/tests/image-xml/image.xml'/>
       <target dev='hdb' bus='ide'/>
     </disk>
     <disk type='file' device='disk'>
       <driver name='qemu' type='vmdk'/>
-      <source file='REPLACEME/tests/image-xml/image-format.xml'/>
+      <source file='/home/nishome/crobinso/sandbox/upstream/python-virtinst/virtinst.git/tests/image-xml/image-format.xml'/>
       <target dev='hdd' bus='ide'/>
     </disk>
     <input type='mouse' bus='ps2'/>
