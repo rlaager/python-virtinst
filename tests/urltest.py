@@ -415,7 +415,7 @@ class TestURLFetch(unittest.TestCase):
                 except AssertionError:
                     print "%s-%s FAILED." % (label, arch)
                     assertions += 1
-                except Exception, e:
+                except Exception:
                     print "%s-%s ERROR." % (label, arch)
                     assertions += 1
 

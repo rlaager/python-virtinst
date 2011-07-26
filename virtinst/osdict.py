@@ -536,8 +536,8 @@ OS_TYPES = {
         "sortby": "mswin5",
         "distro" : "win",
         "supported": True,
-        "acpi": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
-        "apic": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
+        "acpi": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False)],
+        "apic": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False)],
     },
     "winxp64": {
         "label": "Microsoft Windows XP (x86_64)",
@@ -549,8 +549,8 @@ OS_TYPES = {
         "label": "Microsoft Windows 2000",
         "sortby" : "mswin4",
         "distro": "win",
-        "acpi": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
-        "apic": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False),],
+        "acpi": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False)],
+        "apic": [(support.SUPPORT_CONN_HV_SKIP_DEFAULT_ACPI, False)],
     },
     "win2k3": {
         "label": "Microsoft Windows Server 2003",
