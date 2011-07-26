@@ -32,7 +32,7 @@ datafiles = [('share/man/man1', ['man/en/virt-install.1',
                                  'man/en/virt-convert.1']),
              ('share/man/man5', ['man/en/virt-image.5'])]
 
-VERSION = "0.500.6"
+VERSION = "0.600.0"
 
 config_template = """
 __version__ = "%(VERSION)s"
