@@ -275,15 +275,20 @@ class mysdist(sdist):
         infile = "man/en/virt-install.pod.in"
         outfile = "man/en/virt-install.pod"
 
-        infd  = open(infile, "r")
-        outfd = open(outfile, "w")
+        outfd = open(outfile, "r")
+        origout = outfd.read()
+        outfd.close()
 
+        infd  = open(infile, "r")
         inp = infd.read()
         infd.close()
 
+
         outp = inp.replace("::VARIANT VALUES::", output)
-        outfd.write(outp)
-        outfd.close()
+        if outp != origout:
+            outfd = open(outfile, "w")
+            outfd.write(outp)
+            outfd.close()
 
         # Generate new manpages
         if os.system("make -C man/en"):
