@@ -72,13 +72,13 @@ python setup.py build \
 rm -rf $RPM_BUILD_ROOT
 python setup.py install -O1 --root=$RPM_BUILD_ROOT --skip-build
 
+%find_lang %{appname}
+
 %if %{with_sbin_compat}
 # Back compat in case people hardcoded old /usr/sbin/virt-install location
 mkdir -p $RPM_BUILD_ROOT/%{_sbindir}
 ln -s ../bin/virt-install $RPM_BUILD_ROOT/%{_sbindir}/virt-install
 %endif
-
-%find_lang %{appname} || echo 0
 
 %clean
 rm -rf $RPM_BUILD_ROOT

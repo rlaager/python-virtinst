@@ -23,9 +23,29 @@ from distutils.command.sdist import sdist
 from distutils.command.build import build
 from unittest import TextTestRunner, TestLoader
 
-config_files = ["virtinst/_config.py", "virtconv/_config.py"]
 VERSION = "0.600.0"
 
+# translation installing
+def _build_po_list():
+    ret = {}
+    for filename in glob.glob(os.path.join(os.getcwd(), 'po', '*.po')):
+        filename = os.path.basename(filename)
+        lang = os.path.basename(filename)[0:len(filename) - 3]
+        langdir = os.path.join("build", "mo", lang, "LC_MESSAGES")
+
+        newname = os.path.join(langdir, "virtinst.mo")
+        ret[lang] = (filename, newname)
+    return ret
+
+def _build_lang_data():
+    ret = []
+    for lang, (ignore, newname) in _build_po_list().items():
+        targetpath = os.path.join("share", "locale", lang, "LC_MESSAGES")
+        ret.append((targetpath, [newname]))
+    return ret
+
+# Config file building
+config_files = ["virtinst/_config.py", "virtconv/_config.py"]
 config_template = """
 __version__ = "%(VERSION)s"
 __version_info__ = tuple([ int(num) for num in __version__.split('.')])
@@ -319,19 +339,13 @@ class mybuild(build):
             fd.write(config_data)
             fd.close()
 
-        for filename in glob.glob(os.path.join(os.getcwd(), 'po', '*.po')):
-            filename = os.path.basename(filename)
-            lang = os.path.basename(filename)[0:len(filename) - 3]
-            langdir = os.path.join("build", "mo", lang, "LC_MESSAGES")
+        for filename, newname in _build_po_list().values():
+            langdir = os.path.dirname(newname)
             if not os.path.exists(langdir):
                 os.makedirs(langdir)
 
-            newname = os.path.join(langdir, "virtinst.mo")
             print "Formatting %s to %s" % (filename, newname)
             os.system("msgfmt po/%s -o %s" % (filename, newname))
-
-            targetpath = os.path.join("share", "locale", lang, "LC_MESSAGES")
-            self.distribution.data_files.append((targetpath, (newname,)))
 
         build.run(self)
 
@@ -348,14 +362,14 @@ setup(
     packages=['virtinst', 'virtconv', 'virtconv.parsers'],
 
     data_files=[
-        ('share/man/man1',[
+        ('share/man/man1', [
             'man/en/virt-install.1',
             'man/en/virt-clone.1',
             'man/en/virt-image.1',
             'man/en/virt-convert.1']),
         ('share/man/man5', [
-            'man/en/virt-image.5'])
-    ],
+            'man/en/virt-image.5']),
+    ] + _build_lang_data(),
 
     cmdclass={
         'test': TestCommand,
