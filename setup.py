@@ -23,15 +23,7 @@ from distutils.command.sdist import sdist
 from distutils.command.build import build
 from unittest import TextTestRunner, TestLoader
 
-scripts = ["virt-install", "virt-clone", "virt-image", "virt-convert"]
-packages = ['virtinst', 'virtconv', 'virtconv.parsers']
 config_files = ["virtinst/_config.py", "virtconv/_config.py"]
-datafiles = [('share/man/man1', ['man/en/virt-install.1',
-                                 'man/en/virt-clone.1',
-                                 'man/en/virt-image.1',
-                                 'man/en/virt-convert.1']),
-             ('share/man/man5', ['man/en/virt-image.5'])]
-
 VERSION = "0.600.0"
 
 config_template = """
@@ -353,8 +345,18 @@ setup(
     url='http://virt-manager.org',
     package_dir={'virtinst': 'virtinst'},
     scripts=["virt-install", "virt-clone", "virt-image", "virt-convert"],
-    packages=packages,
-    data_files=datafiles,
+    packages=['virtinst', 'virtconv', 'virtconv.parsers'],
+
+    data_files=[
+        ('share/man/man1',[
+            'man/en/virt-install.1',
+            'man/en/virt-clone.1',
+            'man/en/virt-image.1',
+            'man/en/virt-convert.1']),
+        ('share/man/man5', [
+            'man/en/virt-image.5'])
+    ],
+
     cmdclass={
         'test': TestCommand,
         'test_urls' : TestURLFetch,
@@ -366,5 +368,5 @@ setup(
         'refresh_translations': refresh_translations,
 
         'build': mybuild,
-    }
+    },
 )
