@@ -373,9 +373,12 @@ def _hv_ver(conn, uri):
     if not _try_command(cmd, args):
         return 0
 
-    ret = cmd(*args)
-    if type(ret) == tuple:
-        ret = ret[1]
+    try:
+        ret = cmd(*args)
+        if type(ret) == tuple:
+            ret = ret[1]
+    except libvirt.libvirtError:
+        ret = 0
 
     return ret
 
