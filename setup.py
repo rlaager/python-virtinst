@@ -330,9 +330,10 @@ class mybuild(build):
         print "RHEL6 defaults       : %s" % bool(self.rhel6defaults)
 
         for f in config_files:
-            origconfig = file(f).read()
-            if origconfig == config_data:
-                continue
+            if os.path.exists(f):
+                origconfig = file(f).read()
+                if origconfig == config_data:
+                    continue
 
             print "Generating %s" % f
             fd = open(f, "w")
