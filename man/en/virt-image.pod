@@ -201,8 +201,7 @@ installing from the image.
 
 =item --noreboot
 
-Prevent the domain from automatically rebooting after the install has
-completed.
+Prevent the domain automatatically booting after importing the image.
 
 =item --skip-checksum
 

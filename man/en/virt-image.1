@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-IMAGE 1"
-.TH VIRT-IMAGE 1 "2011-06-09" "" "Virtual Machine Install Tools"
+.TH VIRT-IMAGE 1 "2011-08-02" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -205,48 +205,49 @@ values.
 Parameters specific only to fully virtualized guest installs.
 .IP "\-\-noapic" 2
 .IX Item "--noapic"
-Disables \s-1APIC\s0 for fully virtualized guest (overrides value in \s-1XML\s0 descriptor)
+Force disable \s-1APIC\s0 for the guest.
 .IP "\-\-noacpi" 2
 .IX Item "--noacpi"
-Disables \s-1ACPI\s0 for fully virtualized guest (overrides value in \s-1XML\s0 descriptor)
+Force disable \s-1ACPI\s0 for the guest.
 .SS "Networking Configuration"
 .IX Subsection "Networking Configuration"
+.IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK" 2
+.IX Item "-w NETWORK, --network=NETWORK"
+Connect the guest to the host network. See \fIvirt\-install\fR\|(1) for details
 .IP "\-m \s-1MAC\s0, \-\-mac=MAC" 2
 .IX Item "-m MAC, --mac=MAC"
 This is deprecated in favor of \f(CW\*(C`\-\-network ...,mac=MAC,...\*(C'\fR
 .IP "\-b \s-1BRIDGE\s0, \-\-bridge=BRIDGE" 2
 .IX Item "-b BRIDGE, --bridge=BRIDGE"
 This is deprecated in favor of \f(CW\*(C`\-\-network bridge=BRIDGE\*(C'\fR
-.IP "\-w \s-1NETWORK\s0, \-\-network=NETWORK" 2
-.IX Item "-w NETWORK, --network=NETWORK"
-Connect the guest to the host network. See \fIvirt\-install\fR\|(1) for details
 .SS "Graphics Configuration"
 .IX Subsection "Graphics Configuration"
-If no graphics option is specified, \f(CW\*(C`virt\-install\*(C'\fR will default to \-\-vnc
-if the \s-1DISPLAY\s0 environment variable is set, otherwise \-\-nographics is used.
+If no graphics option is specified, \f(CW\*(C`virt\-image\*(C'\fR will default to
+\&'\-\-graphics vnc' if the \s-1DISPLAY\s0 environment variable is set, otherwise
+\&'\-\-graphics none' is used.
+.IP "\-\-graphics \s-1TYPE\s0,opt1=arg1,opt2=arg2,..." 2
+.IX Item "--graphics TYPE,opt1=arg1,opt2=arg2,..."
+Specifies the graphical display configuration. This does not configure any
+virtual hardware, just how the guest's graphical display can be accessed.
+See \fIvirt\-install\fR\|(1) for details usage info.
 .IP "\-\-vnc" 2
 .IX Item "--vnc"
-Setup a virtual console in the guest and export it as a \s-1VNC\s0 server in
-the host. See \fIvirt\-install\fR\|(1) for details
+This option is deprecated in favor of \f(CW\*(C`\-\-graphics vnc,...\*(C'\fR
 .IP "\-\-vncport=VNCPORT" 2
 .IX Item "--vncport=VNCPORT"
-Request a permanent, statically assigned port number for the guest \s-1VNC\s0
-console. See \fIvirt\-install\fR\|(1) for details
+This option is deprecated in favor of \f(CW\*(C`\-\-graphics vnc,port=PORT,...\*(C'\fR
 .IP "\-\-vnclisten=VNCLISTEN" 2
 .IX Item "--vnclisten=VNCLISTEN"
-Address to listen on for \s-1VNC\s0 connections. See \fIvirt\-install\fR\|(1) for details.
+This option is deprecated in favor of \f(CW\*(C`\-\-graphics vnc,listen=LISTEN,...\*(C'\fR
 .IP "\-k \s-1KEYMAP\s0, \-\-keymap=KEYMAP" 2
 .IX Item "-k KEYMAP, --keymap=KEYMAP"
-Request that the virtual \s-1VNC\s0 console be configured to run with a non-English
-keyboard layout.
+This option is deprecated in favor of \f(CW\*(C`\-\-graphics vnc,keymap=KEYMAP,...\*(C'\fR
 .IP "\-\-sdl" 2
 .IX Item "--sdl"
-Setup a virtual console in the guest and display an \s-1SDL\s0 window in the
-host to render the output. See \fIvirt\-install\fR\|(1) for details
+This option is deprecated in favor of \f(CW\*(C`\-\-graphics sdl,...\*(C'\fR
 .IP "\-\-nographics" 2
 .IX Item "--nographics"
-Do not attach a graphical device to the guest. See
-\&\fIvirt\-install\fR\|(1) for details
+This option is deprecated in favor of \f(CW\*(C`\-\-graphics none\*(C'\fR
 .SS "Miscellaneous Options"
 .IX Subsection "Miscellaneous Options"
 .IP "\-p, \-\-print" 2
@@ -264,19 +265,14 @@ Shutdown and remove any existing guest with the passed \f(CW\*(C`\-\-name\*(C'\f
 installing from the image.
 .IP "\-\-noreboot" 2
 .IX Item "--noreboot"
-Prevent the domain from automatically rebooting after the install has
-completed.
+Prevent the domain automatatically booting after importing the image.
 .IP "\-\-skip\-checksum" 2
 .IX Item "--skip-checksum"
 Do not check disk images against checksums (if they are listed in the
 image xml).
 .IP "\-d, \-\-debug" 2
 .IX Item "-d, --debug"
-Print debugging information
-.IP "\-\-force" 2
-.IX Item "--force"
-Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
-say yes. For any other prompts, the application will exit.
+Print debugging information.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 Create and start a guest called \f(CW\*(C`example\*(C'\fR with a \s-1VNC\s0 console from
