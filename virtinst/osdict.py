@@ -433,6 +433,17 @@ OS_TYPES = {
             INPUT: USB_TABLET,
         }
     },
+    "debianwheezy": {
+        "label": "Debian Wheezy",
+        "distro": "debian",
+        "sortby": "debian7",
+        "supported": True,
+        "devices" : {
+                   DISK : VIRTIO_DISK,
+                   NET  : VIRTIO_NET,
+                   INPUT: USB_TABLET,
+        }
+    },
 
     "ubuntuhardy": {
         "label": "Ubuntu 8.04 LTS (Hardy Heron)",
