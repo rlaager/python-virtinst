@@ -265,6 +265,11 @@ args_dict = {
         "--arch i486 --pxe",
         # Directory tree URL install
         "--hvm --location %(TREEDIR)s",
+        # initrd-inject
+        "--hvm --location %(TREEDIR)s --initrd-inject virt-install --extra-args ks=file:/virt-install",
+        # initrd-inject with manual kernel/initrd
+        "--hvm --location %(TREEDIR)s --initrd-inject virt-install --extra-args ks=file:/virt-install",
+        # Directory tree URL install with extra-args
         # Directory tree URL install with extra-args
         "--hvm --location %(TREEDIR)s --extra-args console=ttyS0",
         # Directory tree CDROM install

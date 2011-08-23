@@ -270,11 +270,10 @@ class DistroInstaller(Installer.Installer):
                            transient=transient)
         self.install_devices.append(disk)
 
-    def _perform_initrd_injections(self):
+    def _perform_initrd_injections(self, initrd):
         """
         Insert files into the root directory of the initial ram disk
         """
-        initrd = self._install_bootconfig.initrd
         tempdir = tempfile.mkdtemp(dir=self.scratchdir)
         os.chmod(tempdir, 0775)
 
@@ -379,7 +378,7 @@ class DistroInstaller(Installer.Installer):
             self._tmpfiles.append(initrdfn)
 
         if self._initrd_injections:
-            self._perform_initrd_injections()
+            self._perform_initrd_injections(initrdfn)
 
         # If required, upload media to an accessible guest location
         kernelfn, initrdfn = self._upload_media(guest, meter,
