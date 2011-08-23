@@ -415,6 +415,8 @@ def check_option_collisions(options, guest):
 
     if not options.location and options.extra:
         fail(_("--extra-args only work if specified with --location."))
+    if not options.location and options.initrd_injections:
+        fail(_("--initrd-inject only works if specified with --location."))
 
 
 ##########################

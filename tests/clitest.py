@@ -267,9 +267,6 @@ args_dict = {
         "--hvm --location %(TREEDIR)s",
         # initrd-inject
         "--hvm --location %(TREEDIR)s --initrd-inject virt-install --extra-args ks=file:/virt-install",
-        # initrd-inject with manual kernel/initrd
-        "--hvm --location %(TREEDIR)s --initrd-inject virt-install --extra-args ks=file:/virt-install",
-        # Directory tree URL install with extra-args
         # Directory tree URL install with extra-args
         "--hvm --location %(TREEDIR)s --extra-args console=ttyS0",
         # Directory tree CDROM install
@@ -309,6 +306,8 @@ args_dict = {
         "--hvm --pxe --boot menu=foobar",
         # cdrom fail w/ extra-args
         "--hvm --cdrom %(EXISTIMG1)s --extra-args console=ttyS0",
+        # initrd-inject with manual kernel/initrd
+        "--hvm --boot kernel=%(TREEDIR)s/pxeboot/vmlinuz,initrd=%(TREEDIR)s/pxeboot/initrd.img --initrd-inject virt-install",
       ],
      }, # category "install"
 
