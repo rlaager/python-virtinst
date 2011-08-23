@@ -491,6 +491,7 @@ def build_guest_instance(conn, options):
 
     # Non-default devices
     cli.get_controller(guest, options.controller)
+    cli.get_redirdev(guest, options.redirdev)
     if not options.nonetworks:
         get_networks(guest, options)
     get_graphics(guest, options)

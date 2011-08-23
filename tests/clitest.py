@@ -698,6 +698,34 @@ args_dict = {
       ],
      }, # category "hostdev"
 
+     "redirdev" : {
+      "args": "--noautoconsole --nographics --nodisks --pxe",
+
+      "valid" : [
+        "--redirdev usb,type=spicevmc",
+        "--redirdev usb,type=tcp,server=localhost:4000",
+        # Different host server
+        "--redirdev usb,type=tcp,server=127.0.0.1:4002",
+      ],
+
+      "invalid" : [
+        # Missing argument
+        "--redirdev",
+        # Unsupported bus
+        "--redirdev pci",
+        # Invalid argument
+        "--redirdev usb,type=spicevmc,server=foo:12",
+        # Missing argument
+        "--redirdev usb,type=tcp,server=",
+        # Invalid address
+        "--redirdev usb,type=tcp,server=localhost:p4000",
+        # Missing address
+        "--redirdev usb,type=tcp,server=localhost:",
+        # Missing host
+        "--redirdev usb,type=tcp,server=:399",
+      ],
+     }, # category "redirdev"
+
      "remote" : {
       "args": "--connect %(REMOTEURI)s --nographics --noautoconsole",
 

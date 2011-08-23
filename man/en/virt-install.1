@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2011-07-28" "" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2011-09-02" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -415,6 +415,8 @@ Values for some recent \s-1OS\s0 options are:
 .IX Item "freebsd8             : FreeBSD 8.x"
 .IP "generic              : Generic" 2
 .IX Item "generic              : Generic"
+.IP "debianwheezy         : Debian Wheezy" 2
+.IX Item "debianwheezy         : Debian Wheezy"
 .IP "debiansqueeze        : Debian Squeeze" 2
 .IX Item "debiansqueeze        : Debian Squeeze"
 .IP "debianlenny          : Debian Lenny" 2
@@ -988,18 +990,18 @@ Named pipe (see \fIpipe\fR\|(7))
 .IP "\fB\-\-serial tcp,host=HOST:PORT,mode=MODE,protocol=PROTOCOL\fR" 4
 .IX Item "--serial tcp,host=HOST:PORT,mode=MODE,protocol=PROTOCOL"
 \&\s-1TCP\s0 net console. \s-1MODE\s0 is either 'bind' (wait for connections on \s-1HOST:PORT\s0)
-or 'connect' (send output to \s-1HOST:PORT\s0), default is 'connect'. \s-1HOST\s0 defaults
+or 'connect' (send output to \s-1HOST:PORT\s0), default is 'bind'. \s-1HOST\s0 defaults
 to '127.0.0.1', but \s-1PORT\s0 is required. \s-1PROTOCOL\s0 can be either 'raw' or 'telnet'
 (default 'raw'). If 'telnet', the port acts like a telnet server or client.
 Some examples:
 .Sp
-Connect to localhost, port 1234:
-.Sp
-\&\-\-serial tcp,host=:1234
-.Sp
 Wait for connections on any address, port 4567:
 .Sp
-\&\-\-serial tcp,host=0.0.0.0:4567,mode=bind
+\&\-\-serial tcp,host=0.0.0.0:4567
+.Sp
+Connect to localhost, port 1234:
+.Sp
+\&\-\-serial tcp,host=:1234,mode=connect
 .Sp
 Wait for telnet connection on localhost, port 2222. The user could then
 connect interactively to this console via 'telnet localhost 2222':
@@ -1105,6 +1107,30 @@ to the guest
 .Sp
 See \f(CW\*(C`http://libvirt.org/formatdomain.html#elementsSmartcard\*(C'\fR for complete
 details.
+.RE
+.IP "\-\-redirdev=BUS[,OPTS]" 2
+.IX Item "--redirdev=BUS[,OPTS]"
+Add a redirected device.
+.RS 2
+.IP "\fBtype\fR" 4
+.IX Item "type"
+The redirection type, currently supported is \fBtcp\fR or \fBspicevmc\fR.
+.IP "\fBserver\fR" 4
+.IX Item "server"
+The \s-1TCP\s0 server connection details, of the form 'server:port'.
+.RE
+.RS 2
+.Sp
+Examples of invocation:
+.IP "\fB\-\-redirdev usb,type=tcp,server=localhost:4000\fR" 4
+.IX Item "--redirdev usb,type=tcp,server=localhost:4000"
+Add a \s-1USB\s0 redirected device provided by the \s-1TCP\s0 server on 'localhost'
+port 4000.
+.IP "\fB\-\-redirdev usb,type=spicevmc\fR" 4
+.IX Item "--redirdev usb,type=spicevmc"
+Add a \s-1USB\s0 device redirected via a dedicated Spice channel.
+.RE
+.RS 2
 .RE
 .SS "Miscellaneous Options"
 .IX Subsection "Miscellaneous Options"

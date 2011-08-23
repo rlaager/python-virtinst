@@ -672,6 +672,24 @@ class XMLParseTest(unittest.TestCase):
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
+    def testAlterRedirdev(self):
+        infile  = "tests/xmlparse-xml/change-redirdev-in.xml"
+        outfile = "tests/xmlparse-xml/change-redirdev-out.xml"
+        guest = virtinst.Guest(conn=conn,
+                               parsexml=file(infile).read())
+
+        dev1 = guest.get_devices("redirdev")[0]
+        dev2 = guest.get_devices("redirdev")[1]
+
+        check = self._make_checker(dev1)
+        check("host", "foo", "bar")
+        check("service", "12", "42")
+
+        check = self._make_checker(dev2)
+        check("type", "spicevmc")
+
+        self._alter_compare(guest.get_config_xml(), outfile)
+
     def testConsoleCompat(self):
         infile  = "tests/xmlparse-xml/console-compat-in.xml"
         outfile = "tests/xmlparse-xml/console-compat-out.xml"

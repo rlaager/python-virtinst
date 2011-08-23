@@ -1104,8 +1104,36 @@ to the guest
 See C<http://libvirt.org/formatdomain.html#elementsSmartcard> for complete
 details.
 
+=item --redirdev=BUS[,OPTS]
 
+Add a redirected device.
 
+=over 4
+
+=item B<type>
+
+The redirection type, currently supported is B<tcp> or B<spicevmc>.
+
+=item B<server>
+
+The TCP server connection details, of the form 'server:port'.
+
+=back
+
+Examples of invocation:
+
+=over 4
+
+=item B<--redirdev usb,type=tcp,server=localhost:4000>
+
+Add a USB redirected device provided by the TCP server on 'localhost'
+port 4000.
+
+=item B<--redirdev usb,type=spicevmc>
+
+Add a USB device redirected via a dedicated Spice channel.
+
+=back
 
 =back
 

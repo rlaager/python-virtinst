@@ -245,6 +245,7 @@ class VirtualHostDeviceUSB(VirtualHostDevice):
         # No libvirt api support for USB Detach/Reset yet
         return
 
+
 class VirtualHostDevicePCI(VirtualHostDevice):
 
     def __init__(self, conn, nodedev=None):

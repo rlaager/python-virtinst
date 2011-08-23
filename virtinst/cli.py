@@ -1007,6 +1007,16 @@ def get_controller(guest, sc_opts):
         if dev:
             guest.add_device(dev)
 
+def get_redirdev(guest, sc_opts):
+    for sc in listify(sc_opts):
+        try:
+            dev = parse_redirdev(guest, sc)
+        except Exception, e:
+            fail(_("Error in redirdev device parameters: %s") % str(e))
+
+        if dev:
+            guest.add_device(dev)
+
 #############################
 # Common CLI option/group   #
 #############################
@@ -1099,6 +1109,9 @@ def add_device_options(devg):
     devg.add_option("", "--smartcard", dest="smartcard", action="append",
                     help=_("Configure a guest smartcard device. Ex:\n"
                            "--smartcard mode=passthrough"))
+    devg.add_option("", "--redirdev", dest="redirdev", action="append",
+                    help=_("Configure a guest redirection device. Ex:\n"
+                           "--redirdev usb,type=tcp,server=192.168.1.1:4000"))
 
 def add_gfx_option(devg):
     devg.add_option("", "--graphics", dest="graphics", action="append",
@@ -1745,6 +1758,42 @@ def parse_smartcard(guest, optstring, dev=None):
 
     set_param("mode", "mode")
     set_param("type", "type")
+
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+
+    return dev
+
+######################
+# --redirdev parsing #
+######################
+
+def parse_redirdev(guest, optstring, dev=None):
+    if optstring is None:
+        return None
+
+    # Peel the mode off the front
+    opts = parse_optstr(optstring, remove_first="bus")
+    bus = get_opt_param(opts, "bus")
+    stype = get_opt_param(opts, "type")
+    server = get_opt_param(opts, "server")
+
+    if bus == "none":
+        return None
+
+    if not dev:
+        dev = virtinst.VirtualRedirDevice(bus=bus,
+                                          stype=stype,
+                                          conn=guest.conn)
+
+    if stype == "spicevmc" and server:
+        raise ValueError(_("The server option is invalid with spicevmc redirection"))
+
+    if stype == "tcp" and not server:
+        raise ValueError(_("The server option is missing for TCP redirection"))
+
+    if server:
+        dev.parse_friendly_server(server)
 
     if opts:
         raise ValueError(_("Unknown options %s") % opts.keys())

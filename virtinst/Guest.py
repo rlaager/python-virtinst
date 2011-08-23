@@ -772,6 +772,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             "controller": virtinst.VirtualController,
             "filesystem": virtinst.VirtualFilesystem,
             "smartcard" : virtinst.VirtualSmartCardDevice,
+            "redirdev"   : virtinst.VirtualRedirDevice,
         }
 
         # Hand off all child element parsing to relevant classes
