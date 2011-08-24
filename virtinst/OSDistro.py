@@ -89,6 +89,8 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
         stores.append(UbuntuDistro)
     if distro == "mandriva" or distro is None:
         stores.append(MandrivaDistro)
+    if distro == "mageia" or distro is None:
+        stores.append(MageiaDistro)
     # XXX: this is really "nevada"
     if distro == "solaris" or distro is None:
         stores.append(SolarisDistro)
@@ -996,6 +998,9 @@ class MandrivaDistro(Distro):
             return True
 
         return False
+
+class MageiaDistro(MandrivaDistro):
+    name = "Mageia"
 
 # Solaris and OpenSolaris distros
 class SunDistro(Distro):
