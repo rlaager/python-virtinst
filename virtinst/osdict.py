@@ -407,6 +407,18 @@ OS_TYPES = {
         },
     },
 
+    "mageia1": {
+        "label": "Mageia 1 and later",
+        "distro": "mageia",
+        "supported": True,
+        "devices" : {
+            DISK : VIRTIO_DISK,
+            NET  : VIRTIO_NET,
+            INPUT: USB_TABLET,
+        },
+    },
+
+
     "debianetch": {
         "label": "Debian Etch",
         "distro": "debian",
