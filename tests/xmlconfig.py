@@ -866,7 +866,15 @@ class TestXMLConfig(unittest.TestCase):
         g.add_device(VirtualVideoDevice(g.conn))
         g.os_autodetect = True
 
-        self._testInstall(g, "rhel6-kvm-stage1", "rhel6-kvm-stage2")
+        # Do this ugly hack to make sure the test doesn't try and use vol
+        # upload
+        origscratch = getattr(i, "_get_system_scratchdir")
+        try:
+            setattr(i, "_get_system_scratchdir",
+                    lambda: i.scratchdir)
+            self._testInstall(g, "rhel6-kvm-stage1", "rhel6-kvm-stage2")
+        finally:
+            setattr(i, "_get_system_scratchdir", origscratch)
 
     def testFullKVMWinxp(self):
         utils.set_conn(_plainkvm)
