@@ -111,6 +111,8 @@ def _upload_file(conn, meter, destpool, src):
 
     disk.setup_dev(meter=meter)
     vol = disk.vol_object
+    if not vol:
+        raise RuntimeError(_("Failed to lookup scratch media volume"))
 
     try:
         # Register upload
