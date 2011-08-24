@@ -991,8 +991,8 @@ class MandrivaDistro(Distro):
             return False
 
         if self._fetchAndMatchRegex(fetcher, progresscb, "VERSION",
-                                    ".*Mandriva.*"):
-            logging.debug("Detected a Mandriva distro")
+                                    ".*%s.*" % self.name):
+            logging.debug("Detected a %s distro" % self.name)
             return True
 
         return False
