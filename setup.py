@@ -135,14 +135,12 @@ class TestCLI(TestBaseCommand):
     description = "Test various CLI invocations"
 
     user_options = (TestBaseCommand.user_options +
-                    [("prompt", None, "Run interactive CLI invocations."),
-                    ("app=", None, "Only run tests for requested app"),
+                    [("app=", None, "Only run tests for requested app"),
                     ("category=", None, "Only run tests for the requested "
                                        "category (install, storage, etc.)")])
 
     def initialize_options(self):
         TestBaseCommand.initialize_options(self)
-        self.prompt = 0
         self.app = None
         self.category = None
 
@@ -150,8 +148,6 @@ class TestCLI(TestBaseCommand):
         cmd = "python tests/clitest.py"
         if self.debug:
             cmd += " debug"
-        if self.prompt:
-            cmd += " prompt"
         if self.app:
             cmd += " --app %s" % self.app
         if self.category:

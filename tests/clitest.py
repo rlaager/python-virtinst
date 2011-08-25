@@ -14,25 +14,27 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import commands
 import os
 import sys
+import commands
+import subprocess
 
 import utils
 
 os.environ["VIRTCONV_TEST_NO_DISK_CONVERSION"] = "1"
 os.environ["LANG"] = "en_US.UTF-8"
 
-testuri = "test:///`pwd`/tests/testdriver.xml"
+testuri = "test:///%s/tests/testdriver.xml" % os.getcwd()
 
 # There is a hack in virtinst/cli.py to find this magic string and
 # convince virtinst we are using a remote connection.
 fakeuri     = "__virtinst_test__" + testuri + ",predictable"
+capsprefix  = ",caps=%s/tests/capabilities-xml/" % os.getcwd()
 remoteuri   = fakeuri + ",remote"
-kvmuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/libvirt-0.7.6-qemu-caps.xml,qemu"
-xenuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/rhel5.4-xen-caps-virt-enabled.xml,xen"
-xenia64uri  = fakeuri + ",caps=`pwd`/tests/capabilities-xml/xen-ia64-hvm.xml,xen"
-lxcuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/capabilities-lxc.xml,lxc"
+kvmuri      = fakeuri + capsprefix + "libvirt-0.7.6-qemu-caps.xml,qemu"
+xenuri      = fakeuri + capsprefix + "rhel5.4-xen-caps-virt-enabled.xml,xen"
+xenia64uri  = fakeuri + capsprefix + "xen-ia64-hvm.xml,xen"
+lxcuri      = fakeuri + capsprefix + "capabilities-lxc.xml,lxc"
 
 # Location
 image_prefix = "/tmp/__virtinst_cli_"
@@ -114,7 +116,56 @@ test_files = {
 }
 
 debug = False
-testprompt = False
+
+class PromptCheck(object):
+    def __init__(self, prompt, response=None):
+        self.prompt = prompt
+        self.response = response
+        if self.response:
+            self.response = self.response % test_files
+
+    def check(self, proc):
+        out = proc.stdout.readline()
+
+        if not out.count(self.prompt):
+            out += "\nContent didn't contain prompt '%s'" % (self.prompt)
+            return False, out
+
+        if self.response:
+            proc.stdin.write(self.response + "\n")
+
+        return True, out
+
+class PromptTest(object):
+    def __init__(self, cmd):
+        cmd = cmd % test_files
+        app, opts = cmd.split(" ", 1)
+        self.cmd = [os.path.abspath(app)] + opts.split(" ")
+        self.cmdstr = cmd
+        self.debug = False
+
+        self.prompt_list = []
+
+    def add(self, *args, **kwargs):
+        self.prompt_list.append(PromptCheck(*args, **kwargs))
+
+    def run(self):
+        proc = subprocess.Popen(self.cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
+
+        out = "Running %s\n" % self.cmdstr
+
+        for p in self.prompt_list:
+            ret, content = p.check(proc)
+            out += content
+            if not ret:
+                # Since we didn't match output, process might be hung
+                proc.kill()
+                break
+
+        return proc.wait(), out
 
 """
 CLI test matrix
@@ -139,10 +190,6 @@ Format:
     }
   } # End categoryfoo
 
-  "prompt" : { # Special category that will launch an interactive command.
-               # which is only run if special args are passed to the test
-    "--some --prompt --command --string"
-  }
 }
   "
 """
@@ -485,6 +532,8 @@ args_dict = {
         "--hvm --disk path=virt-install,device=cdrom",
         # FV Import install
         "--hvm --import --disk path=virt-install",
+        # Working scenario w/ prompt shouldn't ask anything
+        "--hvm --import --disk path=virt-install --prompt --force",
         # PV Import install
         "--paravirt --import --disk path=virt-install",
         # PV Import install, print single XML
@@ -739,8 +788,7 @@ args_dict = {
 
 }, # lxc
 
-    "prompt" : [ " --connect %(TESTURI)s --debug --prompt" ]
-  }, # virt-install
+}, # virt-install
 
 
 
@@ -756,6 +804,8 @@ args_dict = {
         "-o test",
         # Nodisk, but with spurious files passed
         "-o test --file %(NEWIMG1)s --file %(NEWIMG2)s",
+        # Working scenario w/ prompt shouldn't ask anything
+        "-o test --file %(NEWIMG1)s --file %(NEWIMG2)s --prompt",
 
         # XML File with 2 disks
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s",
@@ -845,10 +895,8 @@ args_dict = {
       ],
     }, # categort "remote"
 
-    "prompt" : [
-        " --connect %(TESTURI) --debug --prompt",
-        " --connect %(TESTURI) --debug --original-xml %(CLONE_DISK_XML)s --prompt" ]
-  }, # app 'virt-clone'
+
+}, # app 'virt-clone'
 
 
 
@@ -945,7 +993,7 @@ args_dict = {
       ],
 
      }, # category "network"
-    "prompt" : [ " --connect %(TESTURI)s %(IMAGE_XML)s --debug --prompt" ],
+
 
   }, # app 'virt-image'
 
@@ -988,29 +1036,83 @@ args_dict = {
      ],
     }, # category 'misc'
 
-  }, # app 'virt-conver'
+  }, # app 'virt-convert'
 }
+
+promptlist = []
+
+# Basic virt-install prompting
+p1 = PromptTest("virt-install --connect %(TESTURI)s --prompt --quiet "
+               "--noautoconsole")
+p1.add("fully virtualized", "yes")
+p1.add("What is the name", "foo")
+p1.add("How much RAM", "64")
+p1.add("use as the disk", "%(NEWIMG1)s")
+p1.add("large would you like the disk", ".00001")
+p1.add("CD-ROM/ISO or URL", "%(EXISTIMG1)s")
+promptlist.append(p1)
+
+# Basic virt-install kvm prompting, existing disk
+p2 = PromptTest("virt-install --connect %(KVMURI)s --prompt --quiet "
+               "--noautoconsole --name foo --ram 64 --pxe --hvm")
+p2.add("use as the disk", "%(EXISTIMG1)s")
+p2.add("overwrite the existing path")
+p2.add("want to use this disk", "yes")
+promptlist.append(p2)
+
+# virt-install with install and --file-size and --hvm specified
+p3 = PromptTest("virt-install --connect %(TESTURI)s --prompt --quiet "
+               "--noautoconsole --pxe --file-size .00001 --hvm")
+p3.add("What is the name", "foo")
+p3.add("How much RAM", "64")
+p3.add("enter the path to the file", "%(NEWIMG1)s")
+promptlist.append(p3)
+
+# Basic virt-image prompting
+p4 = PromptTest("virt-image --connect %(TESTURI)s %(IMAGE_XML)s "
+               "--prompt --quiet --noautoconsole")
+# prompting for virt-image currently disabled
+#promptlist.append(p4)
+
+# Basic virt-clone prompting
+p5 = PromptTest("virt-clone --connect %(TESTURI)s --prompt --quiet "
+               "--clone-running")
+p5.add("original virtual machine", "test-clone-simple")
+p5.add("cloned virtual machine", "test-clone-new")
+p5.add("use as the cloned disk", "%(MANAGEDNEW1)s")
+promptlist.append(p5)
+
+# virt-clone prompt with input XML
+p6 = PromptTest("virt-clone --connect %(TESTURI)s --prompt --quiet "
+               "--original-xml %(CLONE_DISK_XML)s --clone-running")
+p6.add("cloned virtual machine", "test-clone-new")
+p6.add("use as the cloned disk", "%(NEWIMG1)s")
+p6.add("use as the cloned disk", "%(NEWIMG2)s")
+promptlist.append(p6)
 
 def runcomm(comm):
     try:
         for i in new_files:
             os.system("rm %s > /dev/null 2>&1" % i)
 
-        if debug:
-            print comm % test_files
+        if type(comm) is str:
+            if debug:
+                print comm % test_files
 
-        ret = commands.getstatusoutput(comm % test_files)
+            code, output = commands.getstatusoutput(comm % test_files)
+
+        else:
+            if debug:
+                print comm.cmdstr
+            code, output = comm.run()
+
         if debug:
-            print ret[1]
+            print output
             print "\n"
 
-        return ret
+        return code, output
     except Exception, e:
         return (-1, str(e))
-
-def run_prompt_comm(comm):
-    print comm
-    os.system(comm % test_files)
 
 def write_pass():
     if not debug:
@@ -1022,40 +1124,31 @@ def write_fail():
         sys.stdout.write("F")
         sys.stdout.flush()
 
-def assertPass(comm):
-    ret = runcomm(comm)
-    if ret[0] is not 0:
-        raise AssertionError("Expected command to pass, but failed.\n" + \
-                             "Command was: %s\n" % (comm) + \
-                             "Error code : %d\n" % ret[0] + \
-                             "Output was:\n%s" % ret[1])
-    return ret
-
-def assertFail(comm):
-    ret = runcomm(comm)
-    if ret[0] is 0:
-        raise AssertionError("Expected command to fail, but passed.\n" + \
-                             "Command was: %s\n" % (comm) + \
-                             "Error code : %d\n" % ret[0] + \
-                             "Output was:\n%s" % ret[1])
-    return ret
-
-
 class Command(object):
-    def __init__(self, cmdstr):
-        self.cmdstr = cmdstr
+    def __init__(self, cmd):
+        self.cmdstr = cmd
+        self.cmd = None
         self.check_success = True
         self.compare_file = None
+
+        if type(cmd) is not str:
+            self.cmd = cmd
+            self.cmdstr = " ".join(self.cmd.cmd)
 
     def run(self):
         filename = self.compare_file
         err = None
 
         try:
-            if self.check_success:
-                ignore, output = assertPass(self.cmdstr)
-            else:
-                ignore, output = assertFail(self.cmdstr)
+            code, output = runcomm(self.cmd or self.cmdstr)
+
+            if bool(code) == self.check_success:
+                raise AssertionError(
+                    ("Expected command to %s, but failed.\n" %
+                     (self.check_success and "pass" or "fail")) +
+                     ("Command was: %s\n" % self.cmdstr) +
+                     ("Error code : %d\n" % code) +
+                     ("Output was:\n%s" % output))
 
             if filename:
                 # Uncomment to generate new test files
@@ -1076,12 +1169,17 @@ def run_tests(do_app, do_category, error_ret):
     if do_app and do_app not in args_dict.keys():
         raise ValueError("Unknown app '%s'" % do_app)
 
+    cmdlist = []
+
+    # Prompt tests upfront
+    for cmd in promptlist:
+        cmdlist.append(Command(cmd))
+
     for app in args_dict:
         if do_app and app != do_app:
             continue
 
         unique = {}
-        prompts = []
         globalargs = ""
 
         # Build default command line dict
@@ -1089,19 +1187,10 @@ def run_tests(do_app, do_category, error_ret):
             if option == "globalargs":
                 globalargs = args_dict[app][option]
                 continue
-            elif option == "prompt":
-                prompts = args_dict[app][option]
-                continue
 
             # Default is a unique cmd string
             unique[option] = args_dict[app][option]
 
-        # Build up prompt cases
-        if testprompt:
-            for optstr in prompts:
-                cmd = "./" + app + " " + optstr
-                run_prompt_comm(cmd)
-            continue
 
         if do_category and do_category not in unique.keys():
             raise ValueError("Unknown category %s" % do_category)
@@ -1112,8 +1201,6 @@ def run_tests(do_app, do_category, error_ret):
                 continue
             catdict = unique[category]
             category_args = catdict["args"]
-
-            cmdlist = []
 
             for optstr in catdict["valid"]:
                 cmdstr = "./%s %s %s %s" % (app, globalargs,
@@ -1159,16 +1246,15 @@ def run_tests(do_app, do_category, error_ret):
                 cmd.compare_file = filename
                 cmdlist.append(cmd)
 
-            # Run commands
-            for cmd in cmdlist:
-                err = cmd.run()
-                if err:
-                    error_ret.append(err)
+    # Run commands
+    for cmd in cmdlist:
+        err = cmd.run()
+        if err:
+            error_ret.append(err)
 
 def main():
     # CLI Args
     global debug
-    global testprompt
 
     do_app = None
     do_category = None
@@ -1177,8 +1263,6 @@ def main():
         for i in range(1, len(sys.argv)):
             if sys.argv[i].count("debug"):
                 debug = True
-            elif sys.argv[i].count("prompt"):
-                testprompt = True
             elif sys.argv[i].count("--app"):
                 do_app = sys.argv[i + 1]
             elif sys.argv[i].count("--category"):
@@ -1221,3 +1305,5 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print "Tests interrupted"
+        if debug:
+            raise
