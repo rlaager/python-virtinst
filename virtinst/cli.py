@@ -549,6 +549,7 @@ def prompt_for_input(noprompt_err, prompt="", val=None, failed=False):
         fail(noprompt_err)
 
     print_stdout(prompt + " ", do_force=True)
+    sys.stdout.flush()
     return sys.stdin.readline().strip()
 
 def prompt_for_yes_or_no(warning, question):

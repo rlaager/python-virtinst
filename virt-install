@@ -146,20 +146,22 @@ def get_disk(diskopts, size, sparse, guest, is_file_path):
 
     guest.disks.append(d)
 
-def get_disks(guest, file_paths, disk_paths, size, sparse):
+def get_disks(guest, file_paths, disk_paths, size, sparse, need_storage):
     is_file_path = (file_paths or (not disk_paths and cli.is_prompt()))
-    disk = (file_paths or disk_paths)
+    disks = (file_paths or disk_paths)
+    if not disks and need_storage and cli.is_prompt():
+        disks = [None]
 
     def padlist(l, padsize):
         l = cli.listify(l)
         l.extend((padsize - len(l)) * [None])
         return l
 
-    disk = padlist(disk, 0)
-    size = padlist(size, len(disk))
+    disklist = padlist(disks, 0)
+    sizelist = padlist(size, len(disklist))
 
-    for idx in range(len(disk)):
-        get_disk(disk[idx], size[idx], sparse, guest, is_file_path)
+    for idx in range(len(disklist)):
+        get_disk(disklist[idx], sizelist[idx], sparse, guest, is_file_path)
 
 def get_networks(guest, options):
     networks, macs = cli.digest_networks(guest, options)
@@ -288,11 +290,11 @@ def get_virt_type(conn, options):
 # Install media setup/validation #
 ##################################
 
-def get_install_media(guest, location, cdpath):
+def get_install_media(guest, location, cdpath, need_install):
     manual_cdrom = cdrom_specified(guest)
     cdinstall = bool(not location and (cdpath or cdrom_specified(guest)))
 
-    if not (location or cdpath or manual_cdrom):
+    if not (location or cdpath or manual_cdrom or need_install):
         return
 
     try:
@@ -347,25 +349,32 @@ def validate_required_options(options, guest):
     # Required config. Don't error right away if nothing is specified,
     # aggregate the errors to help first time users get it right
     msg = ""
-    if cli.is_prompt():
-        return
+    need_storage = False
+    need_install = False
 
     if not options.name:
         msg += "\n" + cli.name_missing
+
     if not options.memory:
         msg += "\n" + cli.ram_missing
+
     if (not guest.installer.is_container() and
         not storage_specified(options.file_paths, options.diskopts,
                              options.nodisks, options.filesystems)):
         msg += "\n" + disk_missing
+        need_storage = True
+
     if (not guest.installer.is_container() and
         (not install_specified(options.location, options.cdrom,
                                options.pxe, options.import_install)) and
         (not cdrom_specified(guest, options.diskopts))):
         msg += "\n" + install_missing
+        need_install = True
 
-    if msg:
+    if msg and not cli.is_prompt():
         fail(msg)
+
+    return need_storage, need_install
 
 def check_option_collisions(options, guest):
     # Disk collisions
@@ -508,15 +517,15 @@ def build_guest_instance(conn, options):
 
     # Do this after setting up all optional parameters, so we report error
     # about those first.
-    validate_required_options(options, guest)
+    need_storage, need_install = validate_required_options(options, guest)
 
     # Actually set required options
     cli.get_name(options.name, guest)
     cli.get_memory(options.memory, guest)
     if not options.nodisks:
         get_disks(guest, options.file_paths, options.diskopts,
-                  options.disksize, options.sparse)
-    get_install_media(guest, options.location, options.cdrom)
+                  options.disksize, options.sparse, need_storage)
+    get_install_media(guest, options.location, options.cdrom, need_install)
 
     # Various little validations about option collisions. Need to do
     # this after setting guest.installer at least
