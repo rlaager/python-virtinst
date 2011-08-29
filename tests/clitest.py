@@ -727,7 +727,8 @@ args_dict = {
     # xenner
     ("--os-variant fedora14 --nodisks --boot hd --paravirt", "kvm-xenner"),
     # plain qemu
-    ("--os-variant fedora14 --nodisks --boot cdrom --virt-type qemu",
+    ("--os-variant fedora14 --nodisks --boot cdrom --virt-type qemu "
+     "--cpu Penryn",
      "qemu-plain"),
     # 32 on 64
     ("--os-variant fedora14 --nodisks --boot network --nographics --arch i686",

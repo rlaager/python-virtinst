@@ -1151,7 +1151,7 @@ def parse_optstr_tuples(optstr, compress_first=False):
             opt_type, opt_val = opt.split("=", 1)
             optlist.append((opt_type.lower(), opt_val))
         else:
-            optlist.append((opt.lower(), None))
+            optlist.append((opt, None))
 
     return optlist
 
