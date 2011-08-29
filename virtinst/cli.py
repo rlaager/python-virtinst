@@ -313,6 +313,8 @@ def _open_test_uri(uri):
             return ver
         libvirt.getVersion = newlibversion
 
+    setattr(conn, "_virtinst__fake_conn", True)
+
     return conn
 
 def getConnection(uri):

@@ -303,6 +303,8 @@ class DistroInstaller(Installer.Installer):
     def support_remote_url_install(self):
         if not self.conn:
             return False
+        if hasattr(self.conn, "_virtinst__fake_conn"):
+            return False
         return support.check_stream_support(self.conn,
                                             support.SUPPORT_STREAM_UPLOAD)
 
