@@ -170,7 +170,8 @@ class VirtualDeviceAddress(XMLBuilderDomain):
         self._unit = None
         self._port = None
 
-        self._remove_child_xpath("./address")
+        if self._is_parse():
+            self._remove_child_xpath("./address")
 
     def _get_type(self):
         return self._type
