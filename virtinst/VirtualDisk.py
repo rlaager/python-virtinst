@@ -1123,23 +1123,38 @@ class VirtualDisk(VirtualDevice):
         Return bool representing if managed storage parameters have
         been explicitly specified or filled in
         """
-        return (self.vol_object != None or self.vol_install != None or
-                self._pool_object != None)
+        return bool(self.vol_object != None or
+                    self.vol_install != None or
+                    self._pool_object != None)
 
     def __creating_storage(self):
         """
         Return True if the user requested us to create a device
         """
-        return not (self.__no_storage() or
-                    (self.__managed_storage() and
-                     self.vol_object or self._pool_object) or
-                    (self.path and os.path.exists(self.path)))
+        if self.__no_storage():
+            return False
+
+        if self.__managed_storage():
+            if self.vol_object or self._pool_object:
+                return False
+            return True
+
+        if (not self.is_remote() and
+            self.path and
+            os.path.exists(self.path)):
+            return False
+
+        return True
 
     def __no_storage(self):
         """
         Return True if no path or storage was specified
         """
-        return (not self.__managed_storage() and not self.path)
+        if self.__managed_storage():
+            return False
+        if self.path:
+            return False
+        return True
 
 
     def _storage_security_label(self):
