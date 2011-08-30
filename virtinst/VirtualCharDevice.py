@@ -122,9 +122,9 @@ class VirtualCharDevice(VirtualDevice.VirtualDevice):
         desc = ""
 
         if char_mode == VirtualCharDevice.CHAR_MODE_CONNECT:
-            desc = _("Client mode.")
+            desc = _("Client mode")
         elif char_mode == VirtualCharDevice.CHAR_MODE_BIND:
-            desc = _("Server mode.")
+            desc = _("Server mode")
 
         return desc
     get_char_mode_desc = staticmethod(get_char_mode_desc)

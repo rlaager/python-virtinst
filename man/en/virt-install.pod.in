@@ -935,18 +935,18 @@ Named pipe (see pipe(7))
 =item B<--serial tcp,host=HOST:PORT,mode=MODE,protocol=PROTOCOL>
 
 TCP net console. MODE is either 'bind' (wait for connections on HOST:PORT)
-or 'connect' (send output to HOST:PORT), default is 'connect'. HOST defaults
+or 'connect' (send output to HOST:PORT), default is 'bind'. HOST defaults
 to '127.0.0.1', but PORT is required. PROTOCOL can be either 'raw' or 'telnet'
 (default 'raw'). If 'telnet', the port acts like a telnet server or client.
 Some examples:
 
-Connect to localhost, port 1234:
-
---serial tcp,host=:1234
-
 Wait for connections on any address, port 4567:
 
---serial tcp,host=0.0.0.0:4567,mode=bind
+--serial tcp,host=0.0.0.0:4567
+
+Connect to localhost, port 1234:
+
+--serial tcp,host=:1234,mode=connect
 
 Wait for telnet connection on localhost, port 2222. The user could then
 connect interactively to this console via 'telnet localhost 2222':
