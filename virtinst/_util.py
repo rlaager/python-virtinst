@@ -152,7 +152,7 @@ def validate_uuid(val):
 
 def validate_name(name_type, val, lencheck=False):
     if type(val) is not str or len(val) == 0:
-        raise ValueError(_("%s name must be a string"))
+        raise ValueError(_("%s name must be a string") % name_type)
 
     if lencheck:
         if len(val) > 50:
