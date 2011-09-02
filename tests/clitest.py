@@ -598,6 +598,10 @@ args_dict = {
         ("--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --vcpus cores=4", "w2k3-cdrom"),
         # Lot's of devices
         ("--hvm --pxe "
+         "--controller usb,model=ich9-ehci1,address=0:0:4.7,index=0 "
+         "--controller usb,model=ich9-uhci1,address=0:0:4.0,index=0,master=0 "
+         "--controller usb,model=ich9-uhci2,address=0:0:4.1,index=0,master=2 "
+         "--controller usb,model=ich9-uhci3,address=0:0:4.2,index=0,master=4 "
          "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh,serial=WD-WMAP9A966149 "
          "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro,error_policy=enospace "
          "--disk device=cdrom "
@@ -651,6 +655,28 @@ args_dict = {
       ],
 
      }, # category "network"
+
+     "controller": {
+      "args": "--noautoconsole --nodisks --pxe",
+
+      "valid": [
+        "--controller usb,model=ich9-ehci1,address=0:0:4.7",
+        "--controller usb,model=ich9-ehci1,address=0:0:4.7,index=0",
+        "--controller usb,model=ich9-ehci1,address=0:0:4.7,index=1,master=0",
+      ],
+
+      "invalid": [
+        # Missing argument
+        "--controller",
+        # Invalid argument
+        "--controller foo",
+        # Invalid values
+        "--controller usb,model=ich9-ehci1,address=0:0:4.7,index=bar,master=foo",
+        # --bogus
+        "--controller host,foobar=baz",
+      ],
+
+     }, # category "controller"
 
      "hostdev" : {
       "args": "--noautoconsole --nographics --nodisks --pxe",

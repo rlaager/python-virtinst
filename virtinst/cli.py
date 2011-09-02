@@ -997,6 +997,16 @@ def get_smartcard(guest, sc_opts):
         if dev:
             guest.add_device(dev)
 
+def get_controller(guest, sc_opts):
+    for sc in listify(sc_opts):
+        try:
+            dev = parse_controller(guest, sc)
+        except Exception, e:
+            fail(_("Error in controller device parameters: %s") % str(e))
+
+        if dev:
+            guest.add_device(dev)
+
 #############################
 # Common CLI option/group   #
 #############################
@@ -1065,6 +1075,9 @@ def add_net_option(devg):
              "--network network=mynet,model=virtio,mac=00:11..."))
 
 def add_device_options(devg):
+    devg.add_option("", "--controller", dest="controller", action="append",
+                    help=_("Configure a guest controller device. Ex:\n"
+                           "--controller type=usb,model=ich9-ehci1"))
     devg.add_option("", "--serial", dest="serials", action="append",
                     help=_("Configure a guest serial device"))
     devg.add_option("", "--parallel", dest="parallels", action="append",
@@ -1677,6 +1690,36 @@ def parse_graphics(guest, optstring, dev=None):
     set_param("passwd", "password")
     set_param("passwdValidTo", "passwordvalidto")
 
+    if opts:
+        raise ValueError(_("Unknown options %s") % opts.keys())
+
+    return dev
+
+#######################
+# --controller parsing #
+#######################
+
+def parse_controller(guest, optstring, dev=None):
+    if optstring is None:
+        return None
+
+    # Peel the mode off the front
+    opts = parse_optstr(optstring, remove_first="type")
+    ctrltype = get_opt_param(opts, "type")
+    address = get_opt_param(opts, "address")
+    master = get_opt_param(opts, "master")
+
+    if not dev:
+        cl = virtinst.VirtualController.get_class_for_type(ctrltype)
+        dev = cl(guest.conn, model=opts.get("model"))
+
+    set_param = _build_set_param(dev, opts)
+
+    set_param("model", "model")
+    set_param("index", "index")
+    dev.set_address(address)
+    if master:
+        dev.set_master(master)
     if opts:
         raise ValueError(_("Unknown options %s") % opts.keys())
 

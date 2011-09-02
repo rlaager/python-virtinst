@@ -21,6 +21,7 @@
 
 from XMLBuilderDomain import XMLBuilderDomain, _xml_property
 from virtinst import _gettext as _
+import logging
 
 class VirtualDevice(XMLBuilderDomain):
     """
@@ -113,6 +114,10 @@ class VirtualDevice(XMLBuilderDomain):
         ignore = meter
         return
 
+    def set_address(self, addrstr):
+        self.address = VirtualDeviceAddress(self.conn, addrstr=addrstr)
+
+
 class VirtualDeviceAlias(XMLBuilderDomain):
     def __init__(self, conn, parsexml=None, parsexmlnode=None, caps=None):
         XMLBuilderDomain.__init__(self, conn, parsexml, parsexmlnode,
@@ -132,9 +137,15 @@ class VirtualDeviceAlias(XMLBuilderDomain):
 
 class VirtualDeviceAddress(XMLBuilderDomain):
 
-    TYPES = ["pci", "drive", "virtio-serial", "ccid"]
+    ADDRESS_TYPE_PCI           = "pci"
+    ADDRESS_TYPE_DRIVE         = "drive"
+    ADDRESS_TYPE_VIRTIO_SERIAL = "virtio-serial"
+    ADDRESS_TYPE_CCID          = "ccid"
 
-    def __init__(self, conn, parsexml=None, parsexmlnode=None, caps=None):
+    TYPES = [ADDRESS_TYPE_PCI, ADDRESS_TYPE_DRIVE,
+             ADDRESS_TYPE_VIRTIO_SERIAL, ADDRESS_TYPE_CCID]
+
+    def __init__(self, conn, parsexml=None, parsexmlnode=None, caps=None, addrstr=None):
         XMLBuilderDomain.__init__(self, conn, parsexml, parsexmlnode,
                                   caps=caps)
 
@@ -159,6 +170,25 @@ class VirtualDeviceAddress(XMLBuilderDomain):
 
         # CCID address:
         # <address type='ccid' controller='0' slot='0'/>
+
+        if addrstr:
+            self.parse_friendly_address(addrstr)
+
+    def parse_friendly_address(self, addrstr):
+        try:
+            if addrstr.count(":") in [1, 2] and addrstr.count("."):
+                self.type = self.ADDRESS_TYPE_PCI
+                addrstr, self.function = addrstr.split(".", 1)
+                addrstr, self.slot = addrstr.rsplit(":", 1)
+                self.domain = "0"
+                if addrstr.count(":"):
+                    self.domain, self.bus = addrstr.split(":", 1)
+            else:
+                raise ValueError(_("Could not determine or unsupported format of '%s'") % addrstr)
+        except:
+            logging.exception("Error parsing address.")
+            return None
+
 
     def clear(self):
         self._type = None
@@ -224,4 +254,17 @@ class VirtualDeviceAddress(XMLBuilderDomain):
     port = _xml_property(_get_port, _set_port, xpath="./address/@port")
 
     def _get_xml_config(self):
-        return ""
+        if not self.type:
+            return
+
+        xml = "<address type='%s'" % self.type
+        if self.type == self.ADDRESS_TYPE_PCI:
+            xml += " domain='%s' bus='%s' slot='%s' function='%s'" % (self.domain, self.bus, self.slot, self.function)
+        elif self.type == self.ADDRESS_TYPE_DRIVE:
+            xml += " controller='%s' bus='%s' unit='%s'" % (self.controller, self.bus, self.unit)
+        elif self.type == self.ADDRESS_TYPE_VIRTIO_SERIAL:
+            xml += " controller='%s' bus='%s' port='%s'" % (self.controller, self.bus, self.port)
+        elif self.type == self.ADDRESS_TYPE_CCID:
+            xml += " controller='%s' slot='%s'" % (self.controller, self.slot)
+        xml += "/>"
+        return xml

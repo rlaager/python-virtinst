@@ -797,7 +797,7 @@ completeness).
 =item --virt-type
 
 The hypervisor to install on. Example choices are kvm, qemu, xen, or kqemu.
-Availabile options are listed via 'virsh capabilities' in the <domain> tags.
+Available options are listed via 'virsh capabilities' in the <domain> tags.
 
 =item  --accelerate
 
@@ -822,6 +822,43 @@ Force disable ACPI for the guest.
 =head2 Device Options
 
 =over 2
+
+=item --controller=TYPE[,OPTS]
+
+Attach a controller device to the guest. TYPE is one of:
+B<ide>, B<fdc>, B<scsi>, B<sata>, B<virtio-serial>, or B<usb>.
+
+=over 4
+
+=item B<model>
+
+Controller model.
+
+=item B<address>
+
+Controller address, current PCI of form 'bus:domain:slot:function'.
+
+=item B<index>
+
+A decimal integer describing in which order the bus controller is
+encountered, and to reference the controller bus.
+
+=item B<master>
+
+Applicable to USB companion controllers, to define the master bus startport.
+
+=back
+
+Example:
+
+=over 4
+
+=item B<--controller usb,model=ich9-uhci2,address=0:0:4.7,index=0,master=2>
+
+Adds a ICH9 USB companion controller on PCI address 0:0:4.7 with
+master bus 0 and first port 2.
+
+=back
 
 =item --host-device=HOSTDEV
 

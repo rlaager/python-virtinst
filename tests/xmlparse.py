@@ -343,6 +343,7 @@ class XMLParseTest(unittest.TestCase):
         dev1 = guest.get_devices("controller")[0]
         dev2 = guest.get_devices("controller")[1]
         dev3 = guest.get_devices("controller")[2]
+        dev4 = guest.get_devices("controller")[3]
 
         check = self._make_checker(dev1)
         check("type", "ide")
@@ -357,6 +358,14 @@ class XMLParseTest(unittest.TestCase):
         check = self._make_checker(dev3)
         check("type", "scsi")
         check("index", "1", "2")
+
+        check = self._make_checker(dev4)
+        check("type", "usb")
+        check("index", "3", "9")
+        check("model", "ich9-uhci3")
+
+        check = self._make_checker(dev4.get_master())
+        check("startport", "4", "2")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 

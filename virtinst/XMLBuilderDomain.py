@@ -495,3 +495,13 @@ class XMLBuilderDomain(object):
             return _sanitize_libxml_xml(node.serialize())
 
         return self._get_xml_config(*args, **kwargs)
+
+    @staticmethod
+    def indent(xmlstr, level):
+        xml = ""
+        if not xmlstr:
+            return xml
+
+        for l in iter(xmlstr.splitlines()):
+            xml += " " * level + l + "\n"
+        return xml

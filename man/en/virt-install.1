@@ -847,7 +847,7 @@ completeness).
 .IP "\-\-virt\-type" 2
 .IX Item "--virt-type"
 The hypervisor to install on. Example choices are kvm, qemu, xen, or kqemu.
-Availabile options are listed via 'virsh capabilities' in the <domain> tags.
+Available options are listed via 'virsh capabilities' in the <domain> tags.
 .IP "\-\-accelerate" 2
 .IX Item "--accelerate"
 Prefer \s-1KVM\s0 or \s-1KQEMU\s0 (in that order) if installing a \s-1QEMU\s0 guest. This behavior
@@ -861,6 +861,35 @@ Force disable \s-1APIC\s0 for the guest.
 Force disable \s-1ACPI\s0 for the guest.
 .SS "Device Options"
 .IX Subsection "Device Options"
+.IP "\-\-controller=TYPE[,OPTS]" 2
+.IX Item "--controller=TYPE[,OPTS]"
+Attach a controller device to the guest. \s-1TYPE\s0 is one of:
+\&\fBide\fR, \fBfdc\fR, \fBscsi\fR, \fBsata\fR, \fBvirtio-serial\fR, or \fBusb\fR.
+.RS 2
+.IP "\fBmodel\fR" 4
+.IX Item "model"
+Controller model.
+.IP "\fBaddress\fR" 4
+.IX Item "address"
+Controller address, current \s-1PCI\s0 of form 'bus:domain:slot:function'.
+.IP "\fBindex\fR" 4
+.IX Item "index"
+A decimal integer describing in which order the bus controller is
+encountered, and to reference the controller bus.
+.IP "\fBmaster\fR" 4
+.IX Item "master"
+Applicable to \s-1USB\s0 companion controllers, to define the master bus startport.
+.RE
+.RS 2
+.Sp
+Example:
+.IP "\fB\-\-controller usb,model=ich9\-uhci2,address=0:0:4.7,index=0,master=2\fR" 4
+.IX Item "--controller usb,model=ich9-uhci2,address=0:0:4.7,index=0,master=2"
+Adds a \s-1ICH9\s0 \s-1USB\s0 companion controller on \s-1PCI\s0 address 0:0:4.7 with
+master bus 0 and first port 2.
+.RE
+.RS 2
+.RE
 .IP "\-\-host\-device=HOSTDEV" 2
 .IX Item "--host-device=HOSTDEV"
 Attach a physical host device to the guest. Some example values for \s-1HOSTDEV:\s0
