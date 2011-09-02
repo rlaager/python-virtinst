@@ -120,7 +120,7 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
         return self._managed
     def set_managed(self, val):
         self._managed = bool(val)
-    managed = _xml_property(get_type, set_type,
+    managed = _xml_property(get_managed, set_managed,
                             get_converter=lambda s, x: bool(x == "yes"),
                             set_converter=lambda s, x: x and "yes" or "no",
                             xpath="./@managed")
