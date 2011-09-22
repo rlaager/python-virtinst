@@ -313,9 +313,9 @@ class DistroInstaller(Installer.Installer):
         system_scratchdir = self._get_system_scratchdir()
 
         if (not guest.is_remote() and
-            self.scratchdir == system_scratchdir):
+            (self.is_session_uri() or self.scratchdir == system_scratchdir)):
             # We have access to system scratchdir, don't jump through hoops
-            logging.debug("Have access to local system scratchdir so"
+            logging.debug("Have access to preferred scratchdir so"
                           " nothing to upload")
             return kernel, initrd
 
