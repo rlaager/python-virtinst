@@ -1291,8 +1291,8 @@ class FileVolume(StorageVolume):
     _file_type = VIR_STORAGE_VOL_FILE
 
     formats = ["raw", "bochs", "cloop", "cow", "dmg", "iso", "qcow",
-               "qcow2", "vmdk", "vpc"]
-    create_formats = ["raw", "cow", "qcow", "qcow2", "vmdk", "vpc"]
+               "qcow2", "qed", "vmdk", "vpc"]
+    create_formats = ["raw", "cow", "qcow", "qcow2", "qed", "vmdk", "vpc"]
 
     # Register applicable property methods from parent class
     perms = property(StorageObject.get_perms, StorageObject.set_perms)
