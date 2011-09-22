@@ -568,6 +568,8 @@ args_dict = {
         "--hvm --pxe --filesystem /foo/source,/bar/target",
         # --filesystem template
         "--hvm --pxe --filesystem template_name,/,type=template",
+        # no networks
+        "--hvm --nodisks --nonetworks --cdrom %(EXISTIMG1)s",
       ],
 
       "invalid": [
@@ -1037,8 +1039,6 @@ args_dict = {
         "--network=user,model=e1000",
         # several networks
         "--network=network:default,model=e1000 --network=user,model=virtio",
-        # no networks
-        #"--nonetworks",
       ],
       "invalid": [
         # Nonexistent network

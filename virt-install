@@ -390,11 +390,11 @@ def check_option_collisions(options, guest):
 
     # Network collisions
     if options.nonetworks:
-        if options.macs:
+        if options.mac:
             fail(_("Cannot use --mac with --nonetworks"))
-        if options.bridges:
+        if options.bridge:
             fail(_("Cannot use --bridges with --nonetworks"))
-        if options.networks:
+        if options.network:
             fail(_("Cannot use --network with --nonetworks"))
         return
 
