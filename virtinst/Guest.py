@@ -1429,6 +1429,26 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             if hasattr(d, "virtinst_default"):
                 remove_func(d)
 
+    def add_usb_ich9_controllers(self):
+        ctrl = VirtualControllerUSB(self.conn,
+                                    model="ich9-ehci1")
+        self.add_device(ctrl)
+
+        ctrl = VirtualControllerUSB(self.conn,
+                                    model="ich9-uhci1")
+        ctrl.get_master().startport = 0
+        self.add_device(ctrl)
+
+        ctrl = VirtualControllerUSB(self.conn,
+                                    model="ich9-uhci2")
+        ctrl.get_master().startport = 2
+        self.add_device(ctrl)
+
+        ctrl = VirtualControllerUSB(self.conn,
+                                    model="ich9-uhci3")
+        ctrl.get_master().startport = 4
+        self.add_device(ctrl)
+
     def _set_defaults(self, devlist_func, remove_func, features):
         if self.installer.is_hvm():
             self._set_hvm_defaults(devlist_func, features)
