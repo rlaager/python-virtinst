@@ -41,6 +41,7 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
         self._model = None
         self._label = None
         self._imagelabel = None
+        self._relabel = None
 
         if self._is_parse():
             return
@@ -76,6 +77,13 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
     label = _xml_property(get_label, set_label,
                           xpath="./seclabel/label")
 
+    def _get_relabel(self):
+        return self._label
+    def _set_relabel(self, val):
+        self._label = val
+    relabel = _xml_property(_get_relabel, _set_relabel,
+                            xpath="./seclabel/@relabel")
+
     def get_imagelabel(self):
         return self._imagelabel
     def set_imagelabel(self, val):
@@ -90,6 +98,7 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
 
         model = self.model
         typ = self.type
+        relabel = self.relabel
 
         if model == self.MODEL_DEFAULT:
             model = self._get_default_model()
@@ -99,13 +108,16 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
         if not typ:
             raise RuntimeError("Security type and model must be specified")
 
-        if (typ == self.SECLABEL_TYPE_STATIC and not self.label):
-            raise RuntimeError("A label must be specified for static "
-                               "security type.")
+        if typ == self.SECLABEL_TYPE_STATIC:
+            if not self.label:
+                raise RuntimeError("A label must be specified for static "
+                                   "security type.")
 
 
         label_xml = ""
         xml = "  <seclabel type='%s' model='%s'" % (typ, model)
+        if relabel is not None:
+            xml += " relabel='%s'" % (relabel and "yes" or "no")
 
         if self.label:
             label_xml += "    <label>%s</label>\n" % self.label

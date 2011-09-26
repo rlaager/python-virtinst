@@ -559,9 +559,9 @@ args_dict = {
         # --security dynamic
         "--hvm --nodisks --pxe --security type=dynamic",
         # --security implicit static
-        "--hvm --nodisks --pxe --security label=foobar.label",
+        "--hvm --nodisks --pxe --security label=foobar.label,relabel=yes",
         # --security static with commas 1
-        "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3,type=static",
+        "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3,type=static,relabel=no",
         # --security static with commas 2
         "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3",
         # --filesystem simple
@@ -613,7 +613,7 @@ args_dict = {
          "--network bridge=foobar,model=virtio "
          "--channel spicevmc "
          "--smartcard passthrough,type=spicevmc "
-         "--security type=static,label='system_u:object_r:svirt_image_t:s0:c100,c200' "
+         "--security type=static,label='system_u:object_r:svirt_image_t:s0:c100,c200',relabel=yes "
          """ --numatune \\"1-3,5\\",mode=preferred """,
          "many-devices"),
       ],

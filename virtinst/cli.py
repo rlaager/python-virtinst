@@ -1411,6 +1411,7 @@ def parse_security(guest, security):
     # Beware, adding boolean options here could upset label comma handling
     mode = get_opt_param(opts, "type")
     label = get_opt_param(opts, "label")
+    relabel = yes_or_no_convert(get_opt_param(opts, "relabel"))
 
     # Try to fix up label if it contained commas
     if label:
@@ -1436,6 +1437,9 @@ def parse_security(guest, security):
             mode = secmodel.SECLABEL_TYPE_STATIC
     if mode:
         secmodel.type = mode
+
+    if relabel:
+        secmodel.relabel = relabel
 
     if opts:
         raise ValueError(_("Unknown options %s") % opts.keys())
