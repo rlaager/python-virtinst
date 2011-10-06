@@ -78,9 +78,9 @@ class Seclabel(XMLBuilderDomain.XMLBuilderDomain):
                           xpath="./seclabel/label")
 
     def _get_relabel(self):
-        return self._label
+        return self._relabel
     def _set_relabel(self, val):
-        self._label = val
+        self._relabel = val
     relabel = _xml_property(_get_relabel, _set_relabel,
                             xpath="./seclabel/@relabel")
 

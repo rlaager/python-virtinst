@@ -526,6 +526,9 @@ def is_prompt():
     return doprompt
 
 def yes_or_no_convert(s):
+    if s is None:
+        return None
+
     s = s.lower()
     if s in ("y", "yes", "1", "true", "t"):
         return True
