@@ -277,51 +277,26 @@ class DistroInstaller(Installer.Installer):
         Insert files into the root directory of the initial ram disk
         """
         tempdir = tempfile.mkdtemp(dir=self.scratchdir)
-        (fd, cpiofn) = tempfile.mkstemp(prefix="virtinst-cpio",
-                                        dir=self.scratchdir)
-        self._tmpfiles.append(cpiofn)
         os.chmod(tempdir, 0775)
-
-        cpiofd = os.fdopen(fd, "w")
-        file_proc = subprocess.Popen(['file', initrd], stdout=subprocess.PIPE)
-        file_output = file_proc.stdout.read()
-
-        comptool = "gzip"
-        if file_output.count("xz compressed"):
-            comptool = "xz"
-        logging.debug("Initrd compressed with %s" % comptool)
-
-        logging.debug("Extracting initrd")
-        initfd = open(initrd, "r")
-        comp_proc = subprocess.Popen([comptool, "--decompress"],
-                                     stdin=initfd,
-                                     stdout=cpiofd)
-        comp_proc.wait()
-        cpiofd.close()
-        initfd.close()
 
         for filename in self._initrd_injections:
             logging.debug("Copying %s to the initrd." % filename)
             shutil.copy(filename, tempdir)
 
-        logging.debug("Rebuilding initrd")
-        f = open(initrd, 'w')
+        logging.debug("Appending to the initrd.")
         find_proc = subprocess.Popen(['find', '.', '-print0'],
                                      stdout=subprocess.PIPE,
                                      stderr=sys.stderr, cwd=tempdir)
-        cpio_proc = subprocess.Popen(['cpio', '--create', '--null', '-Hnewc',
-                                      '--quiet', '--append', '--file', cpiofn],
+        cpio_proc = subprocess.Popen(['cpio', '-o', '--null', '-Hnewc', '--quiet'],
                                      stdin=find_proc.stdout,
+                                     stdout=subprocess.PIPE,
                                      stderr=sys.stderr, cwd=tempdir)
-
-        # Recompress with gzip to save time at the expense of some disk
-        # usage (and mildly slower volume upload)
-        comp_proc = subprocess.Popen(["gzip", "--stdout", "-1", cpiofn],
-                                     stdout=f,
-                                     stderr=sys.stderr)
+        f = open(initrd, 'ab')
+        gzip_proc = subprocess.Popen(['gzip'], stdin=cpio_proc.stdout,
+                                     stdout=f, stderr=sys.stderr)
         cpio_proc.wait()
         find_proc.wait()
-        comp_proc.wait()
+        gzip_proc.wait()
         f.close()
         shutil.rmtree(tempdir)
 
