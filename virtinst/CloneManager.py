@@ -437,7 +437,6 @@ class CloneDesign(object):
         # We simply edit the original VM xml in place
         doc = libxml2.parseDoc(self._clone_xml)
         ctx = doc.xpathNewContext()
-        typ = ctx.xpathEval("/domain")[0].prop("type")
 
         # changing name
         node = ctx.xpathEval("/domain/name")
@@ -465,7 +464,7 @@ class CloneDesign(object):
                 mac = self._clone_mac[i - 1]
             except Exception:
                 while 1:
-                    mac = _util.randomMAC(typ)
+                    mac = _util.randomMAC(self.original_conn.getType().lower())
                     dummy, msg = self._check_mac(mac)
                     if msg is not None:
                         continue
