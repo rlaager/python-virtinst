@@ -232,19 +232,6 @@ class VirtualHostDeviceUSB(VirtualHostDevice):
                                  " 'device' are required."))
         return xml
 
-    def setup_dev(self, conn=None, meter=None):
-        return self.setup(conn)
-
-    def setup(self, conn=None):
-        """
-        DEPRECATED: Please use setup_dev instead
-        """
-        if not conn:
-            conn = self.conn
-
-        # No libvirt api support for USB Detach/Reset yet
-        return
-
 
 class VirtualHostDevicePCI(VirtualHostDevice):
 
@@ -276,36 +263,3 @@ class VirtualHostDevicePCI(VirtualHostDevice):
 
         xml = "        <address domain='%s' bus='%s' slot='%s' function='%s'/>\n"
         return xml % (self.domain, self.bus, self.slot, self.function)
-
-    def setup_dev(self, conn=None, meter=None):
-        """
-        Perform DeviceDetach and DeviceReset calls if necessary
-
-        @param conn: libvirt virConnect instance to use (defaults to devices
-                     connection)
-        """
-        return self.setup(conn)
-
-    def setup(self, conn=None):
-        """
-        DEPRECATED: Please use setup_dev instead
-        """
-        if not conn:
-            conn = self.conn
-
-        if not NodeDeviceParser.is_pci_detach_capable(conn):
-            return
-
-        try:
-            try:
-                # Do this as a sanity check, so that we don't fail at domain
-                # start time. This is independent of the 'managed' state, since
-                # this should work regardless.
-                node = conn.nodeDeviceLookupByName(self._nodedev.name)
-                node.dettach()
-                node.reset()
-            except libvirt.libvirtError, e:
-                if not support.is_error_nosupport(e):
-                    raise
-        except Exception, e:
-            raise RuntimeError(_("Could not detach PCI device: %s" % str(e)))
