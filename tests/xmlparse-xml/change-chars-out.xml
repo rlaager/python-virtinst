@@ -32,11 +32,11 @@
       <source mode="bind" host="my.foo.host" service="1357"/>
       <source mode="connect" host="source.foo.host" service="7777"/>
     </parallel>
+    <console type="pty"/>
     <console type="file">
       <target type="virtio"/>
       <source path="/root/foo"/>
     </console>
-    <console type="pty"/>
     <channel type="pty">
       <target type="virtio" name="test.changed"/>
     </channel>

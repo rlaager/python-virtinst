@@ -312,14 +312,14 @@ class XMLParseTest(unittest.TestCase):
         check("source_host", "my.source.host", "source.foo.host")
 
         check = self._make_checker(console1)
+        check("char_type", "pty")
+        check("target_type", None)
+
+        check = self._make_checker(console2)
         check("char_type", "file")
         check("source_path", "/tmp/foo.img", None)
         check("source_path", None, "/root/foo")
         check("target_type", "virtio")
-
-        check = self._make_checker(console2)
-        check("char_type", "pty")
-        check("target_type", None)
 
         check = self._make_checker(channel1)
         check("char_type", "pty")

@@ -666,11 +666,11 @@ class TestXMLConfig(unittest.TestCase):
         dev6 = VirtualCharDevice.get_dev_instance(g.conn,
                                                   VirtualCharDevice.DEV_CONSOLE,
                                                   VirtualCharDevice.CHAR_PTY)
-        dev6.target_type = dev5.CHAR_CONSOLE_TARGET_VIRTIO
 
         dev7 = VirtualCharDevice.get_dev_instance(g.conn,
                                                   VirtualCharDevice.DEV_CONSOLE,
                                                   VirtualCharDevice.CHAR_PTY)
+        dev7.target_type = dev5.CHAR_CONSOLE_TARGET_VIRTIO
 
         dev8 = VirtualCharDevice.get_dev_instance(g.conn,
                                                   VirtualCharDevice.DEV_CHANNEL,
