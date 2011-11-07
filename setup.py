@@ -293,7 +293,7 @@ class mysdist(sdist):
 
 
         outp = inp.replace("::VARIANT VALUES::", output)
-        if outp != origout:
+        if outp != origout or not(os.exists(outfile)):
             outfd = open(outfile, "w")
             outfd.write(outp)
             outfd.close()
