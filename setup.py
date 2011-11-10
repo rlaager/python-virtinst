@@ -283,7 +283,7 @@ class mysdist(sdist):
         infile = "man/en/virt-install.pod.in"
         outfile = "man/en/virt-install.pod"
 
-        outfd = open(outfile, "r")
+        outfd = open(outfile, "w+")
         origout = outfd.read()
         outfd.close()
 
