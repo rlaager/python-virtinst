@@ -102,6 +102,7 @@ class XMLParseTest(unittest.TestCase):
         check("uuid", "12345678-1234-1234-1234-123456789012",
                       "11111111-2222-3333-4444-555555555555")
         check("emulator", "/usr/lib/xen/bin/qemu-dm", "/usr/binnnn/fooemu")
+        check("hugepage", False, True)
 
         check = self._make_checker(guest.clock)
         check("offset", "utc", "localtime")

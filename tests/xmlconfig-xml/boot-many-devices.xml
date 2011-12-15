@@ -4,6 +4,9 @@
   <description>foooo barrrr somedesc</description>
   <memory>409600</memory>
   <currentMemory>204800</currentMemory>
+  <memoryBacking>
+    <hugepages/>
+  </memoryBacking>
   <vcpu>5</vcpu>
   <os>
     <type arch='i686'>hvm</type>

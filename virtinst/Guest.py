@@ -190,6 +190,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._uuid = None
         self._memory = None
         self._maxmemory = None
+        self._hugepage = None
         self._vcpus = 1
         self._maxvcpus = 1
         self._cpuset = None
@@ -343,6 +344,14 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                               xpath="./memory",
                               get_converter=lambda s, x: int(x) / 1024,
                               set_converter=lambda s, x: int(x) * 1024)
+    def get_hugepage(self):
+        return self._hugepage
+    def set_hugepage(self, val):
+        if val is None:
+            return val
+        self._hugepage = bool(val)
+    hugepage = _xml_property(get_hugepage, set_hugepage,
+                             xpath="./memoryBacking/hugepages", is_bool=True)
 
     # UUID for the guest
     def get_uuid(self):
@@ -1044,9 +1053,14 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         xml = add(desc_xml)
         xml = add("  <memory>%s</memory>" % (self.maxmemory * 1024))
         xml = add("  <currentMemory>%s</currentMemory>" % (self.memory * 1024))
+
         # <blkiotune>
         # <memtune>
-        # <memoryBacking>
+        if self.hugepage is True:
+            xml = add("  <memoryBacking>")
+            xml = add("    <hugepages/>")
+            xml = add("  </memoryBacking>")
+
         xml = add(self._get_vcpu_xml())
         # <cputune>
         xml = add(self.numatune.get_xml_config())
