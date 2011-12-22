@@ -1,12 +1,15 @@
-      virtinst  Authors
-      =================
+ virtinst Authors
+ ================
 
-The virtinst  library / virt-* tools are written and maintained by
+virtinst and the virt-* tools are primarily written and maintained by:
+
+    Cole Robinson <crobinso-at-redhat-dot-com>
+
+Previous developers and maintainers:
 
     Jeremy Katz  <katzj-at-redhat-dot-com>
     Daniel Berrange <berrange-at-redhat-dot-com>
     Hugh Brock <hbrock-at-redhat-dot-com>
-    Cole Robinson <crobinso-at-redhat-dot-com>
 
 Patches also received from
 
@@ -57,7 +60,5 @@ Patches also received from
 
     ...send patches and get your name here...
 
-Also lots of translations from the Fedora translation team. See
+Also lots of translations from the Transifex translation team. See
 the individual .po files for the translators.
-
--- That's all folks !
