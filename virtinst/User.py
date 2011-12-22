@@ -54,22 +54,23 @@ class User(object):
         if priv == self.PRIV_CREATE_NETWORK:
             return (self._euid == 0) or _util.is_qemu_system(conn)
 
-        if platform.system() != 'SunOS':
-            is_xen = not conn or conn.lower()[0:3] == 'xen'
-            if priv in [ self.PRIV_CLONE, self.PRIV_CREATE_DOMAIN ]:
-                if is_xen:
-                    return self._euid == 0
-                return True
+        if platform.system() == 'SunOS':
+            return self._sun_has_priv(priv, conn)
 
-            return self._euid == 0
+        # For all others, just assume that prescence of a connection
+        # means we are privileged enough
+        return True
 
+    def _sun_has_priv(self, priv, conn=None):
         # Not easy to work out!
         if self._euid != User.current().euid:
             return self._euid == 0
 
         import ucred
         cred = ucred.get(os.getpid())
-        if priv in [ self.PRIV_CLONE, self.PRIV_CREATE_DOMAIN, self.PRIV_CREATE_NETWORK ]:
+        if priv in [ self.PRIV_CLONE,
+                     self.PRIV_CREATE_DOMAIN,
+                     self.PRIV_CREATE_NETWORK ]:
             return cred.has_priv('Effective', 'virt_manage')
         if priv == self.PRIV_NFS_MOUNT:
             return (cred.has_priv('Effective', 'sys_mount') and
