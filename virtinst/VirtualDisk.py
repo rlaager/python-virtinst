@@ -1682,7 +1682,7 @@ class VirtualDisk(VirtualDevice):
         # error as appropriate.
         if self.bus == "virtio":
             return ("vd", 1024)
-        elif self.bus == "scsi" or self.bus == "usb":
+        elif self.bus in ["sata", "scsi", "usb"]:
             return ("sd", 1024)
         elif self.bus == "xen":
             return ("xvd", 1024)

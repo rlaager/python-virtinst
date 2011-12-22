@@ -35,7 +35,7 @@
       <readonly/>
     </disk>
     <disk type='block' device='cdrom'>
-      <target dev='hdc' bus='ide'/>
+      <target dev='sda' bus='sata'/>
       <readonly/>
     </disk>
     <controller type='usb' index='0' model='ich9-ehci1'>
@@ -116,7 +116,7 @@
       <readonly/>
     </disk>
     <disk type='block' device='cdrom'>
-      <target dev='hdc' bus='ide'/>
+      <target dev='sda' bus='sata'/>
       <readonly/>
     </disk>
     <controller type='usb' index='0' model='ich9-ehci1'>

@@ -420,9 +420,9 @@ cdrom is used as the install media.
 
 =item B<bus>
 
-Disk bus type. Value can be 'ide', 'scsi', 'usb', 'virtio' or 'xen'.  The
-default is hypervisor dependent since not all hypervisors support all bus
-types.
+Disk bus type. Value can be 'ide', 'sata', 'scsi', 'usb', 'virtio' or 'xen'.
+The default is hypervisor dependent since not all hypervisors support all
+bus types.
 
 =item B<perms>
 
