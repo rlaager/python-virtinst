@@ -35,6 +35,7 @@
       <driver type="handle"/>
       <source dir="/foo/bar"/>
       <target dir="/bar/baz"/>
+      <readonly/>
     </filesystem>
   </devices>
 </domain>

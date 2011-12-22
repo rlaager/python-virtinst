@@ -74,6 +74,7 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
         self._driver = None
         self._target = None
         self._source = None
+        self._readonly = None
 
         if self._is_parse():
             return
@@ -97,6 +98,13 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
             raise ValueError(_("Unsupported filesystem mode '%s'" % val))
         self._mode = val
     mode = _xml_property(_get_mode, _set_mode, xpath="./@accessmode")
+
+    def _get_readonly(self):
+        return self._readonly
+    def _set_readonly(self, val):
+        self._readonly = val
+    readonly = _xml_property(_get_readonly, _set_readonly,
+                             xpath="./readonly", is_bool=True)
 
     def _get_driver(self):
         return self._driver
@@ -144,6 +152,7 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
         driver = self.driver
         source = self.source
         target = self.target
+        readonly = self.readonly
 
         if mode == self.MODE_DEFAULT:
             mode = None
@@ -170,6 +179,9 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
                                             self.type_to_source_prop(ftype),
                                             source)
         fsxml += "      <target dir='%s'/>\n" % target
+
+        if readonly:
+            fsxml += "      <readonly/>\n"
 
         fsxml += "    </filesystem>"
 

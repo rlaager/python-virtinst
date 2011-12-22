@@ -595,6 +595,7 @@ class XMLParseTest(unittest.TestCase):
         check("type", "mount", None)
         check("mode", "squash", None)
         check("driver", "path", "handle")
+        check("readonly", False, True)
 
         self._alter_compare(guest.get_config_xml(), outfile)
 
