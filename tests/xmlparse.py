@@ -581,6 +581,7 @@ class XMLParseTest(unittest.TestCase):
         check = self._make_checker(dev1)
         check("type", None, "mount")
         check("mode", None, "passthrough")
+        check("driver", "handle", None)
         check("source", "/foo/bar", "/new/path")
         check("target", "/bar/baz", "/new/target")
 
@@ -593,6 +594,7 @@ class XMLParseTest(unittest.TestCase):
         check = self._make_checker(dev3)
         check("type", "mount", None)
         check("mode", "squash", None)
+        check("driver", "path", "handle")
 
         self._alter_compare(guest.get_config_xml(), outfile)
 

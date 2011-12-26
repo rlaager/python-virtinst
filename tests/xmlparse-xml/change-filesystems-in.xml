@@ -24,6 +24,7 @@
       <target dev="fda" bus="fdc"/>
     </disk>
     <filesystem>
+      <driver type='handle'/>
       <source dir='/foo/bar'/>
       <target dir='/bar/baz'/>
     </filesystem>
@@ -32,6 +33,7 @@
       <target dir='/bar/baz'/>
     </filesystem>
     <filesystem type='mount' accessmode='squash'>
+      <driver type='path'/>
       <source dir='/foo/bar'/>
       <target dir='/bar/baz'/>
     </filesystem>

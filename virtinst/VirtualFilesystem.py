@@ -42,6 +42,11 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
     MODE_DEFAULT = "default"
     MOUNT_MODES = [MODE_PASSTHROUGH, MODE_MAPPED, MODE_SQUASH, MODE_DEFAULT]
 
+    DRIVER_PATH = "path"
+    DRIVER_HANDLE = "handle"
+    DRIVER_DEFAULT = "default"
+    DRIVER_TYPES = [DRIVER_PATH, DRIVER_HANDLE, DRIVER_DEFAULT]
+
     @staticmethod
     def type_to_source_prop(fs_type):
         """
@@ -66,6 +71,7 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
 
         self._type = None
         self._mode = None
+        self._driver = None
         self._target = None
         self._source = None
 
@@ -74,6 +80,7 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
 
         self.mode = self.MODE_DEFAULT
         self.type = self.TYPE_DEFAULT
+        self.driver = self.DRIVER_DEFAULT
 
     def _get_type(self):
         return self._type
@@ -90,6 +97,14 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
             raise ValueError(_("Unsupported filesystem mode '%s'" % val))
         self._mode = val
     mode = _xml_property(_get_mode, _set_mode, xpath="./@accessmode")
+
+    def _get_driver(self):
+        return self._driver
+    def _set_driver(self, val):
+        if val is not None and not self.DRIVER_TYPES.count(val):
+            raise ValueError(_("Unsupported filesystem driver '%s'" % val))
+        self._driver = val
+    driver = _xml_property(_get_driver, _set_driver, xpath="./driver/@type")
 
     def _get_source(self):
         return self._source
@@ -126,6 +141,7 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
     def _get_xml_config(self):
         mode = self.mode
         ftype = self.type
+        driver = self.driver
         source = self.source
         target = self.target
 
@@ -133,6 +149,8 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
             mode = None
         if ftype == self.TYPE_DEFAULT:
             ftype = None
+        if driver == self.DRIVER_DEFAULT:
+            driver = None
 
         if not source or not target:
             raise ValueError(
@@ -144,6 +162,9 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
         if mode:
             fsxml += " accessmode='%s'" % mode
         fsxml += ">\n"
+
+        if driver:
+            fsxml += "      <driver type='%s'/>\n" % driver
 
         fsxml += "      <source %s='%s'/>\n" % (
                                             self.type_to_source_prop(ftype),

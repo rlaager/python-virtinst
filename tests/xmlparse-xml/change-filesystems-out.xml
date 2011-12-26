@@ -32,6 +32,7 @@
       <target dir="/bar/baz"/>
     </filesystem>
     <filesystem>
+      <driver type="handle"/>
       <source dir="/foo/bar"/>
       <target dir="/bar/baz"/>
     </filesystem>
