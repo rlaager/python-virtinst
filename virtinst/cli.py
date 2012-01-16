@@ -171,7 +171,6 @@ def setupLogging(appname, debug=False, do_quiet=False):
     dateFormat = "%a, %d %b %Y %H:%M:%S"
     fileFormat = ("[%(asctime)s " + appname + " %(process)d] "
                   "%(levelname)s (%(module)s:%(lineno)d) %(message)s")
-    streamDebugFormat = "%(asctime)s %(levelname)-8s %(message)s"
     streamErrorFormat = "%(levelname)-8s %(message)s"
     filename = os.path.join(vi_dir, appname + ".log")
 
@@ -192,7 +191,7 @@ def setupLogging(appname, debug=False, do_quiet=False):
     streamHandler = VirtStreamHandler(sys.stderr)
     if debug:
         streamHandler.setLevel(logging.DEBUG)
-        streamHandler.setFormatter(logging.Formatter(streamDebugFormat,
+        streamHandler.setFormatter(logging.Formatter(fileFormat,
                                                      dateFormat))
     else:
         if quiet:
