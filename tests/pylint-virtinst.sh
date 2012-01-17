@@ -97,6 +97,7 @@ addchecker() {
 addmsg_support() {
     out=`pylint --list-msgs 2>&1`
     if `echo $out | grep -q $1` ; then
+        echo "adding!"
         addmsg "$1"
     fi
 }
@@ -114,20 +115,18 @@ addmsg "W0703"  # W0703: Catch 'Exception'
 addmsg "W0704"  # W0704: Exception doesn't do anything
 addmsg "W0702"  # W0702: No exception type specified
 addmsg "R0201"  # R0201: Method could be a function
+addchecker "Design" # Things like "Too many func arguments",
+                    #             "Too man public methods"
 
 # Possibly useful at some point
 addmsg "W0403"  # W0403: Relative imports
-addmsg "W0511"  # W0511: FIXME and XXX: messages (useful in the future)
+addmsg "W0511"  # W0511: FIXME and XXX: messages
 addmsg "R0401"  # R0401: Cyclic imports
+addchecker "Similarities"   # Finds duplicate code
 
 # Not supported in many pylint versions
-addmsg_support "W6501"  # W6501: Using string formatters in logging message
-                        #        (see help message for info)
+# Put new messages here with addmsg_support
 
-# Disabled Checkers:
-addchecker "Design"         # Things like "Too many func arguments",
-                            #             "Too man public methods"
-addchecker "Similarities"   # Finds duplicate code (enable this later?)
 
 AWK=awk
 [ `uname -s` = 'SunOS' ] && AWK=nawk

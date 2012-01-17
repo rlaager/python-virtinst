@@ -233,8 +233,8 @@ class Interface(object):
         Install storage pool xml.
         """
         xml = self.get_xml_config()
-        logging.debug("Creating interface '%s' with xml:\n%s" % \
-                      (self.name, xml))
+        logging.debug("Creating interface '%s' with xml:\n%s",
+                      self.name, xml)
 
         try:
             iface = self.conn.interfaceDefineXML(xml, 0)

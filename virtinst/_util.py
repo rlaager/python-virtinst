@@ -201,7 +201,7 @@ def fetch_all_guests(conn):
             active.append(vm)
         except libvirt.libvirtError:
             # guest probably in process of dieing
-            logging.warn("Failed to lookup active domain id %d" % i)
+            logging.warn("Failed to lookup active domain id %d", i)
 
     # Get all inactive VMs
     names = conn.listDefinedDomains()
@@ -211,7 +211,7 @@ def fetch_all_guests(conn):
             inactive.append(vm)
         except:
             # guest probably in process of dieing
-            logging.warn("Failed to lookup inactive domain %d" % name)
+            logging.warn("Failed to lookup inactive domain %d", name)
 
     return (active, inactive)
 
@@ -317,8 +317,8 @@ def selinux_restorecon(path):
         try:
             selinux.restorecon(path)
         except Exception, e:
-            logging.debug("Restoring context for '%s' failed: %s" % (path,
-                                                                     str(e)))
+            logging.debug("Restoring context for '%s' failed: %s",
+                          path, str(e))
 def selinux_getfilecon(path):
     if have_selinux():
         return selinux.getfilecon(path)[1]
@@ -500,7 +500,7 @@ def find_xkblayout(path):
     try:
         f = open(path, "r")
     except IOError, e:
-        logging.debug('Could not open "%s": %s ' % (path, str(e)))
+        logging.debug('Could not open "%s": %s ', path, str(e))
     else:
         keymap_re = re.compile(r'\s*XKBLAYOUT="(?P<kt>[a-z-]+)"')
         for line in f:
@@ -509,7 +509,7 @@ def find_xkblayout(path):
                 kt = m.group('kt')
                 break
         else:
-            logging.debug("Didn't find keymap in '%s'!" % path)
+            logging.debug("Didn't find keymap in '%s'!", path)
         f.close()
     return kt
 

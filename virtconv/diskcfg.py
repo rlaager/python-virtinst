@@ -91,7 +91,7 @@ def run_cmd(cmd):
     """
     Return the exit status and output to stdout and stderr.
     """
-    logging.debug("Running command: %s" % " ".join(cmd))
+    logging.debug("Running command: %s", " ".join(cmd))
     proc = subprocess.Popen(cmd, stderr=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             close_fds=True)

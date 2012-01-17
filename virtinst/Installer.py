@@ -179,7 +179,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
 
         if not self._scratchdir:
             self._scratchdir = self._get_scratchdir()
-            logging.debug("scratchdir=%s" % self._scratchdir)
+            logging.debug("scratchdir=%s", self._scratchdir)
         return self._scratchdir
     scratchdir = property(get_scratchdir)
 
@@ -408,7 +408,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
             os.unlink(f)
 
         for vol in self._tmpvols:
-            logging.debug("Removing volume '%s'" % vol.name())
+            logging.debug("Removing volume '%s'", vol.name())
             vol.delete(0)
 
         self._tmpvols = []
@@ -455,7 +455,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         try:
             fd = os.open(disk.path, os.O_RDONLY)
         except OSError, (err, msg):
-            logging.debug("Failed to open guest disk: %s" % msg)
+            logging.debug("Failed to open guest disk: %s", msg)
             if err == errno.EACCES and os.geteuid() != 0:
                 return True # non root might not have access to block devices
             else:

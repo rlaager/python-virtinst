@@ -207,23 +207,23 @@ def main():
     if not options.output_dir:
         options.output_dir = unixname
     try:
-        logging.debug("Creating directory %s" % options.output_dir)
+        logging.debug("Creating directory %s", options.output_dir)
         if options.nodry:
             os.mkdir(options.output_dir)
         clean += [ options.output_dir ]
     except OSError, e:
         if (e.errno != errno.EEXIST):
-            fail("Could not create directory %s: %s" %
+            fail("Could not create directory %s: %s", 
                 (options.output_dir, e.strerror))
 
     if not options.output_file:
         options.output_file = os.path.join(options.output_dir,
            "%s%s" % (unixname, outp.suffix))
 
-    logging.debug("input_file: %s" % options.input_file)
-    logging.debug("input_dir: %s" % options.input_dir)
-    logging.debug("output_file: %s" % options.output_file)
-    logging.debug("output_dir: %s" % options.output_dir)
+    logging.debug("input_file: %s", options.input_file)
+    logging.debug("input_dir: %s", options.input_dir)
+    logging.debug("output_file: %s", options.output_file)
+    logging.debug("output_dir: %s", options.output_dir)
 
     print_stdout(_("Generating output in '%(format)s' format to %(dir)s/") %
         {"format": options.output_format, "dir": options.output_dir})
@@ -260,7 +260,7 @@ def main():
 
     try:
         output = outp.export(vmdef)
-        logging.debug("Output VM config:\n%s" % output)
+        logging.debug("Output VM config:\n%s", output)
 
         if options.nodry:
             outfile = open(options.output_file, "w")

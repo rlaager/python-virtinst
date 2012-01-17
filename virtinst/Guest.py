@@ -466,8 +466,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             for ostype in self.list_os_types():
                 if (val in self._OS_TYPES[ostype]["variants"] and
                     not self._OS_TYPES[ostype]["variants"][val].get("skip")):
-                    logging.debug("Setting os type to '%s' for variant '%s'" %
-                                  (ostype, val))
+                    logging.debug("Setting os type to '%s' for variant '%s'",
+                                  ostype, val)
                     self.os_type = ostype
                     self._os_variant = val
                     found = True
@@ -1196,12 +1196,12 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                                self.name)
 
         try:
-            logging.debug("Explicitly replacing guest '%s'" % self.name)
+            logging.debug("Explicitly replacing guest '%s'", self.name)
             if vm.ID() != -1:
-                logging.info("Destroying guest '%s'" % self.name)
+                logging.info("Destroying guest '%s'", self.name)
                 vm.destroy()
 
-            logging.info("Undefining guest '%s'" % self.name)
+            logging.info("Undefining guest '%s'", self.name)
             vm.undefine()
         except libvirt.libvirtError, e:
             raise RuntimeError(_("Could not remove old vm '%s': %s") %
@@ -1280,10 +1280,10 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         start_xml = self.get_xml_config(install=True, disk_boot=disk_boot)
         final_xml = self.get_xml_config(install=False)
 
-        logging.debug("Generated %s XML: %s" %
-                      (log_label,
-                      (start_xml and ("\n" + start_xml) or "None required")))
-        logging.debug("Generated boot XML: \n%s" % final_xml)
+        logging.debug("Generated %s XML: %s",
+                      log_label,
+                      (start_xml and ("\n" + start_xml) or "None required"))
+        logging.debug("Generated boot XML: \n%s", final_xml)
 
         return start_xml, final_xml
 
@@ -1323,7 +1323,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 logging.debug("XML fetched from libvirt object:\n%s",
                               dom.XMLDesc(0))
             except Exception, e:
-                logging.debug("Error fetching XML from libvirt object: %s" % e)
+                logging.debug("Error fetching XML from libvirt object: %s", e)
 
         # if we connected the console, wait for it to finish
         self._waitpid_console(self._consolechild, wait)
@@ -1361,7 +1361,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         try:
             os.waitpid(console_child, 0)
         except OSError, (err_no, msg):
-            logging.debug("waitpid: %s: %s" % (err_no, msg))
+            logging.debug("waitpid: %s: %s", err_no, msg)
 
         # ensure there's time for the domain to finish destroying if the
         # install has finished or the guest crashed

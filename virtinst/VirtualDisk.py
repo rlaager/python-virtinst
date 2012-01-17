@@ -117,7 +117,7 @@ def _is_dir_searchable(uid, username, path):
         return False
 
     if proc.returncode != 0:
-        logging.debug("Cmd '%s' failed: %s" % (cmd, err))
+        logging.debug("Cmd '%s' failed: %s", cmd, err)
         return False
 
     return bool(re.search("user:%s:..x" % username, out))
@@ -235,9 +235,9 @@ def _build_vol_install(path, pool, size, sparse):
                            "existent volume path '%s'" % path))
 
     logging.debug("Path '%s' is target for pool '%s'. "
-                  "Creating volume '%s'." %
-                  (os.path.dirname(path), pool.name(),
-                   os.path.basename(path)))
+                  "Creating volume '%s'.",
+                  os.path.dirname(path), pool.name(),
+                  os.path.basename(path))
 
     volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
     cap = (size * 1024 * 1024 * 1024)
@@ -389,7 +389,7 @@ class VirtualDisk(VirtualDevice):
         try:
             uid = _name_uid(username)
         except Exception, e:
-            logging.debug("Error looking up username: %s" % str(e))
+            logging.debug("Error looking up username: %s", str(e))
             return []
 
         fixlist = []
@@ -424,9 +424,9 @@ class VirtualDisk(VirtualDevice):
                                         stderr=subprocess.PIPE)
                 out, err = proc.communicate()
 
-                logging.debug("Ran command '%s'" % cmd)
+                logging.debug("Ran command '%s'", cmd)
                 if out or err:
-                    logging.debug("out=%s\nerr=%s" % (out, err))
+                    logging.debug("out=%s\nerr=%s", out, err)
 
                 if proc.returncode != 0:
                     raise ValueError(err)
@@ -1366,8 +1366,8 @@ class VirtualDisk(VirtualDevice):
             clone_block_size = 1024 * 1024 * 10
             sparse = False
 
-        logging.debug("Local Cloning %s to %s, sparse=%s, block_size=%s" %
-                      (self.clone_path, self.path, sparse, clone_block_size))
+        logging.debug("Local Cloning %s to %s, sparse=%s, block_size=%s",
+                      self.clone_path, self.path, sparse, clone_block_size)
 
         zeros = '\0' * 4096
 
@@ -1435,8 +1435,8 @@ class VirtualDisk(VirtualDevice):
             elif not self._security_can_fix():
                 logging.debug("Can't fix selinux context in this case.")
             else:
-                logging.debug("Changing path=%s selinux label %s -> %s" %
-                              (self.path, storage_label, self.selinux_label))
+                logging.debug("Changing path=%s selinux label %s -> %s",
+                              self.path, storage_label, self.selinux_label)
                 _util.selinux_setfilecon(self.path, self.selinux_label)
 
     def _get_xml_config(self, disknode=None):

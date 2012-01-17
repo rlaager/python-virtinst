@@ -153,10 +153,10 @@ def parse_vmdk(disk, filename):
     # Detect if passed file is a descriptor file
     # Assume descriptor isn't larger than 10K
     if not os.path.exists(filename):
-        logging.debug("VMDK file '%s' doesn't exist" % filename)
+        logging.debug("VMDK file '%s' doesn't exist", filename)
         return
     if os.path.getsize(filename) > (10 * 1024):
-        logging.debug("VMDK file '%s' too big to be a descriptor" % filename)
+        logging.debug("VMDK file '%s' too big to be a descriptor", filename)
         return
 
     f = open(filename, "r")
@@ -166,7 +166,7 @@ def parse_vmdk(disk, filename):
     try:
         vmdkfile = _VMXFile(content)
     except:
-        logging.exception("%s looked like a vmdk file, but parsing failed" %
+        logging.exception("%s looked like a vmdk file, but parsing failed",
                           filename)
         return
 
@@ -180,7 +180,7 @@ def parse_vmdk(disk, filename):
 
     diskline = disklines[0]
     newpath = diskline.parse_disk_path()
-    logging.debug("VMDK file parsed path %s->%s" % (disk.path, newpath))
+    logging.debug("VMDK file parsed path %s->%s", disk.path, newpath)
     disk.path = newpath
 
 def parse_netdev_entry(vm, fullkey, value):
@@ -296,7 +296,7 @@ class vmx_parser(formats.parser):
         infile = open(input_file, "r")
         contents = infile.readlines()
         infile.close()
-        logging.debug("Importing VMX file:\n%s" % "".join(contents))
+        logging.debug("Importing VMX file:\n%s", "".join(contents))
 
         vmxfile = _VMXFile(contents)
         config = vmxfile.pairs()
@@ -356,7 +356,7 @@ class vmx_parser(formats.parser):
         for devid, disk in sorted(vm.disks.items()):
             bus, dev_nr = devid
             if bus.lower() != "ide":
-                logging.debug("Disk bus '%s' not yet supported. Skipping." % \
+                logging.debug("Disk bus '%s' not yet supported. Skipping.",
                                bus.lower())
                 continue
 

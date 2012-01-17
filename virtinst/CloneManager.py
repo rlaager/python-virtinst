@@ -408,8 +408,8 @@ class CloneDesign(object):
         # Pull clonable storage info from the original xml
         self._original_virtual_disks = self._get_original_devices_info(self._original_xml)
 
-        logging.debug("Original paths: %s" % (self.original_devices))
-        logging.debug("Original sizes: %s" % (self.original_devices_size))
+        logging.debug("Original paths: %s", self.original_devices)
+        logging.debug("Original sizes: %s", self.original_devices_size)
 
         # If domain has devices to clone, it must be 'off' or 'paused'
         if (not self.clone_running and
@@ -432,7 +432,7 @@ class CloneDesign(object):
 
         # XXX: Make sure a clone name has been specified? or generate one?
 
-        logging.debug("Clone paths: %s" % (self._clone_devices))
+        logging.debug("Clone paths: %s", self._clone_devices)
 
         # We simply edit the original VM xml in place
         doc = libxml2.parseDoc(self._clone_xml)
@@ -520,10 +520,10 @@ class CloneDesign(object):
         additional debug logging.
         """
         self.setup_original()
-        logging.debug("Original guest xml is\n%s" % (self._original_xml))
+        logging.debug("Original guest xml is\n%s", self._original_xml)
 
         self.setup_clone()
-        logging.debug("Clone guest xml is\n%s" % (self._clone_xml))
+        logging.debug("Clone guest xml is\n%s", self._clone_xml)
 
     def remove_original_vm(self, force=None):
         return self._valid_guest.remove_original_vm(force=force)
@@ -683,7 +683,7 @@ def start_duplicate(design, meter=None):
             _do_duplicate(design, meter)
 
     except Exception, e:
-        logging.debug("Duplicate failed: %s" % str(e))
+        logging.debug("Duplicate failed: %s", str(e))
         if dom:
             dom.undefine()
         raise

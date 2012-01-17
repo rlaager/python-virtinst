@@ -69,13 +69,13 @@ def _sanitize_url(url):
 def _build_pool(conn, meter, path):
     pool = _util.lookup_pool_by_path(conn, path)
     if pool:
-        logging.debug("Existing pool '%s' found for %s" % (pool.name(), path))
+        logging.debug("Existing pool '%s' found for %s", pool.name(), path)
         pool.refresh(0)
         return pool
 
     name = _util.generate_name("boot-scratch",
                                conn.storagePoolLookupByName)
-    logging.debug("Building storage pool: path=%s name=%s" % (path, name))
+    logging.debug("Building storage pool: path=%s name=%s", path, name)
     poolbuild = Storage.DirectoryPool(conn=conn, name=name,
                                       target_path=path)
 
@@ -102,7 +102,7 @@ def _upload_file(conn, meter, destpool, src):
     name = Storage.StorageVolume.find_free_name(basename,
                                                 pool_object=destpool)
     if name != basename:
-        logging.debug("Generated non-colliding volume name %s" % name)
+        logging.debug("Generated non-colliding volume name %s", name)
 
     disk = VirtualDisk(conn=conn,
                        path=os.path.join(poolpath, name),
@@ -207,7 +207,7 @@ class DistroInstaller(Installer.Installer):
         elif os.path.exists(os.path.abspath(val)) and is_local:
             val = os.path.abspath(val)
             logging.debug("DistroInstaller location is a local "
-                          "file/path: %s" % val)
+                          "file/path: %s", val)
 
         else:
             # Didn't determine anything about the location
@@ -280,7 +280,7 @@ class DistroInstaller(Installer.Installer):
         os.chmod(tempdir, 0775)
 
         for filename in self._initrd_injections:
-            logging.debug("Copying %s to the initrd." % filename)
+            logging.debug("Copying %s to the initrd.", filename)
             shutil.copy(filename, tempdir)
 
         logging.debug("Appending to the initrd.")
@@ -370,11 +370,11 @@ class DistroInstaller(Installer.Installer):
 
         if guest.get_os_autodetect():
             if os_type:
-                logging.debug("Auto detected OS type as: %s" % os_type)
+                logging.debug("Auto detected OS type as: %s", os_type)
                 guest.os_type = os_type
 
             if (os_variant and guest.os_type == os_type):
-                logging.debug("Auto detected OS variant as: %s" % os_variant)
+                logging.debug("Auto detected OS variant as: %s", os_variant)
                 guest.os_variant = os_variant
 
         self._tmpfiles.append(kernelfn)

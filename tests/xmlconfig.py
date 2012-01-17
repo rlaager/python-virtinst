@@ -53,7 +53,7 @@ class TestXMLConfig(unittest.TestCase):
 
     def setUp(self):
         utils.reset_conn()
-        logging.debug("Running %s" % self.id())
+        logging.debug("Running %s", self.id())
 
     def tearDown(self):
         if os.path.exists(utils.scratch):

@@ -206,7 +206,7 @@ def setupLogging(appname, debug=False, do_quiet=False):
     def libvirt_callback(ignore, err):
         if err[3] != libvirt.VIR_ERR_ERROR:
             # Don't log libvirt errors: global error handler will do that
-            logging.warn("Non-error from libvirt: '%s'" % err[2])
+            logging.warn("Non-error from libvirt: '%s'", err[2])
     libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
 
     # Register python error handler to log exceptions
@@ -218,7 +218,7 @@ def setupLogging(appname, debug=False, do_quiet=False):
     sys.excepthook = exception_log
 
     # Log the app command string
-    logging.debug("Launched with command line:\n%s" % " ".join(sys.argv))
+    logging.debug("Launched with command line:\n%s", " ".join(sys.argv))
 
 
 #######################################
@@ -249,7 +249,7 @@ def _open_test_uri(uri):
         xml = re.sub("machine type='.*'", "", xml)
         xml = re.sub(">exe<", ">hvm<", xml)
 
-        logging.debug("virtinst test sanitizing diff\n:%s" %
+        logging.debug("virtinst test sanitizing diff\n:%s",
                       "\n".join(difflib.unified_diff(orig.split("\n"),
                                                      xml.split("\n"))))
         return xml
@@ -324,9 +324,9 @@ def getConnection(uri):
     if _is_virtinst_test_uri(uri):
         return _open_test_uri(uri)
 
-    logging.debug("Requesting libvirt URI %s" % (uri or "default"))
+    logging.debug("Requesting libvirt URI %s", (uri or "default"))
     conn = open_connection(uri)
-    logging.debug("Received libvirt URI %s" % conn.getURI())
+    logging.debug("Received libvirt URI %s", conn.getURI())
 
     return conn
 
@@ -367,7 +367,7 @@ def _do_creds_polkit(action):
     if os.getuid() == 0:
         logging.debug("Skipping policykit check as root")
         return 0 # Success
-    logging.debug("Doing policykit for %s" % action)
+    logging.debug("Doing policykit for %s", action)
 
     import subprocess
     import commands
@@ -375,13 +375,13 @@ def _do_creds_polkit(action):
     bin_path = "/usr/bin/polkit-auth"
 
     if not os.path.exists(bin_path):
-        logging.debug("%s not present, skipping polkit auth." % bin_path)
+        logging.debug("%s not present, skipping polkit auth.", bin_path)
         return 0
 
     cmdstr = "%s %s" % (bin_path, "--explicit")
     output = commands.getstatusoutput(cmdstr)
     if output[1].count(action):
-        logging.debug("User already authorized for %s." % action)
+        logging.debug("User already authorized for %s.", action)
         # Hide spurious output from polkit-auth
         popen_stdout = subprocess.PIPE
         popen_stderr = subprocess.PIPE
@@ -400,9 +400,9 @@ def _do_creds_polkit(action):
     out, err = proc.communicate()
 
     if out and popen_stdout:
-        logging.debug("polkit-auth stdout: %s" % out)
+        logging.debug("polkit-auth stdout: %s", out)
     if err and popen_stderr:
-        logging.debug("polkit-auth stderr: %s" % err)
+        logging.debug("polkit-auth stderr: %s", err)
 
     return 0
 
@@ -421,8 +421,7 @@ def _do_creds_authname(creds):
             import getpass
             res = getpass.getpass(prompt)
         else:
-            logging.debug("Unknown auth type in creds callback: %d" %
-                          credtype)
+            logging.debug("Unknown auth type in creds callback: %d", credtype)
             return -1
 
         cred[retindex] = res
@@ -486,7 +485,7 @@ def build_default_pool(guest):
         return
 
     try:
-        logging.debug("Attempting to build default pool with target '%s'" %
+        logging.debug("Attempting to build default pool with target '%s'",
                       DEFAULT_POOL_PATH)
         defpool = virtinst.Storage.DirectoryPool(conn=guest.conn,
                                                  name=DEFAULT_POOL_NAME,
@@ -596,7 +595,7 @@ def prompt_loop(prompt_txt, noprompt_err, passed_val, obj, param_name,
             setattr(obj, param_name, passed_val)
             break
         except (ValueError, RuntimeError), e:
-            logging.error(err_txt % e)
+            logging.error(err_txt, e)
             passed_val = None
             failed = True
 
@@ -832,10 +831,10 @@ def get_cpuset(guest, cpuset):
         try:
             tmpset = Guest.generate_cpuset(conn, guest.memory)
         except Exception, e:
-            logging.debug("Not setting cpuset", str(e))
+            logging.debug("Not setting cpuset: %s", str(e))
 
         if tmpset:
-            logging.debug("Auto cpuset is: %s" % tmpset)
+            logging.debug("Auto cpuset is: %s", tmpset)
             guest.cpuset = tmpset
 
     return
@@ -949,7 +948,7 @@ def digest_graphics(guest, options, default_override=None):
     if keymap:
         optstr += ",keymap=%s" % keymap
 
-    logging.debug("--graphics compat generated: %s" % optstr)
+    logging.debug("--graphics compat generated: %s", optstr)
     return [optstr]
 
 def get_graphics(guest, graphics):
@@ -1503,8 +1502,8 @@ def _parse_disk_source(guest, path, pool, vol, size, fmt, sparse):
                                "vol=poolname/volname"))
         vollist = vol.split("/")
         voltuple = (vollist[0], vollist[1])
-        logging.debug("Parsed volume: as pool='%s' vol='%s'" %
-                      (voltuple[0], voltuple[1]))
+        logging.debug("Parsed volume: as pool='%s' vol='%s'",
+                      voltuple[0], voltuple[1])
         if voltuple[0] == DEFAULT_POOL_NAME:
             build_default_pool(guest)
 

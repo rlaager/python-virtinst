@@ -38,7 +38,7 @@ def get_clone_name(new_name, auto_clone, design):
     if not new_name and auto_clone:
         # Generate a name to use
         new_name = clmgr.generate_clone_name(design)
-        logging.debug("Auto-generated clone name '%s'." % new_name)
+        logging.debug("Auto-generated clone name '%s'", new_name)
 
     prompt_txt = _("What is the name for the cloned virtual machine?")
     err_txt = _("A name is required for the new virtual machine.")

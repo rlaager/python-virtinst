@@ -66,9 +66,9 @@ def default_route(nic=None):
     for line in d.xreadlines():
         info = line.split()
         if (len(info) != 11): # 11 = typical num of fields in the file
-            logging.warn(_("Invalid line length while parsing %s.") %
-                         (route_file))
-            logging.warn(_("Defaulting bridge to xenbr%d") % (defn))
+            logging.warn(_("Invalid line length while parsing %s."),
+                         route_file)
+            logging.warn(_("Defaulting bridge to xenbr%d"), defn)
             break
         try:
             route = int(info[1], 16)
@@ -309,7 +309,7 @@ def _xorg_keymap():
     try:
         f = open(XORG_CONF, "r")
     except IOError, e:
-        logging.debug('Could not open "%s": %s ' % (XORG_CONF, str(e)))
+        logging.debug('Could not open "%s": %s ', XORG_CONF, str(e))
     else:
         keymap_re = re.compile(r'\s*Option\s+"XkbLayout"\s+"(?P<kt>[a-z-]+)"')
         for line in f:
@@ -318,7 +318,7 @@ def _xorg_keymap():
                 kt = m.group('kt')
                 break
         else:
-            logging.debug("Didn't find keymap in '%s'!" % XORG_CONF)
+            logging.debug("Didn't find keymap in '%s'!", XORG_CONF)
         f.close()
     return kt
 
@@ -369,7 +369,7 @@ def default_keymap():
     keymap = check_keytable(kt)
 
     if not keymap:
-        logging.debug("Didn't match keymap '%s' in keytable!" % kt)
+        logging.debug("Didn't match keymap '%s' in keytable!", kt)
         return default
 
     return keymap
@@ -436,7 +436,7 @@ def is_uri_remote(uri):
             return False
         return True
     except Exception, e:
-        logging.exception("Error parsing URI in is_remote: %s" % e)
+        logging.exception("Error parsing URI in is_remote: %s", e)
         return True
 
 def get_uri_hostname(uri):
@@ -447,7 +447,7 @@ def get_uri_hostname(uri):
         if netloc != "":
             return netloc
     except Exception, e:
-        logging.warning("Cannot parse URI %s: %s" % (uri, str(e)))
+        logging.warning("Cannot parse URI %s: %s", uri, str(e))
     return "localhost"
 
 def get_uri_transport(uri):

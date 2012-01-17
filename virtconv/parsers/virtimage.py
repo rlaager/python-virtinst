@@ -218,7 +218,7 @@ class virtimage_parser(formats.parser):
             output = f.read()
             f.close()
 
-            logging.debug("Importing virt-image XML:\n%s" % output)
+            logging.debug("Importing virt-image XML:\n%s", output)
             config = ImageParser.parse(output, input_file)
         except Exception, e:
             raise ValueError(_("Couldn't import file '%s': %s") %
@@ -252,7 +252,7 @@ class virtimage_parser(formats.parser):
             if disk.format in format_mappings:
                 fmt = format_mappings[disk.format]
             else:
-                raise ValueError(_("Unknown disk format '%s'") % disk.format)
+                raise ValueError(_("Unknown disk format '%s'"), disk.format)
 
             devid = (bus, nr_disk)
             vm.disks[devid] = diskcfg.disk(bus=bus,

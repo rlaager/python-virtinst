@@ -251,7 +251,7 @@ def _parse_hw_section(vm, nodes, file_refs, disk_section):
 
         else:
             desc = get_child_content(device_node, "Description")
-            logging.debug("Unhandled device type=%s desc=%s" % (devtype, desc))
+            logging.debug("Unhandled device type=%s desc=%s", devtype, desc)
 
 class ovf_parser(formats.parser):
     """
@@ -281,7 +281,7 @@ class ovf_parser(formats.parser):
             if xml.count("</Envelope>"):
                 res = bool(get_xml_path(xml, "/ovf:Envelope"))
         except Exception, e:
-            logging.debug("Error parsing OVF XML: %s" % str(e))
+            logging.debug("Error parsing OVF XML: %s", str(e))
 
         return res
 
@@ -295,7 +295,7 @@ class ovf_parser(formats.parser):
         infile = open(input_file, "r")
         xml = infile.read()
         infile.close()
-        logging.debug("Importing OVF XML:\n%s" % xml)
+        logging.debug("Importing OVF XML:\n%s", xml)
 
         return _xml_wrapper(xml, ovf_parser._import_file)
 
@@ -390,7 +390,7 @@ class ovf_parser(formats.parser):
                     net_section[name] = None
 
             elif not envelope_node.isText():
-                logging.debug("Unhandled XML section '%s'" %
+                logging.debug("Unhandled XML section '%s'",
                               envelope_node.name)
 
                 req = bool_val(envelope_node.prop("required"))

@@ -298,8 +298,8 @@ class Distro:
             return (None, None)
 
         if not _check_ostype_valid(self.os_type):
-            logging.debug("%s set os_type to %s, which is not in osdict." %
-                          (self, self.os_type))
+            logging.debug("%s set os_type to %s, which is not in osdict.",
+                          self, self.os_type)
             return (None, None)
 
         if not self.os_variant:
@@ -307,8 +307,8 @@ class Distro:
 
         if not _check_osvariant_valid(self.os_type, self.os_variant):
             logging.debug("%s set os_variant to %s, which is not in osdict"
-                          " for distro %s." %
-                          (self, self.os_variant, self.os_type))
+                          " for distro %s.",
+                          self, self.os_variant, self.os_type)
             return (self.os_type, None)
 
         return (self.os_type, self.os_variant)
@@ -543,7 +543,7 @@ class RHELDistro(RedHatDistro):
                 else:
                     self.os_variant = "rhel4"
 
-                logging.debug("Detected a %s distro" % self.os_variant)
+                logging.debug("Detected a %s distro", self.os_variant)
                 return True
             return False
 
@@ -935,10 +935,10 @@ class DebianDistro(Distro):
         filename = "%s/MANIFEST" % self._prefix
         regex = ".*%s.*" % self._installer_name
         if self._fetchAndMatchRegex(fetcher, progresscb, filename, regex):
-            logging.debug("Detected a %s distro" % self.name)
+            logging.debug("Detected a %s distro", self.name)
             return True
 
-        logging.debug("MANIFEST didn't match regex, not a %s distro" %
+        logging.debug("MANIFEST didn't match regex, not a %s distro",
                       self.name)
         return False
 
@@ -960,14 +960,14 @@ class UbuntuDistro(DebianDistro):
             filename = "%s/netboot/version.info" % self._prefix
             regex = "%s*" % self.name
         else:
-            logging.debug("Doesn't look like an %s Distro." % self.name)
+            logging.debug("Doesn't look like an %s Distro.", self.name)
             return False
 
         if self._fetchAndMatchRegex(fetcher, progresscb, filename, regex):
-            logging.debug("Detected an %s distro" % self.name)
+            logging.debug("Detected an %s distro", self.name)
             return True
 
-        logging.debug("Regex didn't match, not an %s distro" % self.name)
+        logging.debug("Regex didn't match, not an %s distro", self.name)
         return False
 
 
@@ -994,7 +994,7 @@ class MandrivaDistro(Distro):
 
         if self._fetchAndMatchRegex(fetcher, progresscb, "VERSION",
                                     ".*%s.*" % self.name):
-            logging.debug("Detected a %s distro" % self.name)
+            logging.debug("Detected a %s distro", self.name)
             return True
 
         return False

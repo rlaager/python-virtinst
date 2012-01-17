@@ -180,7 +180,7 @@ class TestClone(unittest.TestCase):
                                          "when it shouldn't.")
                 except (ValueError, RuntimeError), e:
                     # Exception expected
-                    logging.debug("Received expected exception: %s" % str(e))
+                    logging.debug("Received expected exception: %s", str(e))
         finally:
             CloneManager._util.is_uri_remote = oldfunc
 
@@ -229,4 +229,4 @@ class TestClone(unittest.TestCase):
             raise AssertionError("Managed to unmanaged succeeded, expected "
                                  "failure.")
         except (ValueError, RuntimeError), e:
-            logging.debug("Received expected exception: %s" % str(e))
+            logging.debug("Received expected exception: %s", str(e))

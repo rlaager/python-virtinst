@@ -242,22 +242,22 @@ class TestURLFetch(unittest.TestCase):
 
             # Make sure we detect _a_ distro
             hvmstore = self._getStore(fetcher, mediapath, "hvm", arch)
-            logging.debug("Local distro detected as: %s" % hvmstore)
+            logging.debug("Local distro detected as: %s", hvmstore)
         finally:
             fetcher.cleanupLocation()
 
 
     def _fetchFromURLDict(self, distname, url, arch, distro_info, check_xen):
-        logging.debug("\nDistro='%s' arch='%s' url=%s" % \
-                      (distname, arch, url))
+        logging.debug("\nDistro='%s' arch='%s' url=%s",
+                      distname, arch, url)
 
         fetcher = OSDistro._fetcherForURI(url, "/tmp")
         try:
             fetcher.prepareLocation()
         except Exception, e:
             # Don't raise an error here: the site might be down atm
-            logging.error("%s-%s: Couldn't access url %s: %s. Skipping." % \
-                          (distname, arch, fetcher.location, str(e)))
+            logging.error("%s-%s: Couldn't access url %s: %s. Skipping.",
+                          distname, arch, fetcher.location, str(e))
             fetcher.cleanupLocation()
             return
 
@@ -303,8 +303,8 @@ class TestURLFetch(unittest.TestCase):
         exp_store = distroClass(distname)
         for s in [hvmstore, xenstore]:
             if s and not isinstance(s, exp_store):
-                logging.error("(%s): expected store %s, was %s" % \
-                              (distname, exp_store, s))
+                logging.error("(%s): expected store %s, was %s",
+                              distname, exp_store, s)
                 self.fail()
 
         # Make sure the stores are reporting correct distro name/variant
@@ -318,7 +318,7 @@ class TestURLFetch(unittest.TestCase):
             if not isinstance(meter, urlgrabber.progress.BaseMeter):
                 raise ValueError("passed meter is '%s' not an"
                                  " actual meter." % meter)
-            logging.debug("Fake acquiring %s" % filename)
+            logging.debug("Fake acquiring %s", filename)
             return fetcher.hasFile(filename)
 
         # Replace acquireFile with hasFile, so we don't actually have to fetch
@@ -328,36 +328,36 @@ class TestURLFetch(unittest.TestCase):
         # Fetch boot iso
         try:
             if re.match(r"%s" % NOBOOTISO_FILTER, distname):
-                logging.debug("Known lack of boot.iso in %s tree. Skipping." \
-                              % distname)
+                logging.debug("Known lack of boot.iso in %s tree. Skipping.",
+                              distname)
             else:
                 boot = hvmstore.acquireBootDisk(testguest, fetcher, self.meter)
-                logging.debug("acquireBootDisk: %s" % str(boot))
+                logging.debug("acquireBootDisk: %s", str(boot))
 
                 if boot != True:
                     raise RuntimeError("Didn't fetch any boot iso.")
         except Exception, e:
-            logging.exception("%s-%s: bootdisk fetching: %s" %
-                              (distname, arch, str(e)))
+            logging.exception("%s-%s: bootdisk fetching: %s",
+                              distname, arch, str(e))
             self.fail()
 
         # Fetch regular kernel
         try:
             kern = hvmstore.acquireKernel(testguest, fetcher, self.meter)
-            logging.debug("acquireKernel (hvm): %s" % str(kern))
+            logging.debug("acquireKernel (hvm): %s", str(kern))
 
             if kern[0] is not True or kern[1] is not True:
                 raise RuntimeError("Didn't fetch any hvm kernel.")
         except Exception, e:
-            logging.exception("%s-%s: hvm kernel fetching: %s" %
-                              (distname, arch, str(e)))
+            logging.exception("%s-%s: hvm kernel fetching: %s",
+                              distname, arch, str(e))
             self.fail()
 
         # Fetch xen kernel
         try:
             if xenstore and check_xen:
                 kern = xenstore.acquireKernel(testguest, fetcher, self.meter)
-                logging.debug("acquireKernel (xen): %s" % str(kern))
+                logging.debug("acquireKernel (xen): %s", str(kern))
 
                 if kern[0] is not True or kern[1] is not True:
                     raise RuntimeError("Didn't fetch any xen kernel.")
@@ -365,10 +365,10 @@ class TestURLFetch(unittest.TestCase):
                 logging.debug("acquireKernel (xen): Hardcoded skipping.")
         except Exception, e:
             if re.match(r"%s" % EXPECT_XEN_FAIL, distname):
-                logging.debug("%s: anticipated xen failure." % distname)
+                logging.debug("%s: anticipated xen failure.", distname)
             else:
-                logging.exception("%s-%s: xen kernel fetching: %s" %
-                                  (distname, arch, str(e)))
+                logging.exception("%s-%s: xen kernel fetching: %s",
+                                  distname, arch, str(e))
                 self.fail()
 
     def _getStore(self, fetcher, url, _type, arch):
@@ -379,7 +379,7 @@ class TestURLFetch(unittest.TestCase):
                                                 arch=arch, typ=_type)
             except Exception, e:
                 if str(e).count("502"):
-                    logging.debug("Caught proxy error: %s" % str(e))
+                    logging.debug("Caught proxy error: %s", str(e))
                     time.sleep(.5)
                     continue
                 raise
@@ -397,7 +397,7 @@ class TestURLFetch(unittest.TestCase):
         for label in keys:
             distro_info = None
             if MATCH_FILTER and not re.match(r"%s" % MATCH_FILTER, label):
-                logging.debug("Excluding '%s' from exclude filter." % label)
+                logging.debug("Excluding '%s' from exclude filter.", label)
                 continue
 
             check_xen = not bool(urls[label].get("noxen"))
@@ -430,7 +430,7 @@ class TestURLFetch(unittest.TestCase):
                 try:
                     self._fetchLocalMedia(p)
                 except Exception, e:
-                    logging.exception("Local path '%s' failed: %s" % (p, e))
+                    logging.exception("Local path '%s' failed: %s", p, e)
                     print "Local path FAILED."
                     assertions += 1
 

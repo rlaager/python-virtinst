@@ -421,7 +421,7 @@ class TestValidation(unittest.TestCase):
         """@obj Object to test parameters against
            @testclass Full class to test initialization against
            @name String name indexing args"""
-        logging.debug("Testing '%s'" % name)
+        logging.debug("Testing '%s'", name)
         testdict = args[name]
         if manual_dict != None:
             testdict = manual_dict

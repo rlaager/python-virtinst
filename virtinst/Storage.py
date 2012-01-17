@@ -446,8 +446,8 @@ class StoragePool(StorageObject):
         Install storage pool xml.
         """
         xml = self.get_xml_config()
-        logging.debug("Creating storage pool '%s' with xml:\n%s" % \
-                      (self.name, xml))
+        logging.debug("Creating storage pool '%s' with xml:\n%s",
+                      self.name, xml)
 
         try:
             pool = self.conn.storagePoolDefineXML(xml, 0)
@@ -1191,8 +1191,8 @@ class StorageVolume(StorageObject):
         Build and install storage volume from xml
         """
         xml = self.get_xml_config()
-        logging.debug("Creating storage volume '%s' with xml:\n%s" % \
-                      (self.name, xml))
+        logging.debug("Creating storage volume '%s' with xml:\n%s",
+                      self.name, xml)
 
         t = threading.Thread(target=self._progress_thread,
                              name="Checking storage allocation",
@@ -1214,7 +1214,7 @@ class StorageVolume(StorageObject):
 
                 if meter:
                     meter.end(self.capacity)
-                logging.debug("Storage volume '%s' install complete." %
+                logging.debug("Storage volume '%s' install complete.",
                               self.name)
                 return vol
             except libvirt.libvirtError, e:

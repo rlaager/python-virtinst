@@ -72,7 +72,7 @@ reset_conn()
 
 # Register libvirt handler
 def libvirt_callback(ignore, err):
-    logging.warn("libvirt errmsg: %s" % err[2])
+    logging.warn("libvirt errmsg: %s", err[2])
 libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
 
 def sanitize_xml_for_define(xml):
