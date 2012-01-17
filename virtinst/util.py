@@ -275,6 +275,9 @@ def system(cmd):
 
 def xml_escape(str):
     """Replaces chars ' " < > & with xml safe counterparts"""
+    if str is None:
+        return None
+
     str = str.replace("&", "&amp;")
     str = str.replace("'", "&apos;")
     str = str.replace("\"", "&quot;")
