@@ -164,7 +164,10 @@ def _check_if_path_managed(conn, path):
             vol = conn.storageVolLookupByPath(path)
             vol.info()
             return vol, None
-        except Exception, e:
+        except libvirt.libvirtError, e:
+            if (hasattr(libvirt, "VIR_ERR_NO_STORAGE_VOL")
+                and e.get_error_code() != libvirt.VIR_ERR_NO_STORAGE_VOL):
+                raise
             return None, e
 
     def lookup_vol_name(name):
