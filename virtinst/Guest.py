@@ -40,6 +40,7 @@ from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
 from VirtualInputDevice import VirtualInputDevice
 from VirtualCharDevice import VirtualCharDevice
+from VirtualController import VirtualControllerUSB
 from Clock import Clock
 from Seclabel import Seclabel
 from CPU import CPU

@@ -848,6 +848,13 @@ class TestXMLConfig(unittest.TestCase):
         cpu = virtinst.CPU(g.conn)
         self.assertEquals(cpu.vcpus_from_topology(), 1)
 
+    def testUsb2(self):
+        i = utils.make_pxe_installer()
+        g = utils.get_basic_fullyvirt_guest(installer=i)
+
+        g.add_usb_ich9_controllers()
+
+        self._compare(g, "boot-usb2", False)
 
     #
     # Full Install tests: try to mimic virt-install as much as possible

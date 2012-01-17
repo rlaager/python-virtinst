@@ -213,7 +213,7 @@ def main():
         clean += [ options.output_dir ]
     except OSError, e:
         if (e.errno != errno.EEXIST):
-            fail("Could not create directory %s: %s", 
+            fail("Could not create directory %s: %s",
                 (options.output_dir, e.strerror))
 
     if not options.output_file:

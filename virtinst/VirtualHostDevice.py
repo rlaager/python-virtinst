@@ -20,9 +20,7 @@
 import VirtualDevice
 import NodeDeviceParser
 import logging
-import libvirt
 
-from virtinst import support
 from virtinst import _gettext as _
 from XMLBuilderDomain import _xml_property
 
@@ -179,12 +177,12 @@ class VirtualHostDevice(VirtualDevice.VirtualDevice):
 
     def setup(self, conn=None):
         """
-        Perform DeviceDetach and DeviceReset calls if necessary
+        Unused
 
         @param conn: libvirt virConnect instance to use (defaults to devices
                      connection)
         """
-        raise NotImplementedError
+        ignore = conn
 
     def _get_xml_config(self):
         xml  = ("    <hostdev mode='%s' type='%s' managed='%s'>\n" % \

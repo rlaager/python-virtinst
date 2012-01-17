@@ -231,7 +231,7 @@ class DistroInstaller(Installer.Installer):
                                 conn=self.conn,
                                 volName=stuple)
                 val = d.path
-            except Exception, e:
+            except:
                 _util.log_exception("Error validating install location")
                 raise ValueError(_("Checking installer location failed: "
                                    "Could not find media '%s'." % str(val)))

@@ -55,13 +55,13 @@ class User(object):
             return (self._euid == 0) or _util.is_qemu_system(conn)
 
         if platform.system() == 'SunOS':
-            return self._sun_has_priv(priv, conn)
+            return self._sun_has_priv(priv)
 
         # For all others, just assume that prescence of a connection
         # means we are privileged enough
         return True
 
-    def _sun_has_priv(self, priv, conn=None):
+    def _sun_has_priv(self, priv):
         # Not easy to work out!
         if self._euid != User.current().euid:
             return self._euid == 0

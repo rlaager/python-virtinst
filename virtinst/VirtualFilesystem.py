@@ -141,13 +141,13 @@ class VirtualFilesystem(VirtualDevice.VirtualDevice):
     def _set_target(self, val):
         is_qemu = self.is_qemu()
 
-        # In case of qemu for default fs type (mount) target is not 
+        # In case of qemu for default fs type (mount) target is not
         # actually a directory, it is merely a arbitrary string tag
         # that is exported to the guest as a hint for where to mount
         if (is_qemu and
             (self.type == self.TYPE_DEFAULT or
              self.type == self.TYPE_MOUNT)):
-             pass
+            pass
         elif not os.path.isabs(val):
             raise ValueError(_("Filesystem target '%s' must be an absolute "
                                "path") % val)
