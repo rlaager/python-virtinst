@@ -85,47 +85,47 @@ if grep -qIR crobinso tests --exclude pylint\* ; then
 fi
 
 DMSG=""
-addmsg() {
+skipmsg() {
     DMSG="${DMSG},$1"
     }
 
 DCHECKERS=""
-addchecker() {
+skipchecker() {
     DCHECKERS="${DCHECKERS},$1"
 }
 
-addmsg_support() {
+skipmsg_checksupport() {
     out=`pylint --list-msgs 2>&1`
     if `echo $out | grep -q $1` ; then
         echo "adding!"
-        addmsg "$1"
+        skipmsg "$1"
     fi
 }
 
 # Disabled Messages:
-addmsg "C0103"  # C0103: Name doesn't match some style regex
-addmsg "C0111"  # C0111: No docstring
-addmsg "C0301"  # C0301: Line too long
-addmsg "C0302"  # C0302: Too many lines in module
-addmsg "W0105"  # W0105: String statement has no effect (annoying for docs)
-addmsg "W0141"  # W0141: Complaining about 'map' and 'filter'
-addmsg "W0142"  # W0142: Use of * or **
-addmsg "W0603"  # W0603: Using the global statement
-addmsg "W0703"  # W0703: Catch 'Exception'
-addmsg "W0704"  # W0704: Exception doesn't do anything
-addmsg "W0702"  # W0702: No exception type specified
-addmsg "R0201"  # R0201: Method could be a function
-addchecker "Design" # Things like "Too many func arguments",
+skipmsg "C0103"  # C0103: Name doesn't match some style regex
+skipmsg "C0111"  # C0111: No docstring
+skipmsg "C0301"  # C0301: Line too long
+skipmsg "C0302"  # C0302: Too many lines in module
+skipmsg "W0105"  # W0105: String statement has no effect (annoying for docs)
+skipmsg "W0141"  # W0141: Complaining about 'map' and 'filter'
+skipmsg "W0142"  # W0142: Use of * or **
+skipmsg "W0603"  # W0603: Using the global statement
+skipmsg "W0703"  # W0703: Catch 'Exception'
+skipmsg "W0704"  # W0704: Exception doesn't do anything
+skipmsg "W0702"  # W0702: No exception type specified
+skipmsg "R0201"  # R0201: Method could be a function
+skipchecker "Design" # Things like "Too many func arguments",
                     #             "Too man public methods"
 
 # Possibly useful at some point
-addmsg "W0403"  # W0403: Relative imports
-addmsg "W0511"  # W0511: FIXME and XXX: messages
-addmsg "R0401"  # R0401: Cyclic imports
-addchecker "Similarities"   # Finds duplicate code
+skipmsg "W0403"  # W0403: Relative imports
+skipmsg "W0511"  # W0511: FIXME and XXX: messages
+skipmsg "R0401"  # R0401: Cyclic imports
+skipchecker "Similarities"   # Finds duplicate code
 
 # Not supported in many pylint versions
-# Put new messages here with addmsg_support
+# Put new messages here with skipmsg_checksupport
 
 
 AWK=awk
