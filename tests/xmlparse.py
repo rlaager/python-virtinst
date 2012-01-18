@@ -93,8 +93,8 @@ class XMLParseTest(unittest.TestCase):
 
         check("name", "TestGuest", "change_name")
         check("description", None, "Hey desc changed")
-        check("maxvcpus", 5, 30)
-        check("vcpus", 30, 22)
+        check("maxvcpus", 5, 12)
+        check("vcpus", 12, 10)
         check("cpuset", "1-3", "1-8,^6", "1-5,15")
         check("maxmemory", 400, 500)
         check("memory", 200, 1000)
@@ -148,7 +148,7 @@ class XMLParseTest(unittest.TestCase):
         check("vendor", "Intel", "qemuvendor")
         check("threads", 2, 1)
         check("cores", 5, 3)
-        check("sockets", 4, 1)
+        check("sockets", 4, 4)
 
         check = self._make_checker(guest.cpu.features[0])
         check("name", "x2apic", "foofeat")
