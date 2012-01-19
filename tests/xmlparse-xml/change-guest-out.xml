@@ -6,15 +6,20 @@
   <os>
     <type machine="pc-0.11">xen</type>
     <boot dev="fd"/>
+    <loader>/foo/loader</loader>
+    <init>/sbin/init</init>
     <bootmenu enable="no"/>
   </os>
   <features>
     <apic/>
   </features>
+  <numatune>
+    <memory nodeset="2,4,6"/>
+  </numatune>
   <cpu match="strict">
     <model>qemu64</model>
     <vendor>qemuvendor</vendor>
-    <topology sockets="1" cores="3" threads="1"/>
+    <topology sockets="4" cores="3" threads="1"/>
     <feature policy="disable" name="foofeat"/>
     <feature policy="require" name="addfeature"/>
   </cpu>
@@ -22,7 +27,7 @@
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
-  <vcpu cpuset="1-5,15" current="22">30</vcpu>
+  <vcpu cpuset="1-5,15" current="10">12</vcpu>
   <devices>
     <emulator>/usr/binnnn/fooemu</emulator>
     <disk type="file" device="floppy">
@@ -57,4 +62,7 @@
     <imagelabel>fooimage</imagelabel>
   </seclabel>
   <description>Hey desc changed</description>
+  <memoryBacking>
+    <hugepages/>
+  </memoryBacking>
 </domain>

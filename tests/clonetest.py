@@ -72,7 +72,7 @@ class TestClone(unittest.TestCase):
         infile = os.path.join(clonexml_dir, filebase + "-in.xml")
         in_content = utils.read_file(infile)
 
-        cloneobj = CloneDesign(connection=conn)
+        cloneobj = CloneDesign(conn=conn)
         cloneobj.original_xml = in_content
         for force in force_list or []:
             cloneobj.force_target = force
@@ -121,13 +121,8 @@ class TestClone(unittest.TestCase):
            connection to ensure we don't get any errors"""
         outfile = os.path.join(clonexml_dir, filebase + "-out.xml")
         outxml = utils.read_file(outfile)
+        utils.test_create(conn, outxml)
 
-        vm = None
-        try:
-            vm = conn.defineXML(outxml)
-        finally:
-            if vm:
-                vm.undefine()
 
     # Skip this test, since libvirt can add new XML elements to the defined
     # XML (<video>) that make roundtrip a pain
@@ -140,7 +135,7 @@ class TestClone(unittest.TestCase):
             try:
                 vm = conn.defineXML(utils.read_file(infile))
 
-                cloneobj = CloneDesign(connection=conn)
+                cloneobj = CloneDesign(conn=conn)
                 cloneobj.original_guest = ORIG_NAME
 
                 cloneobj = self._default_clone_values(cloneobj)
@@ -185,7 +180,7 @@ class TestClone(unittest.TestCase):
                                          "when it shouldn't.")
                 except (ValueError, RuntimeError), e:
                     # Exception expected
-                    logging.debug("Received expected exception: %s" % str(e))
+                    logging.debug("Received expected exception: %s", str(e))
         finally:
             CloneManager._util.is_uri_remote = oldfunc
 
@@ -234,4 +229,4 @@ class TestClone(unittest.TestCase):
             raise AssertionError("Managed to unmanaged succeeded, expected "
                                  "failure.")
         except (ValueError, RuntimeError), e:
-            logging.debug("Received expected exception: %s" % str(e))
+            logging.debug("Received expected exception: %s", str(e))

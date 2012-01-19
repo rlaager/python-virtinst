@@ -49,6 +49,9 @@ class TestVirtConv(unittest.TestCase):
 
         vmdef = inp.import_file(infile)
         out_expect = outp.export(vmdef)
+
+        if not os.path.exists(outfile):
+            open(outfile, "w").write(out_expect)
         utils.diff_compare(out_expect, outfile)
 
     def _build_compare_path(self, base, in_path, out_dir, out_type):
@@ -56,6 +59,10 @@ class TestVirtConv(unittest.TestCase):
         return "%s/%s_%s.%s" % (out_dir, base, out_path, out_type)
 
     def _compare_files(self, base, in_type, out_type, in_dir, out_dir):
+        cwd = os.getcwd()
+        in_dir = os.path.join(cwd, in_dir)
+        out_dir = os.path.join(cwd, out_dir)
+
         for in_path in glob.glob(os.path.join(in_dir, "*." + in_type)):
             if in_type != out_type:
                 out_path = self._build_compare_path(base, in_path,
@@ -63,7 +70,11 @@ class TestVirtConv(unittest.TestCase):
             else:
                 out_path = in_path
 
-            self._convert_helper(in_path, out_path, in_type, out_type)
+            try:
+                os.chdir(os.path.dirname(in_path))
+                self._convert_helper(in_path, out_path, in_type, out_type)
+            finally:
+                os.chdir(cwd)
 
     def testVMX2VirtImage(self):
         base = "vmx2virtimage"

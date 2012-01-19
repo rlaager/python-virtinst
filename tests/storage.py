@@ -53,7 +53,7 @@ def _findFreePoolName(conn, namebase):
             return poolname
 
 def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
-               source_path=None, source_name=None, uuid=None):
+               source_path=None, source_name=None, uuid=None, iqn=None):
     poolclass = StoragePool.get_pool_class(ptype)
 
     if poolname is None:
@@ -74,12 +74,18 @@ def createPool(conn, ptype, poolname=None, fmt=None, target_path=None,
         pool_inst.format = fmt
     if source_name and hasattr(pool_inst, "source_name"):
         pool_inst.source_name = source_name
+    if iqn and hasattr(pool_inst, "iqn"):
+        pool_inst.iqn = iqn
 
     return poolCompare(pool_inst)
 
 def poolCompare(pool_inst):
     filename = os.path.join(basepath, pool_inst.name + ".xml")
-    utils.diff_compare(pool_inst.get_xml_config(), filename)
+    out_expect = pool_inst.get_xml_config()
+
+    if not os.path.exists(filename):
+        open(filename, "w").write(out_expect)
+    utils.diff_compare(out_expect, filename)
 
     return pool_inst.install(build=True, meter=None, create=True)
 
@@ -173,8 +179,17 @@ class TestStorage(unittest.TestCase):
         #volobj = createVol(poolobj)
         self.assertRaises(RuntimeError, createVol, poolobj)
 
+        createPool(self.conn, StoragePool.TYPE_ISCSI, "pool-iscsi-iqn",
+                   iqn="foo.bar.baz.iqn")
+
     def testSCSIPool(self):
         poolobj = createPool(self.conn, StoragePool.TYPE_SCSI, "pool-scsi")
+        # Not supported
+        #volobj = createVol(poolobj)
+        self.assertRaises(RuntimeError, createVol, poolobj)
+
+    def testMpathPool(self):
+        poolobj = createPool(self.conn, StoragePool.TYPE_MPATH, "pool-mpath")
         # Not supported
         #volobj = createVol(poolobj)
         self.assertRaises(RuntimeError, createVol, poolobj)

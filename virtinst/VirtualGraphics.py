@@ -24,7 +24,7 @@ import _util
 import VirtualDevice
 import support
 from XMLBuilderDomain import _xml_property
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 def _get_mode_prop(channel_type):
     xpath = "./channel[@name='%s']/@mode" % channel_type
@@ -136,7 +136,7 @@ class VirtualGraphics(VirtualDevice.VirtualDevice):
         return self._type
     def set_type(self, val):
         if val not in self.types:
-            raise ValueError(_("Unknown graphics type"))
+            raise ValueError(_("Unknown graphics type '%s'") % val)
 
         self._type = val
     type = _xml_property(get_type, set_type,

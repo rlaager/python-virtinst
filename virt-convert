@@ -42,13 +42,13 @@ def parse_args():
     opts = cli.setupParser(usage)
 
     cong = OptionGroup(opts, "Conversion Options")
-    cong.add_option("-i", "--input-format", action="store",
-                    dest="input_format", help=_("Input format, e.g. 'vmx'"))
-    cong.add_option("-o", "--output-format", action="store",
-                    dest="output_format", default="virt-image",
+    cong.add_option("-i", "--input-format", dest="input_format",
+                    help=_("Input format, e.g. 'vmx'"))
+    cong.add_option("-o", "--output-format", dest="output_format",
+                    default="virt-image",
                     help=_("Output format, e.g. 'virt-image'"))
-    cong.add_option("-D", "--disk-format", action="store",
-                    dest="disk_format", help=_("Output disk format"))
+    cong.add_option("-D", "--disk-format", dest="disk_format",
+                    help=_("Output disk format"))
     opts.add_option_group(cong)
 
     virg = OptionGroup(opts, "Virtualization Type Options")
@@ -59,25 +59,23 @@ def parse_args():
     opts.add_option_group(virg)
 
     cfgg = OptionGroup(opts, "Guest Configuration Options")
-    cfgg.add_option("-a", "--arch", type="string", dest="arch",
+    cfgg.add_option("-a", "--arch", dest="arch",
                     default=util.get_default_arch(),
                     help=_("Machine Architecture Type (i686/x86_64/ppc)"))
-    cfgg.add_option("", "--os-type", type="string", dest="os_type",
-                    action="callback", callback=cli.check_before_store,
+    cfgg.add_option("", "--os-type", dest="os_type",
                     help=_("The OS type for fully virtualized guests, e.g. "
                            "'linux', 'unix', 'windows'"))
-    cfgg.add_option("", "--os-variant", type="string", dest="os_variant",
-                    action="callback", callback=cli.check_before_store,
+    cfgg.add_option("", "--os-variant", dest="os_variant",
                     help=_("The OS variant for fully virtualized guests, e.g. "
                            "'fedora6', 'rhel5', 'solaris10', 'win2k', 'vista'"))
     cfgg.add_option("", "--noapic", action="store_true", dest="noapic",
+                    default=False,
                     help=_("Disables APIC for fully virtualized guest "
-                           "(overrides value in os-type/os-variant db)"),
-                    default=False)
+                           "(overrides value in os-type/os-variant db)"))
     cfgg.add_option("", "--noacpi", action="store_true", dest="noacpi",
+                    default=False,
                     help=_("Disables ACPI for fully virtualized guest "
-                           "(overrides value in os-type/os-variant db)"),
-                    default=False)
+                           "(overrides value in os-type/os-variant db)"))
     opts.add_option_group(cfgg)
 
     misc = OptionGroup(opts, "Miscellaneous Options")
@@ -85,6 +83,9 @@ def parse_args():
                     help=_("Suppress non-error output"))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=_("Print debugging information"))
+    misc.add_option("", "--dry-run", action="store_false", dest="nodry",
+                    default=True,
+                    help=_("Dry run, don't make any changes"))
     opts.add_option_group(misc)
 
 
@@ -152,6 +153,8 @@ def cleanup(msg, options, vmdef, paths):
     After failure, clean up anything we created.
     """
     logging.error(msg)
+    if not options.nodry:
+        return
 
     try:
         for disk in vmdef.disks.values():
@@ -204,22 +207,23 @@ def main():
     if not options.output_dir:
         options.output_dir = unixname
     try:
-        logging.debug("Creating directory %s" % options.output_dir)
-        os.mkdir(options.output_dir)
+        logging.debug("Creating directory %s", options.output_dir)
+        if options.nodry:
+            os.mkdir(options.output_dir)
         clean += [ options.output_dir ]
     except OSError, e:
         if (e.errno != errno.EEXIST):
-            fail("Could not create directory %s: %s" %
+            fail("Could not create directory %s: %s",
                 (options.output_dir, e.strerror))
 
     if not options.output_file:
         options.output_file = os.path.join(options.output_dir,
            "%s%s" % (unixname, outp.suffix))
 
-    logging.debug("input_file: %s" % options.input_file)
-    logging.debug("input_dir: %s" % options.input_dir)
-    logging.debug("output_file: %s" % options.output_file)
-    logging.debug("output_dir: %s" % options.output_dir)
+    logging.debug("input_file: %s", options.input_file)
+    logging.debug("input_dir: %s", options.input_dir)
+    logging.debug("output_file: %s", options.output_file)
+    logging.debug("output_dir: %s", options.output_dir)
 
     print_stdout(_("Generating output in '%(format)s' format to %(dir)s/") %
         {"format": options.output_format, "dir": options.output_dir})
@@ -245,7 +249,8 @@ def main():
                                "%(format)s...") % {"path": d.path,
                                                    "format": dformat})
 
-            d.convert(options.input_dir, options.output_dir, dformat)
+            if options.nodry:
+                d.convert(options.input_dir, options.output_dir, dformat)
 
     except OSError, e:
         cleanup(_("Couldn't convert disks: %s") % e.strerror,
@@ -254,8 +259,15 @@ def main():
         cleanup(_("Couldn't convert disks: %s") % e, options, vmdef, clean)
 
     try:
+        output = outp.export(vmdef)
+        logging.debug("Output VM config:\n%s", output)
+
+        if options.nodry:
+            outfile = open(options.output_file, "w")
+            outfile.writelines(output)
+            outfile.close()
+
         clean += [ options.output_file ]
-        outp.export_file(vmdef, options.output_file)
     except ValueError, e:
         cleanup(_("Couldn't export to file \"%s\": %s") %
             (options.output_file, e), options, vmdef, clean)

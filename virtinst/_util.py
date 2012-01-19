@@ -36,7 +36,7 @@ import libxml2
 import libvirt
 
 import virtinst.util as util
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 try:
     import selinux
@@ -150,10 +150,14 @@ def validate_uuid(val):
                    "-" + val[16:20] + "-" + val[20:32])
     return val
 
-def validate_name(name_type, val):
-    if type(val) is not type("string") or len(val) > 50 or len(val) == 0:
-        raise ValueError(_("%s name must be a string between 0 and 50 "
-                           "characters") % name_type)
+def validate_name(name_type, val, lencheck=False):
+    if type(val) is not str or len(val) == 0:
+        raise ValueError(_("%s name must be a string") % name_type)
+
+    if lencheck:
+        if len(val) > 50:
+            raise ValueError(_("%s name must be less than 50 characters") %
+                             name_type)
     if re.match("^[0-9]+$", val):
         raise ValueError(_("%s name can not be only numeric characters") %
                           name_type)
@@ -197,7 +201,7 @@ def fetch_all_guests(conn):
             active.append(vm)
         except libvirt.libvirtError:
             # guest probably in process of dieing
-            logging.warn("Failed to lookup active domain id %d" % i)
+            logging.warn("Failed to lookup active domain id %d", i)
 
     # Get all inactive VMs
     names = conn.listDefinedDomains()
@@ -207,7 +211,7 @@ def fetch_all_guests(conn):
             inactive.append(vm)
         except:
             # guest probably in process of dieing
-            logging.warn("Failed to lookup inactive domain %d" % name)
+            logging.warn("Failed to lookup inactive domain %d", name)
 
     return (active, inactive)
 
@@ -258,7 +262,7 @@ def set_xml_path(xml, path, newval):
 
 
 def generate_name(base, collision_cb, suffix="", lib_collision=True,
-                  start_num=0, sep="-", force_num=False):
+                  start_num=0, sep="-", force_num=False, collidelist=None):
     """
     Generate a new name from the passed base string, verifying it doesn't
     collide with the collision callback.
@@ -281,19 +285,27 @@ def generate_name(base, collision_cb, suffix="", lib_collision=True,
     @sep: The seperator to use between the basename and the generated number
           (default is "-")
     @force_num: Force the generated name to always end with a number
+    @collidelist: An extra list of names to check for collision
     """
+    collidelist = collidelist or []
+
+    def collide(n):
+        if n in collidelist:
+            return True
+        if lib_collision:
+            return libvirt_collision(collision_cb, tryname)
+        else:
+            return collision_cb(tryname)
 
     for i in range(start_num, start_num + 100000):
         tryname = base
         if i != 0 or force_num:
             tryname += ("%s%d" % (sep, i))
         tryname += suffix
-        if lib_collision:
-            if not libvirt_collision(collision_cb, tryname):
-                return tryname
-        else:
-            if not collision_cb(tryname):
-                return tryname
+
+        if not collide(tryname):
+            return tryname
+
     raise ValueError(_("Name generation range exceeded."))
 
 # Selinux helpers
@@ -305,8 +317,8 @@ def selinux_restorecon(path):
         try:
             selinux.restorecon(path)
         except Exception, e:
-            logging.debug("Restoring context for '%s' failed: %s" % (path,
-                                                                     str(e)))
+            logging.debug("Restoring context for '%s' failed: %s",
+                          path, str(e))
 def selinux_getfilecon(path):
     if have_selinux():
         return selinux.getfilecon(path)[1]
@@ -395,27 +407,51 @@ def default_bridge2(conn=None):
 
     return None
 
-def is_qemu_system(conn):
-    if not conn:
+def _get_uri_to_split(conn, uri):
+    if not conn and not uri:
+        return None
+
+    if type(conn) is str:
+        uri = conn
+    elif uri is None:
+        uri = conn.getURI()
+    return uri
+
+def is_qemu_system(conn, uri=None):
+    uri = _get_uri_to_split(conn, uri)
+    if not uri:
         return False
 
     (scheme, ignore, ignore,
-     path, ignore, ignore) = uri_split(conn)
+     path, ignore, ignore) = uri_split(uri)
     if path == "/system" and scheme.startswith("qemu"):
         return True
     return False
 
-def is_qemu(conn):
-    if not conn:
+def is_session_uri(conn, uri=None):
+    uri = _get_uri_to_split(conn, uri)
+    if not uri:
         return False
 
-    if type(conn) is str:
-        uri = conn
-    else:
-        uri = conn.getURI()
+    (ignore, ignore, ignore,
+     path, ignore, ignore) = uri_split(uri)
+    return bool(path and path == "/session")
+
+def is_qemu(conn, uri=None):
+    uri = _get_uri_to_split(conn, uri)
+    if not uri:
+        return False
 
     scheme = uri_split(uri)[0]
     return scheme.startswith("qemu")
+
+def is_xen(conn, uri=None):
+    uri = _get_uri_to_split(conn, uri)
+    if not uri:
+        return False
+
+    scheme = uri_split(uri)[0]
+    return scheme.startswith("xen")
 
 def parse_node_helper(xml, root_name, callback, exec_class=ValueError):
     """
@@ -464,7 +500,7 @@ def find_xkblayout(path):
     try:
         f = open(path, "r")
     except IOError, e:
-        logging.debug('Could not open "%s": %s ' % (path, str(e)))
+        logging.debug('Could not open "%s": %s ', path, str(e))
     else:
         keymap_re = re.compile(r'\s*XKBLAYOUT="(?P<kt>[a-z-]+)"')
         for line in f:
@@ -473,7 +509,7 @@ def find_xkblayout(path):
                 kt = m.group('kt')
                 break
         else:
-            logging.debug("Didn't find keymap in '%s'!" % path)
+            logging.debug("Didn't find keymap in '%s'!", path)
         f.close()
     return kt
 

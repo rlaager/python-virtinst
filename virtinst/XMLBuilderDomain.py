@@ -19,12 +19,45 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
+import copy
+
 import libvirt
 import libxml2
 
 import CapabilitiesParser
 import _util
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
+
+_xml_refs = {}
+def _unref_doc(doc):
+    if not doc:
+        return
+
+    idx = None
+    for n in _xml_refs:
+        if n == doc:
+            idx = n
+            break
+
+    if not idx:
+        return
+
+    _xml_refs[idx] = _xml_refs[idx] - 1
+    if _xml_refs[idx] == 0:
+        idx.freeDoc()
+
+def _ref_doc(doc):
+    if not doc:
+        return
+
+    idx = doc
+    for n in _xml_refs:
+        if n == doc:
+            idx = n
+            break
+
+    refcount = _xml_refs.get(idx) or 0
+    _xml_refs[idx] = refcount + 1
 
 def _sanitize_libxml_xml(xml):
     # Strip starting <?...> line
@@ -331,18 +364,16 @@ class XMLBuilderDomain(object):
         @param parsexmlnode: Option xpathNode to use
         @param caps: Capabilities() instance
         """
-        if conn:
-            if not isinstance(conn, libvirt.virConnect):
-                raise ValueError(_("'conn' must be a virConnect instance"))
-        self._conn = conn
-
+        self._conn = None
+        self._conn_uri = None
+        self.__remote = False
         self.__caps = None
-        self.__remote = None
+
         self._xml_node = None
         self._xml_ctx = None
 
-        if self.conn:
-            self.__remote = _util.is_uri_remote(self.conn.getURI())
+        if conn:
+            self.set_conn(conn)
 
         if caps:
             if not isinstance(caps, CapabilitiesParser.Capabilities):
@@ -352,26 +383,52 @@ class XMLBuilderDomain(object):
         if parsexml or parsexmlnode:
             self._parsexml(parsexml, parsexmlnode)
 
+    def __del__(self):
+        try:
+            if self._xml_node:
+                _unref_doc(self._xml_node.doc)
+        except:
+            pass
+        try:
+            if self._xml_ctx:
+                self._xml_ctx.xpathFreeContext()
+        except:
+            pass
+
+    def copy(self):
+        # Otherwise we can double free XML info
+        if self._is_parse():
+            return self
+        return copy.copy(self)
+
     def get_conn(self):
         return self._conn
     def set_conn(self, val):
         if not isinstance(val, libvirt.virConnect):
             raise ValueError(_("'conn' must be a virConnect instance."))
         self._conn = val
+        self._conn_uri = self._conn.getURI()
+        self.__remote = _util.is_uri_remote(self._conn_uri)
     conn = property(get_conn, set_conn)
+
+    def get_uri(self):
+        return self._conn_uri
 
     def _get_caps(self):
         if not self.__caps and self.conn:
             self.__caps = CapabilitiesParser.parse(self.conn.getCapabilities())
         return self.__caps
 
-    def _is_remote(self):
+    def is_remote(self):
         return bool(self.__remote)
-
-    def _get_uri(self):
-        if self.conn:
-            return self.conn.getURI()
-        return None
+    def is_qemu(self):
+        return _util.is_qemu(self.conn, self.get_uri())
+    def is_qemu_system(self):
+        return _util.is_qemu_system(self.conn, self.get_uri())
+    def is_session_uri(self):
+        return _util.is_session_uri(self.conn, self.get_uri())
+    def is_xen(self):
+        return _util.is_xen(self.conn, self.get_uri())
 
     def _check_bool(self, val, name):
         if val not in [True, False]:
@@ -405,6 +462,8 @@ class XMLBuilderDomain(object):
         doc = self._xml_node.doc
         ctx = doc.xpathNewContext()
         ctx.setContextNode(self._xml_node)
+        if self._xml_ctx:
+            self._xml_ctx.xpathFreeContext()
         self._xml_ctx = ctx
 
     def _parsexml(self, xml, node):
@@ -413,6 +472,7 @@ class XMLBuilderDomain(object):
         else:
             self._xml_node = node
 
+        _ref_doc(self._xml_node.doc)
         self._set_xml_context()
 
     def _get_xml_config(self):
@@ -435,3 +495,13 @@ class XMLBuilderDomain(object):
             return _sanitize_libxml_xml(node.serialize())
 
         return self._get_xml_config(*args, **kwargs)
+
+    @staticmethod
+    def indent(xmlstr, level):
+        xml = ""
+        if not xmlstr:
+            return xml
+
+        for l in iter(xmlstr.splitlines()):
+            xml += " " * level + l + "\n"
+        return xml

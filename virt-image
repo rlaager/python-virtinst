@@ -21,7 +21,6 @@
 # MA 02110-1301 USA.
 
 import sys
-import logging
 import urlgrabber.progress as progress
 
 import virtinst
@@ -37,57 +36,39 @@ cli.setupGettext()
 
 ### General input gathering functions
 
-def get_networks(domain, macs, bridges, networks, guest):
+def get_networks(domain, guest, options):
     nnics = domain.interface
-    net_kwargs = cli.digest_networks(guest.conn, macs, bridges, networks,
-                                     nnics)
+    networks, macs = cli.digest_networks(guest, options, numnics=nnics)
 
-    if len(net_kwargs) > nnics:
-        logging.warn(_("Warning: more networks were provided [%i] then nics "
-                       "required [%i]. All extras are ignored.") %
-                       (len(net_kwargs), nnics))
-        net_kwargs = net_kwargs[0:nnics]
-    elif nnics > len(net_kwargs):
+    if nnics > len(networks):
         fail(_("The image requires %i network interface.") % nnics)
 
-    map(lambda kwargs: cli.get_network(kwargs, guest), net_kwargs)
+    cli.get_networks(guest, networks, macs)
 
-def get_graphics(domain, vnc, vncport, vnclisten, nographics, sdl, keymap,
-                 graphics, guest):
-    if not domain.graphics:
-        guest.graphics_dev = None
-        return
-
-    cli.get_graphics(vnc, vncport, vnclisten, nographics, sdl, keymap, [],
-                     graphics, guest)
+def get_graphics(image, guest, options):
+    graphics = cli.digest_graphics(guest, options,
+                                   default_override=bool(image.graphics))
+    cli.get_graphics(guest, graphics)
 
 ### Option parsing
 def parse_args():
     usage = "%prog [options] image.xml"
     parser = cli.setupParser(usage)
-
-    parser.add_option("", "--connect", type="string", dest="connect",
-                      action="callback", callback=cli.check_before_store,
-                      help=_("Connect to hypervisor with URI"),
-                      default=None)
+    cli.add_connect_option(parser)
 
     geng = OptionGroup(parser, _("General Options"))
-    geng.add_option("-n", "--name", type="string", dest="name",
-                    action="callback", callback=cli.check_before_store,
+    geng.add_option("-n", "--name", dest="name",
                     help=_("Name of the guest instance"))
     geng.add_option("-r", "--ram", type="int", dest="memory",
                     help=_("Memory to allocate for guest instance in "
                            "megabytes"))
-    geng.add_option("-u", "--uuid", type="string", dest="uuid",
-                    action="callback", callback=cli.check_before_store,
+    geng.add_option("-u", "--uuid", dest="uuid",
                     help=_("UUID for the guest."))
     cli.vcpu_cli_options(geng)
-    geng.add_option("", "--os-type", type="string", dest="distro_type",
-                    action="callback", callback=cli.check_before_store,
+    geng.add_option("", "--os-type", dest="distro_type",
                     help=_("The OS type being installed, e.g. "
                            "'linux', 'unix', 'windows'"))
-    geng.add_option("", "--os-variant", type="string", dest="distro_variant",
-                      action="callback", callback=cli.check_before_store,
+    geng.add_option("", "--os-variant", dest="distro_variant",
                       help=_("The OS variant being installed, "
                              "e.g. 'fedora6', 'rhel5', 'solaris10', 'win2k'"))
     parser.add_option_group(geng)
@@ -101,21 +82,7 @@ def parse_args():
                     help=_("Disables ACPI for fully virtualized guest"))
     parser.add_option_group(fulg)
 
-    netg = OptionGroup(parser, _("Networking Configuration"))
-    netg.add_option("-w", "--network", type="string", dest="network",
-                    action="callback", callback=cli.check_before_append,
-      help=_("Specify a network interface. Ex:\n"
-             "--network bridge=mybr0\n"
-             "--network network=libvirt_network_name\n"
-             "--network network=mynet,model=e1000,mac=00:11..."))
-
-    # Deprecated net options
-    netg.add_option("-b", "--bridge", type="string", dest="bridge",
-                    action="callback", callback=cli.check_before_append,
-                    help=optparse.SUPPRESS_HELP)
-    netg.add_option("-m", "--mac", type="string", dest="mac",
-                    action="callback", callback=cli.check_before_append,
-                    help=optparse.SUPPRESS_HELP)
+    netg = cli.network_option_group(parser)
     parser.add_option_group(netg)
 
     vncg = cli.graphics_option_group(parser)
@@ -128,20 +95,24 @@ def parse_args():
     misc.add_option("", "--boot", type="int", dest="boot",
                     help=_("The zero-based index of the boot record to use"))
     misc.add_option("", "--replace", action="store_true", dest="replace",
+                    default=False,
                     help=_("Overwrite, or destroy, an existing image with "
-                           "the same name"),
-                    default=False)
+                           "the same name"))
+    misc.add_option("", "--noreboot", action="store_true", dest="noreboot",
+                    help=_("Don't boot guest after completing install."))
     misc.add_option("", "--skip-checksum", action="store_true",
                     dest="skipchecksum",
                     help=_("Skip disk checksum verification process"))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                     help=_("Print debugging information"))
     misc.add_option("", "--prompt", action="store_true", dest="prompt",
-                    help=optparse.SUPPRESS_HELP, default=False)
+                    default=False,
+                    help=optparse.SUPPRESS_HELP)
     misc.add_option("", "--force", action="store_true", dest="force",
-                    help=_("Do not prompt for input. Answers yes where "
-                           "applicable, terminates for all other prompts"),
-                    default=False)
+                    default=False,
+                    #help=_("Do not prompt for input. Answers yes where "
+                    #       "applicable, terminates for all other prompts"),
+                    help=optparse.SUPPRESS_HELP)
     misc.add_option("-q", "--quiet", action="store_true", dest="quiet",
                     help=_("Suppress non-error output"))
     parser.add_option_group(misc)
@@ -160,8 +131,7 @@ def main():
 
     options.quiet = options.print_only or options.quiet
     cli.setupLogging("virt-image", options.debug, options.quiet)
-    cli.set_prompt(options.prompt)
-    cli.set_force(options.force)
+    cli.set_prompt(False)
 
     conn = cli.getConnection(options.connect)
 
@@ -192,17 +162,13 @@ def main():
     cli.get_name(options.name, guest, image.name)
     cli.get_memory(options.memory, guest, image.domain.memory)
     cli.get_uuid(options.uuid, guest)
-    cli.get_vcpus(options.vcpus, options.check_cpu,
-                  guest, image.domain.vcpu)
-    cli.get_cpuset(options.cpuset, guest.memory, guest)
+    cli.get_vcpus(guest, options.vcpus, options.check_cpu, image.domain.vcpu)
+    cli.get_cpuset(guest, options.cpuset)
     cli.parse_cpu(guest, options.cpu)
-    # For now, we only allow one NIC
-    get_networks(image.domain, options.mac, options.bridge,
-                 options.network, guest)
+    get_networks(image.domain, guest, options)
 
-    get_graphics(image.domain, options.vnc, options.vncport, options.vnclisten,
-                 options.nographics, options.sdl, options.keymap,
-                 options.graphics, guest)
+    get_graphics(image.domain, guest, options)
+    cli.get_video(guest)
 
     cli.set_os_variant(guest, options.distro_type, options.distro_variant)
 
@@ -229,7 +195,7 @@ def main():
         print_stdout("\n")
         print_stdout(_("Creating guest %s...") % guest.name)
 
-        guest.start_install(None, meter)
+        guest.start_install(None, meter, noboot=options.noreboot)
     except RuntimeError:
         raise
     except Exception, e:

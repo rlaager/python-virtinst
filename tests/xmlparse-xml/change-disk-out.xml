@@ -21,6 +21,7 @@
     <disk type="file" device="disk">
       <source file="/dev/loop0"/>
       <target dev="hda" bus="ide"/>
+      <serial>frob</serial>
       <driver name="test" type="foobar"/>
     </disk>
     <disk type="block" device="disk">

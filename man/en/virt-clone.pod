@@ -138,6 +138,11 @@ guest XML.
 
 Print the generated clone XML and exit without cloning.
 
+=item --replace
+
+Shutdown and remove any existing guest with the passed C<--name> before
+cloning the original guest.
+
 =item -d, --debug
 
 Print debugging information to the terminal when running the install process.

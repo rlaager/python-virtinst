@@ -1,26 +1,56 @@
-from distutils.core import setup, Command
-from distutils.command.sdist import sdist as _sdist
-from distutils.command.build import build as _build
-from distutils.command.install_data import install_data as _install_data
-from distutils.command.install_lib import install_lib as _install_lib
-from distutils.command.install import install as _install
-from unittest import TextTestRunner, TestLoader
-from glob import glob
-from os.path import splitext, basename, join as pjoin
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free  Software Foundation; either version 2 of the License, or
+# (at your option)  any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301 USA.
+
 import os
 import sys
+import glob
 
-pkgs = ['virtinst', 'virtconv', 'virtconv.parsers']
+from distutils.core import setup, Command
+from distutils.command.sdist import sdist
+from distutils.command.build import build
+from unittest import TextTestRunner, TestLoader
 
-datafiles = [('share/man/man1', ['man/en/virt-install.1',
-                                 'man/en/virt-clone.1',
-                                 'man/en/virt-image.1',
-                                 'man/en/virt-convert.1']),
-             ('share/man/man5', ['man/en/virt-image.5'])]
-locale = None
-builddir = None
+VERSION = "0.600.0"
 
-VERSION = file("virtinst/version.py").read().split(" ")[2].strip(" \n\"")
+# translation installing
+def _build_po_list():
+    ret = {}
+    for filename in glob.glob(os.path.join(os.getcwd(), 'po', '*.po')):
+        filename = os.path.basename(filename)
+        lang = os.path.basename(filename)[0:len(filename) - 3]
+        langdir = os.path.join("build", "mo", lang, "LC_MESSAGES")
+
+        newname = os.path.join(langdir, "virtinst.mo")
+        ret[lang] = (filename, newname)
+    return ret
+
+def _build_lang_data():
+    ret = []
+    for lang, (ignore, newname) in _build_po_list().items():
+        targetpath = os.path.join("share", "locale", lang, "LC_MESSAGES")
+        ret.append((targetpath, [newname]))
+    return ret
+
+# Config file building
+config_files = ["virtinst/_config.py", "virtconv/_config.py"]
+config_template = """
+__version__ = "%(VERSION)s"
+__version_info__ = tuple([ int(num) for num in __version__.split('.')])
+rhel6defaults = bool(%(RHEL6DEFAULTS)s)
+"""
 
 class TestBaseCommand(Command):
 
@@ -80,19 +110,23 @@ class TestCommand(TestBaseCommand):
         Finds all the tests modules in tests/, and runs them.
         '''
         testfiles = []
-        for t in glob(pjoin(self._dir, 'tests', '*.py')):
-            if (not t.endswith('__init__.py') and
-                not t.endswith("urltest.py") and
-                not t.endswith("clitest.py")):
+        for t in glob.glob(os.path.join(self._dir, 'tests', '*.py')):
+            if (t.endswith('__init__.py') or
+                t.endswith("urltest.py") or
+                t.endswith("clitest.py")):
+                continue
 
-                if self.testfile:
-                    base = os.path.basename(t)
-                    check = os.path.basename(self.testfile)
-                    if base != check and base != (check + ".py"):
-                        continue
+            base = os.path.basename(t)
+            if self.testfile:
+                check = os.path.basename(self.testfile)
+                if base != check and base != (check + ".py"):
+                    continue
 
-                testfiles.append('.'.join(['tests',
-                                           splitext(basename(t))[0]]))
+            testfiles.append('.'.join(['tests', os.path.splitext(base)[0]]))
+
+        if not testfiles:
+            raise RuntimeError("--testfile didn't catch anything")
+
         self._testfiles = testfiles
         TestBaseCommand.run(self)
 
@@ -101,14 +135,12 @@ class TestCLI(TestBaseCommand):
     description = "Test various CLI invocations"
 
     user_options = (TestBaseCommand.user_options +
-                    [("prompt", None, "Run interactive CLI invocations."),
-                    ("app=", None, "Only run tests for requested app"),
+                    [("app=", None, "Only run tests for requested app"),
                     ("category=", None, "Only run tests for the requested "
                                        "category (install, storage, etc.)")])
 
     def initialize_options(self):
         TestBaseCommand.initialize_options(self)
-        self.prompt = 0
         self.app = None
         self.category = None
 
@@ -116,8 +148,6 @@ class TestCLI(TestBaseCommand):
         cmd = "python tests/clitest.py"
         if self.debug:
             cmd += " debug"
-        if self.prompt:
-            cmd += " prompt"
         if self.app:
             cmd += " --app %s" % self.app
         if self.category:
@@ -171,7 +201,7 @@ class CheckPylint(Command):
     def run(self):
         os.system("tests/pylint-virtinst.sh")
 
-class custom_rpm(Command):
+class myrpm(Command):
 
     user_options = []
 
@@ -213,11 +243,11 @@ class refresh_translations(Command):
         os.system(pot_cmd)
 
         # Merge new template with existing translations.
-        for po in glob(pjoin(os.getcwd(), 'po', '*.po')):
+        for po in glob.glob(os.path.join(os.getcwd(), 'po', '*.po')):
             os.system("msgmerge -U po/%s po/virtinst.pot" %
                       os.path.basename(po))
 
-class sdist(_sdist):
+class mysdist(sdist):
     """ custom sdist command, to prep virtinst.spec file for inclusion """
 
     def run(self):
@@ -228,127 +258,126 @@ class sdist(_sdist):
         # Update and generate man pages
         self._update_manpages()
 
-        _sdist.run(self)
+        sdist.run(self)
 
     def _update_manpages(self):
         # Update virt-install.1 with latest os type/variant values
         import virtinst.osdict as osdict
 
-        output = ""
-        output += "=over 4\n\n"
+        # Build list first
+        ret = []
         for t in osdict.sort_helper(osdict.OS_TYPES):
-            output += "=item %s\n\n" % t
-
-            output += "=over 4\n\n"
             for v in osdict.sort_helper(osdict.OS_TYPES[t]["variants"]):
-                output += "=item %s\n\n" % v
-                output += osdict.OS_TYPES[t]["variants"][v]["label"] + "\n\n"
+                label = osdict.OS_TYPES[t]["variants"][v]["label"]
+                if osdict.lookup_osdict_key(None, None, t, v, "supported"):
+                    ret.append((v, label))
 
-            output += "=back\n\n"
+        output = ""
+        output += "=over 2\n\n"
 
-        # Add special 'none' value
-        output += "=item none\n\n"
-        output += "No OS version specified (disables autodetect)\n\n"
+        for v, label in ret:
+            output += "=item %-20s : %s\n\n" % (v, label)
+
         output += "=back\n\n"
 
         infile = "man/en/virt-install.pod.in"
         outfile = "man/en/virt-install.pod"
 
-        infd  = open(infile, "r")
-        outfd = open(outfile, "w")
+        outfd = open(outfile, "w+")
+        origout = outfd.read()
+        outfd.close()
 
+        infd  = open(infile, "r")
         inp = infd.read()
         infd.close()
 
+
         outp = inp.replace("::VARIANT VALUES::", output)
-        outfd.write(outp)
-        outfd.close()
+        if outp != origout or not(os.path.exists(outfile)):
+            outfd = open(outfile, "w")
+            outfd.write(outp)
+            outfd.close()
 
         # Generate new manpages
         if os.system("make -C man/en"):
             raise RuntimeError("Couldn't generate man pages.")
 
-class build(_build):
+class mybuild(build):
     """ custom build command to compile i18n files"""
 
+    user_options = (
+        build.user_options + [
+        ("rhel6defaults", None, "use rhel6 defaults in lib and tools"),
+    ])
+
+    def __init__(self, dist):
+        build.__init__(self, dist)
+
+        self.rhel6defaults = 0
+
     def run(self):
-        global builddir
+        config_opts = {
+            "VERSION" : VERSION,
+            "RHEL6DEFAULTS" : self.rhel6defaults,
+        }
 
-        if not os.path.exists("build/po"):
-            os.makedirs("build/po")
+        config_data = config_template % config_opts
+        print "Version              : %s" % VERSION
+        print "RHEL6 defaults       : %s" % bool(self.rhel6defaults)
 
-        for filename in glob(pjoin(os.getcwd(), 'po', '*.po')):
-            filename = os.path.basename(filename)
-            lang = os.path.basename(filename)[0:len(filename) - 3]
-            if not os.path.exists("build/po/%s" % lang):
-                os.makedirs("build/po/%s" % lang)
-            newname = "build/po/%s/virtinst.mo" % lang
+        for f in config_files:
+            if os.path.exists(f):
+                origconfig = file(f).read()
+                if origconfig == config_data:
+                    continue
 
-            print "Building %s from %s" % (newname, filename)
+            print "Generating %s" % f
+            fd = open(f, "w")
+            fd.write(config_data)
+            fd.close()
+
+        for filename, newname in _build_po_list().values():
+            langdir = os.path.dirname(newname)
+            if not os.path.exists(langdir):
+                os.makedirs(langdir)
+
+            print "Formatting %s to %s" % (filename, newname)
             os.system("msgfmt po/%s -o %s" % (filename, newname))
 
-        _build.run(self)
-        builddir = self.build_lib
+        build.run(self)
 
+setup(
+    name='virtinst',
+    version=VERSION,
+    description='Virtual machine installation',
+    author='Jeremy Katz, Daniel Berrange, Cole Robinson',
+    author_email='crobinso@redhat.com',
+    license='GPL',
+    url='http://virt-manager.org',
+    package_dir={'virtinst': 'virtinst'},
+    scripts=["virt-install", "virt-clone", "virt-image", "virt-convert"],
+    packages=['virtinst', 'virtconv', 'virtconv.parsers'],
 
-class install(_install):
-    """custom install command to extract install base for locale install"""
+    data_files=[
+        ('share/man/man1', [
+            'man/en/virt-install.1',
+            'man/en/virt-clone.1',
+            'man/en/virt-image.1',
+            'man/en/virt-convert.1']),
+        ('share/man/man5', [
+            'man/en/virt-image.5']),
+    ] + _build_lang_data(),
 
-    def finalize_options(self):
-        global locale
-        _install.finalize_options(self)
-        locale = self.install_base + "/share/locale"
+    cmdclass={
+        'test': TestCommand,
+        'test_urls' : TestURLFetch,
+        'test_cli' : TestCLI,
+        'pylint': CheckPylint,
 
+        'rpm' : myrpm,
+        'sdist': mysdist,
+        'refresh_translations': refresh_translations,
 
-class install_lib(_install_lib):
-    """ custom install_lib command to place locale location into library"""
-
-    def run(self):
-        for initfile in [ "virtinst/__init__.py", "virtconv/__init__.py" ]:
-            cmd  = "cat %s | " % initfile
-            cmd += """sed -e "s,::LOCALEDIR::,%s," > """ % locale
-            cmd += "%s/%s" % (builddir, initfile)
-            os.system(cmd)
-
-        _install_lib.run(self)
-
-
-class install_data(_install_data):
-    """ custom install_data command to prepare i18n files for install"""
-
-    def run(self):
-        dirlist = os.listdir("build/po")
-        for lang in dirlist:
-            if lang != "." and lang != "..":
-                install_path = "share/locale/%s/LC_MESSAGES/" % lang
-
-                src_path = "build/po/%s/virtinst.mo" % lang
-
-                print "Installing %s to %s" % (src_path, install_path)
-                toadd = (install_path, [src_path])
-
-                # Add these to the datafiles list
-                datafiles.append(toadd)
-        _install_data.run(self)
-
-setup(name='virtinst',
-      version=VERSION,
-      description='Virtual machine installation',
-      author='Jeremy Katz, Daniel Berrange, Cole Robinson',
-      author_email='crobinso@redhat.com',
-      license='GPL',
-      url='http://virt-manager.org',
-      package_dir={'virtinst': 'virtinst'},
-      scripts=["virt-install", "virt-clone", "virt-image", "virt-convert"],
-      packages=pkgs,
-      data_files=datafiles,
-      cmdclass={ 'test': TestCommand, 'test_urls' : TestURLFetch,
-                 'test_cli' : TestCLI,
-                 'check': CheckPylint,
-                 'rpm' : custom_rpm,
-                 'sdist': sdist, 'build': build,
-                 'install_data' : install_data,
-                 'install_lib' : install_lib,
-                 'install' : install,
-                 'refresh_translations' : refresh_translations}
-      )
+        'build': mybuild,
+    },
+)

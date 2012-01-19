@@ -31,31 +31,12 @@ import virtinst
 import XMLBuilderDomain
 from XMLBuilderDomain import _xml_property
 from virtinst import CapabilitiesParser
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 from VirtualDisk import VirtualDisk
 from Boot import Boot
 
 XEN_SCRATCH = "/var/lib/xen"
 LIBVIRT_SCRATCH = "/var/lib/libvirt/boot"
-
-def _get_scratchdir(typ):
-    scratch = None
-    if platform.system() == 'SunOS':
-        scratch = '/var/tmp'
-
-    if os.geteuid() == 0:
-        if typ == "xen" and os.path.exists(XEN_SCRATCH):
-            scratch = XEN_SCRATCH
-        elif os.path.exists(LIBVIRT_SCRATCH):
-            scratch = LIBVIRT_SCRATCH
-
-    if not scratch:
-        scratch = os.path.expanduser("~/.virtinst/boot")
-        if not os.path.exists(scratch):
-            os.makedirs(scratch, 0751)
-        _util.selinux_restorecon(scratch)
-
-    return scratch
 
 class Installer(XMLBuilderDomain.XMLBuilderDomain):
     """
@@ -99,6 +80,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self._arch = None
         self._machine = None
         self._loader = None
+        self._init = None
         self._install_bootconfig = Boot(self.conn)
         self._bootconfig = Boot(self.conn, parsexml, parsexmlnode)
 
@@ -129,6 +111,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         self.extraargs = extraargs
 
         self._tmpfiles = []
+        self._tmpvols = []
 
     def get_conn(self):
         return self._conn
@@ -183,12 +166,20 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
     loader = _xml_property(_get_loader, _set_loader,
                            xpath="./os/loader")
 
+    def _get_init(self):
+        return self._init
+    def _set_init(self, val):
+        self._init = val
+    init = _xml_property(_get_init, _set_init,
+                         xpath="./os/init")
+
     def get_scratchdir(self):
         if not self.scratchdir_required():
             return None
 
         if not self._scratchdir:
-            self._scratchdir = _get_scratchdir(self.type)
+            self._scratchdir = self._get_scratchdir()
+            logging.debug("scratchdir=%s", self._scratchdir)
         return self._scratchdir
     scratchdir = property(get_scratchdir)
 
@@ -261,9 +252,42 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         """
         return False
 
+    def is_hvm(self):
+        return self.os_type == "hvm"
+    def is_xenpv(self):
+        return self.os_type in ["xen", "linux"]
+    def is_container(self):
+        return self.os_type == "exe"
+
     # Private methods
+    def _get_system_scratchdir(self):
+        if platform.system() == "SunOS":
+            return "/var/tmp"
+
+        if self.type == "test":
+            return "/tmp"
+        elif self.type == "xen":
+            return XEN_SCRATCH
+        else:
+            return LIBVIRT_SCRATCH
+
+    def _get_scratchdir(self):
+        scratch = None
+        if not self.is_session_uri():
+            scratch = self._get_system_scratchdir()
+
+        if (not scratch or
+            not os.path.exists(scratch) or
+            not os.access(scratch, os.W_OK)):
+            scratch = os.path.expanduser("~/.virtinst/boot")
+            if not os.path.exists(scratch):
+                os.makedirs(scratch, 0751)
+            _util.selinux_restorecon(scratch)
+
+        return scratch
+
     def _get_bootdev(self, isinstall, guest):
-        raise NotImplementedError
+        raise NotImplementedError("Must be implemented in subclass")
 
     def _build_boot_order(self, isinstall, guest):
         bootorder = [self._get_bootdev(isinstall, guest)]
@@ -280,36 +304,60 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
 
         return bootorder
 
+    def _get_default_init(self, guest):
+        if not self.is_container():
+            return
+
+        for fs in guest.get_devices("filesystem"):
+            if fs.target == "/":
+                return "/sbin/init"
+        return "/bin/sh"
+
     def _get_osblob_helper(self, guest, isinstall, bootconfig):
-        ishvm = self.os_type == "hvm"
         conn = guest.conn
         arch = self.arch
+        machine = self.machine
+        hvtype = self.type
         loader = self.loader
-        if not loader and ishvm and self.type == "xen":
+        os_type = self.os_type
+        init = self.init or self._get_default_init(guest)
+
+        hvxen = (hvtype == "xen")
+
+        if not loader and self.is_hvm() and hvxen:
             loader = "/usr/lib/xen/boot/hvmloader"
 
-        if not isinstall and not ishvm and not self.bootconfig.kernel:
-            return "<bootloader>%s</bootloader>" % _util.pygrub_path(conn)
-
-        osblob = "<os>\n"
-
-        os_type = self.os_type
-        # Hack for older libvirt: use old value 'linux' for best back compat,
-        # new libvirt will adjust the value accordingly.
-        if os_type == "xen" and self.type == "xen":
+        # Use older libvirt 'linux' value for back compat
+        if os_type == "xen" and hvxen:
             os_type = "linux"
 
-        osblob += "    <type"
+        if (not isinstall and
+            self.is_xenpv() and
+            not self.bootconfig.kernel):
+            return "<bootloader>%s</bootloader>" % _util.pygrub_path(conn)
+
+        osblob = "<os>"
+
+        typexml = "    <type"
         if arch:
-            osblob += " arch='%s'" % arch
-        if self.machine:
-            osblob += " machine='%s'" % self.machine
-        osblob += ">%s</type>\n" % os_type
+            typexml += " arch='%s'" % arch
+        if machine:
+            typexml += " machine='%s'" % machine
+        typexml += ">%s</type>" % os_type
 
+        osblob = _util.xml_append(osblob, typexml)
+
+        if init:
+            osblob = _util.xml_append(osblob,
+                                      "    <init>%s</init>" %
+                                      _util.xml_escape(init))
         if loader:
-            osblob += "    <loader>%s</loader>\n" % loader
+            osblob = _util.xml_append(osblob,
+                                      "    <loader>%s</loader>" %
+                                      _util.xml_escape(loader))
 
-        osblob += bootconfig.get_xml_config()
+        if not self.is_container():
+            osblob = _util.xml_append(osblob, bootconfig.get_xml_config())
         osblob = _util.xml_append(osblob, "  </os>")
 
         return osblob
@@ -358,6 +406,12 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         for f in self._tmpfiles:
             logging.debug("Removing " + f)
             os.unlink(f)
+
+        for vol in self._tmpvols:
+            logging.debug("Removing volume '%s'", vol.name())
+            vol.delete(0)
+
+        self._tmpvols = []
         self._tmpfiles = []
         self.install_devices = []
 
@@ -401,7 +455,7 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
         try:
             fd = os.open(disk.path, os.O_RDONLY)
         except OSError, (err, msg):
-            logging.debug("Failed to open guest disk: %s" % msg)
+            logging.debug("Failed to open guest disk: %s", msg)
             if err == errno.EACCES and os.geteuid() != 0:
                 return True # non root might not have access to block devices
             else:
@@ -443,16 +497,25 @@ class Installer(XMLBuilderDomain.XMLBuilderDomain):
                                                         arch=self.arch,
                                                         machine=self.machine)
 
-        if self.os_type not in ["xen", "hvm"]:
-            raise ValueError(_("No 'Guest' class for virtualization type '%s'"
-                             % self.type))
-
-        gobj = virtinst.Guest(installer=self, connection=self.conn)
+        gobj = virtinst.Guest(installer=self, conn=self.conn)
         gobj.arch = guest.arch
         gobj.emulator = domain.emulator
         self.loader = domain.loader
 
         return gobj
+
+class ContainerInstaller(Installer):
+    def prepare(self, guest, meter):
+        ignore = guest
+        ignore = meter
+
+    def _get_bootdev(self, isinstall, guest):
+        ignore = isinstall
+        ignore = guest
+        return self.bootconfig.BOOT_DEVICE_HARDDISK
+
+    def has_install_phase(self):
+        return False
 
 # Back compat
 Installer.get_install_xml = Installer.get_xml_config

@@ -21,10 +21,8 @@
 
 import os
 import time
-import re
 import logging
 import signal
-import copy
 
 import urlgrabber.progress as progress
 import libvirt
@@ -42,42 +40,16 @@ from VirtualDevice import VirtualDevice
 from VirtualDisk import VirtualDisk
 from VirtualInputDevice import VirtualInputDevice
 from VirtualCharDevice import VirtualCharDevice
+from VirtualController import VirtualControllerUSB
 from Clock import Clock
 from Seclabel import Seclabel
 from CPU import CPU
+from DomainNumatune import DomainNumatune
 from DomainFeatures import DomainFeatures
 
 import osdict
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
-
-def _validate_cpuset(conn, val):
-    if val is None or val == "":
-        return
-
-    if type(val) is not type("string") or len(val) == 0:
-        raise ValueError(_("cpuset must be string"))
-    if re.match("^[0-9,-]*$", val) is None:
-        raise ValueError(_("cpuset can only contain numeric, ',', or "
-                           "'-' characters"))
-
-    pcpus = _util.get_phy_cpus(conn)
-    for c in val.split(','):
-        if c.find('-') != -1:
-            (x, y) = c.split('-')
-            if int(x) > int(y):
-                raise ValueError(_("cpuset contains invalid format."))
-            if int(x) >= pcpus or int(y) >= pcpus:
-                raise ValueError(_("cpuset's pCPU numbers must be less "
-                                   "than pCPUs."))
-        else:
-            if len(c) == 0:
-                continue
-
-            if int(c) >= pcpus:
-                raise ValueError(_("cpuset's pCPU numbers must be less "
-                                   "than pCPUs."))
-    return
 
 class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
@@ -87,50 +59,65 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
     _default_os_type = None
 
-    def list_os_types():
-        return osdict.sort_helper(Guest._OS_TYPES)
-    list_os_types = staticmethod(list_os_types)
+    @staticmethod
+    def pretty_os_list():
+        """
+        Return a strip representation of OS list for printing
+        """
+        ret = ""
+        for t in Guest.list_os_types():
+            for v in Guest.list_os_variants(t):
+                ret += "%-20s : %s\n" % (v, Guest.get_os_variant_label(t, v))
+        return ret
 
-    def list_os_variants(type, sortpref=None):
+    @staticmethod
+    def list_os_types(supported=False, filtervars=None):
+        """
+        @param filtervars: List of only variants we want to show by default
+        """
+        vals = osdict.sort_helper(Guest._OS_TYPES)
+        for t in vals[:]:
+            if not Guest.list_os_variants(t, supported=supported,
+                                          filtervars=filtervars):
+                vals.remove(t)
+        return vals
+
+    @staticmethod
+    def list_os_variants(type, sortpref=None, supported=False, filtervars=None):
         """
         Return a list of sorted os variants for the passed distro type
 
         @param sortpref: An option list of osdict 'distro' tags to
         prioritize in the returned list, e.g. passing ["fedora"] will make
         the sorted list have all fedora distros first
+        @param filtervars: List of only variants we want to show by default
         """
-        return osdict.sort_helper(Guest._OS_TYPES[type]["variants"],
+        vals = osdict.sort_helper(Guest._OS_TYPES[type]["variants"],
                                   sortpref)
-    list_os_variants = staticmethod(list_os_variants)
+        ret = []
+        for v in vals:
+            if filtervars:
+                if v not in filtervars:
+                    continue
+            elif supported:
+                if not osdict.lookup_osdict_key(None, None,
+                                                type, v, "supported"):
+                    continue
 
+            ret.append(v)
+        return ret
+
+    @staticmethod
     def get_os_type_label(type):
         return Guest._OS_TYPES[type]["label"]
-    get_os_type_label = staticmethod(get_os_type_label)
 
+    @staticmethod
     def get_os_variant_label(type, variant):
         return Guest._OS_TYPES[type]["variants"][variant]["label"]
-    get_os_variant_label = staticmethod(get_os_variant_label)
 
+    @staticmethod
     def cpuset_str_to_tuple(conn, cpuset):
-        _validate_cpuset(conn, cpuset)
-        pinlist = [False] * _util.get_phy_cpus(conn)
-
-        entries = cpuset.split(",")
-        for e in entries:
-            series = e.split("-", 1)
-
-            if len(series) == 1:
-                pinlist[int(series[0])] = True
-                continue
-
-            start = int(series[0])
-            end = int(series[1])
-
-            for i in range(start, end):
-                pinlist[i] = True
-
-        return tuple(pinlist)
-    cpuset_str_to_tuple = staticmethod(cpuset_str_to_tuple)
+        return DomainNumatune.cpuset_str_to_tuple(conn, cpuset)
 
     @staticmethod
     def generate_cpuset(conn, mem):
@@ -187,14 +174,14 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         return cpustr
 
     def __init__(self, type=None, connection=None, hypervisorURI=None,
-                 installer=None, parsexml=None, caps=None):
+                 installer=None, parsexml=None, caps=None, conn=None):
 
         # Set up the connection, since it is fundamental for other init
-        conn = connection
+        conn = conn or connection
         if conn == None:
             logging.debug("No conn passed to Guest, opening URI '%s'" %
                           hypervisorURI)
-            conn = libvirt.open(hypervisorURI)
+            conn = self._open_uri(hypervisorURI)
 
         if conn == None:
             raise RuntimeError(_("Unable to connect to hypervisor, aborting "
@@ -204,6 +191,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._uuid = None
         self._memory = None
         self._maxmemory = None
+        self._hugepage = None
         self._vcpus = 1
         self._maxvcpus = 1
         self._cpuset = None
@@ -255,7 +243,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         # Add default devices (if applicable)
         inp = self._get_default_input_device()
-        self.add_device(inp)
+        if inp:
+            self.add_device(inp)
         self._default_input_device = inp
 
         con = self._get_default_console_device()
@@ -267,15 +256,13 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._features = DomainFeatures(self.conn)
         self._clock = Clock(self.conn)
         self._seclabel = Seclabel(self.conn)
-        self._seclabel.model = None
         self._cpu = CPU(self.conn)
+        self._numatune = DomainNumatune(self.conn)
 
-    def is_xen(self):
-        return (self.installer and
-                (self.installer.os_type == "xen" or
-                 self.installer.os_type == "linux"))
-    def is_hvm(self):
-        return self.installer and self.installer.os_type == "hvm"
+    def _open_uri(self, uri):
+        # This is here so test suite can overwrite it, to make sure
+        # Guest is never opening anything
+        return libvirt.open(uri)
 
     ######################
     # Property accessors #
@@ -296,6 +283,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def get_cpu(self):
         return self._cpu
     cpu = property(get_cpu)
+    def get_numatune(self):
+        return self._numatune
+    numatune = property(get_numatune)
 
     def _get_features(self):
         return self._features
@@ -305,7 +295,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     def get_name(self):
         return self._name
     def set_name(self, val):
-        _util.validate_name(_("Guest"), val)
+        _util.validate_name(_("Guest"), val, lencheck=True)
 
         do_fail = False
         if self.replace != True:
@@ -355,6 +345,14 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                               xpath="./memory",
                               get_converter=lambda s, x: int(x) / 1024,
                               set_converter=lambda s, x: int(x) * 1024)
+    def get_hugepage(self):
+        return self._hugepage
+    def set_hugepage(self, val):
+        if val is None:
+            return val
+        self._hugepage = bool(val)
+    hugepage = _xml_property(get_hugepage, set_hugepage,
+                             xpath="./memoryBacking/hugepages", is_bool=True)
 
     # UUID for the guest
     def get_uuid(self):
@@ -411,7 +409,7 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             self._cpuset = None
             return
 
-        _validate_cpuset(self.conn, val)
+        DomainNumatune.validate_cpuset(self.conn, val)
         self._cpuset = val
     cpuset = _xml_property(get_cpuset, set_cpuset,
                            xpath="./vcpu/@cpuset")
@@ -469,8 +467,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             for ostype in self.list_os_types():
                 if (val in self._OS_TYPES[ostype]["variants"] and
                     not self._OS_TYPES[ostype]["variants"][val].get("skip")):
-                    logging.debug("Setting os type to '%s' for variant '%s'" %
-                                  (ostype, val))
+                    logging.debug("Setting os type to '%s' for variant '%s'",
+                                  ostype, val)
                     self.os_type = ostype
                     self._os_variant = val
                     found = True
@@ -782,6 +780,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             "video"     : virtinst.VirtualVideoDevice,
             "watchdog"  : virtinst.VirtualWatchdog,
             "controller": virtinst.VirtualController,
+            "filesystem": virtinst.VirtualFilesystem,
+            "smartcard" : virtinst.VirtualSmartCardDevice,
+            "redirdev"   : virtinst.VirtualRedirDevice,
         }
 
         # Hand off all child element parsing to relevant classes
@@ -814,11 +815,15 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         self._seclabel = Seclabel(self.conn, parsexmlnode=self._xml_node,
                                   caps=caps)
         self._cpu = CPU(self.conn, parsexmlnode=self._xml_node, caps=caps)
+        self._numatune = DomainNumatune(self.conn,
+                                        parsexmlnode=self._xml_node, caps=caps)
 
     def _get_default_input_device(self):
         """
         Return a VirtualInputDevice.
         """
+        if self.installer and self.installer.is_container():
+            return None
         dev = VirtualInputDevice(self.conn)
         return dev
 
@@ -875,10 +880,12 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
     def _get_emulator_xml(self):
         emulator = self.emulator
-        if self.is_xen():
+        if self.installer.is_xenpv():
             return ""
 
-        if not self.emulator and self.is_hvm() and self.type == "xen":
+        if (not self.emulator and
+            self.installer.is_hvm() and
+            self.type == "xen"):
             if self._get_caps().host.arch in ("x86_64"):
                 emulator = "/usr/lib64/xen/bin/qemu-dm"
             else:
@@ -894,6 +901,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         """
         Return features (pae, acpi, apic) xml
         """
+        if self.installer and self.installer.is_container():
+            return ""
         return features.get_xml_config()
 
     def _get_cpu_xml(self):
@@ -1004,9 +1013,8 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         origdevs = self.get_all_devices()
         devs = []
         for dev in origdevs:
-            newdev = copy.copy(dev)
-            devs.append(newdev)
-        tmpfeat = copy.copy(self.features)
+            devs.append(dev.copy())
+        tmpfeat = self.features.copy()
 
         def get_transient_devices(devtype):
             return self._dev_build_list(devtype, devs)
@@ -1042,10 +1050,23 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
 
         xml = add("<domain type='%s'>" % self.type)
         xml = add("  <name>%s</name>" % self.name)
-        xml = add("  <currentMemory>%s</currentMemory>" % (self.memory * 1024))
-        xml = add("  <memory>%s</memory>" % (self.maxmemory * 1024))
         xml = add("  <uuid>%s</uuid>" % self.uuid)
         xml = add(desc_xml)
+        xml = add("  <memory>%s</memory>" % (self.maxmemory * 1024))
+        xml = add("  <currentMemory>%s</currentMemory>" % (self.memory * 1024))
+
+        # <blkiotune>
+        # <memtune>
+        if self.hugepage is True:
+            xml = add("  <memoryBacking>")
+            xml = add("    <hugepages/>")
+            xml = add("  </memoryBacking>")
+
+        xml = add(self._get_vcpu_xml())
+        # <cputune>
+        xml = add(self.numatune.get_xml_config())
+        # <sysinfo>
+        # XXX: <bootloader> goes here, not in installer XML
         xml = add("  %s" % osblob)
         xml = add(self._get_features_xml(tmpfeat))
         xml = add(self._get_cpu_xml())
@@ -1053,7 +1074,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         xml = add("  <on_poweroff>destroy</on_poweroff>")
         xml = add("  <on_reboot>%s</on_reboot>" % action)
         xml = add("  <on_crash>%s</on_crash>" % action)
-        xml = add(self._get_vcpu_xml())
         xml = add("  <devices>")
         xml = add(self._get_device_xml(devs, install))
         xml = add("  </devices>")
@@ -1155,15 +1175,46 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
     # Actual install methods #
     ##########################
 
+    def remove_original_vm(self, force=None):
+        """
+        Remove the existing VM with the same name if requested, or error
+        if there is a collision.
+        """
+        if force == None:
+            force = self.replace
+
+        vm = None
+        try:
+            vm = self.conn.lookupByName(self.name)
+        except libvirt.libvirtError:
+            pass
+
+        if vm is None:
+            return
+
+        if not force:
+            raise RuntimeError(_("Domain named %s already exists!") %
+                               self.name)
+
+        try:
+            logging.debug("Explicitly replacing guest '%s'", self.name)
+            if vm.ID() != -1:
+                logging.info("Destroying guest '%s'", self.name)
+                vm.destroy()
+
+            logging.info("Undefining guest '%s'", self.name)
+            vm.undefine()
+        except libvirt.libvirtError, e:
+            raise RuntimeError(_("Could not remove old vm '%s': %s") %
+                               (self.name, str(e)))
+
     def start_install(self, consolecb=None, meter=None, removeOld=None,
-                      wait=True, dry=False, return_xml=False):
+                      wait=True, dry=False, return_xml=False, noboot=False):
         """
         Begin the guest install (stage1).
         @param return_xml: Don't create the guest, just return generated XML
         """
         is_initial = True
-        if removeOld == None:
-            removeOld = self.replace
 
         self.validate_parms()
         self._consolechild = None
@@ -1181,10 +1232,11 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 return
 
             # Remove existing VM if requested
-            self._replace_original_vm(removeOld)
+            self.remove_original_vm(removeOld)
 
             self.domain = self._create_guest(consolecb, meter, wait,
-                                             start_xml, final_xml, is_initial)
+                                             start_xml, final_xml, is_initial,
+                                             noboot)
 
             # Set domain autostart flag if requested
             self._flag_autostart()
@@ -1208,31 +1260,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             return
 
         return self._create_guest(consolecb, meter, wait,
-                                  start_xml, final_xml, is_initial)
+                                  start_xml, final_xml, is_initial, False)
 
-    def _build_xml(self, is_initial):
-        log_label = is_initial and "install" or "continue"
-        disk_boot = not is_initial
-
-        start_xml = self.get_xml_config(install=True, disk_boot=disk_boot)
-        final_xml = self.get_xml_config(install=False)
-
-        logging.debug("Generated %s XML: %s" %
-                      (log_label,
-                      (start_xml and ("\n" + start_xml) or "None required")))
-        logging.debug("Generated boot XML: \n%s" % final_xml)
-
-        return start_xml, final_xml
-
-    def _create_guest(self, consolecb, meter, wait,
-                      start_xml, final_xml, is_initial):
-        """
-        Actually do the XML logging, guest defining/creating, console
-        launching and waiting
-
-        @param is_initial: If running initial guest creation, else we
-                           are continuing the install
-        """
+    def _build_meter(self, meter, is_initial):
         if is_initial:
             meter_label = _("Creating domain...")
         else:
@@ -1242,20 +1272,59 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             meter = progress.BaseMeter()
         meter.start(size=None, text=meter_label)
 
-        if is_initial:
+        return meter
+
+    def _build_xml(self, is_initial):
+        log_label = is_initial and "install" or "continue"
+        disk_boot = not is_initial
+
+        start_xml = self.get_xml_config(install=True, disk_boot=disk_boot)
+        final_xml = self.get_xml_config(install=False)
+
+        logging.debug("Generated %s XML: %s",
+                      log_label,
+                      (start_xml and ("\n" + start_xml) or "None required"))
+        logging.debug("Generated boot XML: \n%s", final_xml)
+
+        return start_xml, final_xml
+
+    def _create_guest(self, consolecb, meter, wait,
+                      start_xml, final_xml, is_initial, noboot):
+        """
+        Actually do the XML logging, guest defining/creating, console
+        launching and waiting
+
+        @param is_initial: If running initial guest creation, else we
+                           are continuing the install
+        @param noboot: Don't boot guest if no install phase
+        """
+        meter = self._build_meter(meter, is_initial)
+        doboot = not noboot or self.installer.has_install_phase()
+        if not doboot:
+            consolecb = None
+
+        if is_initial and doboot:
             dom = self.conn.createLinux(start_xml or final_xml, 0)
         else:
             dom = self.conn.defineXML(start_xml or final_xml)
-            dom.create()
+            if doboot:
+                dom.create()
 
         self.domain = dom
         meter.end(0)
 
-        logging.debug("Started guest, connecting to console if requested")
-        (self.domain,
-         self._consolechild) = self._wait_and_connect_console(consolecb)
+        if doboot:
+            logging.debug("Started guest, connecting to console if requested")
+            (self.domain,
+             self._consolechild) = self._wait_and_connect_console(consolecb)
 
         self.domain = self.conn.defineXML(final_xml)
+        if is_initial:
+            try:
+                logging.debug("XML fetched from libvirt object:\n%s",
+                              dom.XMLDesc(0))
+            except Exception, e:
+                logging.debug("Error fetching XML from libvirt object: %s", e)
 
         # if we connected the console, wait for it to finish
         self._waitpid_console(self._consolechild, wait)
@@ -1279,7 +1348,6 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                                  "able to find more information in the logs"))
 
         if consolecb:
-            logging.debug("Launching console callback")
             child = consolecb(dom)
 
         return dom, child
@@ -1294,41 +1362,11 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
         try:
             os.waitpid(console_child, 0)
         except OSError, (err_no, msg):
-            logging.debug("waitpid: %s: %s" % (err_no, msg))
+            logging.debug("waitpid: %s: %s", err_no, msg)
 
         # ensure there's time for the domain to finish destroying if the
         # install has finished or the guest crashed
         time.sleep(1)
-
-    def _replace_original_vm(self, removeOld):
-        """
-        Remove the existing VM with the same name if requested, or error
-        if there is a collision.
-        """
-        vm = None
-        try:
-            vm = self.conn.lookupByName(self.name)
-        except libvirt.libvirtError:
-            pass
-
-        if vm is None:
-            return
-
-        if not removeOld:
-            raise RuntimeError(_("Domain named %s already exists!") %
-                               self.name)
-
-        try:
-            if vm.ID() != -1:
-                logging.info("Destroying image %s" % self.name)
-                vm.destroy()
-
-            logging.info("Removing old definition for image %s" % self.name)
-            vm.undefine()
-        except libvirt.libvirtError, e:
-            raise RuntimeError(_("Could not remove old vm '%s': %s") %
-                               (self.name, str(e)))
-
 
     def _flag_autostart(self):
         """
@@ -1406,10 +1444,30 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
             if hasattr(d, "virtinst_default"):
                 remove_func(d)
 
+    def add_usb_ich9_controllers(self):
+        ctrl = VirtualControllerUSB(self.conn,
+                                    model="ich9-ehci1")
+        self.add_device(ctrl)
+
+        ctrl = VirtualControllerUSB(self.conn,
+                                    model="ich9-uhci1")
+        ctrl.get_master().startport = 0
+        self.add_device(ctrl)
+
+        ctrl = VirtualControllerUSB(self.conn,
+                                    model="ich9-uhci2")
+        ctrl.get_master().startport = 2
+        self.add_device(ctrl)
+
+        ctrl = VirtualControllerUSB(self.conn,
+                                    model="ich9-uhci3")
+        ctrl.get_master().startport = 4
+        self.add_device(ctrl)
+
     def _set_defaults(self, devlist_func, remove_func, features):
-        if self.is_hvm():
+        if self.installer.is_hvm():
             self._set_hvm_defaults(devlist_func, features)
-        if self.is_xen():
+        if self.installer.is_xenpv():
             self._set_pv_defaults(devlist_func, remove_func)
 
         soundtype = VirtualDevice.VIRTUAL_DEV_AUDIO
@@ -1434,9 +1492,9 @@ class Guest(XMLBuilderDomain.XMLBuilderDomain):
                 if disk.device == disk.DEVICE_FLOPPY:
                     disk.bus = "fdc"
                 else:
-                    if self.is_hvm():
+                    if self.installer.is_hvm():
                         disk.bus = "ide"
-                    elif self.is_xen():
+                    elif self.installer.is_xenpv():
                         disk.bus = "xen"
             used_targets.append(disk.generate_target(used_targets))
 

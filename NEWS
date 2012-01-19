@@ -1,6 +1,19 @@
    Virtinst News
    =================
 
+Release 0.600.0 (July 26, 2011)
+-------------------------------
+- virt-install: Various improvements to enable LXC/container guests:
+- New --filesystem option for <filesystem> devices
+- New --init option for container <init> path
+- New --container option (similar to --paravirt or --hvm)
+- virt-install: Make --location  remotely (with latest libvirt)
+- virt-install: New --smartcard option for <smartcard> devices
+- (Marc-André Lureau)
+- virt-install: New --numatune option for building guest <numatune> XML
+- virt-install: option to set --disk error_policy=
+- virt-install: option to set --disk serial=
+
 Release 0.500.6 (March 24, 2011)
 --------------------------------
 - virt-install: --graphics spice now enables spicevmc and qxl

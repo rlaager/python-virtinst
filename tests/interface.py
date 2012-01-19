@@ -71,7 +71,7 @@ class TestInterfaces(unittest.TestCase):
         iface = obj.install()
 
         newxml = iface.XMLDesc(0)
-        logging.debug("Defined XML:\n%s" % newxml)
+        logging.debug("Defined XML:\n%s", newxml)
 
         iface.undefine()
 

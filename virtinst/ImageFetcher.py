@@ -28,7 +28,7 @@ import urllib2
 import urlparse
 import ftplib
 import tempfile
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 # This is a generic base class for fetching/extracting files from
 # a media source, such as CD ISO, NFS server, or HTTP/FTP server
@@ -80,7 +80,7 @@ class ImageFetcher:
         try:
             path = self._make_path(filename)
             base = os.path.basename(filename)
-            logging.debug("Fetching URI: %s" % path)
+            logging.debug("Fetching URI: %s", path)
 
             try:
                 f = grabber.urlopen(path,
@@ -109,7 +109,7 @@ class URIImageFetcher(ImageFetcher):
 
     def prepareLocation(self):
         if not self.hasFile(""):
-            raise ValueError(_("Opening URL %s failed.") % \
+            raise ValueError(_("Opening URL %s failed.") %
                               (self.location))
 
 class HTTPImageFetcher(URIImageFetcher):
@@ -121,7 +121,7 @@ class HTTPImageFetcher(URIImageFetcher):
             request.get_method = lambda: "HEAD"
             urllib2.urlopen(request)
         except Exception, e:
-            logging.debug("HTTP hasFile: didn't find %s: %s" % (path, str(e)))
+            logging.debug("HTTP hasFile: didn't find %s: %s", path, str(e))
             return False
         return True
 
@@ -149,8 +149,8 @@ class FTPImageFetcher(URIImageFetcher):
                 # If it's a dir
                 self.ftp.cwd(url[2])
         except ftplib.all_errors, e:
-            logging.debug("FTP hasFile: couldn't access %s: %s" %
-                          (path, str(e)))
+            logging.debug("FTP hasFile: couldn't access %s: %s",
+                          path, str(e))
             return False
 
         return True
@@ -166,7 +166,7 @@ class LocalImageFetcher(ImageFetcher):
         if os.path.exists(src):
             return True
         else:
-            logging.debug("local hasFile: Couldn't find %s" % src)
+            logging.debug("local hasFile: Couldn't find %s", src)
             return False
 
 # This is a fetcher capable of extracting files from a NFS server

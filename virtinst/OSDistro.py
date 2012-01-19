@@ -30,7 +30,7 @@ import ConfigParser
 import virtinst
 import osdict
 from virtinst import _util
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 from ImageFetcher import MountedImageFetcher
 from ImageFetcher import FTPImageFetcher
@@ -89,6 +89,8 @@ def _storeForDistro(fetcher, baseuri, typ, progresscb, arch, distro=None,
         stores.append(UbuntuDistro)
     if distro == "mandriva" or distro is None:
         stores.append(MandrivaDistro)
+    if distro == "mageia" or distro is None:
+        stores.append(MageiaDistro)
     # XXX: this is really "nevada"
     if distro == "solaris" or distro is None:
         stores.append(SolarisDistro)
@@ -296,8 +298,8 @@ class Distro:
             return (None, None)
 
         if not _check_ostype_valid(self.os_type):
-            logging.debug("%s set os_type to %s, which is not in osdict." %
-                          (self, self.os_type))
+            logging.debug("%s set os_type to %s, which is not in osdict.",
+                          self, self.os_type)
             return (None, None)
 
         if not self.os_variant:
@@ -305,8 +307,8 @@ class Distro:
 
         if not _check_osvariant_valid(self.os_type, self.os_variant):
             logging.debug("%s set os_variant to %s, which is not in osdict"
-                          " for distro %s." %
-                          (self, self.os_variant, self.os_type))
+                          " for distro %s.",
+                          self, self.os_variant, self.os_type)
             return (self.os_type, None)
 
         return (self.os_type, self.os_variant)
@@ -541,7 +543,7 @@ class RHELDistro(RedHatDistro):
                 else:
                     self.os_variant = "rhel4"
 
-                logging.debug("Detected a %s distro" % self.os_variant)
+                logging.debug("Detected a %s distro", self.os_variant)
                 return True
             return False
 
@@ -933,16 +935,40 @@ class DebianDistro(Distro):
         filename = "%s/MANIFEST" % self._prefix
         regex = ".*%s.*" % self._installer_name
         if self._fetchAndMatchRegex(fetcher, progresscb, filename, regex):
-            logging.debug("Detected a %s distro" % self.name)
+            logging.debug("Detected a %s distro", self.name)
             return True
 
-        logging.debug("MANIFEST didn't match regex, not a %s distro" %
+        logging.debug("MANIFEST didn't match regex, not a %s distro",
                       self.name)
         return False
 
 
 class UbuntuDistro(DebianDistro):
     name = "Ubuntu"
+    # regular tree:
+    # http://archive.ubuntu.com/ubuntu/dists/natty/main/installer-amd64/
+
+    def isValidStore(self, fetcher, progresscb):
+        if fetcher.hasFile("%s/MANIFEST" % self._prefix):
+            # For regular trees
+            filename = "%s/MANIFEST" % self._prefix
+            regex = ".*%s.*" % self._installer_name
+        elif fetcher.hasFile("install/netboot/version.info"):
+            # For trees based on ISO's
+            self._prefix = "install"
+            self._set_media_paths()
+            filename = "%s/netboot/version.info" % self._prefix
+            regex = "%s*" % self.name
+        else:
+            logging.debug("Doesn't look like an %s Distro.", self.name)
+            return False
+
+        if self._fetchAndMatchRegex(fetcher, progresscb, filename, regex):
+            logging.debug("Detected an %s distro", self.name)
+            return True
+
+        logging.debug("Regex didn't match, not an %s distro", self.name)
+        return False
 
 
 class MandrivaDistro(Distro):
@@ -967,11 +993,14 @@ class MandrivaDistro(Distro):
             return False
 
         if self._fetchAndMatchRegex(fetcher, progresscb, "VERSION",
-                                    ".*Mandriva.*"):
-            logging.debug("Detected a Mandriva distro")
+                                    ".*%s.*" % self.name):
+            logging.debug("Detected a %s distro", self.name)
             return True
 
         return False
+
+class MageiaDistro(MandrivaDistro):
+    name = "Mageia"
 
 # Solaris and OpenSolaris distros
 class SunDistro(Distro):

@@ -44,7 +44,7 @@ import Guest
 from VirtualNetworkInterface import VirtualNetworkInterface
 from VirtualDisk import VirtualDisk
 from virtinst import Storage
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 import _util
 
 def _listify(val):
@@ -115,11 +115,12 @@ class CloneDesign(object):
     CLONE_POLICY_NO_SHAREABLE  = 2
     CLONE_POLICY_NO_EMPTYMEDIA = 3
 
-    def __init__(self, connection):
-        # hypervisor connection
-        if not isinstance(connection, libvirt.virConnect):
+    def __init__(self, connection=None, conn=None):
+        conn = conn or connection
+
+        if not isinstance(conn, libvirt.virConnect):
             raise ValueError(_("Connection must be a 'virConnect' instance."))
-        self._hyper_conn = connection
+        self._hyper_conn = conn
 
         # original guest name or uuid
         self._original_guest        = None
@@ -149,7 +150,7 @@ class CloneDesign(object):
                                     self.CLONE_POLICY_NO_EMPTYMEDIA]
 
         # Throwaway guest to use for easy validation
-        self._valid_guest        = Guest.Guest(connection=connection)
+        self._valid_guest        = Guest.Guest(conn=conn)
 
         # Generate a random UUID at the start
         while 1:
@@ -188,14 +189,6 @@ class CloneDesign(object):
             self._valid_guest.set_name(name)
         except ValueError, e:
             raise ValueError(_("Invalid name for new guest: %s") % e)
-
-        # Make sure new VM name isn't taken.
-        try:
-            if self._hyper_conn.lookupByName(name) is not None:
-                raise ValueError(_("Domain name '%s' already in use.") %
-                                 name)
-        except libvirt.libvirtError:
-            pass
 
         self._clone_name = name
     clone_name = property(get_clone_name, set_clone_name,
@@ -390,6 +383,13 @@ class CloneDesign(object):
                                  "domain state is not checked before "
                                  "cloning.")
 
+    def _get_replace(self):
+        return self._valid_guest.replace
+    def _set_replace(self, val):
+        self._valid_guest.replace = bool(val)
+    replace = property(_get_replace, _set_replace,
+                       doc="f enabled, don't check for clone name collision, "
+                           "simply undefine any conflicting guest.")
     # Functional methods
 
     def setup_original(self):
@@ -408,8 +408,8 @@ class CloneDesign(object):
         # Pull clonable storage info from the original xml
         self._original_virtual_disks = self._get_original_devices_info(self._original_xml)
 
-        logging.debug("Original paths: %s" % (self.original_devices))
-        logging.debug("Original sizes: %s" % (self.original_devices_size))
+        logging.debug("Original paths: %s", self.original_devices)
+        logging.debug("Original sizes: %s", self.original_devices_size)
 
         # If domain has devices to clone, it must be 'off' or 'paused'
         if (not self.clone_running and
@@ -432,12 +432,11 @@ class CloneDesign(object):
 
         # XXX: Make sure a clone name has been specified? or generate one?
 
-        logging.debug("Clone paths: %s" % (self._clone_devices))
+        logging.debug("Clone paths: %s", self._clone_devices)
 
         # We simply edit the original VM xml in place
         doc = libxml2.parseDoc(self._clone_xml)
         ctx = doc.xpathNewContext()
-        typ = ctx.xpathEval("/domain")[0].prop("type")
 
         # changing name
         node = ctx.xpathEval("/domain/name")
@@ -465,7 +464,7 @@ class CloneDesign(object):
                 mac = self._clone_mac[i - 1]
             except Exception:
                 while 1:
-                    mac = _util.randomMAC(typ)
+                    mac = _util.randomMAC(self.original_conn.getType().lower())
                     dummy, msg = self._check_mac(mac)
                     if msg is not None:
                         continue
@@ -521,11 +520,13 @@ class CloneDesign(object):
         additional debug logging.
         """
         self.setup_original()
-        logging.debug("Original guest xml is\n%s" % (self._original_xml))
+        logging.debug("Original guest xml is\n%s", self._original_xml)
 
         self.setup_clone()
-        logging.debug("Clone guest xml is\n%s" % (self._clone_xml))
+        logging.debug("Clone guest xml is\n%s", self._clone_xml)
 
+    def remove_original_vm(self, force=None):
+        return self._valid_guest.remove_original_vm(force=force)
 
     # Private helper functions
 
@@ -672,15 +673,17 @@ def start_duplicate(design, meter=None):
 
     dom = None
     try:
-        # Define domain first so we can catch any xml errors before duplicating
-        # storage
+        # Replace orig VM if required
+        design.remove_original_vm()
+
+        # Define domain early to catch any xml errors before duping storage
         dom = design.original_conn.defineXML(design.clone_xml)
 
         if design.preserve == True:
             _do_duplicate(design, meter)
 
     except Exception, e:
-        logging.debug("Duplicate failed: %s" % str(e))
+        logging.debug("Duplicate failed: %s", str(e))
         if dom:
             dom.undefine()
         raise

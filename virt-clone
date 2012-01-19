@@ -38,7 +38,7 @@ def get_clone_name(new_name, auto_clone, design):
     if not new_name and auto_clone:
         # Generate a name to use
         new_name = clmgr.generate_clone_name(design)
-        logging.debug("Auto-generated clone name '%s'." % new_name)
+        logging.debug("Auto-generated clone name '%s'", new_name)
 
     prompt_txt = _("What is the name for the cloned virtual machine?")
     err_txt = _("A name is required for the new virtual machine.")
@@ -107,9 +107,12 @@ def _check_disk(conn, clone_path, orig_path, preserve):
 
     prompt_txt = (_("What would you like to use as the cloned disk "
                     "(file path) for '%s'?") % orig_path)
-    arg_dict = {"path": clone_path, "size": .00001, "conn": conn}
-    return cli.disk_prompt(prompt_txt, arg_dict, warn_overwrite=not preserve,
-                           prompt_size=False, path_to_clone=orig_path)
+
+    return cli.disk_prompt(conn, clone_path, .00001, False,
+                           prompt_txt,
+                           warn_overwrite=not preserve,
+                           check_size=False,
+                           path_to_clone=orig_path)
 
 def get_clone_sparse(sparse, design):
     design.set_clone_sparse(sparse)
@@ -124,59 +127,43 @@ def get_force_target(target, design):
 
 def parse_args():
     parser = cli.setupParser()
-
-    parser.add_option("", "--connect", type="string", dest="connect",
-                      action="callback", callback=cli.check_before_store,
-                      help=_("Connect to hypervisor with URI"),
-                      default=None)
+    cli.add_connect_option(parser)
 
     geng = OptionGroup(parser, _("General Options"))
-    geng.add_option("-o", "--original", type="string", dest="original_guest",
-                    action="callback", callback=cli.check_before_store,
+    geng.add_option("-o", "--original", dest="original_guest",
                     help=_("Name of the original guest; "
                            "The status must be shut off or paused."))
-    geng.add_option("", "--original-xml", type="string",
-                    dest="original_xml", action="callback",
-                    callback=cli.check_before_store,
+    geng.add_option("", "--original-xml", dest="original_xml",
                     help=_("XML file to use as the original guest."))
     geng.add_option("", "--auto-clone", dest="auto_clone", action="store_true",
                     help=_("Auto generate clone name and storage paths from"
                            " the original guest configuration."))
-    geng.add_option("-n", "--name", type="string", dest="new_name",
-                    action="callback", callback=cli.check_before_store,
+    geng.add_option("-n", "--name", dest="new_name",
                     help=_("Name for the new guest"))
-    geng.add_option("-u", "--uuid", type="string",
-                    dest="new_uuid", action="callback",
-                    callback=cli.check_before_store,
+    geng.add_option("-u", "--uuid", dest="new_uuid",
                     help=_("New UUID for the clone guest; Default is a "
                            "randomly generated UUID"))
     parser.add_option_group(geng)
 
     stog = OptionGroup(parser, _("Storage Configuration"))
-    stog.add_option("-f", "--file", type="string",
-                    dest="new_diskfile", action="callback",
-                    callback=cli.check_before_append,
+    stog.add_option("-f", "--file", dest="new_diskfile", action="append",
                     help=_("New file to use as the disk image for the "
                            "new guest"))
-    stog.add_option("", "--force-copy", type="string",
-                    dest="target", action="callback",
-                    callback=cli.check_before_append,
+    stog.add_option("", "--force-copy", dest="target", action="append",
                     help=_("Force to copy devices (eg, if 'hdc' is a "
                            "readonly cdrom device, --force-copy=hdc)"))
-    stog.add_option("", "--nonsparse", action="store_false",
-                    default=True, dest="sparse",
+    stog.add_option("", "--nonsparse", action="store_false", dest="sparse",
+                    default=True,
                     help=_("Do not use a sparse file for the clone's "
                            "disk image"))
     stog.add_option("", "--preserve-data", action="store_false",
-                    default=True, dest="preserve",
+                    dest="preserve", default=True,
                     help=_("Do not clone storage, new disk images specified "
                            "via --file are preserved unchanged"))
     parser.add_option_group(stog)
 
     netg = OptionGroup(parser, _("Networking Configuration"))
-    netg.add_option("-m", "--mac", type="string",
-                    dest="new_mac", action="callback",
-                    callback=cli.check_before_append,
+    netg.add_option("-m", "--mac", dest="new_mac", action="append",
                     help=_("New fixed MAC address for the clone guest. "
                            "Default is a randomly generated MAC"))
     parser.add_option_group(netg)
@@ -185,15 +172,19 @@ def parse_args():
     misc.add_option("", "--print-xml", action="store_true", dest="xmlonly",
                     help=_("Print the generated domain XML rather than define "
                            "and clone the guest."))
+    misc.add_option("", "--replace", action="store_true", dest="replace",
+                    help=_("Don't check for name collision. Allows replacing "
+                           "an existing guest with the new clone"))
     misc.add_option("-d", "--debug", action="store_true", dest="debug",
                       help=_("Print debugging information"))
     misc.add_option("", "--prompt", action="store_true", dest="prompt",
+                    default=False,
                     help=_("Request user input for ambiguous situations or "
-                           "required options."), default=False)
+                           "required options."))
     misc.add_option("", "--force", action="store_true", dest="force",
+                    default=False,
                     help=_("Do not prompt for input. Answers yes where "
-                           "applicable, terminates for all other prompts"),
-                    default=False)
+                           "applicable, terminates for all other prompts"))
     misc.add_option("-q", "--quiet", action="store_true", dest="quiet",
                     help=_("Suppress non-error output"))
     misc.add_option("", "--clone-running", action="store_true",
@@ -222,9 +213,10 @@ def main():
     if not User.current().has_priv(User.PRIV_CLONE, conn.getURI()):
         fail(_("Must be privileged to clone Xen guests"))
 
-    design = clmgr.CloneDesign(connection=conn)
+    design = clmgr.CloneDesign(conn=conn)
 
     design.clone_running = options.clone_running
+    design.replace = bool(options.replace)
     get_original_guest(options.original_guest, options.original_xml,
                        design)
     get_clone_name(options.new_name, options.auto_clone, design)

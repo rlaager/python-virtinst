@@ -30,11 +30,12 @@ import re
 import urlgrabber.progress as progress
 import libvirt
 
+import virtinst
 import _util
 import Storage
 from VirtualDevice import VirtualDevice
 from XMLBuilderDomain import _xml_property
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 def _vdisk_create(path, size, kind, sparse=True):
     force_fixed = "raw"
@@ -116,7 +117,7 @@ def _is_dir_searchable(uid, username, path):
         return False
 
     if proc.returncode != 0:
-        logging.debug("Cmd '%s' failed: %s" % (cmd, err))
+        logging.debug("Cmd '%s' failed: %s", cmd, err)
         return False
 
     return bool(re.search("user:%s:..x" % username, out))
@@ -154,6 +155,7 @@ def _check_if_path_managed(conn, path):
     the passed path. If we can't, throw an error
     """
     vol = None
+    pool = None
     verr = None
     path_is_pool = False
 
@@ -162,16 +164,28 @@ def _check_if_path_managed(conn, path):
             vol = conn.storageVolLookupByPath(path)
             vol.info()
             return vol, None
-        except Exception, e:
+        except libvirt.libvirtError, e:
+            if (hasattr(libvirt, "VIR_ERR_NO_STORAGE_VOL")
+                and e.get_error_code() != libvirt.VIR_ERR_NO_STORAGE_VOL):
+                raise
             return None, e
 
-    pool = _util.lookup_pool_by_path(conn,
-                                     os.path.dirname(path))
-    vol = lookup_vol_by_path()[0]
+    def lookup_vol_name(name):
+        try:
+            name = os.path.basename(path)
+            if pool and name in pool.listVolumes():
+                return pool.lookupByName(name)
+        except:
+            pass
+        return None
 
-    # Is pool running?
-    if pool and pool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
-        pool = None
+    vol = lookup_vol_by_path()[0]
+    if not vol:
+        pool = _util.lookup_pool_by_path(conn, os.path.dirname(path))
+
+        # Is pool running?
+        if pool and pool.info()[0] != libvirt.VIR_STORAGE_POOL_RUNNING:
+            pool = None
 
     # Attempt to lookup path as a storage volume
     if pool and not vol:
@@ -180,6 +194,8 @@ def _check_if_path_managed(conn, path):
             # invalidate it
             pool.refresh(0)
             vol, verr = lookup_vol_by_path()
+            if verr:
+                vol = lookup_vol_name(os.path.basename(path))
         except Exception, e:
             vol = None
             pool = None
@@ -219,9 +235,9 @@ def _build_vol_install(path, pool, size, sparse):
                            "existent volume path '%s'" % path))
 
     logging.debug("Path '%s' is target for pool '%s'. "
-                  "Creating volume '%s'." %
-                  (os.path.dirname(path), pool.name(),
-                   os.path.basename(path)))
+                  "Creating volume '%s'.",
+                  os.path.dirname(path), pool.name(),
+                  os.path.basename(path))
 
     volclass = Storage.StorageVolume.get_volume_for_pool(pool_object=pool)
     cap = (size * 1024 * 1024 * 1024)
@@ -234,26 +250,6 @@ def _build_vol_install(path, pool, size, sparse):
                        capacity=cap, allocation=alloc, pool=pool)
     return volinst
 
-
-def _lookup_vol_name(conn, name_tuple):
-    """
-    lookup volume via tuple passed via __init__'s volName parameter
-    """
-    if type(name_tuple) is not tuple or len(name_tuple) != 2 \
-        or (type(name_tuple[0]) is not type(name_tuple[1]) is not str):
-        raise ValueError(_("volName must be a tuple of the form "
-                           "('poolname', 'volname')"))
-
-    if not conn:
-        raise ValueError(_("'volName' requires a passed connection."))
-    if not _util.is_storage_capable(conn):
-        raise ValueError(_("Connection does not support storage lookup."))
-
-    try:
-        pool = conn.storagePoolLookupByName(name_tuple[0])
-        return pool.storageVolLookupByName(name_tuple[1])
-    except Exception, e:
-        raise ValueError(_("Couldn't lookup volume object: %s" % str(e)))
 
 class VirtualDisk(VirtualDevice):
     """
@@ -321,7 +317,10 @@ class VirtualDisk(VirtualDevice):
     types = [TYPE_FILE, TYPE_BLOCK, TYPE_DIR]
 
     _target_props = ["file", "dev", "dir"]
-    io_modes = ["native", "threads"]
+
+    IO_MODE_NATIVE = "native"
+    IO_MODE_THREADS = "threads"
+    io_modes = [IO_MODE_NATIVE, IO_MODE_THREADS]
 
     @staticmethod
     def disk_type_to_xen_driver_name(disk_type):
@@ -348,6 +347,8 @@ class VirtualDisk(VirtualDevice):
         elif disk_type == VirtualDisk.TYPE_DIR:
             return "dir"
         return "file"
+
+    error_policies = ["none", "stop", "enospace"]
 
     @staticmethod
     def path_exists(conn, path):
@@ -388,7 +389,7 @@ class VirtualDisk(VirtualDevice):
         try:
             uid = _name_uid(username)
         except Exception, e:
-            logging.debug("Error looking up username: %s" % str(e))
+            logging.debug("Error looking up username: %s", str(e))
             return []
 
         fixlist = []
@@ -423,9 +424,9 @@ class VirtualDisk(VirtualDevice):
                                         stderr=subprocess.PIPE)
                 out, err = proc.communicate()
 
-                logging.debug("Ran command '%s'" % cmd)
+                logging.debug("Ran command '%s'", cmd)
                 if out or err:
-                    logging.debug("out=%s\nerr=%s" % (out, err))
+                    logging.debug("out=%s\nerr=%s", out, err)
 
                 if proc.returncode != 0:
                     raise ValueError(err)
@@ -513,13 +514,36 @@ class VirtualDisk(VirtualDevice):
         except:
             return (True, 0)
 
+    @staticmethod
+    def lookup_vol_object(conn, name_tuple):
+        """
+        Return a volume instance from parameters that are passed
+        to disks volName init parameter
+        """
+        if (type(name_tuple) is not tuple or
+            len(name_tuple) != 2 or
+            (type(name_tuple[0]) is not type(name_tuple[1]) is not str)):
+            raise ValueError(_("volName must be a tuple of the form "
+                               "('poolname', 'volname')"))
+
+        if not conn:
+            raise ValueError(_("'volName' requires a passed connection."))
+        if not _util.is_storage_capable(conn):
+            raise ValueError(_("Connection does not support storage lookup."))
+
+        try:
+            pool = conn.storagePoolLookupByName(name_tuple[0])
+            return pool.storageVolLookupByName(name_tuple[1])
+        except Exception, e:
+            raise ValueError(_("Couldn't lookup volume object: %s" % str(e)))
+
     def __init__(self, path=None, size=None, transient=False, type=None,
-                 device=DEVICE_DISK, driverName=None, driverType=None,
+                 device=None, driverName=None, driverType=None,
                  readOnly=False, sparse=True, conn=None, volObject=None,
                  volInstall=None, volName=None, bus=None, shareable=False,
                  driverCache=None, selinuxLabel=None, format=None,
                  validate=True, parsexml=None, parsexmlnode=None, caps=None,
-                 driverIO=None):
+                 driverIO=None, sizebytes=None):
         """
         @param path: filesystem path to the disk image.
         @type path: C{str}
@@ -562,6 +586,9 @@ class VirtualDisk(VirtualDevice):
                          local system. Omitting this may cause issues, be
                          warned!
         @type validate: C{bool}
+        @param sizebytes: Optionally specify storage size in bytes. Takes
+                          precedence over size if specified.
+        @type sizebytes: C{int}
         """
 
         VirtualDevice.__init__(self, conn=conn,
@@ -586,6 +613,8 @@ class VirtualDisk(VirtualDevice):
         self._driverName = driverName
         self._driverType = driverType
         self._driver_io = None
+        self._error_policy = None
+        self._serial = None
         self._target = None
         self._validate = validate
 
@@ -593,7 +622,10 @@ class VirtualDisk(VirtualDevice):
         self.transient = transient
 
         if volName and not volObject:
-            volObject = _lookup_vol_name(conn, volName)
+            volObject = self.lookup_vol_object(conn, volName)
+
+        if sizebytes is not None:
+            size = (float(sizebytes) / float(1024 ** 3))
 
         if self._is_parse():
             self._validate = False
@@ -602,7 +634,7 @@ class VirtualDisk(VirtualDevice):
         self.set_read_only(readOnly, validate=False)
         self.set_sparse(sparse, validate=False)
         self.set_type(type, validate=False)
-        self.set_device(device, validate=False)
+        self.set_device(device or self.DEVICE_DISK, validate=False)
         self._set_path(path, validate=False)
         self._set_size(size, validate=False)
         self._set_vol_object(volObject, validate=False)
@@ -837,6 +869,28 @@ class VirtualDisk(VirtualDevice):
     driver_io = _xml_property(_get_driver_io, _set_driver_io,
                               xpath="./driver/@io")
 
+    def _get_error_policy(self):
+        return self._error_policy
+    def _set_error_policy(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "error_policy")
+            if val not in self.error_policies:
+                raise ValueError(_("Unknown error policy '%s'" % val))
+        self.__validate_wrapper("_error_policy", val, validate,
+                                self.error_policy)
+    error_policy = _xml_property(_get_error_policy, _set_error_policy,
+                                 xpath="./driver/@error_policy")
+
+    def _get_serial(self):
+        return self._serial
+    def _set_serial(self, val, validate=True):
+        if val is not None:
+            self._check_str(val, "serial")
+        self.__validate_wrapper("_serial", val, validate,
+                                self.serial)
+    serial = _xml_property(_get_serial, _set_serial,
+                           xpath="./serial")
+
     # If there is no selinux support on the libvirt connection or the
     # system, we won't throw errors if this is set, just silently ignore.
     def _get_selinux_label(self):
@@ -889,6 +943,9 @@ class VirtualDisk(VirtualDevice):
                 setattr(self, varname, orig)
                 raise
 
+    def can_be_empty(self):
+        return (self.device == self.DEVICE_FLOPPY or
+                self.device == self.DEVICE_CDROM)
 
     def __change_storage(self, path=None, vol_object=None, vol_install=None):
         """
@@ -1032,7 +1089,7 @@ class VirtualDisk(VirtualDevice):
         drvtype = self._driverType
 
         if self.conn:
-            is_qemu = _util.is_qemu(self.conn)
+            is_qemu = self.is_qemu()
             if is_qemu and not drvname:
                 drvname = self.DRIVER_QEMU
 
@@ -1069,23 +1126,38 @@ class VirtualDisk(VirtualDevice):
         Return bool representing if managed storage parameters have
         been explicitly specified or filled in
         """
-        return (self.vol_object != None or self.vol_install != None or
-                self._pool_object != None)
+        return bool(self.vol_object != None or
+                    self.vol_install != None or
+                    self._pool_object != None)
 
     def __creating_storage(self):
         """
         Return True if the user requested us to create a device
         """
-        return not (self.__no_storage() or
-                    (self.__managed_storage() and
-                     self.vol_object or self._pool_object) or
-                    (self.path and os.path.exists(self.path)))
+        if self.__no_storage():
+            return False
+
+        if self.__managed_storage():
+            if self.vol_object or self._pool_object:
+                return False
+            return True
+
+        if (not self.is_remote() and
+            self.path and
+            os.path.exists(self.path)):
+            return False
+
+        return True
 
     def __no_storage(self):
         """
         Return True if no path or storage was specified
         """
-        return (not self.__managed_storage() and not self.path)
+        if self.__managed_storage():
+            return False
+        if self.path:
+            return False
+        return True
 
 
     def _storage_security_label(self):
@@ -1125,8 +1197,7 @@ class VirtualDisk(VirtualDevice):
 
         # No storage specified for a removable device type (CDROM, floppy)
         if self.__no_storage():
-            if (self.device != self.DEVICE_FLOPPY and
-                self.device != self.DEVICE_CDROM):
+            if not self.can_be_empty():
                 raise ValueError(_("Device type '%s' requires a path") %
                                  self.device)
 
@@ -1135,7 +1206,7 @@ class VirtualDisk(VirtualDevice):
         storage_capable = bool(self.conn and
                                _util.is_storage_capable(self.conn))
 
-        if self._is_remote():
+        if self.is_remote():
             if not storage_capable:
                 raise ValueError(_("Connection doesn't support remote "
                                    "storage."))
@@ -1165,8 +1236,8 @@ class VirtualDisk(VirtualDevice):
             return True
 
 
-        if self.device == self.DEVICE_FLOPPY or \
-           self.device == self.DEVICE_CDROM:
+        if (self.device == self.DEVICE_FLOPPY or
+            self.device == self.DEVICE_CDROM):
             raise ValueError(_("Cannot create storage for %s device.") %
                                self.device)
 
@@ -1295,8 +1366,8 @@ class VirtualDisk(VirtualDevice):
             clone_block_size = 1024 * 1024 * 10
             sparse = False
 
-        logging.debug("Local Cloning %s to %s, sparse=%s, block_size=%s" %
-                      (self.clone_path, self.path, sparse, clone_block_size))
+        logging.debug("Local Cloning %s to %s, sparse=%s, block_size=%s",
+                      self.clone_path, self.path, sparse, clone_block_size)
 
         zeros = '\0' * 4096
 
@@ -1364,8 +1435,8 @@ class VirtualDisk(VirtualDevice):
             elif not self._security_can_fix():
                 logging.debug("Can't fix selinux context in this case.")
             else:
-                logging.debug("Changing path=%s selinux label %s -> %s" %
-                              (self.path, storage_label, self.selinux_label))
+                logging.debug("Changing path=%s selinux label %s -> %s",
+                              self.path, storage_label, self.selinux_label)
                 _util.selinux_setfilecon(self.path, self.selinux_label)
 
     def _get_xml_config(self, disknode=None):
@@ -1393,20 +1464,40 @@ class VirtualDisk(VirtualDevice):
 
         ret = "    <disk type='%s' device='%s'>\n" % (self.type, self.device)
 
-        dname = self.driver_name
-        if not dname and self.driver_cache:
-            self.driver_name = "qemu"
+        cache = self.driver_cache
+        iomode = self.driver_io
+
+        if virtinst.enable_rhel6_defaults:
+            # Enable cache=none for non-CDROM devs
+            if (self.is_qemu() and
+                not cache and
+                self.device != self.DEVICE_CDROM):
+                cache = self.CACHE_MODE_NONE
+
+            # Enable AIO native for block devices
+            if (self.is_qemu() and
+                not iomode and
+                self.device == self.DEVICE_DISK and
+                self.type == self.TYPE_BLOCK):
+                iomode = self.IO_MODE_NATIVE
 
         if path:
             drvxml = ""
-            if not self.driver_name is None:
-                drvxml += " name='%s'" % self.driver_name
             if not self.driver_type is None:
                 drvxml += " type='%s'" % self.driver_type
-            if not self.driver_cache is None:
-                drvxml += " cache='%s'" % self.driver_cache
-            if not self.driver_io is None:
-                drvxml += " io='%s'" % self.driver_io
+            if not cache is None:
+                drvxml += " cache='%s'" % cache
+            if not self.error_policy is None:
+                drvxml += " error_policy='%s'" % self.error_policy
+            if not iomode is None:
+                drvxml += " io='%s'" % iomode
+
+            if drvxml and self.driver_name is None:
+                if self.is_qemu():
+                    self.driver_name = "qemu"
+
+            if not self.driver_name is None:
+                drvxml = (" name='%s'" % self.driver_name) + drvxml
 
             if drvxml:
                 ret += "      <driver%s/>\n" % drvxml
@@ -1427,6 +1518,11 @@ class VirtualDisk(VirtualDevice):
             ret += "      <shareable/>\n"
         if ro:
             ret += "      <readonly/>\n"
+
+        if self.serial:
+            ret += ("      <serial>%s</serial>\n" %
+                    _util.xml_escape(self.serial))
+
         ret += "    </disk>"
         return ret
 
@@ -1518,7 +1614,7 @@ class VirtualDisk(VirtualDevice):
             #      our label guesses are built with svirt in mind
             return False
 
-        elif self._is_remote():
+        elif self.is_remote():
             return False
 
         elif not _util.have_selinux():
@@ -1589,7 +1685,7 @@ class VirtualDisk(VirtualDevice):
         # error as appropriate.
         if self.bus == "virtio":
             return ("vd", 1024)
-        elif self.bus == "scsi" or self.bus == "usb":
+        elif self.bus in ["sata", "scsi", "usb"]:
             return ("sd", 1024)
         elif self.bus == "xen":
             return ("xvd", 1024)

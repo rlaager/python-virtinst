@@ -1,8 +1,9 @@
 <domain type='xen'>
   <name>TestGuest</name>
-  <currentMemory>204800</currentMemory>
-  <memory>409600</memory>
   <uuid>12345678-1234-1234-1234-123456789012</uuid>
+  <memory>409600</memory>
+  <currentMemory>204800</currentMemory>
+  <vcpu cpuset='0,2,4,6,8,10,12,14' current='5'>7</vcpu>
   <os>
     <type arch='i686'>hvm</type>
     <loader>/usr/lib/xen/boot/hvmloader</loader>
@@ -22,7 +23,6 @@
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
-  <vcpu cpuset='0,2,4,6,8,10,12,14' current='5'>7</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <disk type='block' device='cdrom'>

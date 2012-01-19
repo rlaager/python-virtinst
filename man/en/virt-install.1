@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-INSTALL 1"
-.TH VIRT-INSTALL 1 "2011-03-24" "" "Virtual Machine Install Tools"
+.TH VIRT-INSTALL 1 "2011-09-02" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -136,9 +136,9 @@ virt\-install \- provision new virtual machines
 \&\fBvirt-install\fR [\s-1OPTION\s0]...
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBvirt-install\fR is a command line tool for creating new \s-1KVM\s0 or Xen virtual
-machines using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library. See the \s-1EXAMPLES\s0
-section at the end of this document to quickly get started.
+\&\fBvirt-install\fR is a command line tool for creating new \s-1KVM\s0, Xen, or Linux
+container guests using the \f(CW\*(C`libvirt\*(C'\fR hypervisor management library.
+See the \s-1EXAMPLES\s0 section at the end of this document to quickly get started.
 .PP
 \&\fBvirt-install\fR tool supports both text based & graphical installations,
 using \s-1VNC\s0 or \s-1SDL\s0 graphics, or a text serial console. The guest can be
@@ -159,7 +159,7 @@ options.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
 Most options are not required. Minimum requirements are \-\-name, \-\-ram,
-guest storage (\-\-disk or \-\-nodisks), and an install option.
+guest storage (\-\-disk, \-\-filesystem or \-\-nodisks), and an install option.
 .IP "\-h, \-\-help" 2
 .IX Item "-h, --help"
 Show the help message and exit
@@ -205,7 +205,7 @@ If omitted, the host \s-1CPU\s0 architecture will be used in the guest.
 .IP "\-\-machine=MACHINE" 2
 .IX Item "--machine=MACHINE"
 The machine type to emulate. This will typically not need to be specified
-for Xen or \s-1KVM\s0, but is useful for choosing machine times of more exotic
+for Xen or \s-1KVM\s0, but is useful for choosing machine types of more exotic
 architectures.
 .IP "\-u \s-1UUID\s0, \-\-uuid=UUID" 2
 .IX Item "-u UUID, --uuid=UUID"
@@ -224,15 +224,30 @@ If values are omitted, the rest will be autofilled prefering sockets over
 cores over threads.
 .IP "\-\-cpuset=CPUSET" 2
 .IX Item "--cpuset=CPUSET"
-Set which physical cpus the guest can use. \f(CW\*(C`CPUSET\*(C'\fR is a comma separated list of numbers, which can also be specified in ranges. Example:
+Set which physical cpus the guest can use. \f(CW\*(C`CPUSET\*(C'\fR is a comma separated list of numbers, which can also be specified in ranges or cpus to exclude. Example:
 .Sp
 .Vb 2
 \&    0,2,3,5     : Use processors 0,2,3 and 5
-\&    1\-3,5,6\-8   : Use processors 1,2,3,5,6,7 and 8
+\&    1\-5,^3,8    : Use processors 1,2,4,5 and 8
 .Ve
 .Sp
 If the value 'auto' is passed, virt-install attempts to automatically determine
 an optimal cpu pinning using \s-1NUMA\s0 data, if available.
+.IP "\-\-numatune=NODESET,[mode=MODE]" 2
+.IX Item "--numatune=NODESET,[mode=MODE]"
+Tune \s-1NUMA\s0 policy for the domain process. Example invocations
+.Sp
+.Vb 2
+\&    \-\-numatune 1,2,3,4\-7
+\&    \-\-numatune \e"1\-3,5\e",mode=preferred
+.Ve
+.Sp
+Specifies the numa nodes to allocate memory from. This has the same syntax
+as \f(CW\*(C`\-\-cpuset\*(C'\fR option. mode can be one of 'interleave', 'preferred', or
+\&'strict' (the default). See 'man 8 numactl' for information about each
+mode.
+.Sp
+The nodeset string must use escaped-quotes if specifying any other option.
 .IP "\-\-cpu MODEL[,+feature][,\-feature][,match=MATCH][,vendor=VENDOR]" 2
 .IX Item "--cpu MODEL[,+feature][,-feature][,match=MATCH][,vendor=VENDOR]"
 Configure the \s-1CPU\s0 model and \s-1CPU\s0 features exposed to the guest. The only
@@ -278,7 +293,15 @@ specified via the \f(CW\*(C`\-\-disk\*(C'\fR option, and neither \f(CW\*(C`\-\-c
 install option is specified, the \f(CW\*(C`\-\-disk\*(C'\fR cdrom is used as the install media.
 .IP "\-l \s-1LOCATION\s0, \-\-location=LOCATION" 2
 .IX Item "-l LOCATION, --location=LOCATION"
-Installation source for guest virtual machine kernel+initrd pair.
+Distribution tree installtion source. virt-install can recognize
+certain distribution trees and fetches a bootable kernel/initrd pair to
+launch the install.
+.Sp
+With libvirt 0.9.4 or later, network \s-1URL\s0 installs work for remote connections.
+virt-install will download kernel/initrd to the local machine, and then
+upload the media to the remote host. This option requires the \s-1URL\s0 to
+be accessible by both the local and remote host.
+.Sp
 The \f(CW\*(C`LOCATION\*(C'\fR can take one of the following forms:
 .RS 2
 .IP "\s-1DIRECTORY\s0" 4
@@ -320,7 +343,12 @@ the guest installation process.
 .IX Item "--import"
 Skip the \s-1OS\s0 installation process, and build a guest around an existing
 disk image. The device used for booting is the first device specified via
-\&\f(CW\*(C`\-\-disk\*(C'\fR or \f(CW\*(C`\-\-file\*(C'\fR.
+\&\f(CW\*(C`\-\-disk\*(C'\fR or \f(CW\*(C`\-\-filesystem\*(C'\fR.
+.IP "\-\-init=INITPATH" 2
+.IX Item "--init=INITPATH"
+Path to a binary that the container guest will init. If a root \f(CW\*(C`\-\-filesystem\*(C'\fR
+is has been specified, virt-install will default to /sbin/init, otherwise
+will default to /bin/sh.
 .IP "\-\-livecd" 2
 .IX Item "--livecd"
 Specify that the installation media is a live \s-1CD\s0 and thus the guest
@@ -338,7 +366,7 @@ Add \s-1PATH\s0 to the root of the initrd fetched with \f(CW\*(C`\-\-location\*(
 used to run an automated install without requiring a network hosted kickstart
 file:
 .Sp
-\&\-\-initrd\-injections=/path/to/my.ks \-\-extra\-args \*(L"ks=file:/my.ks\*(R"
+\&\-\-initrd\-inject=/path/to/my.ks \-\-extra\-args \*(L"ks=file:/my.ks\*(R"
 .IP "\-\-os\-type=OS_TYPE" 2
 .IX Item "--os-type=OS_TYPE"
 Optimize the guest configuration for a type of operating system (ex. 'linux',
@@ -361,221 +389,73 @@ By default, virt-install will attempt to auto detect this value from
 the install media (currently only supported for \s-1URL\s0 installs). Autodetection
 can be disabled with the special value 'none'.
 .Sp
-Valid values are:
+If the special value 'list' is passed, virt-install will print the full
+list of variant values and exit. The printed format is not a stable
+interface, \s-1DO\s0 \s-1NOT\s0 \s-1PARSE\s0 \s-1IT\s0.
+.Sp
+If the special value 'none' is passed, no os variant is recorded and
+\&\s-1OS\s0 autodetection is disabled.
+.Sp
+Values for some recent \s-1OS\s0 options are:
 .RS 2
-.IP "windows" 4
-.IX Item "windows"
-.RS 4
+.IP "win7                 : Microsoft Windows 7" 2
+.IX Item "win7                 : Microsoft Windows 7"
 .PD 0
-.IP "win7" 4
-.IX Item "win7"
-.PD
-Microsoft Windows 7
-.IP "vista" 4
-.IX Item "vista"
-Microsoft Windows Vista
-.IP "winxp64" 4
-.IX Item "winxp64"
-Microsoft Windows \s-1XP\s0 (x86_64)
-.IP "winxp" 4
-.IX Item "winxp"
-Microsoft Windows \s-1XP\s0
-.IP "win2k" 4
-.IX Item "win2k"
-Microsoft Windows 2000
-.IP "win2k8" 4
-.IX Item "win2k8"
-Microsoft Windows Server 2008
-.IP "win2k3" 4
-.IX Item "win2k3"
-Microsoft Windows Server 2003
-.RE
-.RS 4
-.RE
-.IP "unix" 4
-.IX Item "unix"
-.RS 4
-.PD 0
-.IP "openbsd4" 4
-.IX Item "openbsd4"
-.PD
-OpenBSD 4.x
-.IP "freebsd8" 4
-.IX Item "freebsd8"
-FreeBSD 8.x
-.IP "freebsd7" 4
-.IX Item "freebsd7"
-FreeBSD 7.x
-.IP "freebsd6" 4
-.IX Item "freebsd6"
-FreeBSD 6.x
-.RE
-.RS 4
-.RE
-.IP "solaris" 4
-.IX Item "solaris"
-.RS 4
-.PD 0
-.IP "solaris9" 4
-.IX Item "solaris9"
-.PD
-Sun Solaris 9
-.IP "solaris10" 4
-.IX Item "solaris10"
-Sun Solaris 10
-.IP "opensolaris" 4
-.IX Item "opensolaris"
-Sun OpenSolaris
-.RE
-.RS 4
-.RE
-.IP "other" 4
-.IX Item "other"
-.RS 4
-.PD 0
-.IP "netware6" 4
-.IX Item "netware6"
-.PD
-Novell Netware 6
-.IP "netware5" 4
-.IX Item "netware5"
-Novell Netware 5
-.IP "netware4" 4
-.IX Item "netware4"
-Novell Netware 4
-.IP "msdos" 4
-.IX Item "msdos"
-MS-DOS
-.IP "generic" 4
-.IX Item "generic"
-Generic
-.RE
-.RS 4
-.RE
-.IP "linux" 4
-.IX Item "linux"
-.RS 4
-.PD 0
-.IP "debiansqueeze" 4
-.IX Item "debiansqueeze"
-.PD
-Debian Squeeze
-.IP "debianlenny" 4
-.IX Item "debianlenny"
-Debian Lenny
-.IP "debianetch" 4
-.IX Item "debianetch"
-Debian Etch
-.IP "fedora15" 4
-.IX Item "fedora15"
-Fedora 15
-.IP "fedora14" 4
-.IX Item "fedora14"
-Fedora 14
-.IP "fedora13" 4
-.IX Item "fedora13"
-Fedora 13
-.IP "fedora12" 4
-.IX Item "fedora12"
-Fedora 12
-.IP "fedora11" 4
-.IX Item "fedora11"
-Fedora 11
-.IP "fedora10" 4
-.IX Item "fedora10"
-Fedora 10
-.IP "fedora9" 4
-.IX Item "fedora9"
-Fedora 9
-.IP "fedora8" 4
-.IX Item "fedora8"
-Fedora 8
-.IP "fedora7" 4
-.IX Item "fedora7"
-Fedora 7
-.IP "fedora6" 4
-.IX Item "fedora6"
-Fedora Core 6
-.IP "fedora5" 4
-.IX Item "fedora5"
-Fedora Core 5
-.IP "mes5.1" 4
-.IX Item "mes5.1"
-Mandriva Enterprise Server 5.1 and later
-.IP "mes5" 4
-.IX Item "mes5"
-Mandriva Enterprise Server 5.0
-.IP "mandriva2010" 4
-.IX Item "mandriva2010"
-Mandriva Linux 2010 and later
-.IP "mandriva2009" 4
-.IX Item "mandriva2009"
-Mandriva Linux 2009 and earlier
-.IP "rhel6" 4
-.IX Item "rhel6"
-Red Hat Enterprise Linux 6
-.IP "rhel5.4" 4
-.IX Item "rhel5.4"
-Red Hat Enterprise Linux 5.4 or later
-.IP "rhel5" 4
-.IX Item "rhel5"
-Red Hat Enterprise Linux 5
-.IP "rhel4" 4
-.IX Item "rhel4"
-Red Hat Enterprise Linux 4
-.IP "rhel3" 4
-.IX Item "rhel3"
-Red Hat Enterprise Linux 3
-.IP "rhel2.1" 4
-.IX Item "rhel2.1"
-Red Hat Enterprise Linux 2.1
-.IP "sles11" 4
-.IX Item "sles11"
-Suse Linux Enterprise Server 11
-.IP "sles10" 4
-.IX Item "sles10"
-Suse Linux Enterprise Server
-.IP "ubuntuoneiric" 4
-.IX Item "ubuntuoneiric"
-Ubuntu 11.10 (Oneiric Ocelot)
-.IP "ubuntunatty" 4
-.IX Item "ubuntunatty"
-Ubuntu 11.04 (Natty Narwhal)
-.IP "ubuntumaverick" 4
-.IX Item "ubuntumaverick"
-Ubuntu 10.10 (Maverick Meerkat)
-.IP "ubuntulucid" 4
-.IX Item "ubuntulucid"
-Ubuntu 10.04 (Lucid Lynx)
-.IP "ubuntukarmic" 4
-.IX Item "ubuntukarmic"
-Ubuntu 9.10 (Karmic Koala)
-.IP "ubuntujaunty" 4
-.IX Item "ubuntujaunty"
-Ubuntu 9.04 (Jaunty Jackalope)
-.IP "ubuntuintrepid" 4
-.IX Item "ubuntuintrepid"
-Ubuntu 8.10 (Intrepid Ibex)
-.IP "ubuntuhardy" 4
-.IX Item "ubuntuhardy"
-Ubuntu 8.04 \s-1LTS\s0 (Hardy Heron)
-.IP "virtio26" 4
-.IX Item "virtio26"
-Generic 2.6.25 or later kernel with virtio
-.IP "generic26" 4
-.IX Item "generic26"
-Generic 2.6.x kernel
-.IP "generic24" 4
-.IX Item "generic24"
-Generic 2.4.x kernel
-.RE
-.RS 4
-.RE
-.IP "none" 4
-.IX Item "none"
-No \s-1OS\s0 version specified (disables autodetect)
+.IP "vista                : Microsoft Windows Vista" 2
+.IX Item "vista                : Microsoft Windows Vista"
+.IP "winxp64              : Microsoft Windows \s-1XP\s0 (x86_64)" 2
+.IX Item "winxp64              : Microsoft Windows XP (x86_64)"
+.IP "winxp                : Microsoft Windows \s-1XP\s0" 2
+.IX Item "winxp                : Microsoft Windows XP"
+.IP "win2k8               : Microsoft Windows Server 2008" 2
+.IX Item "win2k8               : Microsoft Windows Server 2008"
+.IP "win2k3               : Microsoft Windows Server 2003" 2
+.IX Item "win2k3               : Microsoft Windows Server 2003"
+.IP "freebsd8             : FreeBSD 8.x" 2
+.IX Item "freebsd8             : FreeBSD 8.x"
+.IP "generic              : Generic" 2
+.IX Item "generic              : Generic"
+.IP "debianwheezy         : Debian Wheezy" 2
+.IX Item "debianwheezy         : Debian Wheezy"
+.IP "debiansqueeze        : Debian Squeeze" 2
+.IX Item "debiansqueeze        : Debian Squeeze"
+.IP "debianlenny          : Debian Lenny" 2
+.IX Item "debianlenny          : Debian Lenny"
+.IP "fedora16             : Fedora 16" 2
+.IX Item "fedora16             : Fedora 16"
+.IP "fedora15             : Fedora 15" 2
+.IX Item "fedora15             : Fedora 15"
+.IP "fedora14             : Fedora 14" 2
+.IX Item "fedora14             : Fedora 14"
+.IP "mes5.1               : Mandriva Enterprise Server 5.1 and later" 2
+.IX Item "mes5.1               : Mandriva Enterprise Server 5.1 and later"
+.IP "mandriva2010         : Mandriva Linux 2010 and later" 2
+.IX Item "mandriva2010         : Mandriva Linux 2010 and later"
+.IP "rhel6                : Red Hat Enterprise Linux 6" 2
+.IX Item "rhel6                : Red Hat Enterprise Linux 6"
+.IP "rhel5.4              : Red Hat Enterprise Linux 5.4 or later" 2
+.IX Item "rhel5.4              : Red Hat Enterprise Linux 5.4 or later"
+.IP "rhel4                : Red Hat Enterprise Linux 4" 2
+.IX Item "rhel4                : Red Hat Enterprise Linux 4"
+.IP "sles11               : Suse Linux Enterprise Server 11" 2
+.IX Item "sles11               : Suse Linux Enterprise Server 11"
+.IP "sles10               : Suse Linux Enterprise Server" 2
+.IX Item "sles10               : Suse Linux Enterprise Server"
+.IP "ubuntuoneiric        : Ubuntu 11.10 (Oneiric Ocelot)" 2
+.IX Item "ubuntuoneiric        : Ubuntu 11.10 (Oneiric Ocelot)"
+.IP "ubuntunatty          : Ubuntu 11.04 (Natty Narwhal)" 2
+.IX Item "ubuntunatty          : Ubuntu 11.04 (Natty Narwhal)"
+.IP "ubuntumaverick       : Ubuntu 10.10 (Maverick Meerkat)" 2
+.IX Item "ubuntumaverick       : Ubuntu 10.10 (Maverick Meerkat)"
+.IP "ubuntulucid          : Ubuntu 10.04 (Lucid Lynx)" 2
+.IX Item "ubuntulucid          : Ubuntu 10.04 (Lucid Lynx)"
+.IP "ubuntuhardy          : Ubuntu 8.04 \s-1LTS\s0 (Hardy Heron)" 2
+.IX Item "ubuntuhardy          : Ubuntu 8.04 LTS (Hardy Heron)"
 .RE
 .RS 2
+.PD
+.Sp
+Use '\-\-os\-variant list' to see the full \s-1OS\s0 list
 .RE
 .IP "\-\-boot=BOOTOPTS" 2
 .IX Item "--boot=BOOTOPTS"
@@ -652,9 +532,9 @@ Disk device type. Value can be 'cdrom', 'disk', or 'floppy'. Default is
 cdrom is used as the install media.
 .IP "\fBbus\fR" 4
 .IX Item "bus"
-Disk bus type. Value can be 'ide', 'scsi', 'usb', 'virtio' or 'xen'.  The
-default is hypervisor dependent since not all hypervisors support all bus
-types.
+Disk bus type. Value can be 'ide', 'sata', 'scsi', 'usb', 'virtio' or 'xen'.
+The default is hypervisor dependent since not all hypervisors support all
+bus types.
 .IP "\fBperms\fR" 4
 .IX Item "perms"
 Disk permissions. Value can be 'rw' (Read/Write), 'ro' (Readonly),
@@ -667,7 +547,7 @@ size (in \s-1GB\s0) to use if creating new storage
 whether to skip fully allocating newly created storage. Value is 'true' or
 \&'false'. Default is 'true' (do not fully allocate).
 .Sp
-The initial time taken to fully-allocate the guest virtual disk (spare=false)
+The initial time taken to fully-allocate the guest virtual disk (sparse=false)
 will be usually by balanced by faster install times inside the guest. Thus
 use of this option is recommended to ensure consistently high performance
 and to avoid I/O errors in the guest should the host filesystem fill up.
@@ -686,7 +566,7 @@ mapped to the \fBdriver_type\fR value as well.
 .Sp
 With libvirt 0.8.3 and later, this option should be specified if reusing
 and existing disk image, since libvirt does not autodetect storage format
-as it is a potential security issue. For example, if reusing and existing
+as it is a potential security issue. For example, if reusing an existing
 qcow2 image, you will want to specify format=qcow2, otherwise the hypervisor
 may not be able to read your disk image.
 .IP "\fBdriver_name\fR" 4
@@ -700,11 +580,53 @@ storage. Typically does not need to be set by the user.
 .IP "\fBio\fR" 4
 .IX Item "io"
 Disk \s-1IO\s0 backend. Can be either \*(L"threads\*(R" or \*(L"native\*(R".
+.IP "\fBerror_policy\fR" 4
+.IX Item "error_policy"
+How guest should react if a write error is encountered. Can be one of
+\&\*(L"stop\*(R", \*(L"none\*(R", or \*(L"enospace\*(R"
+.IP "\fBserial\fR" 4
+.IX Item "serial"
+Serial number of the emulated disk device. This is used in linux guests
+to set /dev/disk/by\-id symlinks. An example serial number might be:
+\&\s-1WD\-WMAP9A966149\s0
 .RE
 .RS 2
 .Sp
 See the examples section for some uses. This option deprecates \f(CW\*(C`\-\-file\*(C'\fR,
 \&\f(CW\*(C`\-\-file\-size\*(C'\fR, and \f(CW\*(C`\-\-nonsparse\*(C'\fR.
+.RE
+.IP "\-\-filesystem" 2
+.IX Item "--filesystem"
+Specifies a directory on the host to export to the guest. The most simple
+invocation is:
+.Sp
+.Vb 1
+\&    \-\-filesystem /source/on/host,/target/point/in/guest
+.Ve
+.Sp
+Which will work for recent \s-1QEMU\s0 and linux guest \s-1OS\s0 or \s-1LXC\s0 containers. For
+\&\s-1QEMU\s0, the target point is just a mounting hint in sysfs, so will not be
+automatically mounted.
+.Sp
+The following explicit options can be specified:
+.RS 2
+.IP "\fBtype\fR" 4
+.IX Item "type"
+The type or the source directory. Valid values are 'mount' (the default) or
+\&'template' for OpenVZ templates.
+.IP "\fBmode\fR" 4
+.IX Item "mode"
+The access mode for the source directory from the guest \s-1OS\s0. Only used with
+\&\s-1QEMU\s0 and type=mount. Valid modes are 'passthrough' (the default), 'mapped',
+or 'squash'. See libvirt domain \s-1XML\s0 documentation for more info.
+.IP "\fBsource\fR" 4
+.IX Item "source"
+The directory on the host to share.
+.IP "\fBtarget\fR" 4
+.IX Item "target"
+The mount location to use in the guest.
+.RE
+.RS 2
 .RE
 .IP "\-\-nodisks" 2
 .IX Item "--nodisks"
@@ -780,8 +702,9 @@ This parameter is deprecated in favour of
 This parameter is deprecated in favour of \f(CW\*(C`\-\-network NETWORK,mac=12:34...\*(C'\fR
 .SS "Graphics Configuration"
 .IX Subsection "Graphics Configuration"
-If no graphics option is specified, \f(CW\*(C`virt\-install\*(C'\fR will default to \-\-vnc
-if the \s-1DISPLAY\s0 environment variable is set, otherwise \-\-nographics is used.
+If no graphics option is specified, \f(CW\*(C`virt\-install\*(C'\fR will default to
+\&'\-\-graphics vnc' if the \s-1DISPLAY\s0 environment variable is set, otherwise
+\&'\-\-graphics none' is used.
 .IP "\-\-graphics \s-1TYPE\s0,opt1=arg1,opt2=arg2,..." 2
 .IX Item "--graphics TYPE,opt1=arg1,opt2=arg2,..."
 Specifies the graphical display configuration. This does not configure any
@@ -917,10 +840,16 @@ parameter is implied if connecting to a \s-1QEMU\s0 based hypervisor.
 This guest should be a paravirtualized guest. If the host supports both
 para & full virtualization, and neither this parameter nor the \f(CW\*(C`\-\-hvm\*(C'\fR
 are specified, this will be assumed.
+.IP "\-\-container" 2
+.IX Item "--container"
+This guest should be a container type guest. This option is only required
+if the hypervisor supports other guest types as well (so for example this
+option is the default behavior for \s-1LXC\s0 and OpenVZ, but is provided for
+completeness).
 .IP "\-\-virt\-type" 2
 .IX Item "--virt-type"
 The hypervisor to install on. Example choices are kvm, qemu, xen, or kqemu.
-Availabile options are listed via 'virsh capabilities' in the <domain> tags.
+Available options are listed via 'virsh capabilities' in the <domain> tags.
 .IP "\-\-accelerate" 2
 .IX Item "--accelerate"
 Prefer \s-1KVM\s0 or \s-1KQEMU\s0 (in that order) if installing a \s-1QEMU\s0 guest. This behavior
@@ -928,14 +857,41 @@ is now the default, and this option is deprecated. To install a plain \s-1QEMU\s
 guest, use '\-\-virt\-type qemu'
 .IP "\-\-noapic" 2
 .IX Item "--noapic"
-Override the \s-1OS\s0 type / variant to disables the \s-1APIC\s0 setting for fully
-virtualized guest.
+Force disable \s-1APIC\s0 for the guest.
 .IP "\-\-noacpi" 2
 .IX Item "--noacpi"
-Override the \s-1OS\s0 type / variant to disables the \s-1ACPI\s0 setting for fully
-virtualized guest.
+Force disable \s-1ACPI\s0 for the guest.
 .SS "Device Options"
 .IX Subsection "Device Options"
+.IP "\-\-controller=TYPE[,OPTS]" 2
+.IX Item "--controller=TYPE[,OPTS]"
+Attach a controller device to the guest. \s-1TYPE\s0 is one of:
+\&\fBide\fR, \fBfdc\fR, \fBscsi\fR, \fBsata\fR, \fBvirtio-serial\fR, or \fBusb\fR.
+.RS 2
+.IP "\fBmodel\fR" 4
+.IX Item "model"
+Controller model.
+.IP "\fBaddress\fR" 4
+.IX Item "address"
+Controller address, current \s-1PCI\s0 of form 'bus:domain:slot:function'.
+.IP "\fBindex\fR" 4
+.IX Item "index"
+A decimal integer describing in which order the bus controller is
+encountered, and to reference the controller bus.
+.IP "\fBmaster\fR" 4
+.IX Item "master"
+Applicable to \s-1USB\s0 companion controllers, to define the master bus startport.
+.RE
+.RS 2
+.Sp
+Example:
+.IP "\fB\-\-controller usb,model=ich9\-uhci2,address=0:0:4.7,index=0,master=2\fR" 4
+.IX Item "--controller usb,model=ich9-uhci2,address=0:0:4.7,index=0,master=2"
+Adds a \s-1ICH9\s0 \s-1USB\s0 companion controller on \s-1PCI\s0 address 0:0:4.7 with
+master bus 0 and first port 2.
+.RE
+.RS 2
+.RE
 .IP "\-\-host\-device=HOSTDEV" 2
 .IX Item "--host-device=HOSTDEV"
 Attach a physical host device to the guest. Some example values for \s-1HOSTDEV:\s0
@@ -1034,18 +990,18 @@ Named pipe (see \fIpipe\fR\|(7))
 .IP "\fB\-\-serial tcp,host=HOST:PORT,mode=MODE,protocol=PROTOCOL\fR" 4
 .IX Item "--serial tcp,host=HOST:PORT,mode=MODE,protocol=PROTOCOL"
 \&\s-1TCP\s0 net console. \s-1MODE\s0 is either 'bind' (wait for connections on \s-1HOST:PORT\s0)
-or 'connect' (send output to \s-1HOST:PORT\s0), default is 'connect'. \s-1HOST\s0 defaults
+or 'connect' (send output to \s-1HOST:PORT\s0), default is 'bind'. \s-1HOST\s0 defaults
 to '127.0.0.1', but \s-1PORT\s0 is required. \s-1PROTOCOL\s0 can be either 'raw' or 'telnet'
 (default 'raw'). If 'telnet', the port acts like a telnet server or client.
 Some examples:
 .Sp
-Connect to localhost, port 1234:
-.Sp
-\&\-\-serial tcp,host=:1234
-.Sp
 Wait for connections on any address, port 4567:
 .Sp
-\&\-\-serial tcp,host=0.0.0.0:4567,mode=bind
+\&\-\-serial tcp,host=0.0.0.0:4567
+.Sp
+Connect to localhost, port 1234:
+.Sp
+\&\-\-serial tcp,host=:1234,mode=connect
 .Sp
 Wait for telnet connection on localhost, port 2222. The user could then
 connect interactively to this console via 'telnet localhost 2222':
@@ -1126,7 +1082,56 @@ console requires libvirt 0.8.3 or later.
 .IX Item "--video=VIDEO"
 Specify what video device model will be attached to the guest. Valid values
 for \s-1VIDEO\s0 are hypervisor specific, but some options for recent kvm are
-cirrus, vga, or vmvga (vmware).
+cirrus, vga, qxl, or vmvga (vmware).
+.IP "\-\-smartcard=MODE[,OPTS]" 2
+.IX Item "--smartcard=MODE[,OPTS]"
+Configure a virtual smartcard device.
+.Sp
+Mode is one of \fBhost\fR, \fBhost-certificates\fR, or \fBpassthrough\fR. Additional
+options are:
+.RS 2
+.IP "\fBtype\fR" 4
+.IX Item "type"
+Character device type to connect to on the host. This is only applicable
+for \fBpassthrough\fR mode.
+.RE
+.RS 2
+.Sp
+An example invocation:
+.IP "\fB\-\-smartcard passthrough,type=spicevmc\fR" 4
+.IX Item "--smartcard passthrough,type=spicevmc"
+Use the smartcard channel of a \s-1SPICE\s0 graphics device to pass smartcard info
+to the guest
+.RE
+.RS 2
+.Sp
+See \f(CW\*(C`http://libvirt.org/formatdomain.html#elementsSmartcard\*(C'\fR for complete
+details.
+.RE
+.IP "\-\-redirdev=BUS[,OPTS]" 2
+.IX Item "--redirdev=BUS[,OPTS]"
+Add a redirected device.
+.RS 2
+.IP "\fBtype\fR" 4
+.IX Item "type"
+The redirection type, currently supported is \fBtcp\fR or \fBspicevmc\fR.
+.IP "\fBserver\fR" 4
+.IX Item "server"
+The \s-1TCP\s0 server connection details, of the form 'server:port'.
+.RE
+.RS 2
+.Sp
+Examples of invocation:
+.IP "\fB\-\-redirdev usb,type=tcp,server=localhost:4000\fR" 4
+.IX Item "--redirdev usb,type=tcp,server=localhost:4000"
+Add a \s-1USB\s0 redirected device provided by the \s-1TCP\s0 server on 'localhost'
+port 4000.
+.IP "\fB\-\-redirdev usb,type=spicevmc\fR" 4
+.IX Item "--redirdev usb,type=spicevmc"
+Add a \s-1USB\s0 device redirected via a dedicated Spice channel.
+.RE
+.RS 2
+.RE
 .SS "Miscellaneous Options"
 .IX Subsection "Miscellaneous Options"
 .IP "\-\-autostart" 2
@@ -1249,6 +1254,18 @@ Run a Live \s-1CD\s0 image under Xen fullyvirt, in diskless environment
 \&       \-\-cdrom /root/fedora7live.iso
 .Ve
 .PP
+Run /usr/bin/httpd in a linux container guest (\s-1LXC\s0). Resource usage is capped
+at 512 \s-1MB\s0 of ram and 2 host cpus:
+.PP
+.Vb 6
+\&  # virt\-install \e
+\&        \-\-connect lxc:/// \e
+\&        \-\-name httpd_guest \e
+\&        \-\-ram 512 \e
+\&        \-\-vcpus 2 \e
+\&        \-\-init /usr/bin/httpd
+.Ve
+.PP
 Install a paravirtualized Xen guest, 500 \s-1MB\s0 of \s-1RAM\s0, a 5 \s-1GB\s0 of disk, and
 Fedora Core 6 from a web server, in text-only mode, with old style \-\-file
 options:
@@ -1296,7 +1313,7 @@ distribution for the complete list of credits.
 Please see http://virt\-manager.org/page/BugReporting
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
-Copyright (C) 2006\-2009 Red Hat, Inc, and various contributors.
+Copyright (C) 2006\-2011 Red Hat, Inc, and various contributors.
 This is free software. You may redistribute copies of it under the terms of
 the \s-1GNU\s0 General Public License \f(CW\*(C`http://www.gnu.org/licenses/gpl.html\*(C'\fR. There
 is \s-1NO\s0 \s-1WARRANTY\s0, to the extent permitted by law.

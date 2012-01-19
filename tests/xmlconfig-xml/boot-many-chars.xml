@@ -1,8 +1,9 @@
 <domain type='xen'>
   <name>TestGuest</name>
-  <currentMemory>204800</currentMemory>
-  <memory>409600</memory>
   <uuid>12345678-1234-1234-1234-123456789012</uuid>
+  <memory>409600</memory>
+  <currentMemory>204800</currentMemory>
+  <vcpu>5</vcpu>
   <os>
     <type arch='i686'>hvm</type>
     <loader>/usr/lib/xen/boot/hvmloader</loader>
@@ -15,7 +16,6 @@
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
-  <vcpu>5</vcpu>
   <devices>
     <emulator>/usr/lib/xen/bin/qemu-dm</emulator>
     <input type='mouse' bus='ps2'/>
@@ -32,10 +32,10 @@
       <source mode='bind' host='my.bind.host' service='1111'/>
       <source mode='connect' host='my.source.host' service='2222'/>
     </parallel>
+    <console type='pty'/>
     <console type='pty'>
       <target type='virtio'/>
     </console>
-    <console type='pty'/>
     <channel type='pty'>
       <target type='virtio' name='foo.bar.frob'/>
     </channel>

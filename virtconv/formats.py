@@ -58,19 +58,6 @@ class parser(object):
         """
         raise NotImplementedError
 
-    @staticmethod
-    def export_file(vm, output_file):
-        """
-        Export a configuration file.
-        @vm vm configuration instance
-        @output_file Output file
-
-        Raises ValueError if configuration is not suitable, or another
-        exception on failure to write the output file.
-        """
-        raise NotImplementedError
-
-
 def register_parser(new_parser):
     """
     Register a particular config format parser.  This should be called by each

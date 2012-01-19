@@ -32,11 +32,11 @@
       <source mode="bind" host="my.bind.host" service="1111"/>
       <source mode="connect" host="my.source.host" service="2222"/>
     </parallel>
+    <console type="pty"/>
     <console type="file">
       <source path="/tmp/foo.img"/>
       <target type="virtio"/>
     </console>
-    <console type="pty"/>
     <channel type="pty">
       <target type="virtio" name="foo.bar.frob"/>
     </channel>

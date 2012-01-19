@@ -56,12 +56,13 @@ from _util import xml_escape as escape
 
 import _util
 import support
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 DEFAULT_DEV_TARGET = "/dev"
 DEFAULT_LVM_TARGET_BASE = "/dev/"
 DEFAULT_DIR_TARGET_BASE = "/var/lib/libvirt/images/"
 DEFAULT_SCSI_TARGET = "/dev/disk/by-path"
+DEFAULT_MPATH_TARGET = "/dev/mapper"
 
 # Pulled from libvirt, used for building on older versions
 VIR_STORAGE_VOL_FILE = 0
@@ -242,7 +243,8 @@ class StoragePool(StorageObject):
     TYPE_ZFS     = "zfs"
     TYPE_DISK    = "disk"
     TYPE_ISCSI   = "iscsi"
-    TYPE_SCSI   = "scsi"
+    TYPE_SCSI    = "scsi"
+    TYPE_MPATH   = "mpath"
     """@group Types: TYPE_*"""
 
     # Pool type descriptions for use in higher level programs
@@ -254,7 +256,8 @@ class StoragePool(StorageObject):
     _types[TYPE_ZFS]     = _("ZFS Pool")
     _types[TYPE_DISK]    = _("Physical Disk Device")
     _types[TYPE_ISCSI]   = _("iSCSI Target")
-    _types[TYPE_SCSI]    = _("SCSI host adapter")
+    _types[TYPE_SCSI]    = _("SCSI Host Adapter")
+    _types[TYPE_MPATH]   = _("Multipath Device Enumerator")
 
     def get_pool_class(ptype):
         """
@@ -281,6 +284,8 @@ class StoragePool(StorageObject):
             return iSCSIPool
         if ptype == StoragePool.TYPE_SCSI:
             return SCSIPool
+        if ptype == StoragePool.TYPE_MPATH:
+            return MultipathPool
     get_pool_class = staticmethod(get_pool_class)
 
     def get_volume_for_pool(pool_type):
@@ -441,13 +446,13 @@ class StoragePool(StorageObject):
                "%s" % src_xml + \
                "%s" % tar_xml
 
-    def install(self, meter=None, create=False, build=False):
+    def install(self, meter=None, create=False, build=False, autostart=False):
         """
         Install storage pool xml.
         """
         xml = self.get_xml_config()
-        logging.debug("Creating storage pool '%s' with xml:\n%s" % \
-                      (self.name, xml))
+        logging.debug("Creating storage pool '%s' with xml:\n%s",
+                      self.name, xml)
 
         try:
             pool = self.conn.storagePoolDefineXML(xml, 0)
@@ -472,6 +477,12 @@ class StoragePool(StorageObject):
                 pool.create(0)
             except Exception, e:
                 errmsg = _("Could not start storage pool: %s" % str(e))
+
+        if autostart and not errmsg:
+            try:
+                pool.setAutostart(True)
+            except Exception, e:
+                errmsg = _("Could not set pool autostart flag: %s" % str(e))
 
         if errmsg:
             # Try and clean up the leftover pool
@@ -730,12 +741,12 @@ class LogicalPool(StoragePool):
             xml += "    <name>%s</name>\n" % self.source_name
         return xml
 
-    def install(self, meter=None, create=False, build=False):
+    def install(self, meter=None, create=False, build=False, autostart=False):
         if build and not self.source_path:
             raise ValueError(_("Must explicitly specify source path if "
                                "building pool"))
         return StoragePool.install(self, meter=meter, create=create,
-                                   build=build)
+                                   build=build, autostart=False)
 
 class ZFSPool(StoragePool):
     """
@@ -909,12 +920,12 @@ class DiskPool(StoragePool):
         xml += """    <device path="%s"/>\n""" % escape(self.source_path)
         return xml
 
-    def install(self, meter=None, create=False, build=False):
+    def install(self, meter=None, create=False, build=False, autostart=False):
         if self.format == "auto" and build:
             raise ValueError(_("Must explicitly specify disk format if "
                                "formatting disk device."))
         return StoragePool.install(self, meter=meter, create=create,
-                                   build=build)
+                                   build=build, autostart=autostart)
 
 class iSCSIPool(StoragePool):
     """
@@ -929,8 +940,7 @@ class iSCSIPool(StoragePool):
                                  " volumes."))
 
     def get_volume_class():
-        raise NotImplementedError(_("iSCSI volume creation is not "
-                                    "implemented."))
+        raise NotImplementedError(_("iSCSI volume creation is not supported."))
     get_volume_class = staticmethod(get_volume_class)
 
     def __init__(self, conn, name, source_path=None, host=None,
@@ -943,6 +953,8 @@ class iSCSIPool(StoragePool):
         if host:
             self.host = host
 
+        self._iqn = None
+
     # Need to overwrite pool *_source_path since iscsi device isn't
     # a fully qualified path
     def get_source_path(self):
@@ -951,6 +963,13 @@ class iSCSIPool(StoragePool):
         self._source_path = val
     source_path = property(get_source_path, set_source_path,
                            doc=_("Path on the host that is being shared."))
+
+    def _get_iqn(self):
+        return self._iqn
+    def _set_iqn(self, val):
+        self._iqn = val
+    iqn = property(_get_iqn, _set_iqn,
+                        doc=_("iSCSI initiator qualified name"))
 
     def _get_default_target_path(self):
         return DEFAULT_SCSI_TARGET
@@ -964,8 +983,17 @@ class iSCSIPool(StoragePool):
             raise RuntimeError(_("Hostname is required"))
         if not self.source_path:
             raise RuntimeError(_("Host path is required"))
-        xml = """    <host name="%s"/>\n""" % self.host + \
-              """    <device path="%s"/>\n""" % escape(self.source_path)
+
+        iqn_xml = ""
+        if self.iqn:
+            iqn_xml += """    <initiator>\n"""
+            iqn_xml += """      <iqn name="%s"/>\n""" % escape(self.iqn)
+            iqn_xml += """    </initiator>\n"""
+
+        xml  = """    <host name="%s"/>\n""" % self.host
+        xml += """    <device path="%s"/>\n""" % escape(self.source_path)
+        xml += iqn_xml
+
         return xml
 
 class SCSIPool(StoragePool):
@@ -979,8 +1007,7 @@ class SCSIPool(StoragePool):
                                  " volumes."))
 
     def get_volume_class():
-        raise NotImplementedError(_("SCSI volume creation is not "
-                                    "implemented."))
+        raise NotImplementedError(_("SCSI volume creation is not supported."))
     get_volume_class = staticmethod(get_volume_class)
 
     def __init__(self, conn, name, source_path=None,
@@ -1013,7 +1040,34 @@ class SCSIPool(StoragePool):
         xml = """    <adapter name="%s"/>\n""" % escape(self.source_path)
         return xml
 
+class MultipathPool(StoragePool):
+    """
+    Create a Multipath based storage pool
+    """
 
+    target_path = property(StoragePool.get_target_path,
+                           StoragePool.set_target_path,
+                           doc=_("Root location for identifying new storage"
+                                 " volumes."))
+
+    def get_volume_class():
+        raise NotImplementedError(_("Multipath volume creation is not "
+                                    "supported."))
+    get_volume_class = staticmethod(get_volume_class)
+
+    def __init__(self, conn, name, target_path=None, uuid=None):
+        StoragePool.__init__(self, name=name, type=StoragePool.TYPE_MPATH,
+                             uuid=uuid, target_path=target_path, conn=conn)
+
+    def _get_default_target_path(self):
+        return DEFAULT_MPATH_TARGET
+
+    def _get_target_xml(self):
+        xml = "    <path>%s</path>\n" % escape(self.target_path)
+        return xml
+
+    def _get_source_xml(self):
+        return ""
 
 """
 Storage Volume classes
@@ -1076,7 +1130,7 @@ class StorageVolume(StorageObject):
     get_volume_for_pool = staticmethod(get_volume_for_pool)
 
     def find_free_name(name, pool_object=None, pool_name=None, conn=None,
-                       suffix=""):
+                       suffix="", collidelist=None):
         """
         Finds a name similar (or equal) to passed 'name' that is not in use
         by another pool
@@ -1090,16 +1144,19 @@ class StorageVolume(StorageObject):
 
         Ex name="test", suffix=".img" -> name-3.img
 
+        @collidelist: An extra list of names to check for collision
         @returns: A free name
         @rtype: C{str}
         """
-
-        pool_object = StorageVolume.lookup_pool_by_name(pool_object=pool_object,
-                                                        pool_name=pool_name,
-                                                        conn=conn)
+        collidelist = collidelist or []
+        pool_object = StorageVolume.lookup_pool_by_name(
+                                                    pool_object=pool_object,
+                                                    pool_name=pool_name,
+                                                    conn=conn)
         pool_object.refresh(0)
+
         return _util.generate_name(name, pool_object.storageVolLookupByName,
-                                   suffix)
+                                   suffix, collidelist=collidelist)
     find_free_name = staticmethod(find_free_name)
 
     def lookup_pool_by_name(pool_object=None, pool_name=None, conn=None):
@@ -1256,8 +1313,8 @@ class StorageVolume(StorageObject):
         Build and install storage volume from xml
         """
         xml = self.get_xml_config()
-        logging.debug("Creating storage volume '%s' with xml:\n%s" % \
-                      (self.name, xml))
+        logging.debug("Creating storage volume '%s' with xml:\n%s",
+                      self.name, xml)
 
         t = threading.Thread(target=self._progress_thread,
                              name="Checking storage allocation",
@@ -1279,7 +1336,7 @@ class StorageVolume(StorageObject):
 
                 if meter:
                     meter.end(self.capacity)
-                logging.debug("Storage volume '%s' install complete." %
+                logging.debug("Storage volume '%s' install complete.",
                               self.name)
                 return vol
             except libvirt.libvirtError, e:
@@ -1356,8 +1413,8 @@ class FileVolume(StorageVolume):
     _file_type = VIR_STORAGE_VOL_FILE
 
     formats = ["raw", "bochs", "cloop", "cow", "dmg", "iso", "qcow",
-               "qcow2", "vmdk", "vpc"]
-    create_formats = ["raw", "cow", "qcow", "qcow2", "vmdk", "vpc"]
+               "qcow2", "qed", "vmdk", "vpc"]
+    create_formats = ["raw", "cow", "qcow", "qcow2", "qed", "vmdk", "vpc"]
 
     # Register applicable property methods from parent class
     perms = property(StorageObject.get_perms, StorageObject.set_perms)

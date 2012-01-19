@@ -25,8 +25,10 @@ import virtconv.diskcfg as diskcfg
 import virtconv.netdevcfg as netdevcfg
 import virtinst.FullVirtGuest as fv
 import virtinst.ImageParser as ImageParser
+
 from xml.sax.saxutils import escape
 import re
+import logging
 
 ide_letters = list("abcdefghijklmnopqrstuvwxyz")
 
@@ -195,7 +197,11 @@ class virtimage_parser(formats.parser):
         Return True if the given file is of this format.
         """
         try:
-            ImageParser.parse_file(input_file)
+            f = file(input_file, "r")
+            output = f.read()
+            f.close()
+
+            ImageParser.parse(output, input_file)
         except ImageParser.ParserException:
             return False
         return True
@@ -208,7 +214,12 @@ class virtimage_parser(formats.parser):
         """
         vm = vmcfg.vm()
         try:
-            config  = ImageParser.parse_file(input_file)
+            f = file(input_file, "r")
+            output = f.read()
+            f.close()
+
+            logging.debug("Importing virt-image XML:\n%s", output)
+            config = ImageParser.parse(output, input_file)
         except Exception, e:
             raise ValueError(_("Couldn't import file '%s': %s") %
                              (input_file, e))
@@ -241,7 +252,7 @@ class virtimage_parser(formats.parser):
             if disk.format in format_mappings:
                 fmt = format_mappings[disk.format]
             else:
-                raise ValueError(_("Unknown disk format '%s'") % disk.format)
+                raise ValueError(_("Unknown disk format '%s'"), disk.format)
 
             devid = (bus, nr_disk)
             vm.disks[devid] = diskcfg.disk(bus=bus,
@@ -309,21 +320,5 @@ class virtimage_parser(formats.parser):
         }
 
         return out
-
-    @staticmethod
-    def export_file(vm, output_file):
-        """
-        Export a configuration file.
-        @vm vm configuration instance
-        @output_file Output file
-
-        Raises ValueError if configuration is not suitable, or another
-        exception on failure to write the output file.
-        """
-        output = virtimage_parser.export(vm)
-
-        outfile = open(output_file, "w")
-        outfile.writelines(output)
-        outfile.close()
 
 formats.register_parser(virtimage_parser)

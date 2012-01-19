@@ -40,6 +40,8 @@ Connect to a non-default hypervisor. See L<virt-install(1)> for details
 
 =back
 
+
+
 =head2 General Options
 
 General configuration parameters that apply to all types of guest installs.
@@ -96,6 +98,8 @@ values.
 
 =back
 
+
+
 =head2 Full Virtualization specific options
 
 Parameters specific only to fully virtualized guest installs.
@@ -104,17 +108,24 @@ Parameters specific only to fully virtualized guest installs.
 
 =item --noapic
 
-Disables APIC for fully virtualized guest (overrides value in XML descriptor)
+Force disable APIC for the guest.
 
 =item --noacpi
 
-Disables ACPI for fully virtualized guest (overrides value in XML descriptor)
+Force disable ACPI for the guest.
 
 =back
+
+
+
 
 =head2 Networking Configuration
 
 =over 2
+
+=item -w NETWORK, --network=NETWORK
+
+Connect the guest to the host network. See L<virt-install(1)> for details
 
 =item -m MAC, --mac=MAC
 
@@ -124,47 +135,47 @@ This is deprecated in favor of C<--network ...,mac=MAC,...>
 
 This is deprecated in favor of C<--network bridge=BRIDGE>
 
-=item -w NETWORK, --network=NETWORK
-
-Connect the guest to the host network. See L<virt-install(1)> for details
-
 =back
+
+
 
 =head2 Graphics Configuration
 
-If no graphics option is specified, C<virt-install> will default to --vnc
-if the DISPLAY environment variable is set, otherwise --nographics is used.
+If no graphics option is specified, C<virt-image> will default to
+'--graphics vnc' if the DISPLAY environment variable is set, otherwise
+'--graphics none' is used.
 
 =over 2
 
-=item --vnc
+=item --graphics TYPE,opt1=arg1,opt2=arg2,...
 
-Setup a virtual console in the guest and export it as a VNC server in
-the host. See L<virt-install(1)> for details
+Specifies the graphical display configuration. This does not configure any
+virtual hardware, just how the guest's graphical display can be accessed.
+See L<virt-install(1)> for details usage info.
 
-=item --vncport=VNCPORT
+=item  --vnc
 
-Request a permanent, statically assigned port number for the guest VNC
-console. See L<virt-install(1)> for details
+This option is deprecated in favor of C<--graphics vnc,...>
+
+=item  --vncport=VNCPORT
+
+This option is deprecated in favor of C<--graphics vnc,port=PORT,...>
 
 =item --vnclisten=VNCLISTEN
 
-Address to listen on for VNC connections. See L<virt-install(1)> for details.
+This option is deprecated in favor of C<--graphics vnc,listen=LISTEN,...>
 
-=item -k KEYMAP, --keymap=KEYMAP
+=item  -k KEYMAP, --keymap=KEYMAP
 
-Request that the virtual VNC console be configured to run with a non-English
-keyboard layout.
+This option is deprecated in favor of C<--graphics vnc,keymap=KEYMAP,...>
 
-=item --sdl
+=item  --sdl
 
-Setup a virtual console in the guest and display an SDL window in the
-host to render the output. See L<virt-install(1)> for details
+This option is deprecated in favor of C<--graphics sdl,...>
 
-=item --nographics
+=item  --nographics
 
-Do not attach a graphical device to the guest. See
-L<virt-install(1)> for details
+This option is deprecated in favor of C<--graphics none>
 
 =back
 
@@ -188,6 +199,10 @@ hypervisor is selected.
 Shutdown and remove any existing guest with the passed C<--name> before
 installing from the image.
 
+=item --noreboot
+
+Prevent the domain automatatically booting after importing the image.
+
 =item --skip-checksum
 
 Do not check disk images against checksums (if they are listed in the
@@ -195,12 +210,7 @@ image xml).
 
 =item -d, --debug
 
-Print debugging information
-
-=item --force
-
-Prevent interactive prompts. If the intended prompt was a yes/no prompt, always
-say yes. For any other prompts, the application will exit.
+Print debugging information.
 
 =back
 

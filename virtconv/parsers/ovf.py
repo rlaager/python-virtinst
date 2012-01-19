@@ -251,7 +251,7 @@ def _parse_hw_section(vm, nodes, file_refs, disk_section):
 
         else:
             desc = get_child_content(device_node, "Description")
-            logging.debug("Unhandled device type=%s desc=%s" % (devtype, desc))
+            logging.debug("Unhandled device type=%s desc=%s", devtype, desc)
 
 class ovf_parser(formats.parser):
     """
@@ -278,9 +278,10 @@ class ovf_parser(formats.parser):
 
         res = False
         try:
-            res = bool(get_xml_path(xml, "/ovf:Envelope"))
+            if xml.count("</Envelope>"):
+                res = bool(get_xml_path(xml, "/ovf:Envelope"))
         except Exception, e:
-            logging.debug("Error parsing OVF XML: %s" % str(e))
+            logging.debug("Error parsing OVF XML: %s", str(e))
 
         return res
 
@@ -294,6 +295,7 @@ class ovf_parser(formats.parser):
         infile = open(input_file, "r")
         xml = infile.read()
         infile.close()
+        logging.debug("Importing OVF XML:\n%s", xml)
 
         return _xml_wrapper(xml, ovf_parser._import_file)
 
@@ -388,7 +390,7 @@ class ovf_parser(formats.parser):
                     net_section[name] = None
 
             elif not envelope_node.isText():
-                logging.debug("Unhandled XML section '%s'" %
+                logging.debug("Unhandled XML section '%s'",
                               envelope_node.name)
 
                 req = bool_val(envelope_node.prop("required"))
@@ -441,18 +443,6 @@ class ovf_parser(formats.parser):
         @vm vm configuration instance
 
         Raises ValueError if configuration is not suitable.
-        """
-        raise NotImplementedError
-
-    @staticmethod
-    def export_file(vm, output_file):
-        """
-        Export a configuration file.
-        @vm vm configuration instance
-        @output_file Output file
-
-        Raises ValueError if configuration is not suitable, or another
-        exception on failure to write the output file.
         """
         raise NotImplementedError
 

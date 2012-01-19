@@ -22,7 +22,7 @@
 import libvirt
 import _util
 
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 # Flags for check_conn_support
 SUPPORT_CONN_STORAGE = 0
@@ -34,6 +34,7 @@ SUPPORT_CONN_DOMAIN_VIDEO = 5
 SUPPORT_CONN_NETWORK = 7
 SUPPORT_CONN_INTERFACE = 8
 SUPPORT_CONN_MAXVCPUS_XML = 9
+SUPPORT_CONN_STREAM = 10
 
 # Flags for check_domain_support
 SUPPORT_DOMAIN_GETVCPUS = 1000
@@ -43,9 +44,11 @@ SUPPORT_DOMAIN_MANAGED_SAVE = 1003
 SUPPORT_DOMAIN_MIGRATE_DOWNTIME = 1004
 SUPPORT_DOMAIN_JOB_INFO = 1005
 SUPPORT_DOMAIN_MAXVCPUS_XML = 1006
+SUPPORT_DOMAIN_CONSOLE_STREAM = 1007
 
 # Flags for check_pool_support
 SUPPORT_STORAGE_CREATEVOLFROM = 2000
+SUPPORT_STORAGE_UPLOAD = 2001
 
 # Flags for check_nodedev_support
 SUPPORT_NODEDEV_PCI_DETACH = 3000
@@ -61,6 +64,10 @@ SUPPORT_CONN_HV_SOUND_ICH6 = 5003
 SUPPORT_CONN_HV_GRAPHICS_SPICE = 5004
 SUPPORT_CONN_HV_CHAR_SPICEVMC = 5005
 SUPPORT_CONN_HV_DIRECT_INTERFACE = 5006
+SUPPORT_CONN_HV_FILESYSTEM = 5007
+
+# Flags for check_stream_support
+SUPPORT_STREAM_UPLOAD = 6000
 
 """
 Possible keys:
@@ -87,6 +94,9 @@ Possible keys:
                   (driver name (e.g qemu, xen, lxc), minimum supported version)
                  If a hypervisor is not listed, it is assumed to be NOT
                  SUPPORTED.
+  "drv_libvirt_version" : List of tuples, similar to drv_version, but
+                          the version number is minimum supported _libvirt_
+                          version
   "hv_version" : A list of tuples of the same form as drv_version, however
                  listing the actual <domain type='%s'/> from the XML.
                  example: 'kvm'
@@ -136,6 +146,13 @@ _support_dict = {
         "version" : 8005,
     },
 
+    SUPPORT_CONN_STREAM : {
+        # Earliest version with working bindings
+        "version" : 9003,
+        "function" : "virConnect.newStream",
+        "args" : (0,),
+    },
+
 
     # Domain checks
     SUPPORT_DOMAIN_GETVCPUS : {
@@ -171,6 +188,11 @@ _support_dict = {
         "function" : "virDomain.jobInfo",
         "args" : (),
     },
+
+    SUPPORT_DOMAIN_CONSOLE_STREAM : {
+        "version" : 9003,
+    },
+
 
     # Pool checks
     # This can't ever require a pool object for back compat reasons
@@ -232,6 +254,23 @@ _support_dict = {
         "version" : 8007,
         "force_version" : True,
         "drv_version" : [ ("qemu", 0), ],
+    },
+    SUPPORT_CONN_HV_FILESYSTEM : {
+        "drv_version" : [ ("qemu", 13000),
+                          ("lxc", 0),
+                          ("openvz", 0),
+                          ("test", 0)],
+        "drv_libvirt_version" : [ ("qemu", 8005),
+                                  ("lxc", 0),
+                                  ("openvz", 0),
+                                  ("test", 0)],
+    },
+
+
+    SUPPORT_STREAM_UPLOAD : {
+        # Latest I tested with, and since we will use it by default
+        # for URL installs, want to be sure it works
+        "version" : 9004,
     },
 }
 
@@ -299,7 +338,7 @@ def _local_lib_ver():
     return libvirt.getVersion()
 
 # Version of libvirt library/daemon on the connection (could be remote)
-def _daemon_lib_ver(conn, force_version, minimum_libvirt_version):
+def _daemon_lib_ver(conn, uri, force_version, minimum_libvirt_version):
     # Always force the required version if it's after the version which
     # has getLibVersion
     if force_version or minimum_libvirt_version >= 7004:
@@ -307,7 +346,6 @@ def _daemon_lib_ver(conn, force_version, minimum_libvirt_version):
     else:
         default_ret = 100000000000
 
-    uri = conn.getURI()
     if not _util.is_uri_remote(uri):
         return _local_lib_ver()
 
@@ -320,8 +358,8 @@ def _daemon_lib_ver(conn, force_version, minimum_libvirt_version):
     return conn.getLibVersion()
 
 # Return the hypervisor version
-def _hv_ver(conn):
-    drv_type = _util.get_uri_driver(conn.getURI())
+def _hv_ver(conn, uri):
+    drv_type = _util.get_uri_driver(uri)
     args = ()
 
     cmd = _get_command("getVersion", obj=conn)
@@ -335,9 +373,12 @@ def _hv_ver(conn):
     if not _try_command(cmd, args):
         return 0
 
-    ret = cmd(*args)
-    if type(ret) == tuple:
-        ret = ret[1]
+    try:
+        ret = cmd(*args)
+        if type(ret) == tuple:
+            ret = ret[1]
+    except libvirt.libvirtError:
+        ret = 0
 
     return ret
 
@@ -377,7 +418,8 @@ def _check_support(conn, feature, data=None):
             key_list.remove(key)
         return support_info.get(key)
 
-    drv_type = _util.get_uri_driver(conn.getURI())
+    uri = conn.getURI()
+    drv_type = _util.get_uri_driver(uri)
     is_rhel6 = _get_rhel6()
     force_version = get_value("force_version") or False
 
@@ -391,15 +433,17 @@ def _check_support(conn, feature, data=None):
     if is_rhel6:
         drv_version = rhel6_drv_version
 
+    drv_libvirt_version = get_value("drv_libvirt_version") or []
+
     hv_version = get_value("hv_version") or []
     object_name, function_name = _split_function_name(get_value("function"))
     args = get_value("args")
     flag = get_value("flag")
 
     actual_lib_ver = _local_lib_ver()
-    actual_daemon_ver = _daemon_lib_ver(conn, force_version,
+    actual_daemon_ver = _daemon_lib_ver(conn, uri, force_version,
                                         minimum_libvirt_version)
-    actual_drv_ver = _hv_ver(conn)
+    actual_drv_ver = _hv_ver(conn, uri)
 
     # Make sure there are no keys left in the key_list. This will
     # ensure we didn't mistype anything above, or in the support_dict
@@ -459,6 +503,24 @@ def _check_support(conn, feature, data=None):
                     break
             else:
                 if actual_drv_ver >= min_drv_ver:
+                    found = True
+                    break
+
+        if not found:
+            return False
+
+    if drv_libvirt_version:
+        found = False
+        for drv, min_lib_ver in drv_libvirt_version:
+            if drv != drv_type:
+                continue
+
+            if min_lib_ver < 0:
+                if actual_lib_ver <= -min_lib_ver:
+                    found = True
+                    break
+            else:
+                if actual_lib_ver >= min_lib_ver:
                     found = True
                     break
 
@@ -528,3 +590,7 @@ def check_nodedev_support(nodedev, feature):
 
 def check_interface_support(nodedev, feature):
     return _check_support(_get_conn_from_object(nodedev), feature, nodedev)
+
+def check_stream_support(conn, feature):
+    return (check_conn_support(conn, SUPPORT_CONN_STREAM) and
+            _check_support(conn, feature, conn))

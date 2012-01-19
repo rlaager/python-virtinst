@@ -22,7 +22,6 @@ import virtinst.ImageParser
 import os
 
 import utils
-import xmlconfig
 
 qemuuri = "__virtinst_test__test:///default,caps=%s/tests/capabilities-xml/capabilities-kvm.xml,qemu,predictable" % os.getcwd()
 
@@ -82,21 +81,26 @@ class TestImageParser(unittest.TestCase):
             inst = virtinst.ImageInstaller(image, caps, boot_index=idx,
                                            conn=conn)
 
+            utils.set_conn(conn)
+
             if inst.is_hvm():
-                g = xmlconfig.get_basic_fullyvirt_guest(typ=gtype,
-                                                        testconn=conn)
+                g = utils.get_basic_fullyvirt_guest(typ=gtype)
             else:
-                g = xmlconfig.get_basic_paravirt_guest(testconn=conn)
+                g = utils.get_basic_paravirt_guest()
 
             g.installer = inst
             g._prepare_install(None)
 
-            expect_out = utils.read_file(image2guestdir + fname)
+            actual_out = g.get_config_xml(install=False)
+            expect_file = os.path.join(image2guestdir + fname)
+            expect_out = utils.read_file(expect_file)
             expect_out = expect_out.replace("REPLACEME", os.getcwd())
 
-            utils.diff_compare(g.get_config_xml(install=False),
-                               image2guestdir + fname, expect_out=expect_out)
+            utils.diff_compare(actual_out,
+                               expect_file,
+                               expect_out=expect_out)
 
+            utils.reset_conn()
 
     # Build libvirt XML from the image xml
     # XXX: This doesn't set up devices, so the guest xml will be pretty

@@ -24,13 +24,15 @@ import shutil
 import subprocess
 import tempfile
 
+import Storage
+import support
 import _util
 import Installer
 from VirtualDisk import VirtualDisk
 from User import User
 import OSDistro
 
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 def _is_url(url, is_local):
     """
@@ -63,6 +65,90 @@ def _sanitize_url(url):
             url = url[:index] + ":" + url[index:]
 
     return url
+
+def _build_pool(conn, meter, path):
+    pool = _util.lookup_pool_by_path(conn, path)
+    if pool:
+        logging.debug("Existing pool '%s' found for %s", pool.name(), path)
+        pool.refresh(0)
+        return pool
+
+    name = _util.generate_name("boot-scratch",
+                               conn.storagePoolLookupByName)
+    logging.debug("Building storage pool: path=%s name=%s", path, name)
+    poolbuild = Storage.DirectoryPool(conn=conn, name=name,
+                                      target_path=path)
+
+    # Explicitly don't build? since if we are creating this directory
+    # we probably don't have correct perms
+    return poolbuild.install(meter=meter, create=True, build=False,
+                             autostart=True)
+
+
+def _upload_file(conn, meter, destpool, src):
+    # Build stream object
+    stream = conn.newStream(0)
+    def safe_send(data):
+        while True:
+            ret = stream.send(data)
+            if ret == 0 or ret == len(data):
+                break
+            data = data[ret:]
+
+    # Build placeholder volume
+    size = os.path.getsize(src)
+    basename = os.path.basename(src)
+    poolpath = _util.get_xml_path(destpool.XMLDesc(0), "/pool/target/path")
+    name = Storage.StorageVolume.find_free_name(basename,
+                                                pool_object=destpool)
+    if name != basename:
+        logging.debug("Generated non-colliding volume name %s", name)
+
+    disk = VirtualDisk(conn=conn,
+                       path=os.path.join(poolpath, name),
+                       sizebytes=size,
+                       sparse=True)
+
+    disk.setup_dev(meter=meter)
+    vol = disk.vol_object
+    if not vol:
+        raise RuntimeError(_("Failed to lookup scratch media volume"))
+
+    try:
+        # Register upload
+        offset = 0
+        length = size
+        flags = 0
+        stream.upload(vol, offset, length, flags)
+
+        # Open source file
+        fileobj = file(src, "r")
+
+        # Start transfer
+        total = 0
+        meter.start(size=size,
+                    text=_("Transferring %s") % os.path.basename(src))
+        while True:
+            #blocksize = (1024 ** 2)
+            blocksize = 1024
+            data = fileobj.read(blocksize)
+            if not data:
+                break
+
+            safe_send(data)
+            total += len(data)
+            meter.update(total)
+
+        # Cleanup
+        stream.finish()
+        meter.end(size)
+    except:
+        if vol:
+            vol.delete(0)
+        raise
+
+    return vol
+
 
 class DistroInstaller(Installer.Installer):
     def __init__(self, type="xen", location=None, boot=None,
@@ -99,8 +185,7 @@ class DistroInstaller(Installer.Installer):
         is_tuple = False
         validated = True
         self._location_is_path = True
-        is_local = (not self.conn or
-                    not _util.is_uri_remote(self.conn.getURI()))
+        is_local = (not self.conn or not self.is_remote())
 
         # Basic validation
         if type(val) is not str and (type(val) is not tuple and len(val) != 2):
@@ -122,7 +207,7 @@ class DistroInstaller(Installer.Installer):
         elif os.path.exists(os.path.abspath(val)) and is_local:
             val = os.path.abspath(val)
             logging.debug("DistroInstaller location is a local "
-                          "file/path: %s" % val)
+                          "file/path: %s", val)
 
         else:
             # Didn't determine anything about the location
@@ -146,8 +231,8 @@ class DistroInstaller(Installer.Installer):
                                 conn=self.conn,
                                 volName=stuple)
                 val = d.path
-            except Exception, e:
-                logging.debug(str(e))
+            except:
+                _util.log_exception("Error validating install location")
                 raise ValueError(_("Checking installer location failed: "
                                    "Could not find media '%s'." % str(val)))
         elif not validated:
@@ -157,7 +242,7 @@ class DistroInstaller(Installer.Installer):
 
         if (not self._location_is_path and val.startswith("nfs:") and not
             User.current().has_priv(User.PRIV_NFS_MOUNT,
-                                    (self.conn and self.conn.getURI()))):
+                                    (self.conn and self.get_uri()))):
             raise ValueError(_('Privilege is required for NFS installations'))
 
         self._location = val
@@ -187,16 +272,15 @@ class DistroInstaller(Installer.Installer):
                            transient=transient)
         self.install_devices.append(disk)
 
-    def _perform_initrd_injections(self):
+    def _perform_initrd_injections(self, initrd):
         """
         Insert files into the root directory of the initial ram disk
         """
-        initrd = self._install_bootconfig.initrd
         tempdir = tempfile.mkdtemp(dir=self.scratchdir)
         os.chmod(tempdir, 0775)
 
         for filename in self._initrd_injections:
-            logging.debug("Copying %s to the initrd." % filename)
+            logging.debug("Copying %s to the initrd.", filename)
             shutil.copy(filename, tempdir)
 
         logging.debug("Appending to the initrd.")
@@ -216,6 +300,43 @@ class DistroInstaller(Installer.Installer):
         f.close()
         shutil.rmtree(tempdir)
 
+    def support_remote_url_install(self):
+        if not self.conn:
+            return False
+        if hasattr(self.conn, "_virtinst__fake_conn"):
+            return False
+        return support.check_stream_support(self.conn,
+                                            support.SUPPORT_STREAM_UPLOAD)
+
+    def _upload_media(self, guest, meter, kernel, initrd):
+        conn = guest.conn
+        system_scratchdir = self._get_system_scratchdir()
+
+        if (not guest.is_remote() and
+            (self.is_session_uri() or self.scratchdir == system_scratchdir)):
+            # We have access to system scratchdir, don't jump through hoops
+            logging.debug("Have access to preferred scratchdir so"
+                          " nothing to upload")
+            return kernel, initrd
+
+        if not self.support_remote_url_install():
+            logging.debug("Media upload not supported")
+            return kernel, initrd
+
+        # Build pool
+        logging.debug("Uploading kernel/initrd media")
+        pool = _build_pool(conn, meter, system_scratchdir)
+
+        kvol = _upload_file(conn, meter, pool, kernel)
+        newkernel = kvol.path()
+        self._tmpvols.append(kvol)
+
+        ivol = _upload_file(conn, meter, pool, initrd)
+        newinitrd = ivol.path()
+        self._tmpvols.append(ivol)
+
+        return newkernel, newinitrd
+
     def _prepare_kernel_and_initrd(self, guest, meter):
         disk = None
 
@@ -223,9 +344,11 @@ class DistroInstaller(Installer.Installer):
         if (self.location is not None and
             self._location_is_path and
             not os.path.isdir(self.location)):
-            device = VirtualDisk.DEVICE_DISK
-            if guest._lookup_osdict_key('pv_cdrom_install'):
-                device = VirtualDisk.DEVICE_CDROM
+
+            device = VirtualDisk.DEVICE_CDROM
+            if (self.is_xenpv() and
+                not guest._lookup_osdict_key('pv_cdrom_install')):
+                device = VirtualDisk.DEVICE_DISK
 
             disk = VirtualDisk(conn=guest.conn,
                                device=device,
@@ -247,23 +370,27 @@ class DistroInstaller(Installer.Installer):
 
         if guest.get_os_autodetect():
             if os_type:
-                logging.debug("Auto detected OS type as: %s" % os_type)
+                logging.debug("Auto detected OS type as: %s", os_type)
                 guest.os_type = os_type
 
             if (os_variant and guest.os_type == os_type):
-                logging.debug("Auto detected OS variant as: %s" % os_variant)
+                logging.debug("Auto detected OS variant as: %s", os_variant)
                 guest.os_variant = os_variant
-
-        self._install_bootconfig.kernel = kernelfn
-        self._install_bootconfig.initrd = initrdfn
-        self._install_bootconfig.kernel_args = args
 
         self._tmpfiles.append(kernelfn)
         if initrdfn:
             self._tmpfiles.append(initrdfn)
 
         if self._initrd_injections:
-            self._perform_initrd_injections()
+            self._perform_initrd_injections(initrdfn)
+
+        # If required, upload media to an accessible guest location
+        kernelfn, initrdfn = self._upload_media(guest, meter,
+                                                kernelfn, initrdfn)
+
+        self._install_bootconfig.kernel = kernelfn
+        self._install_bootconfig.initrd = initrdfn
+        self._install_bootconfig.kernel_args = args
 
         return disk
 

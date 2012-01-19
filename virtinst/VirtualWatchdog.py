@@ -18,7 +18,7 @@
 # MA 02110-1301 USA.
 
 import VirtualDevice
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 from XMLBuilderDomain import _xml_property
 
 class VirtualWatchdog(VirtualDevice.VirtualDevice):

@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "VIRT-CLONE 1"
-.TH VIRT-CLONE 1 "2010-12-17" "" "Virtual Machine Install Tools"
+.TH VIRT-CLONE 1 "2011-07-28" "" "Virtual Machine Install Tools"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -232,6 +232,10 @@ guest \s-1XML\s0.
 .IP "\-\-print\-xml" 2
 .IX Item "--print-xml"
 Print the generated clone \s-1XML\s0 and exit without cloning.
+.IP "\-\-replace" 2
+.IX Item "--replace"
+Shutdown and remove any existing guest with the passed \f(CW\*(C`\-\-name\*(C'\fR before
+cloning the original guest.
 .IP "\-d, \-\-debug" 2
 .IX Item "-d, --debug"
 Print debugging information to the terminal when running the install process.

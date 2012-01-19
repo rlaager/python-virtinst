@@ -10,6 +10,9 @@
   <features>
     <acpi/><apic/>
   </features>
+  <numatune>
+    <memory mode='interleave' nodeset='1-5,^3,7'/>
+  </numatune>
   <cpu match='exact'>
     <model>footest</model>
     <vendor>Intel</vendor>

@@ -24,7 +24,7 @@ import _util
 import VirtualDevice
 import XMLBuilderDomain
 from XMLBuilderDomain import _xml_property
-from virtinst import _virtinst as _
+from virtinst import _gettext as _
 
 def _countMACaddr(vms, searchmac):
     if not searchmac:
@@ -136,6 +136,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         self._model = None
         self._target_dev = None
         self._source_dev = None
+        self._source_mode = "vepa"
         self._virtualport = VirtualPort(conn, parsexml, parsexmlnode, caps)
 
         # Generate _random_mac
@@ -157,9 +158,15 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                 raise ValueError(_("A network name was not provided"))
 
     def _generate_default_bridge(self):
-        if not self._default_bridge:
-            self._default_bridge = _util.default_bridge2(self.conn)
-        return self._default_bridge
+        ret = self._default_bridge
+        if ret is None:
+            ret = False
+            default = _util.default_bridge2(self.conn)
+            if default:
+                ret = default[1]
+
+        self._default_bridge = ret
+        return ret or None
 
     def _generate_random_mac(self):
         if self.conn and not self._random_mac:
@@ -219,7 +226,8 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                          xpath="./@type")
 
     def get_macaddr(self):
-        if not self._macaddr:
+        # Don't generate a random MAC if parsing XML, since it can be slow
+        if not self._macaddr and not self._is_parse():
             return self._generate_random_mac()
         return self._macaddr
     def set_macaddr(self, val):
@@ -253,7 +261,9 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
                             xpath="./source/@network")
 
     def get_bridge(self):
-        if not self._bridge and self.type == self.TYPE_BRIDGE:
+        if (not self._is_parse() and
+            not self._bridge and
+            self.type == self.TYPE_BRIDGE):
             return self._generate_default_bridge()
         return self._bridge
     def set_bridge(self, val):
@@ -282,6 +292,13 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
     source_dev = _xml_property(get_source_dev, set_source_dev,
                                xpath="./source/@dev")
 
+    def get_source_mode(self):
+        return self._source_mode
+    def set_source_mode(self, newmode):
+        self._source_mode = newmode
+    source_mode = _xml_property(get_source_mode, set_source_mode,
+                                xpath="./source/@mode")
+
     def is_conflict_net(self, conn, mac=None):
         """
         is_conflict_net: determines if mac conflicts with others in system
@@ -298,7 +315,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
             return (False, None)
 
         # Not supported for remote connections yet
-        if self._is_remote():
+        if self.is_remote():
             return (False, None)
 
         vms, inactive_vm = _util.fetch_all_guests(conn)
@@ -312,7 +329,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
 
         for dev in hostdevs:
             host_macaddr = dev[4]
-            if self.macaddr.upper() == host_macaddr.upper():
+            if mac.upper() == host_macaddr.upper():
                 return (True, _("The MAC address you entered conflicts with "
                                 "a device on the physical host."))
 
@@ -354,7 +371,7 @@ class VirtualNetworkInterface(VirtualDevice.VirtualDevice):
         elif self.type == self.TYPE_ETHERNET and self.source_dev:
             src_xml     = "      <source dev='%s'/>\n" % self.source_dev
         elif self.type == self.TYPE_DIRECT and self.source_dev:
-            src_xml     = "      <source dev='%s' mode='vepa'/>\n" % self.source_dev
+            src_xml     = "      <source dev='%s' mode='%s'/>\n" % (self.source_dev, self.source_mode)
 
         if self.model:
             model_xml   = "      <model type='%s'/>\n" % self.model

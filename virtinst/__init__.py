@@ -15,17 +15,22 @@
 # MA 02110-1301 USA.
 
 import gettext
+import sys
 
-gettext_dir = "::LOCALEDIR::"
-gettext_app = "virtinst"
+gettext.bindtextdomain("virtinst")
+_gettext = lambda m: gettext.dgettext("virtinst", m)
 
-gettext.bindtextdomain(gettext_app, gettext_dir)
+try:
+    import _config
+except ImportError:
+    print "virtinst: Please run 'python setup.py build' in the source"
+    print "          directory before using the code."
+    sys.exit(1)
+__version__ = _config.__version__
+__version_info__ = _config.__version_info__
+enable_rhel6_defaults = _config.rhel6defaults
 
-def _virtinst(msg):
-    return gettext.dgettext(gettext_app, msg)
-
-from version import __version__
-__version_info__ = tuple([ int(num) for num in __version__.split('.')])
+# Public imports
 
 import Storage
 import Interface
@@ -43,6 +48,9 @@ from VirtualCharDevice import VirtualCharDevice
 from VirtualVideoDevice import VirtualVideoDevice
 from VirtualController import VirtualController
 from VirtualWatchdog import VirtualWatchdog
+from VirtualFilesystem import VirtualFilesystem
+from VirtualSmartCardDevice import VirtualSmartCardDevice
+from VirtualRedirDevice import VirtualRedirDevice
 from FullVirtGuest import FullVirtGuest
 from ParaVirtGuest import ParaVirtGuest
 from DistroInstaller import DistroInstaller
@@ -50,10 +58,11 @@ from PXEInstaller import PXEInstaller
 from LiveCDInstaller import LiveCDInstaller
 from ImportInstaller import ImportInstaller
 from ImageInstaller import ImageInstaller
+from Installer import ContainerInstaller
 from CloneManager import CloneDesign
 from User import User
 from Clock import Clock
-from CPU import CPU
+from CPU import CPU, CPUFeature
 from Seclabel import Seclabel
 from XMLBuilderDomain import XMLBuilderDomain
 import util
@@ -71,4 +80,6 @@ __all__ = ["Guest", "XenGuest", "VirtualNetworkInterface",
            "CPU",
            "VirtualHostDevice", "VirtualHostDeviceUSB", "VirtualVideoDevice",
            "VirtualHostDevicePCI", "VirtualCharDevice", "VirtualInputDevice",
-           "VirtualController", "VirtualWatchdog"]
+           "VirtualController", "VirtualWatchdog",
+           "VirtualFilesystem", "VirtualSmartCardDevice",
+           "VirtualHostDeviceUSBRedir"]

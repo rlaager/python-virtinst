@@ -14,24 +14,27 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA.
 
-import commands
 import os
 import sys
+import commands
+import subprocess
 
 import utils
 
 os.environ["VIRTCONV_TEST_NO_DISK_CONVERSION"] = "1"
 os.environ["LANG"] = "en_US.UTF-8"
 
-testuri = "test:///`pwd`/tests/testdriver.xml"
+testuri = "test:///%s/tests/testdriver.xml" % os.getcwd()
 
 # There is a hack in virtinst/cli.py to find this magic string and
 # convince virtinst we are using a remote connection.
 fakeuri     = "__virtinst_test__" + testuri + ",predictable"
+capsprefix  = ",caps=%s/tests/capabilities-xml/" % os.getcwd()
 remoteuri   = fakeuri + ",remote"
-kvmuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/libvirt-0.7.6-qemu-caps.xml,qemu"
-xenuri      = fakeuri + ",caps=`pwd`/tests/capabilities-xml/rhel5.4-xen-caps-virt-enabled.xml,xen"
-xenia64uri  = fakeuri + ",caps=`pwd`/tests/capabilities-xml/xen-ia64-hvm.xml,xen"
+kvmuri      = fakeuri + capsprefix + "libvirt-0.7.6-qemu-caps.xml,qemu"
+xenuri      = fakeuri + capsprefix + "rhel5.4-xen-caps-virt-enabled.xml,xen"
+xenia64uri  = fakeuri + capsprefix + "xen-ia64-hvm.xml,xen"
+lxcuri      = fakeuri + capsprefix + "capabilities-lxc.xml,lxc"
 
 # Location
 image_prefix = "/tmp/__virtinst_cli_"
@@ -81,10 +84,12 @@ test_files = {
     'KVMURI'            : kvmuri,
     'XENURI'            : xenuri,
     'XENIA64URI'        : xenia64uri,
+    'LXCURI'            : lxcuri,
     'CLONE_DISK_XML'    : "%s/clone-disk.xml" % xmldir,
     'CLONE_STORAGE_XML' : "%s/clone-disk-managed.xml" % xmldir,
     'CLONE_NOEXIST_XML' : "%s/clone-disk-noexist.xml" % xmldir,
     'IMAGE_XML'         : "%s/image.xml" % xmldir,
+    'IMAGE_NOGFX_XML'   : "%s/image-nogfx.xml" % xmldir,
     'NEWIMG1'           : new_images[0],
     'NEWIMG2'           : new_images[1],
     'NEWIMG3'           : new_images[2],
@@ -111,7 +116,56 @@ test_files = {
 }
 
 debug = False
-testprompt = False
+
+class PromptCheck(object):
+    def __init__(self, prompt, response=None):
+        self.prompt = prompt
+        self.response = response
+        if self.response:
+            self.response = self.response % test_files
+
+    def check(self, proc):
+        out = proc.stdout.readline()
+
+        if not out.count(self.prompt):
+            out += "\nContent didn't contain prompt '%s'" % (self.prompt)
+            return False, out
+
+        if self.response:
+            proc.stdin.write(self.response + "\n")
+
+        return True, out
+
+class PromptTest(object):
+    def __init__(self, cmd):
+        cmd = cmd % test_files
+        app, opts = cmd.split(" ", 1)
+        self.cmd = [os.path.abspath(app)] + opts.split(" ")
+        self.cmdstr = cmd
+        self.debug = False
+
+        self.prompt_list = []
+
+    def add(self, *args, **kwargs):
+        self.prompt_list.append(PromptCheck(*args, **kwargs))
+
+    def run(self):
+        proc = subprocess.Popen(self.cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
+
+        out = "Running %s\n" % self.cmdstr
+
+        for p in self.prompt_list:
+            ret, content = p.check(proc)
+            out += content
+            if not ret:
+                # Since we didn't match output, process might be hung
+                proc.kill()
+                break
+
+        return proc.wait(), out
 
 """
 CLI test matrix
@@ -136,10 +190,6 @@ Format:
     }
   } # End categoryfoo
 
-  "prompt" : { # Special category that will launch an interactive command.
-               # which is only run if special args are passed to the test
-    "--some --prompt --command --string"
-  }
 }
   "
 """
@@ -206,6 +256,8 @@ args_dict = {
         "--disk %(EXISTIMG1)s,driver_name=foobar,driver_type=foobaz",
         # Using a storage pool source as a disk
         "--disk /dev/hda",
+        # Building 'default' pool
+        "--disk pool=default,size=.00001",
       ],
 
       "invalid": [
@@ -260,6 +312,8 @@ args_dict = {
         "--arch i486 --pxe",
         # Directory tree URL install
         "--hvm --location %(TREEDIR)s",
+        # initrd-inject
+        "--hvm --location %(TREEDIR)s --initrd-inject virt-install --extra-args ks=file:/virt-install",
         # Directory tree URL install with extra-args
         "--hvm --location %(TREEDIR)s --extra-args console=ttyS0",
         # Directory tree CDROM install
@@ -299,6 +353,8 @@ args_dict = {
         "--hvm --pxe --boot menu=foobar",
         # cdrom fail w/ extra-args
         "--hvm --cdrom %(EXISTIMG1)s --extra-args console=ttyS0",
+        # initrd-inject with manual kernel/initrd
+        "--hvm --boot kernel=%(TREEDIR)s/pxeboot/vmlinuz,initrd=%(TREEDIR)s/pxeboot/initrd.img --initrd-inject virt-install",
       ],
      }, # category "install"
 
@@ -344,6 +400,34 @@ args_dict = {
       ],
 
      }, # category "graphics"
+
+     "smartcard": {
+      "args": "--noautoconsole --nodisks --pxe",
+
+      "valid": [
+        # --smartcard host
+        "--smartcard host",
+        # --smartcard none,
+        "--smartcard none",
+        # --smartcard mode with type
+        "--smartcard passthrough,type=spicevmc",
+        # --smartcard mode with type
+        # XXX Requires implementing more opts
+        #"--smartcard passthrough,type=tcp",
+      ],
+
+      "invalid": [
+        # Missing argument
+        "--smartcard",
+        # Invalid argument
+        "--smartcard foo",
+        # Invalid type
+        "--smartcard passthrough,type=foo",
+        # --smartcard bogus
+        "--smartcard host,foobar=baz",
+      ],
+
+     }, # category "smartcard"
 
     "char" : {
      "args": "--hvm --nographics --noautoconsole --nodisks --pxe",
@@ -415,6 +499,8 @@ args_dict = {
         "--cpu somemodel",
         # Crazy --cpu
         "--cpu foobar,+x2apic,+x2apicagain,-distest,forbid=foo,forbid=bar,disable=distest2,optional=opttest,require=reqtest,match=strict,vendor=meee",
+        # Simple --numatune
+        "--numatune 1,2,3,5-7,^6",
       ],
 
       "invalid" : [
@@ -432,6 +518,8 @@ args_dict = {
         "--vcpus foo=bar",
         # --cpu host, but no host CPU in caps
         "--cpu host",
+        # Non-escaped numatune
+        "--numatune 1-3,4,mode=strict",
       ],
 
     }, # category 'cpuram'
@@ -444,6 +532,8 @@ args_dict = {
         "--hvm --disk path=virt-install,device=cdrom",
         # FV Import install
         "--hvm --import --disk path=virt-install",
+        # Working scenario w/ prompt shouldn't ask anything
+        "--hvm --import --disk path=virt-install --prompt --force",
         # PV Import install
         "--paravirt --import --disk path=virt-install",
         # PV Import install, print single XML
@@ -469,11 +559,17 @@ args_dict = {
         # --security dynamic
         "--hvm --nodisks --pxe --security type=dynamic",
         # --security implicit static
-        "--hvm --nodisks --pxe --security label=foobar.label",
+        "--hvm --nodisks --pxe --security label=foobar.label,relabel=yes",
         # --security static with commas 1
-        "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3,type=static",
+        "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3,type=static,relabel=no",
         # --security static with commas 2
         "--hvm --nodisks --pxe --security label=foobar.label,a1,z2,b3",
+        # --filesystem simple
+        "--hvm --pxe --filesystem /foo/source,/bar/target",
+        # --filesystem template
+        "--hvm --pxe --filesystem template_name,/,type=template",
+        # no networks
+        "--hvm --nodisks --nonetworks --cdrom %(EXISTIMG1)s",
       ],
 
       "invalid": [
@@ -504,9 +600,21 @@ args_dict = {
         ("--hvm --cdrom %(EXISTIMG2)s --file %(EXISTIMG1)s --os-variant win2k3 --wait 0 --vcpus cores=4", "w2k3-cdrom"),
         # Lot's of devices
         ("--hvm --pxe "
-         "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh "
-         "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro "
-         "--serial tcp,host=:2222,mode=bind,protocol=telnet ",
+         "--controller usb,model=ich9-ehci1,address=0:0:4.7,index=0 "
+         "--controller usb,model=ich9-uhci1,address=0:0:4.0,index=0,master=0 "
+         "--controller usb,model=ich9-uhci2,address=0:0:4.1,index=0,master=2 "
+         "--controller usb,model=ich9-uhci3,address=0:0:4.2,index=0,master=4 "
+         "--disk %(EXISTIMG1)s,cache=writeback,io=threads,perms=sh,serial=WD-WMAP9A966149 "
+         "--disk %(NEWIMG1)s,sparse=false,size=.001,perms=ro,error_policy=enospace "
+         "--disk device=cdrom,bus=sata "
+         "--serial tcp,host=:2222,mode=bind,protocol=telnet "
+         "--filesystem /source,/target,mode=squash "
+         "--network user,mac=12:34:56:78:11:22 "
+         "--network bridge=foobar,model=virtio "
+         "--channel spicevmc "
+         "--smartcard passthrough,type=spicevmc "
+         "--security type=static,label='system_u:object_r:svirt_image_t:s0:c100,c200',relabel=yes "
+         """ --numatune \\"1-3,5\\",mode=preferred """,
          "many-devices"),
       ],
 
@@ -542,8 +650,6 @@ args_dict = {
         "--network=FOO",
         # Invalid mac
         "--network=network:default --mac 1234",
-        # More mac addrs than nics
-        "--network user --mac 00:11:22:33:44:EF --mac 00:11:22:33:44:AB",
         # Mixing bridge and network
         "--network user --bridge foo0",
         # Colliding macaddr
@@ -551,6 +657,28 @@ args_dict = {
       ],
 
      }, # category "network"
+
+     "controller": {
+      "args": "--noautoconsole --nodisks --pxe",
+
+      "valid": [
+        "--controller usb,model=ich9-ehci1,address=0:0:4.7",
+        "--controller usb,model=ich9-ehci1,address=0:0:4.7,index=0",
+        "--controller usb,model=ich9-ehci1,address=0:0:4.7,index=1,master=0",
+      ],
+
+      "invalid": [
+        # Missing argument
+        "--controller",
+        # Invalid argument
+        "--controller foo",
+        # Invalid values
+        "--controller usb,model=ich9-ehci1,address=0:0:4.7,index=bar,master=foo",
+        # --bogus
+        "--controller host,foobar=baz",
+      ],
+
+     }, # category "controller"
 
      "hostdev" : {
       "args": "--noautoconsole --nographics --nodisks --pxe",
@@ -571,6 +699,34 @@ args_dict = {
         "--host-device 300:400",
       ],
      }, # category "hostdev"
+
+     "redirdev" : {
+      "args": "--noautoconsole --nographics --nodisks --pxe",
+
+      "valid" : [
+        "--redirdev usb,type=spicevmc",
+        "--redirdev usb,type=tcp,server=localhost:4000",
+        # Different host server
+        "--redirdev usb,type=tcp,server=127.0.0.1:4002",
+      ],
+
+      "invalid" : [
+        # Missing argument
+        "--redirdev",
+        # Unsupported bus
+        "--redirdev pci",
+        # Invalid argument
+        "--redirdev usb,type=spicevmc,server=foo:12",
+        # Missing argument
+        "--redirdev usb,type=tcp,server=",
+        # Invalid address
+        "--redirdev usb,type=tcp,server=localhost:p4000",
+        # Missing address
+        "--redirdev usb,type=tcp,server=localhost:",
+        # Missing host
+        "--redirdev usb,type=tcp,server=:399",
+      ],
+     }, # category "redirdev"
 
      "remote" : {
       "args": "--connect %(REMOTEURI)s --nographics --noautoconsole",
@@ -627,7 +783,8 @@ args_dict = {
     # xenner
     ("--os-variant fedora14 --nodisks --boot hd --paravirt", "kvm-xenner"),
     # plain qemu
-    ("--os-variant fedora14 --nodisks --boot cdrom --virt-type qemu",
+    ("--os-variant fedora14 --nodisks --boot cdrom --virt-type qemu "
+     "--cpu Penryn",
      "qemu-plain"),
     # 32 on 64
     ("--os-variant fedora14 --nodisks --boot network --nographics --arch i686",
@@ -673,8 +830,22 @@ args_dict = {
   ],
 
 },
-    "prompt" : [ " --connect %(TESTURI)s --debug --prompt" ]
-  },
+
+"lxc" : {
+  "args": "--connect %(LXCURI)s --noautoconsole --name foolxc --ram 64",
+
+  "valid" : [],
+  "invalid" : [],
+
+  "compare" : [
+    ("", "default"),
+    ("--filesystem /source,/", "fs-default"),
+    ("--init /usr/bin/httpd", "manual-init"),
+  ],
+
+}, # lxc
+
+}, # virt-install
 
 
 
@@ -690,6 +861,8 @@ args_dict = {
         "-o test",
         # Nodisk, but with spurious files passed
         "-o test --file %(NEWIMG1)s --file %(NEWIMG2)s",
+        # Working scenario w/ prompt shouldn't ask anything
+        "-o test --file %(NEWIMG1)s --file %(NEWIMG2)s --prompt",
 
         # XML File with 2 disks
         "--original-xml %(CLONE_DISK_XML)s --file %(NEWIMG1)s --file %(NEWIMG2)s",
@@ -706,6 +879,8 @@ args_dict = {
         #"--original-xml %(CLONE_STORAGE_XML)s --file /cross-pool/clonevol",
         # XML w/ non-existent storage, with --preserve
         "--original-xml %(CLONE_NOEXIST_XML)s --file %(EXISTIMG1)s --preserve",
+        # Overwriting existing VM
+        "-o test -n test-many-devices --replace",
       ],
 
       "invalid": [
@@ -777,19 +952,17 @@ args_dict = {
       ],
     }, # categort "remote"
 
-    "prompt" : [
-        " --connect %(TESTURI) --debug --prompt",
-        " --connect %(TESTURI) --debug --original-xml %(CLONE_DISK_XML)s --prompt" ]
-  }, # app 'virt-clone'
+
+}, # app 'virt-clone'
 
 
 
 
   'virt-image': {
-    "globalargs" : " --connect %(TESTURI)s -d %(IMAGE_XML)s",
+    "globalargs" : " --connect %(TESTURI)s --debug",
 
     "general" : {
-      "args" : "--name test-image",
+      "args" : "--name test-image %(IMAGE_XML)s",
 
       "valid": [
         # All default values
@@ -813,7 +986,7 @@ args_dict = {
      }, # category 'general'
 
     "graphics" : {
-      "args" : "--name test-image --boot 0",
+      "args" : "--name test-image --boot 0 %(IMAGE_XML)s",
 
       "valid": [
         # SDL
@@ -830,25 +1003,30 @@ args_dict = {
 
       "valid" : [
         # Colliding VM name w/ --replace
-        "--name test --replace",
+        "--name test --replace %(IMAGE_XML)s",
       ],
       "invalid" : [
         # No name specified, and no prompt flag
-        "",
+        "%(IMAGE_XML)s",
         # Colliding VM name without --replace
-        "--name test",
+        "--name test %(IMAGE_XML)s",
       ],
 
       "compare" : [
-        ("--name foobar --ram 64 --os-variant winxp --boot 0", "image-boot0"),
-        ("--name foobar --ram 64 --network user,model=e1000 --boot 1",
+        ("--name foobar --ram 64 --os-variant winxp --boot 0 %(IMAGE_XML)s",
+         "image-boot0"),
+        ("--name foobar --ram 64 --network user,model=e1000 --boot 1 "
+         "%(IMAGE_XML)s",
          "image-boot1"),
+        ("--name foobar --ram 64 --boot 0 "
+         "%(IMAGE_NOGFX_XML)s",
+         "image-nogfx"),
       ]
 
      }, # category 'misc'
 
      "network": {
-      "args": "--name test-image --boot 0 --nographics",
+      "args": "--name test-image --boot 0 --nographics %(IMAGE_XML)s",
 
       "valid": [
         # user networking
@@ -861,8 +1039,6 @@ args_dict = {
         "--network=user,model=e1000",
         # several networks
         "--network=network:default,model=e1000 --network=user,model=virtio",
-        # no networks
-        #"--nonetworks",
       ],
       "invalid": [
         # Nonexistent network
@@ -872,7 +1048,7 @@ args_dict = {
       ],
 
      }, # category "network"
-    "prompt" : [ " --connect %(TESTURI)s %(IMAGE_XML)s --debug --prompt" ],
+
 
   }, # app 'virt-image'
 
@@ -915,29 +1091,83 @@ args_dict = {
      ],
     }, # category 'misc'
 
-  }, # app 'virt-conver'
+  }, # app 'virt-convert'
 }
+
+promptlist = []
+
+# Basic virt-install prompting
+p1 = PromptTest("virt-install --connect %(TESTURI)s --prompt --quiet "
+               "--noautoconsole")
+p1.add("fully virtualized", "yes")
+p1.add("What is the name", "foo")
+p1.add("How much RAM", "64")
+p1.add("use as the disk", "%(NEWIMG1)s")
+p1.add("large would you like the disk", ".00001")
+p1.add("CD-ROM/ISO or URL", "%(EXISTIMG1)s")
+promptlist.append(p1)
+
+# Basic virt-install kvm prompting, existing disk
+p2 = PromptTest("virt-install --connect %(KVMURI)s --prompt --quiet "
+               "--noautoconsole --name foo --ram 64 --pxe --hvm")
+p2.add("use as the disk", "%(EXISTIMG1)s")
+p2.add("overwrite the existing path")
+p2.add("want to use this disk", "yes")
+promptlist.append(p2)
+
+# virt-install with install and --file-size and --hvm specified
+p3 = PromptTest("virt-install --connect %(TESTURI)s --prompt --quiet "
+               "--noautoconsole --pxe --file-size .00001 --hvm")
+p3.add("What is the name", "foo")
+p3.add("How much RAM", "64")
+p3.add("enter the path to the file", "%(NEWIMG1)s")
+promptlist.append(p3)
+
+# Basic virt-image prompting
+p4 = PromptTest("virt-image --connect %(TESTURI)s %(IMAGE_XML)s "
+               "--prompt --quiet --noautoconsole")
+# prompting for virt-image currently disabled
+#promptlist.append(p4)
+
+# Basic virt-clone prompting
+p5 = PromptTest("virt-clone --connect %(TESTURI)s --prompt --quiet "
+               "--clone-running")
+p5.add("original virtual machine", "test-clone-simple")
+p5.add("cloned virtual machine", "test-clone-new")
+p5.add("use as the cloned disk", "%(MANAGEDNEW1)s")
+promptlist.append(p5)
+
+# virt-clone prompt with input XML
+p6 = PromptTest("virt-clone --connect %(TESTURI)s --prompt --quiet "
+               "--original-xml %(CLONE_DISK_XML)s --clone-running")
+p6.add("cloned virtual machine", "test-clone-new")
+p6.add("use as the cloned disk", "%(NEWIMG1)s")
+p6.add("use as the cloned disk", "%(NEWIMG2)s")
+promptlist.append(p6)
 
 def runcomm(comm):
     try:
         for i in new_files:
             os.system("rm %s > /dev/null 2>&1" % i)
 
-        if debug:
-            print comm % test_files
+        if type(comm) is str:
+            if debug:
+                print comm % test_files
 
-        ret = commands.getstatusoutput(comm % test_files)
+            code, output = commands.getstatusoutput(comm % test_files)
+
+        else:
+            if debug:
+                print comm.cmdstr
+            code, output = comm.run()
+
         if debug:
-            print ret[1]
+            print output
             print "\n"
 
-        return ret
+        return code, output
     except Exception, e:
         return (-1, str(e))
-
-def run_prompt_comm(comm):
-    print comm
-    os.system(comm % test_files)
 
 def write_pass():
     if not debug:
@@ -949,40 +1179,31 @@ def write_fail():
         sys.stdout.write("F")
         sys.stdout.flush()
 
-def assertPass(comm):
-    ret = runcomm(comm)
-    if ret[0] is not 0:
-        raise AssertionError("Expected command to pass, but failed.\n" + \
-                             "Command was: %s\n" % (comm) + \
-                             "Error code : %d\n" % ret[0] + \
-                             "Output was:\n%s" % ret[1])
-    return ret
-
-def assertFail(comm):
-    ret = runcomm(comm)
-    if ret[0] is 0:
-        raise AssertionError("Expected command to fail, but passed.\n" + \
-                             "Command was: %s\n" % (comm) + \
-                             "Error code : %d\n" % ret[0] + \
-                             "Output was:\n%s" % ret[1])
-    return ret
-
-
 class Command(object):
-    def __init__(self, cmdstr):
-        self.cmdstr = cmdstr
+    def __init__(self, cmd):
+        self.cmdstr = cmd
+        self.cmd = None
         self.check_success = True
         self.compare_file = None
+
+        if type(cmd) is not str:
+            self.cmd = cmd
+            self.cmdstr = " ".join(self.cmd.cmd)
 
     def run(self):
         filename = self.compare_file
         err = None
 
         try:
-            if self.check_success:
-                ignore, output = assertPass(self.cmdstr)
-            else:
-                ignore, output = assertFail(self.cmdstr)
+            code, output = runcomm(self.cmd or self.cmdstr)
+
+            if bool(code) == self.check_success:
+                raise AssertionError(
+                    ("Expected command to %s, but failed.\n" %
+                     (self.check_success and "pass" or "fail")) +
+                     ("Command was: %s\n" % self.cmdstr) +
+                     ("Error code : %d\n" % code) +
+                     ("Output was:\n%s" % output))
 
             if filename:
                 # Uncomment to generate new test files
@@ -1003,12 +1224,17 @@ def run_tests(do_app, do_category, error_ret):
     if do_app and do_app not in args_dict.keys():
         raise ValueError("Unknown app '%s'" % do_app)
 
+    cmdlist = []
+
+    # Prompt tests upfront
+    for cmd in promptlist:
+        cmdlist.append(Command(cmd))
+
     for app in args_dict:
         if do_app and app != do_app:
             continue
 
         unique = {}
-        prompts = []
         globalargs = ""
 
         # Build default command line dict
@@ -1016,19 +1242,10 @@ def run_tests(do_app, do_category, error_ret):
             if option == "globalargs":
                 globalargs = args_dict[app][option]
                 continue
-            elif option == "prompt":
-                prompts = args_dict[app][option]
-                continue
 
             # Default is a unique cmd string
             unique[option] = args_dict[app][option]
 
-        # Build up prompt cases
-        if testprompt:
-            for optstr in prompts:
-                cmd = "./" + app + " " + optstr
-                run_prompt_comm(cmd)
-            continue
 
         if do_category and do_category not in unique.keys():
             raise ValueError("Unknown category %s" % do_category)
@@ -1039,8 +1256,6 @@ def run_tests(do_app, do_category, error_ret):
                 continue
             catdict = unique[category]
             category_args = catdict["args"]
-
-            cmdlist = []
 
             for optstr in catdict["valid"]:
                 cmdstr = "./%s %s %s %s" % (app, globalargs,
@@ -1086,16 +1301,15 @@ def run_tests(do_app, do_category, error_ret):
                 cmd.compare_file = filename
                 cmdlist.append(cmd)
 
-            # Run commands
-            for cmd in cmdlist:
-                err = cmd.run()
-                if err:
-                    error_ret.append(err)
+    # Run commands
+    for cmd in cmdlist:
+        err = cmd.run()
+        if err:
+            error_ret.append(err)
 
 def main():
     # CLI Args
     global debug
-    global testprompt
 
     do_app = None
     do_category = None
@@ -1104,8 +1318,6 @@ def main():
         for i in range(1, len(sys.argv)):
             if sys.argv[i].count("debug"):
                 debug = True
-            elif sys.argv[i].count("prompt"):
-                testprompt = True
             elif sys.argv[i].count("--app"):
                 do_app = sys.argv[i + 1]
             elif sys.argv[i].count("--category"):
@@ -1148,3 +1360,5 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print "Tests interrupted"
+        if debug:
+            raise
